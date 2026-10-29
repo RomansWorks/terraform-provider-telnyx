@@ -2,9 +2,9 @@
 
 ## 1. Engine
 
-- [ ] 1.1 Implement value conversion between Terraform values and JSON for every type in design decision 2, verified by table-driven unit tests
-- [ ] 1.2 Implement create, read (404 removal), update (PATCH diff, PUT full), delete, missing-delete warning and import, verified by engine unit tests against httptest
-- [ ] 1.3 Implement hook points (before create, custom create, after read, wait) and `timeouts`, verified by unit tests
+- [x] 1.1 Implement value conversion between Terraform values and JSON for every type in design decision 2, verified by table-driven unit tests
+- [x] 1.2 Implement create, read (404 removal), update (PATCH diff, PUT full), delete, missing-delete warning and import, verified by engine unit tests against httptest
+- [x] 1.3 Implement hook points (before create, custom create, after read, wait) and `timeouts`, verified by unit tests
 
 ## 2. Generator
 

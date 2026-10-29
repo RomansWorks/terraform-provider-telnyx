@@ -137,12 +137,31 @@ func IsNotFound(err error) bool {
 // in, when not nil, is encoded as the JSON request body.
 func (c *Client) Do(ctx context.Context, method, path string, query url.Values, in, out any) error {
 	var body []byte
+	contentType := ""
 	if in != nil {
 		var err error
 		if body, err = json.Marshal(in); err != nil {
 			return fmt.Errorf("telnyx: encoding request body: %w", err)
 		}
+		contentType = "application/json"
 	}
+	data, err := c.Send(ctx, method, path, query, contentType, body)
+	if err != nil {
+		return err
+	}
+	if out == nil || len(data) == 0 {
+		return nil
+	}
+	if err := json.Unmarshal(data, out); err != nil {
+		return fmt.Errorf("telnyx: decoding %s %s response: %w", method, path, err)
+	}
+	return nil
+}
+
+// Send sends a request with a raw body of the given content type and returns
+// the raw response body of a 2xx response. Non-2xx responses are returned as
+// *Error. Retries follow the same rules as Do.
+func (c *Client) Send(ctx context.Context, method, path string, query url.Values, contentType string, body []byte) ([]byte, error) {
 	u := *c.baseURL
 	u.Path = c.baseURL.Path + "/" + strings.TrimLeft(path, "/")
 	if len(query) > 0 {
@@ -152,12 +171,12 @@ func (c *Client) Do(ctx context.Context, method, path string, query url.Values, 
 	for attempt := 0; ; attempt++ {
 		req, err := http.NewRequestWithContext(ctx, method, u.String(), bytes.NewReader(body))
 		if err != nil {
-			return fmt.Errorf("telnyx: building request: %w", err)
+			return nil, fmt.Errorf("telnyx: building request: %w", err)
 		}
 		req.Header.Set("Authorization", "Bearer "+c.apiKey)
 		req.Header.Set("Accept", "application/json")
-		if body != nil {
-			req.Header.Set("Content-Type", "application/json")
+		if contentType != "" {
+			req.Header.Set("Content-Type", contentType)
 		}
 		if c.userAgent != "" {
 			req.Header.Set("User-Agent", c.userAgent)
@@ -166,10 +185,10 @@ func (c *Client) Do(ctx context.Context, method, path string, query url.Values, 
 		resp, err := c.httpClient.Do(req)
 		if err != nil {
 			if ctx.Err() != nil || attempt >= c.maxRetries || !retryableMethod(method) {
-				return fmt.Errorf("telnyx: %s %s: %w", method, path, err)
+				return nil, fmt.Errorf("telnyx: %s %s: %w", method, path, err)
 			}
 			if werr := c.wait(ctx, attempt, 0); werr != nil {
-				return werr
+				return nil, werr
 			}
 			continue
 		}
@@ -177,26 +196,20 @@ func (c *Client) Do(ctx context.Context, method, path string, query url.Values, 
 		data, readErr := io.ReadAll(resp.Body)
 		_ = resp.Body.Close()
 		if readErr != nil {
-			return fmt.Errorf("telnyx: reading response: %w", readErr)
+			return nil, fmt.Errorf("telnyx: reading response: %w", readErr)
 		}
 
 		if resp.StatusCode >= 200 && resp.StatusCode < 300 {
-			if out == nil || len(data) == 0 {
-				return nil
-			}
-			if err := json.Unmarshal(data, out); err != nil {
-				return fmt.Errorf("telnyx: decoding %s %s response: %w", method, path, err)
-			}
-			return nil
+			return data, nil
 		}
 
 		if attempt < c.maxRetries && retryableStatus(resp.StatusCode, method) {
 			if werr := c.wait(ctx, attempt, retryAfter(resp.Header.Get("Retry-After"))); werr != nil {
-				return werr
+				return nil, werr
 			}
 			continue
 		}
-		return decodeError(resp, method, path, data)
+		return nil, decodeError(resp, method, path, data)
 	}
 }
 

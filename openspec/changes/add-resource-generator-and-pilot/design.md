@@ -14,9 +14,9 @@ The spec has 2,555 schemas, with 154 `oneOf`, 202 `anyOf`, 32 discriminators and
 
 ### 1. Generated descriptors plus one shared engine, not generated CRUD per resource
 
-The generator emits, per resource, a Go file holding the Plugin Framework schema and a descriptor: operations, id and path parameters, envelope, and how each attribute maps to JSON. `internal/engine` implements create, read, update, delete and import once, by walking the schema and converting between Terraform values and JSON.
+The generator emits, per resource, a Go file holding a descriptor literal: operations, id and path parameters, envelope, and each attribute with its type, flags and JSON name. `internal/engine` builds the Plugin Framework schema from the descriptor and implements create, read, update, delete and import once, converting between Terraform values and JSON.
 
-*Alternatives:* generating full CRUD code per resource (the Stainless and HashiCorp codegen approach) multiplies code across 168+ resources, so each fix has to be regenerated everywhere and the test surface grows. A fully dynamic schema built at runtime would hide schemas from the compiler and `tfplugindocs`. The hybrid keeps real schemas while keeping logic in one place.
+*Alternatives:* generating full CRUD code per resource (the Stainless and HashiCorp codegen approach) multiplies code across 168+ resources, so each fix has to be regenerated everywhere and the test surface grows. Generating framework schema code as well as the descriptor would duplicate the same facts in two forms that can drift. A schema loaded at runtime from a data file would be invisible to the compiler. A Go literal per resource is reviewable in diffs, type-checked, and the schema it yields is exactly what `tfplugindocs` reads from the provider.
 
 ### 2. Type mapping
 

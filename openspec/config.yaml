@@ -23,9 +23,11 @@ rules:
     - State which upstream commit range or Telnyx product area the change covers.
     - Mark any change to an existing resource's schema, import id or behaviour that can break a user's configuration or state as **BREAKING**.
   specs:
+    - Never restate API fields, types or descriptions from the OpenAPI spec; it is the source of truth for the API. Refer to operations as METHOD /path.
+    - Specify only provider behaviour and the decisions the OpenAPI spec cannot express.
     - Name Terraform types telnyx_<noun> in snake_case, using the names Telnyx shows in its portal where they differ from path names.
     - Give every resource requirement scenarios for create, read after apply (empty plan), update in place or replace, delete, and import.
-    - State which attributes are required, optional, computed or sensitive, and which force replacement.
+    - List only attributes whose handling differs from what the generator derives from the OpenAPI schema (renamed, sensitive, write-only, forces replacement, ignored for drift, set instead of list).
     - When the API cannot delete an object, specify that destroy removes it from state and warns.
   design:
     - Say whether the resource is generated, generated with overrides, or hand-written, and why.

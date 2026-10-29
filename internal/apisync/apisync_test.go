@@ -118,6 +118,15 @@ func TestCoverageSyncAndCheck(t *testing.T) {
 		t.Errorf("check = %+v; want ok but not fully reviewed", rep)
 	}
 
+	clone := cov["POST /ai/assistants/{assistant_id}/clone"]
+	clone.Reviewed = true
+	cov["POST /ai/assistants/{assistant_id}/clone"] = clone
+	if rep = cov.Check(s); len(rep.Invalid) != 1 {
+		t.Errorf("check = %+v; want a reviewed action without a name to be invalid", rep)
+	}
+	clone.Terraform = "telnyx_ai_assistant_clone"
+	cov["POST /ai/assistants/{assistant_id}/clone"] = clone
+
 	delete(cov, "GET /ai/assistants")
 	cov["GET /extra"] = CoverageEntry{Bucket: "bogus"}
 	rep = cov.Check(s)

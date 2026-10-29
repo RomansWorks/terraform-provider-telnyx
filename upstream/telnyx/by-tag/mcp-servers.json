@@ -1,0 +1,897 @@
+{
+  "components": {
+    "headers": {
+      "IdempotentReplayed": {
+        "description": "Present with value `true` when Edge replayed a stored successful response for the supplied Idempotency-Key. Omitted for first-time requests and error responses.",
+        "schema": {
+          "enum": [
+            true
+          ],
+          "example": true,
+          "type": "boolean"
+        }
+      }
+    },
+    "parameters": {
+      "IdempotencyKey": {
+        "description": "Optional opaque, unquoted key for safely retrying the same logical request. Keys must contain 1 to 255 letters, numbers, hyphens, or underscores. Generate a unique UUID v4 for each operation and reuse it only when retrying that operation with the same request. Invalid headers—including duplicate, empty, malformed, or overlong values—return 400 with error code 10015. A request already in progress with the same key returns 409; reusing the key with a different request returns 422. Only successful responses are replayed, for up to 24 hours. Do not include sensitive data in the key.",
+        "example": "8e03978e-40d5-43e8-bc93-6894a57f9326",
+        "in": "header",
+        "name": "Idempotency-Key",
+        "required": false,
+        "schema": {
+          "maxLength": 255,
+          "minLength": 1,
+          "pattern": "^[A-Za-z0-9_-]{1,255}$",
+          "type": "string"
+        }
+      }
+    },
+    "responses": {
+      "IdempotencyConflictResponse": {
+        "content": {
+          "application/json": {
+            "example": {
+              "errors": [
+                {
+                  "code": "10036",
+                  "detail": "A request with this Idempotency-Key is already being processed.",
+                  "source": {
+                    "pointer": "/header/Idempotency-Key"
+                  },
+                  "title": "Resource is being processed"
+                }
+              ]
+            },
+            "schema": {
+              "$ref": "#/components/schemas/email_ErrorResponse"
+            }
+          }
+        },
+        "description": "A request with the same Idempotency-Key is still being processed (10036). Retry later with the same key and request."
+      }
+    },
+    "schemas": {
+      "CreateMCPServerRequest": {
+        "properties": {
+          "allowed_tools": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Allowed Tools",
+            "type": [
+              "array",
+              "null"
+            ]
+          },
+          "api_key_ref": {
+            "title": "Api Key Ref",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "type": {
+            "title": "Type",
+            "type": "string"
+          },
+          "url": {
+            "title": "Url",
+            "type": "string"
+          }
+        },
+        "required": [
+          "name",
+          "type",
+          "url"
+        ],
+        "title": "CreateMCPServerRequest",
+        "type": "object"
+      },
+      "ErrorObject": {
+        "properties": {
+          "code": {
+            "description": "Telnyx error code. Send admission errors include account daily quota 10011 and sender-domain ramp code domain_graduation_limit_exceeded. Edge idempotency errors use 10027 or 10036. Fallback 404/500 responses from the framework may use string status codes ('404', '500') instead.",
+            "enum": [
+              "10001",
+              "10006",
+              "10007",
+              "10011",
+              "10015",
+              "10016",
+              "10019",
+              "domain_graduation_limit_exceeded",
+              "recipient_suppressed",
+              "reputation_suspended",
+              "404",
+              "500",
+              "10027",
+              "10036"
+            ],
+            "type": "string"
+          },
+          "detail": {
+            "description": "Human-readable error detail. Changeset responses may return a structured object.",
+            "oneOf": [
+              {
+                "type": "string"
+              },
+              {
+                "additionalProperties": true,
+                "type": "object"
+              }
+            ]
+          },
+          "meta": {
+            "additionalProperties": true,
+            "description": "Additional metadata. Present on 401 errors with a documentation URL.",
+            "nullable": true,
+            "type": "object"
+          },
+          "source": {
+            "additionalProperties": true,
+            "nullable": true,
+            "type": "object"
+          },
+          "title": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "title",
+          "detail"
+        ],
+        "type": "object"
+      },
+      "HTTPValidationError": {
+        "example": {
+          "detail": [
+            {
+              "loc": [
+                "body",
+                "name"
+              ],
+              "msg": "Field required",
+              "type": "missing"
+            }
+          ]
+        },
+        "properties": {
+          "detail": {
+            "items": {
+              "$ref": "#/components/schemas/ValidationError"
+            },
+            "title": "Detail",
+            "type": "array"
+          }
+        },
+        "title": "HTTPValidationError",
+        "type": "object"
+      },
+      "MCPServer": {
+        "properties": {
+          "allowed_tools": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Allowed Tools",
+            "type": [
+              "array",
+              "null"
+            ]
+          },
+          "api_key_ref": {
+            "title": "Api Key Ref",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "type": {
+            "title": "Type",
+            "type": "string"
+          },
+          "url": {
+            "title": "Url",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "type",
+          "url",
+          "created_at"
+        ],
+        "title": "MCPServer",
+        "type": "object"
+      },
+      "MCPServersListResponse": {
+        "items": {
+          "$ref": "#/components/schemas/MCPServer"
+        },
+        "title": "MCPServersListResponse",
+        "type": "array"
+      },
+      "SuppressedRecipient": {
+        "properties": {
+          "override_allowed": {
+            "description": "Whether an authorized send may override this suppression.",
+            "type": "boolean"
+          },
+          "reason": {
+            "description": "Suppression reason returned by the recipient suppression service.",
+            "type": "string"
+          },
+          "scope": {
+            "description": "Scope at which the suppression applies.",
+            "type": "string"
+          },
+          "to": {
+            "description": "Suppressed recipient email address.",
+            "format": "email",
+            "type": "string"
+          }
+        },
+        "required": [
+          "to",
+          "reason",
+          "scope",
+          "override_allowed"
+        ],
+        "type": "object"
+      },
+      "UpdateMCPServerRequest": {
+        "properties": {
+          "allowed_tools": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Allowed Tools",
+            "type": [
+              "array",
+              "null"
+            ]
+          },
+          "api_key_ref": {
+            "title": "Api Key Ref",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "type": {
+            "title": "Type",
+            "type": "string"
+          },
+          "url": {
+            "title": "Url",
+            "type": "string"
+          }
+        },
+        "title": "UpdateMCPServerRequest",
+        "type": "object"
+      },
+      "ValidationError": {
+        "properties": {
+          "loc": {
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "title": "Location",
+            "type": "array"
+          },
+          "msg": {
+            "title": "Message",
+            "type": "string"
+          },
+          "type": {
+            "title": "Error Type",
+            "type": "string"
+          }
+        },
+        "required": [
+          "loc",
+          "msg",
+          "type"
+        ],
+        "title": "ValidationError",
+        "type": "object"
+      },
+      "email_ErrorResponse": {
+        "properties": {
+          "errors": {
+            "items": {
+              "$ref": "#/components/schemas/ErrorObject"
+            },
+            "type": "array"
+          },
+          "suppressed": {
+            "description": "Present when every recipient is suppressed, so the request is rejected and no message is created.",
+            "items": {
+              "$ref": "#/components/schemas/SuppressedRecipient"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "errors"
+        ],
+        "type": "object"
+      },
+      "inference-embedding_ErrorObject": {
+        "properties": {
+          "code": {
+            "description": "Telnyx error code. Edge idempotency errors use 10015, 10027, or 10036; idempotency protection outages use 10016; replay-cap 413s surface 10007. Fallback 404/500 responses from the framework may use string status codes ('404', '500') instead.",
+            "enum": [
+              "10007",
+              "10015",
+              "10016",
+              "10027",
+              "10036",
+              "404",
+              "500"
+            ],
+            "type": "string"
+          },
+          "detail": {
+            "type": "string"
+          },
+          "source": {
+            "properties": {
+              "pointer": {
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
+          "title": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "title"
+        ],
+        "type": "object"
+      },
+      "inference-embedding_ErrorResponse": {
+        "properties": {
+          "errors": {
+            "items": {
+              "$ref": "#/components/schemas/inference-embedding_ErrorObject"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "errors"
+        ],
+        "type": "object"
+      }
+    },
+    "securitySchemes": {
+      "BearerAuth": {
+        "bearerFormat": "API key",
+        "description": "Telnyx API key supplied as `Authorization: Bearer \u003ctoken\u003e`. In production, auth may be validated by the API gateway and forwarded via Telnyx auth headers.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "Payment": {
+        "description": "Machine Payment Protocol credential used on paid retries, sent as `Authorization: Payment ...`. Obtained by paying a challenge returned in the `WWW-Authenticate` header of a 402 response. This is not a Telnyx API key; initial challenge requests use standard bearer authentication instead.",
+        "in": "header",
+        "name": "Authorization",
+        "type": "apiKey"
+      },
+      "agent-memory_bearerAuth": {
+        "description": "Telnyx API key",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "bearerAuth": {
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "branded-calling_bearerAuth": {
+        "description": "Telnyx API key. Generate one at https://portal.telnyx.com/#/app/api-keys.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "collections_bearerAuth": {
+        "description": "Telnyx API key. Collections and results are automatically scoped to the authenticated user's organization.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "number-reputation_bearerAuth": {
+        "description": "Telnyx API key. Generate one at https://portal.telnyx.com/#/app/api-keys.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "oauthClientAuth": {
+        "description": "OAuth 2.0 authentication for Telnyx API and MCP integrations",
+        "flows": {
+          "authorizationCode": {
+            "authorizationUrl": "https://api.telnyx.com/v2/oauth/authorize",
+            "refreshUrl": "https://api.telnyx.com/v2/oauth/token",
+            "scopes": {
+              "admin": "Administrative access to Telnyx resources"
+            },
+            "tokenUrl": "https://api.telnyx.com/v2/oauth/token"
+          },
+          "clientCredentials": {
+            "scopes": {
+              "admin": "Administrative access to Telnyx resources"
+            },
+            "tokenUrl": "https://api.telnyx.com/v2/oauth/token"
+          }
+        },
+        "type": "oauth2"
+      },
+      "outbound-voice-profiles_bearerAuth": {
+        "bearerFormat": "JWT",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "pay-connectors_bearerAuth": {
+        "description": "Telnyx API key, not the processor bearer token.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "pronunciation-dicts_bearerAuth": {
+        "description": "Telnyx API v2 key. Obtain from https://portal.telnyx.com",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "rcs-registration_bearerAuth": {
+        "bearerFormat": "API key",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "stored-payment-transactions_bearerAuth": {
+        "bearerFormat": "JWT",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "telnyxApiKey": {
+        "description": "Management-only Telnyx account credential.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "transcriptions-search_bearerAuth": {
+        "description": "Telnyx API key. Results are automatically scoped to the authenticated user's organization.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "web-search_bearerAuth": {
+        "description": "Telnyx API key",
+        "scheme": "bearer",
+        "type": "http"
+      }
+    }
+  },
+  "info": {
+    "contact": {
+      "email": "support@telnyx.com"
+    },
+    "description": "SIP trunking, SMS, MMS, Call Control and Telephony Data Services.",
+    "title": "Telnyx API",
+    "version": "2.0.0",
+    "x-endpoint-cost": "light",
+    "x-latency-category": "responsive"
+  },
+  "openapi": "3.1.0",
+  "paths": {
+    "/ai/mcp_servers": {
+      "get": {
+        "description": "Returns a paginated list of the MCP servers configured on your account, with optional filtering by type or URL.",
+        "operationId": "list_mcp_servers",
+        "parameters": [
+          {
+            "description": "Filter results by type.",
+            "in": "query",
+            "name": "type",
+            "required": false,
+            "schema": {
+              "title": "Type",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Filter results by url.",
+            "in": "query",
+            "name": "url",
+            "required": false,
+            "schema": {
+              "title": "Url",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Number of items to return per page.",
+            "in": "query",
+            "name": "page[size]",
+            "required": false,
+            "schema": {
+              "default": 20,
+              "maximum": 100,
+              "minimum": 1,
+              "title": "Page[Size]",
+              "type": "integer"
+            }
+          },
+          {
+            "description": "Page number to retrieve (1-based).",
+            "in": "query",
+            "name": "page[number]",
+            "required": false,
+            "schema": {
+              "default": 1,
+              "minimum": 1,
+              "title": "Page[Number]",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "example": [
+                  {
+                    "created_at": "2024-01-23T18:10:02.574Z",
+                    "id": "Id",
+                    "name": "Name",
+                    "type": "Type",
+                    "url": "Url"
+                  }
+                ],
+                "schema": {
+                  "$ref": "#/components/schemas/MCPServersListResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "List MCP Servers",
+        "tags": [
+          "MCP Servers"
+        ]
+      },
+      "post": {
+        "description": "Creates a new MCP server configuration on your account and returns the created server.",
+        "operationId": "create_mcp_server",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/IdempotencyKey"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "example": {
+                "name": "Name",
+                "type": "Type",
+                "url": "Url"
+              },
+              "schema": {
+                "$ref": "#/components/schemas/CreateMCPServerRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "created_at": "2024-01-23T18:10:02.574Z",
+                  "id": "Id",
+                  "name": "Name",
+                  "type": "Type",
+                  "url": "Url"
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/MCPServer"
+                }
+              }
+            },
+            "description": "Successful Response",
+            "headers": {
+              "Idempotent-Replayed": {
+                "$ref": "#/components/headers/IdempotentReplayed"
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/inference-embedding_ErrorResponse"
+                }
+              }
+            },
+            "description": "Bad Request / Validation Failed (10015). Invalid, duplicate, empty, malformed, or overlong Idempotency-Key headers are rejected by Edge with HTTP 400 and error code 10015."
+          },
+          "409": {
+            "$ref": "#/components/responses/IdempotencyConflictResponse"
+          },
+          "413": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/inference-embedding_ErrorResponse"
+                }
+              }
+            },
+            "description": "Payload Too Large. A request sent with an Idempotency-Key whose body exceeds the endpoint's Edge replay-protection limit (256 KB) is rejected before it reaches the service. Requests sent without the header are not subject to this limit."
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "anyOf": [
+                    {
+                      "$ref": "#/components/schemas/HTTPValidationError"
+                    },
+                    {
+                      "$ref": "#/components/schemas/inference-embedding_ErrorResponse"
+                    }
+                  ]
+                }
+              }
+            },
+            "description": "Validation Error. Reusing an Idempotency-Key with a different request body also returns 422 with error code 10027."
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/inference-embedding_ErrorResponse"
+                }
+              }
+            },
+            "description": "Service unavailable (10016), including unavailable Edge idempotency protection for a keyed request."
+          }
+        },
+        "summary": "Create MCP Server",
+        "tags": [
+          "MCP Servers"
+        ]
+      }
+    },
+    "/ai/mcp_servers/{mcp_server_id}": {
+      "delete": {
+        "description": "Permanently deletes the specified MCP server configuration from your account.",
+        "operationId": "delete_mcp_server",
+        "parameters": [
+          {
+            "description": "Unique identifier of the mcp server.",
+            "in": "path",
+            "name": "mcp_server_id",
+            "required": true,
+            "schema": {
+              "title": "Mcp Server Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "MCP server deleted successfully. No content is returned."
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/inference-embedding_ErrorResponse"
+                }
+              }
+            },
+            "description": "Bad Request (10015). The MCP server cannot be deleted because it is still in use by an active assistant. A server counts as in use when it is referenced by an active assistant's live configuration or by any of its retained version snapshots — so deletion can be refused even when the assistant's current configuration (`mcp_servers`) no longer lists the server. The `detail` names the blocking assistant(s) and their IDs. Remove the server from the assistant's configuration and delete any retained assistant versions that still reference it (see DELETE /ai/assistants/{assistant_id}/versions/{version_id}), then retry."
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "detail": [
+                    {
+                      "loc": [
+                        "string"
+                      ],
+                      "msg": "Message",
+                      "type": "Error Type"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Delete MCP Server",
+        "tags": [
+          "MCP Servers"
+        ]
+      },
+      "get": {
+        "description": "Retrieve details for a specific MCP server.",
+        "operationId": "get_mcp_server",
+        "parameters": [
+          {
+            "description": "Unique identifier of the mcp server.",
+            "in": "path",
+            "name": "mcp_server_id",
+            "required": true,
+            "schema": {
+              "title": "Mcp Server Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "created_at": "2024-01-23T18:10:02.574Z",
+                  "id": "Id",
+                  "name": "Name",
+                  "type": "Type",
+                  "url": "Url"
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/MCPServer"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Get MCP Server",
+        "tags": [
+          "MCP Servers"
+        ]
+      },
+      "put": {
+        "description": "Updates the specified MCP server's configuration and returns the updated server.",
+        "operationId": "update_mcp_server",
+        "parameters": [
+          {
+            "description": "Unique identifier of the mcp server.",
+            "in": "path",
+            "name": "mcp_server_id",
+            "required": true,
+            "schema": {
+              "title": "Mcp Server Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "example": {
+                "created_at": "2024-01-23T18:10:02.574Z",
+                "id": "Id",
+                "name": "Name",
+                "type": "Type",
+                "url": "Url"
+              },
+              "schema": {
+                "$ref": "#/components/schemas/UpdateMCPServerRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "created_at": "2024-01-23T18:10:02.574Z",
+                  "id": "Id",
+                  "name": "Name",
+                  "type": "Type",
+                  "url": "Url"
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/MCPServer"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Update MCP Server",
+        "tags": [
+          "MCP Servers"
+        ]
+      }
+    }
+  },
+  "security": [
+    {
+      "bearerAuth": []
+    }
+  ],
+  "servers": [
+    {
+      "description": "Version 2.0.0 of the Telnyx API",
+      "url": "https://api.telnyx.com/v2"
+    }
+  ]
+}

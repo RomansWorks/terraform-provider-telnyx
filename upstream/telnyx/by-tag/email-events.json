@@ -1,0 +1,850 @@
+{
+  "components": {
+    "parameters": {
+      "FromTimestamp": {
+        "description": "Inclusive ISO 8601 start timestamp. Defaults to 30 days ago when omitted.",
+        "in": "query",
+        "name": "from",
+        "required": false,
+        "schema": {
+          "format": "date-time",
+          "type": "string"
+        }
+      },
+      "ToTimestamp": {
+        "description": "Inclusive ISO 8601 end timestamp. When `from` is provided without `to`, defaults to `from + 30 days`.",
+        "in": "query",
+        "name": "to",
+        "required": false,
+        "schema": {
+          "format": "date-time",
+          "type": "string"
+        }
+      },
+      "email_PageSize": {
+        "description": "Number of results to return. Defaults to 25; maximum is 100. Invalid values are clamped to the valid range.",
+        "in": "query",
+        "name": "page_size",
+        "required": false,
+        "schema": {
+          "default": 25,
+          "maximum": 100,
+          "minimum": 1,
+          "type": "integer"
+        }
+      }
+    },
+    "responses": {
+      "email_UnauthorizedResponse": {
+        "content": {
+          "application/json": {
+            "example": {
+              "errors": [
+                {
+                  "code": "10006",
+                  "detail": "Invalid API key",
+                  "meta": {
+                    "url": "https://developers.telnyx.com/docs/overview/errors/10006"
+                  },
+                  "title": "Not authorized"
+                }
+              ]
+            },
+            "schema": {
+              "$ref": "#/components/schemas/email_ErrorResponse"
+            }
+          }
+        },
+        "description": "Not authorized (10006)."
+      }
+    },
+    "schemas": {
+      "AccountEmailEvent": {
+        "description": "An account-polling event. The envelope is webhook-shaped, but polling preserves stored-event cardinality: queued, sending, sandbox, cancelled, and daily_limit_exceeded message events fan out per recipient; scheduled remains one message-scoped row. Payload fields vary among recipient-scoped, message-scoped, and minimal fallback rows.",
+        "properties": {
+          "canonical_event_type": {
+            "description": "Additive canonical outcome name, prefixed with `email.`. Gateway rejection is `email.gw_reject`, ambiguous injection timeout is `email.injection_timeout`, and MTA expiration is `email.expired`. Unchanged outcomes retain their names. Existing stored rows are translated only when recorded payload evidence proves the outcome; a legacy failed row is not guessed or sharpened.",
+            "example": "email.delivered",
+            "pattern": "^email\\.",
+            "type": "string"
+          },
+          "event_type": {
+            "description": "Legacy customer-visible event name, prefixed with `email.`. Gateway rejections render `email.failed`; MTA expirations render `email.bounced`. Webhook subscription allowlists match the legacy name.",
+            "example": "email.delivered",
+            "pattern": "^email\\.",
+            "type": "string"
+          },
+          "id": {
+            "description": "Event UUID.",
+            "format": "uuid",
+            "type": "string"
+          },
+          "occurred_at": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "payload": {
+            "$ref": "#/components/schemas/AccountEmailEventPayload"
+          },
+          "recipient_id": {
+            "description": "Durable email recipient UUID. Present for recipient-scoped events, including each queued, sending, sandbox, cancelled, and daily_limit_exceeded fan-out event.",
+            "format": "uuid",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "event_type",
+          "canonical_event_type",
+          "occurred_at",
+          "payload"
+        ],
+        "type": "object"
+      },
+      "AccountEmailEventListResponse": {
+        "properties": {
+          "data": {
+            "items": {
+              "$ref": "#/components/schemas/AccountEmailEvent"
+            },
+            "type": "array"
+          },
+          "meta": {
+            "$ref": "#/components/schemas/EventPaginationMeta"
+          }
+        },
+        "required": [
+          "data",
+          "meta"
+        ],
+        "type": "object"
+      },
+      "AccountEmailEventPayload": {
+        "additionalProperties": true,
+        "description": "Payload returned by GET /email_events. Every row includes id, status, and occurred_at. Recipient-scoped rows also include recipient_id, from, subject, and exactly one object-valued to, cc, or bcc field. Legacy or message-scoped rows can omit recipient_id and use object-valued or string-valued to/cc fields, including an empty string when no address exists; bcc is redacted. If the related message or recipient cannot be loaded, the minimal fallback can omit from, subject, and recipient fields. Additional persisted public evidence can be present.",
+        "properties": {
+          "bcc": {
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/EmailWebhookRecipient"
+              },
+              {
+                "enum": [
+                  "redacted"
+                ],
+                "type": "string"
+              }
+            ]
+          },
+          "cc": {
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/EmailWebhookRecipient"
+              },
+              {
+                "description": "Legacy message-scoped address, or an empty string when absent.",
+                "type": "string"
+              }
+            ]
+          },
+          "from": {
+            "$ref": "#/components/schemas/AccountEmailEventSender"
+          },
+          "id": {
+            "description": "Email message UUID.",
+            "format": "uuid",
+            "type": "string"
+          },
+          "occurred_at": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "recipient_id": {
+            "description": "Durable email recipient UUID. Present for recipient-scoped events.",
+            "format": "uuid",
+            "type": "string"
+          },
+          "status": {
+            "description": "Stored event outcome slug, not the authoritative recipient status. Account polling returns the stored name, including suppression, scan, and quarantine lifecycle names. Webhooks retain legacy payload names: gateway rejections use failed and MTA expirations use bounced. New sharp stored rows can expose gw_reject, injection_timeout, or expired. Use the envelope canonical_event_type to identify the outcome across surfaces.",
+            "enum": [
+              "queued",
+              "deferred",
+              "scheduled",
+              "cancelled",
+              "sandbox",
+              "sending",
+              "sent",
+              "failed",
+              "delivered",
+              "bounced",
+              "complained",
+              "suppressed",
+              "rejected",
+              "opened",
+              "clicked",
+              "unsubscribed",
+              "daily_limit_exceeded",
+              "scan_deferred",
+              "quarantined",
+              "quarantine_released",
+              "quarantine_release_dispatched",
+              "quarantine_rejected",
+              "quarantine_expired",
+              "gw_reject",
+              "injection_timeout",
+              "expired"
+            ],
+            "type": "string"
+          },
+          "subject": {
+            "type": "string"
+          },
+          "to": {
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/EmailWebhookRecipient"
+              },
+              {
+                "description": "Legacy message-scoped address, or an empty string when absent.",
+                "type": "string"
+              }
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "status",
+          "occurred_at"
+        ],
+        "type": "object"
+      },
+      "AccountEmailEventSender": {
+        "additionalProperties": false,
+        "description": "Sender projection in account event polling. The display name is explicitly null when the message has no sender name.",
+        "properties": {
+          "email": {
+            "format": "email",
+            "type": "string"
+          },
+          "name": {
+            "nullable": true,
+            "type": "string"
+          }
+        },
+        "required": [
+          "email",
+          "name"
+        ],
+        "type": "object"
+      },
+      "EmailEventCounts": {
+        "description": "Recipient-level outcome counts for the queried time range. Each to, cc, and bcc recipient counts separately; repeated events of the same type for the same message and recipient count once. Partial MTA injection results count successful recipients as sent and unsuccessful recipients as failed. Only the ten listed event types are counted; other valid event types (scheduled, cancelled, sandbox, sending, rejected) are not included in stats.",
+        "properties": {
+          "bounced": {
+            "minimum": 0,
+            "type": "integer"
+          },
+          "clicked": {
+            "minimum": 0,
+            "type": "integer"
+          },
+          "complained": {
+            "minimum": 0,
+            "type": "integer"
+          },
+          "deferred": {
+            "minimum": 0,
+            "type": "integer"
+          },
+          "delivered": {
+            "minimum": 0,
+            "type": "integer"
+          },
+          "failed": {
+            "minimum": 0,
+            "type": "integer"
+          },
+          "opened": {
+            "minimum": 0,
+            "type": "integer"
+          },
+          "queued": {
+            "minimum": 0,
+            "type": "integer"
+          },
+          "sent": {
+            "minimum": 0,
+            "type": "integer"
+          },
+          "unsubscribed": {
+            "minimum": 0,
+            "type": "integer"
+          }
+        },
+        "required": [
+          "queued",
+          "sent",
+          "delivered",
+          "deferred",
+          "bounced",
+          "opened",
+          "clicked",
+          "complained",
+          "unsubscribed",
+          "failed"
+        ],
+        "type": "object"
+      },
+      "EmailEventRates": {
+        "description": "Recipient-level event rates as percentages, rounded to 2 decimal places.",
+        "properties": {
+          "bounce_rate": {
+            "description": "Bounced recipients / queued recipients as a percentage.",
+            "format": "float",
+            "minimum": 0,
+            "type": "number"
+          },
+          "click_rate": {
+            "description": "Recipients clicked / recipients opened as a percentage.",
+            "format": "float",
+            "minimum": 0,
+            "type": "number"
+          },
+          "complaint_rate": {
+            "description": "Recipients with a complaint feedback report / delivered recipients as a percentage.",
+            "format": "float",
+            "minimum": 0,
+            "type": "number"
+          },
+          "deferred_rate": {
+            "description": "Deferred recipients / queued recipients as a percentage.",
+            "format": "float",
+            "minimum": 0,
+            "type": "number"
+          },
+          "delivery_rate": {
+            "description": "Delivered recipients / queued recipients as a percentage.",
+            "format": "float",
+            "minimum": 0,
+            "type": "number"
+          },
+          "open_rate": {
+            "description": "Recipients opened / recipients delivered as a percentage.",
+            "format": "float",
+            "minimum": 0,
+            "type": "number"
+          }
+        },
+        "required": [
+          "delivery_rate",
+          "bounce_rate",
+          "deferred_rate",
+          "open_rate",
+          "click_rate",
+          "complaint_rate"
+        ],
+        "type": "object"
+      },
+      "EmailEventStats": {
+        "properties": {
+          "counts": {
+            "$ref": "#/components/schemas/EmailEventCounts"
+          },
+          "rates": {
+            "$ref": "#/components/schemas/EmailEventRates"
+          },
+          "record_type": {
+            "enum": [
+              "email_event_stats"
+            ],
+            "type": "string"
+          },
+          "time_range": {
+            "$ref": "#/components/schemas/TimeRange"
+          }
+        },
+        "required": [
+          "record_type",
+          "counts",
+          "rates",
+          "time_range"
+        ],
+        "type": "object"
+      },
+      "EmailEventStatsResponse": {
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/EmailEventStats"
+          }
+        },
+        "required": [
+          "data"
+        ],
+        "type": "object"
+      },
+      "EmailWebhookRecipient": {
+        "properties": {
+          "email": {
+            "format": "email",
+            "type": "string"
+          },
+          "kind": {
+            "enum": [
+              "to",
+              "cc",
+              "bcc"
+            ],
+            "type": "string"
+          },
+          "name": {
+            "nullable": true,
+            "type": "string"
+          }
+        },
+        "required": [
+          "email"
+        ],
+        "type": "object"
+      },
+      "ErrorObject": {
+        "properties": {
+          "code": {
+            "description": "Telnyx error code. Send admission errors include account daily quota 10011 and sender-domain ramp code domain_graduation_limit_exceeded. Edge idempotency errors use 10027 or 10036. Fallback 404/500 responses from the framework may use string status codes ('404', '500') instead.",
+            "enum": [
+              "10001",
+              "10006",
+              "10007",
+              "10011",
+              "10015",
+              "10016",
+              "10019",
+              "domain_graduation_limit_exceeded",
+              "recipient_suppressed",
+              "reputation_suspended",
+              "404",
+              "500",
+              "10027",
+              "10036"
+            ],
+            "type": "string"
+          },
+          "detail": {
+            "description": "Human-readable error detail. Changeset responses may return a structured object.",
+            "oneOf": [
+              {
+                "type": "string"
+              },
+              {
+                "additionalProperties": true,
+                "type": "object"
+              }
+            ]
+          },
+          "meta": {
+            "additionalProperties": true,
+            "description": "Additional metadata. Present on 401 errors with a documentation URL.",
+            "nullable": true,
+            "type": "object"
+          },
+          "source": {
+            "additionalProperties": true,
+            "nullable": true,
+            "type": "object"
+          },
+          "title": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "title",
+          "detail"
+        ],
+        "type": "object"
+      },
+      "EventPaginationMeta": {
+        "properties": {
+          "page_cursor": {
+            "description": "Cursor for the next page, when more results are available.",
+            "type": "string"
+          },
+          "page_size": {
+            "maximum": 100,
+            "minimum": 1,
+            "type": "integer"
+          },
+          "time_range": {
+            "$ref": "#/components/schemas/TimeRange"
+          }
+        },
+        "required": [
+          "page_size",
+          "time_range"
+        ],
+        "type": "object"
+      },
+      "SuppressedRecipient": {
+        "properties": {
+          "override_allowed": {
+            "description": "Whether an authorized send may override this suppression.",
+            "type": "boolean"
+          },
+          "reason": {
+            "description": "Suppression reason returned by the recipient suppression service.",
+            "type": "string"
+          },
+          "scope": {
+            "description": "Scope at which the suppression applies.",
+            "type": "string"
+          },
+          "to": {
+            "description": "Suppressed recipient email address.",
+            "format": "email",
+            "type": "string"
+          }
+        },
+        "required": [
+          "to",
+          "reason",
+          "scope",
+          "override_allowed"
+        ],
+        "type": "object"
+      },
+      "TimeRange": {
+        "properties": {
+          "from": {
+            "format": "date-time",
+            "nullable": true,
+            "type": "string"
+          },
+          "to": {
+            "format": "date-time",
+            "nullable": true,
+            "type": "string"
+          }
+        },
+        "required": [
+          "from",
+          "to"
+        ],
+        "type": "object"
+      },
+      "email_ErrorResponse": {
+        "properties": {
+          "errors": {
+            "items": {
+              "$ref": "#/components/schemas/ErrorObject"
+            },
+            "type": "array"
+          },
+          "suppressed": {
+            "description": "Present when every recipient is suppressed, so the request is rejected and no message is created.",
+            "items": {
+              "$ref": "#/components/schemas/SuppressedRecipient"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "errors"
+        ],
+        "type": "object"
+      }
+    },
+    "securitySchemes": {
+      "BearerAuth": {
+        "bearerFormat": "API key",
+        "description": "Telnyx API key supplied as `Authorization: Bearer \u003ctoken\u003e`. In production, auth may be validated by the API gateway and forwarded via Telnyx auth headers.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "Payment": {
+        "description": "Machine Payment Protocol credential used on paid retries, sent as `Authorization: Payment ...`. Obtained by paying a challenge returned in the `WWW-Authenticate` header of a 402 response. This is not a Telnyx API key; initial challenge requests use standard bearer authentication instead.",
+        "in": "header",
+        "name": "Authorization",
+        "type": "apiKey"
+      },
+      "agent-memory_bearerAuth": {
+        "description": "Telnyx API key",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "bearerAuth": {
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "branded-calling_bearerAuth": {
+        "description": "Telnyx API key. Generate one at https://portal.telnyx.com/#/app/api-keys.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "collections_bearerAuth": {
+        "description": "Telnyx API key. Collections and results are automatically scoped to the authenticated user's organization.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "number-reputation_bearerAuth": {
+        "description": "Telnyx API key. Generate one at https://portal.telnyx.com/#/app/api-keys.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "oauthClientAuth": {
+        "description": "OAuth 2.0 authentication for Telnyx API and MCP integrations",
+        "flows": {
+          "authorizationCode": {
+            "authorizationUrl": "https://api.telnyx.com/v2/oauth/authorize",
+            "refreshUrl": "https://api.telnyx.com/v2/oauth/token",
+            "scopes": {
+              "admin": "Administrative access to Telnyx resources"
+            },
+            "tokenUrl": "https://api.telnyx.com/v2/oauth/token"
+          },
+          "clientCredentials": {
+            "scopes": {
+              "admin": "Administrative access to Telnyx resources"
+            },
+            "tokenUrl": "https://api.telnyx.com/v2/oauth/token"
+          }
+        },
+        "type": "oauth2"
+      },
+      "outbound-voice-profiles_bearerAuth": {
+        "bearerFormat": "JWT",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "pay-connectors_bearerAuth": {
+        "description": "Telnyx API key, not the processor bearer token.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "pronunciation-dicts_bearerAuth": {
+        "description": "Telnyx API v2 key. Obtain from https://portal.telnyx.com",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "rcs-registration_bearerAuth": {
+        "bearerFormat": "API key",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "stored-payment-transactions_bearerAuth": {
+        "bearerFormat": "JWT",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "telnyxApiKey": {
+        "description": "Management-only Telnyx account credential.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "transcriptions-search_bearerAuth": {
+        "description": "Telnyx API key. Results are automatically scoped to the authenticated user's organization.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "web-search_bearerAuth": {
+        "description": "Telnyx API key",
+        "scheme": "bearer",
+        "type": "http"
+      }
+    }
+  },
+  "info": {
+    "contact": {
+      "email": "support@telnyx.com"
+    },
+    "description": "SIP trunking, SMS, MMS, Call Control and Telephony Data Services.",
+    "title": "Telnyx API",
+    "version": "2.0.0",
+    "x-endpoint-cost": "light",
+    "x-latency-category": "responsive"
+  },
+  "openapi": "3.1.0",
+  "paths": {
+    "/email_events": {
+      "get": {
+        "description": "Lists account-level email events sorted oldest first by `occurred_at asc, id asc`. Each row contains a legacy email.-prefixed event_type and an additive canonical_event_type. Gateway rejection renders email.failed with canonical email.gw_reject; ambiguous injection timeout renders email.injection_timeout in both; MTA expiration renders email.bounced with canonical email.expired. Message-scoped queued, sending, sandbox, cancelled, and daily_limit_exceeded rows fan out per durable recipient with stable derived IDs matching webhook delivery. Scheduled is the cardinality exception: account polling retains one message-scoped scheduled row with its stored event ID, while scheduled webhook publication fans out per recipient with derived IDs; reconcile scheduled events by message ID, event type, and occurrence time rather than event UUID. Recipient-scoped stored rows retain their stored UUIDs across polling and webhook delivery. Legacy names are derived from stored rows; an AdminBounce row stored as failed renders email.failed in polling while its webhook retains email.bounced, both with canonical email.failed.",
+        "operationId": "ListEmailEvents",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/email_PageSize"
+          },
+          {
+            "description": "Opaque URL-safe Base64 cursor returned by a previous event list response. The legacy `page[after]` and flat `page_cursor` forms are also accepted.",
+            "example": "eyJpbn...EifQ",
+            "in": "query",
+            "name": "page[cursor]",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Comma-separated list of event types to include. Also accepts repeated\nquery parameters (e.g. event_type=delivered\u0026event_type=bounced).\nUnknown values return no matches.\n\nDual-name compatibility: values are accepted\nbare or `email.`-prefixed. A legacy value keeps matching the\nrows it matched pre-rename — no widening: `failed` also\nmatches the rows that now store the canonical names of the\noutcomes it covered (`gw_reject`, `injection_timeout`,\n`expired`); `bounced` matches stored `bounced` rows only\n(recipient-scoped Expirations stored `failed` pre-rename and\nnever matched `bounced`, so `expired` is deliberately not a\n`bounced` expansion). A canonical value matches its own rows\nplus legacy rows whose recorded payload evidence proves that\noutcome (`expired` also surfaces legacy `bounced` rows with\n`bounce_category: transient`). The additive\n`canonical_event_type` field in each response row names the\ncanonical outcome.\n",
+            "example": "delivered,bounced,opened",
+            "in": "query",
+            "name": "event_type",
+            "required": false,
+            "schema": {
+              "oneOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "items": {
+                    "type": "string"
+                  },
+                  "type": "array"
+                }
+              ]
+            }
+          },
+          {
+            "description": "Filter events for a specific email message UUID. Invalid UUID values are silently ignored (no filter applied).",
+            "in": "query",
+            "name": "email_id",
+            "required": false,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "$ref": "#/components/parameters/FromTimestamp"
+          },
+          {
+            "$ref": "#/components/parameters/ToTimestamp"
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "data": [
+                    {
+                      "canonical_event_type": "email.delivered",
+                      "event_type": "email.delivered",
+                      "id": "f3a2c1d0-1234-4abc-9def-67890abcdef0",
+                      "occurred_at": "2026-07-06T18:24:00.000Z",
+                      "payload": {
+                        "from": {
+                          "email": "sender@example.com",
+                          "name": "Telnyx"
+                        },
+                        "id": "b0c7e8cb-6227-4c74-9f32-c7f80c30934b",
+                        "occurred_at": "2026-07-06T18:24:00.000Z",
+                        "recipient_id": "7c1e9a44-2f60-4d1b-9a0e-3c7b5e8d1f22",
+                        "status": "delivered",
+                        "subject": "Welcome",
+                        "to": {
+                          "email": "recipient@example.com",
+                          "kind": "to",
+                          "name": null
+                        }
+                      },
+                      "recipient_id": "7c1e9a44-2f60-4d1b-9a0e-3c7b5e8d1f22"
+                    }
+                  ],
+                  "meta": {
+                    "page_size": 50,
+                    "time_range": {
+                      "from": "2026-07-01T00:00:00Z",
+                      "to": "2026-07-31T00:00:00Z"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/AccountEmailEventListResponse"
+                }
+              }
+            },
+            "description": "Paginated list of account email events."
+          },
+          "401": {
+            "$ref": "#/components/responses/email_UnauthorizedResponse"
+          }
+        },
+        "summary": "List account email events",
+        "tags": [
+          "Email Events"
+        ]
+      }
+    },
+    "/email_events/stats": {
+      "get": {
+        "description": "Returns counts and rates for email events over a time range. The default start time is 30 days ago.",
+        "operationId": "GetEmailEventStats",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/FromTimestamp"
+          },
+          {
+            "$ref": "#/components/parameters/ToTimestamp"
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "data": {
+                    "counts": {
+                      "bounced": 0,
+                      "clicked": 0,
+                      "complained": 0,
+                      "deferred": 0,
+                      "delivered": 0,
+                      "failed": 0,
+                      "opened": 0,
+                      "queued": 0,
+                      "sent": 0,
+                      "unsubscribed": 0
+                    },
+                    "rates": {
+                      "bounce_rate": 0,
+                      "click_rate": 0,
+                      "complaint_rate": 0,
+                      "deferred_rate": 0,
+                      "delivery_rate": 0,
+                      "open_rate": 0
+                    },
+                    "record_type": "email_event_stats",
+                    "time_range": {
+                      "from": "2024-01-23T18:10:02.574Z",
+                      "to": "2024-01-23T18:10:02.574Z"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/EmailEventStatsResponse"
+                }
+              }
+            },
+            "description": "Email event statistics."
+          },
+          "401": {
+            "$ref": "#/components/responses/email_UnauthorizedResponse"
+          }
+        },
+        "summary": "Get email event statistics",
+        "tags": [
+          "Email Events"
+        ]
+      }
+    }
+  },
+  "security": [
+    {
+      "bearerAuth": []
+    }
+  ],
+  "servers": [
+    {
+      "description": "Version 2.0.0 of the Telnyx API",
+      "url": "https://api.telnyx.com/v2"
+    }
+  ]
+}

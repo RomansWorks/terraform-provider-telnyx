@@ -1,0 +1,794 @@
+{
+  "components": {
+    "parameters": {
+      "video_PageConsolidated": {
+        "description": "Consolidated page parameter (deepObject style). Originally: page[size], page[number]",
+        "explode": true,
+        "in": "query",
+        "name": "page",
+        "schema": {
+          "properties": {
+            "number": {
+              "default": 1,
+              "description": "The page number to load.",
+              "minimum": 1,
+              "type": "integer"
+            },
+            "size": {
+              "default": 20,
+              "description": "The size of the page.",
+              "maximum": 250,
+              "minimum": 1,
+              "type": "integer"
+            }
+          },
+          "type": "object"
+        },
+        "style": "deepObject"
+      }
+    },
+    "responses": {
+      "video_GenericErrorResponse": {
+        "content": {
+          "application/json": {
+            "schema": {
+              "properties": {
+                "message": {
+                  "example": "Error",
+                  "type": "string"
+                },
+                "success": {
+                  "example": false,
+                  "type": "boolean"
+                }
+              },
+              "type": "object"
+            }
+          }
+        },
+        "description": "Unexpected error"
+      },
+      "video_ResourceNotFound": {
+        "content": {
+          "application/json": {
+            "example": {
+              "code": "string",
+              "detail": "string",
+              "source": {
+                "parameter": "string",
+                "pointer": "string"
+              },
+              "title": "string"
+            },
+            "schema": {
+              "$ref": "#/components/schemas/video_Error"
+            }
+          }
+        },
+        "description": "Resource not found"
+      },
+      "video_UnprocessableEntity": {
+        "content": {
+          "application/json": {
+            "example": {
+              "errors": [
+                {
+                  "code": "10027",
+                  "detail": "The server understood the syntax of the request but was unable to process the instructions.",
+                  "title": "Unprocessable Entity"
+                }
+              ]
+            },
+            "schema": {
+              "$ref": "#/components/schemas/Errors"
+            }
+          }
+        },
+        "description": "Unprocessable entity. Check the 'detail' field in response for details."
+      }
+    },
+    "schemas": {
+      "Error": {
+        "example": {
+          "code": "20207",
+          "description": "The street address provided is invalid.",
+          "source": {
+            "pointer": "/street_address"
+          },
+          "title": "Invalid street address"
+        },
+        "properties": {
+          "code": {
+            "type": "string",
+            "x-format": "int64"
+          },
+          "description": {
+            "type": "string"
+          },
+          "detail": {
+            "description": "A human-readable explanation of the error.",
+            "type": "string"
+          },
+          "meta": {
+            "additionalProperties": true,
+            "type": "object"
+          },
+          "source": {
+            "properties": {
+              "parameter": {
+                "description": "Indicates which query parameter caused the error.",
+                "type": "string"
+              },
+              "pointer": {
+                "description": "JSON pointer (RFC6901) to the offending entity.",
+                "format": "json-pointer",
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
+          "title": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "title"
+        ],
+        "type": "object"
+      },
+      "Errors": {
+        "properties": {
+          "errors": {
+            "items": {
+              "$ref": "#/components/schemas/Error"
+            },
+            "type": "array"
+          }
+        },
+        "type": "object"
+      },
+      "PaginationMeta": {
+        "properties": {
+          "page_number": {
+            "example": 2,
+            "type": "integer"
+          },
+          "page_size": {
+            "example": 25,
+            "type": "integer"
+          },
+          "total_pages": {
+            "example": 3,
+            "type": "integer"
+          },
+          "total_results": {
+            "example": 55,
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "RoomRecording": {
+        "example": {
+          "codec": "opus",
+          "completed_at": "2021-04-16T10:25:55.962200Z",
+          "created_at": "2021-04-16T09:46:20.954863Z",
+          "download_url": "https://www.example.com",
+          "duration_secs": 3660,
+          "ended_at": "2021-04-16T10:24:55.962200Z",
+          "id": "6b61621f-62e0-4aad-ab11-9fd19e272e73",
+          "participant_id": "9b61621f-5fe4-4aad-ab11-9fd19e272e73",
+          "record_type": "room_session",
+          "room_id": "7b61621f-5fe4-4aad-ab11-9fd19e272e73",
+          "session_id": "8b61621f-5fe4-4aad-ab11-9fd19e272e73",
+          "size_mb": 5.6,
+          "started_at": "2021-04-16T09:24:55.962200Z",
+          "status": "completed",
+          "type": "audio",
+          "updated_at": "2021-04-16T10:24:55.962200Z"
+        },
+        "properties": {
+          "codec": {
+            "description": "Shows the codec used for the room recording.",
+            "example": "opus",
+            "type": "string"
+          },
+          "completed_at": {
+            "description": "ISO 8601 timestamp when the room recording has completed.",
+            "example": "2021-03-26T17:51:59.588408Z",
+            "format": "date-time",
+            "type": "string"
+          },
+          "created_at": {
+            "description": "ISO 8601 timestamp when the room recording was created.",
+            "example": "2021-03-26T17:51:59.588408Z",
+            "format": "date-time",
+            "type": "string"
+          },
+          "download_url": {
+            "description": "Url to download the recording.",
+            "example": "https://www.example.com",
+            "type": "string"
+          },
+          "duration_secs": {
+            "description": "Shows the room recording duration in seconds.",
+            "example": 67,
+            "type": "integer"
+          },
+          "ended_at": {
+            "description": "ISO 8601 timestamp when the room recording has ended.",
+            "example": "2021-03-26T17:51:59.588408Z",
+            "format": "date-time",
+            "type": "string"
+          },
+          "id": {
+            "description": "A unique identifier for the room recording.",
+            "example": "0ccc7b54-4df3-4bca-a65a-3da1ecc777f0",
+            "format": "uuid",
+            "type": "string"
+          },
+          "participant_id": {
+            "description": "Identify the room participant associated with the room recording.",
+            "example": "0ccc7b54-4df3-4bca-a65a-3da1ecc777b0",
+            "format": "uuid",
+            "type": "string"
+          },
+          "record_type": {
+            "example": "room_recording",
+            "readOnly": true,
+            "type": "string"
+          },
+          "room_id": {
+            "description": "Identify the room associated with the room recording.",
+            "example": "0ccc7b54-4df3-4bca-a65a-3da1ecc777b0",
+            "format": "uuid",
+            "type": "string"
+          },
+          "session_id": {
+            "description": "Identify the room session associated with the room recording.",
+            "example": "0ccc7b54-4df3-4bca-a65a-3da1ecc777b0",
+            "format": "uuid",
+            "type": "string"
+          },
+          "size_mb": {
+            "description": "Shows the room recording size in MB.",
+            "example": 10.5,
+            "format": "float",
+            "type": "number"
+          },
+          "started_at": {
+            "description": "ISO 8601 timestamp when the room recording has stated.",
+            "example": "2021-03-26T17:51:59.588408Z",
+            "format": "date-time",
+            "type": "string"
+          },
+          "status": {
+            "description": "Shows the room recording status.",
+            "enum": [
+              "completed",
+              "processing"
+            ],
+            "example": "completed",
+            "type": "string"
+          },
+          "type": {
+            "description": "Shows the room recording type.",
+            "enum": [
+              "audio",
+              "video"
+            ],
+            "example": "audio",
+            "type": "string"
+          },
+          "updated_at": {
+            "description": "ISO 8601 timestamp when the room recording was updated.",
+            "example": "2021-03-26T17:51:59.588408Z",
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "video_Error": {
+        "properties": {
+          "code": {
+            "type": "string"
+          },
+          "detail": {
+            "type": "string"
+          },
+          "meta": {
+            "additionalProperties": true,
+            "type": "object"
+          },
+          "source": {
+            "properties": {
+              "parameter": {
+                "description": "Indicates which query parameter caused the error.",
+                "type": "string"
+              },
+              "pointer": {
+                "description": "JSON pointer (RFC6901) to the offending entity.",
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
+          "title": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "title"
+        ],
+        "type": "object"
+      }
+    },
+    "securitySchemes": {
+      "BearerAuth": {
+        "bearerFormat": "API key",
+        "description": "Telnyx API key supplied as `Authorization: Bearer \u003ctoken\u003e`. In production, auth may be validated by the API gateway and forwarded via Telnyx auth headers.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "Payment": {
+        "description": "Machine Payment Protocol credential used on paid retries, sent as `Authorization: Payment ...`. Obtained by paying a challenge returned in the `WWW-Authenticate` header of a 402 response. This is not a Telnyx API key; initial challenge requests use standard bearer authentication instead.",
+        "in": "header",
+        "name": "Authorization",
+        "type": "apiKey"
+      },
+      "agent-memory_bearerAuth": {
+        "description": "Telnyx API key",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "bearerAuth": {
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "branded-calling_bearerAuth": {
+        "description": "Telnyx API key. Generate one at https://portal.telnyx.com/#/app/api-keys.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "collections_bearerAuth": {
+        "description": "Telnyx API key. Collections and results are automatically scoped to the authenticated user's organization.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "number-reputation_bearerAuth": {
+        "description": "Telnyx API key. Generate one at https://portal.telnyx.com/#/app/api-keys.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "oauthClientAuth": {
+        "description": "OAuth 2.0 authentication for Telnyx API and MCP integrations",
+        "flows": {
+          "authorizationCode": {
+            "authorizationUrl": "https://api.telnyx.com/v2/oauth/authorize",
+            "refreshUrl": "https://api.telnyx.com/v2/oauth/token",
+            "scopes": {
+              "admin": "Administrative access to Telnyx resources"
+            },
+            "tokenUrl": "https://api.telnyx.com/v2/oauth/token"
+          },
+          "clientCredentials": {
+            "scopes": {
+              "admin": "Administrative access to Telnyx resources"
+            },
+            "tokenUrl": "https://api.telnyx.com/v2/oauth/token"
+          }
+        },
+        "type": "oauth2"
+      },
+      "outbound-voice-profiles_bearerAuth": {
+        "bearerFormat": "JWT",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "pay-connectors_bearerAuth": {
+        "description": "Telnyx API key, not the processor bearer token.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "pronunciation-dicts_bearerAuth": {
+        "description": "Telnyx API v2 key. Obtain from https://portal.telnyx.com",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "rcs-registration_bearerAuth": {
+        "bearerFormat": "API key",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "stored-payment-transactions_bearerAuth": {
+        "bearerFormat": "JWT",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "telnyxApiKey": {
+        "description": "Management-only Telnyx account credential.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "transcriptions-search_bearerAuth": {
+        "description": "Telnyx API key. Results are automatically scoped to the authenticated user's organization.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "web-search_bearerAuth": {
+        "description": "Telnyx API key",
+        "scheme": "bearer",
+        "type": "http"
+      }
+    }
+  },
+  "info": {
+    "contact": {
+      "email": "support@telnyx.com"
+    },
+    "description": "SIP trunking, SMS, MMS, Call Control and Telephony Data Services.",
+    "title": "Telnyx API",
+    "version": "2.0.0",
+    "x-endpoint-cost": "light",
+    "x-latency-category": "responsive"
+  },
+  "openapi": "3.1.0",
+  "paths": {
+    "/room_recordings": {
+      "delete": {
+        "description": "Deletes the room recordings that match the supplied filters and returns the number of recordings affected. Filters support room, session, participant, recording type, status, duration, and start or end dates.",
+        "operationId": "DeleteRoomRecordings",
+        "parameters": [
+          {
+            "description": "Consolidated filter parameter (deepObject style). Originally: filter[date_ended_at][eq], filter[date_ended_at][gte], filter[date_ended_at][lte], filter[date_started_at][eq], filter[date_started_at][gte], filter[date_started_at][lte], filter[room_id], filter[participant_id], filter[session_id], filter[status], filter[type], filter[duration_secs]",
+            "explode": true,
+            "in": "query",
+            "name": "filter",
+            "required": false,
+            "schema": {
+              "properties": {
+                "date_ended_at": {
+                  "properties": {
+                    "eq": {
+                      "description": "ISO 8601 date for filtering room recordings ended on that date.",
+                      "example": "2021-04-25",
+                      "format": "date",
+                      "type": "string"
+                    },
+                    "gte": {
+                      "description": "ISO 8601 date for filtering room recordings ended on or after that date.",
+                      "example": "2021-04-25",
+                      "format": "date",
+                      "type": "string"
+                    },
+                    "lte": {
+                      "description": "ISO 8601 date for filtering room recordings ended on or before that date.",
+                      "example": "2021-04-25",
+                      "format": "date",
+                      "type": "string"
+                    }
+                  },
+                  "type": "object"
+                },
+                "date_started_at": {
+                  "properties": {
+                    "eq": {
+                      "description": "ISO 8601 date for filtering room recordings started on that date.",
+                      "example": "2021-04-25",
+                      "format": "date",
+                      "type": "string"
+                    },
+                    "gte": {
+                      "description": "ISO 8601 date for filtering room recordings started on or after that date.",
+                      "example": "2021-04-25",
+                      "format": "date",
+                      "type": "string"
+                    },
+                    "lte": {
+                      "description": "ISO 8601 date for filtering room recordings started on or before that date.",
+                      "example": "2021-04-25",
+                      "format": "date",
+                      "type": "string"
+                    }
+                  },
+                  "type": "object"
+                },
+                "duration_secs": {
+                  "description": "duration_secs greater or equal for filtering room recordings.",
+                  "example": 20,
+                  "type": "integer"
+                },
+                "participant_id": {
+                  "description": "participant_id for filtering room recordings.",
+                  "example": "0ccc7b54-4df3-4bca-a65a-3da1ecc777f0",
+                  "format": "uuid",
+                  "type": "string"
+                },
+                "room_id": {
+                  "description": "room_id for filtering room recordings.",
+                  "example": "0ccc7b54-4df3-4bca-a65a-3da1ecc777f0",
+                  "format": "uuid",
+                  "type": "string"
+                },
+                "session_id": {
+                  "description": "session_id for filtering room recordings.",
+                  "example": "0ccc7b54-4df3-4bca-a65a-3da1ecc777f0",
+                  "format": "uuid",
+                  "type": "string"
+                },
+                "status": {
+                  "description": "status for filtering room recordings.",
+                  "example": "completed",
+                  "type": "string"
+                },
+                "type": {
+                  "description": "type for filtering room recordings.",
+                  "example": "audio",
+                  "type": "string"
+                }
+              },
+              "type": "object"
+            },
+            "style": "deepObject"
+          },
+          {
+            "$ref": "#/components/parameters/video_PageConsolidated"
+          }
+        ],
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "properties": {
+                        "room_recordings": {
+                          "description": "Amount of room recordings affected",
+                          "example": 5,
+                          "type": "integer"
+                        }
+                      },
+                      "type": "object"
+                    }
+                  },
+                  "title": "Bulk Room Recordings Delete Response",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful response for Bulk Delete Room recordings requests"
+          },
+          "422": {
+            "$ref": "#/components/responses/video_UnprocessableEntity"
+          }
+        },
+        "summary": "Delete several room recordings in a bulk.",
+        "tags": [
+          "Room Recordings"
+        ],
+        "x-endpoint-cost": "heavy"
+      },
+      "get": {
+        "description": "Returns a paginated list of room recordings. Filter recordings by room, session, participant, recording type, status, duration, or start and end dates.",
+        "operationId": "ListRoomRecordings",
+        "parameters": [
+          {
+            "description": "Consolidated filter parameter (deepObject style). Originally: filter[date_ended_at][eq], filter[date_ended_at][gte], filter[date_ended_at][lte], filter[date_started_at][eq], filter[date_started_at][gte], filter[date_started_at][lte], filter[room_id], filter[participant_id], filter[session_id], filter[status], filter[type], filter[duration_secs]",
+            "explode": true,
+            "in": "query",
+            "name": "filter",
+            "required": false,
+            "schema": {
+              "properties": {
+                "date_ended_at": {
+                  "properties": {
+                    "eq": {
+                      "description": "ISO 8601 date for filtering room recordings ended on that date.",
+                      "example": "2021-04-25",
+                      "format": "date",
+                      "type": "string"
+                    },
+                    "gte": {
+                      "description": "ISO 8601 date for filtering room recordings ended on or after that date.",
+                      "example": "2021-04-25",
+                      "format": "date",
+                      "type": "string"
+                    },
+                    "lte": {
+                      "description": "ISO 8601 date for filtering room recordings ended on or before that date.",
+                      "example": "2021-04-25",
+                      "format": "date",
+                      "type": "string"
+                    }
+                  },
+                  "type": "object"
+                },
+                "date_started_at": {
+                  "properties": {
+                    "eq": {
+                      "description": "ISO 8601 date for filtering room recordings started on that date.",
+                      "example": "2021-04-25",
+                      "format": "date",
+                      "type": "string"
+                    },
+                    "gte": {
+                      "description": "ISO 8601 date for filtering room recordings started on or after that date.",
+                      "example": "2021-04-25",
+                      "format": "date",
+                      "type": "string"
+                    },
+                    "lte": {
+                      "description": "ISO 8601 date for filtering room recordings started on or before that date.",
+                      "example": "2021-04-25",
+                      "format": "date",
+                      "type": "string"
+                    }
+                  },
+                  "type": "object"
+                },
+                "duration_secs": {
+                  "description": "duration_secs greater or equal for filtering room recordings.",
+                  "example": 20,
+                  "type": "integer"
+                },
+                "participant_id": {
+                  "description": "participant_id for filtering room recordings.",
+                  "example": "0ccc7b54-4df3-4bca-a65a-3da1ecc777f0",
+                  "format": "uuid",
+                  "type": "string"
+                },
+                "room_id": {
+                  "description": "room_id for filtering room recordings.",
+                  "example": "0ccc7b54-4df3-4bca-a65a-3da1ecc777f0",
+                  "format": "uuid",
+                  "type": "string"
+                },
+                "session_id": {
+                  "description": "session_id for filtering room recordings.",
+                  "example": "0ccc7b54-4df3-4bca-a65a-3da1ecc777f0",
+                  "format": "uuid",
+                  "type": "string"
+                },
+                "status": {
+                  "description": "status for filtering room recordings.",
+                  "example": "completed",
+                  "type": "string"
+                },
+                "type": {
+                  "description": "type for filtering room recordings.",
+                  "example": "audio",
+                  "type": "string"
+                }
+              },
+              "type": "object"
+            },
+            "style": "deepObject"
+          },
+          {
+            "$ref": "#/components/parameters/video_PageConsolidated"
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "items": {
+                        "$ref": "#/components/schemas/RoomRecording"
+                      },
+                      "type": "array"
+                    },
+                    "meta": {
+                      "$ref": "#/components/schemas/PaginationMeta"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "List room recordings response."
+          },
+          "4XX": {
+            "$ref": "#/components/responses/video_GenericErrorResponse"
+          }
+        },
+        "summary": "View a list of room recordings.",
+        "tags": [
+          "Room Recordings"
+        ],
+        "x-endpoint-cost": "medium"
+      }
+    },
+    "/room_recordings/{room_recording_id}": {
+      "delete": {
+        "description": "Synchronously deletes the specified video room recording. The recording's media is removed permanently.",
+        "operationId": "DeleteRoomRecording",
+        "parameters": [
+          {
+            "description": "The unique identifier of a room recording.",
+            "in": "path",
+            "name": "room_recording_id",
+            "required": true,
+            "schema": {
+              "example": "0ccc7b54-4df3-4bca-a65a-3da1ecc777f0",
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "The resource was deleted successfully."
+          },
+          "404": {
+            "$ref": "#/components/responses/video_ResourceNotFound"
+          }
+        },
+        "summary": "Delete a room recording.",
+        "tags": [
+          "Room Recordings"
+        ],
+        "x-endpoint-cost": "medium"
+      },
+      "get": {
+        "description": "Returns the recording identified by `room_recording_id`, including its room, session, participant, status, media details, lifecycle timestamps, and download URL.",
+        "operationId": "ViewRoomRecording",
+        "parameters": [
+          {
+            "description": "The unique identifier of a room recording.",
+            "in": "path",
+            "name": "room_recording_id",
+            "required": true,
+            "schema": {
+              "example": "0ccc7b54-4df3-4bca-a65a-3da1ecc777f0",
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/RoomRecording"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Get room recording response."
+          },
+          "404": {
+            "$ref": "#/components/responses/video_ResourceNotFound"
+          }
+        },
+        "summary": "View a room recording.",
+        "tags": [
+          "Room Recordings"
+        ],
+        "x-endpoint-cost": "light"
+      }
+    }
+  },
+  "security": [
+    {
+      "bearerAuth": []
+    }
+  ],
+  "servers": [
+    {
+      "description": "Version 2.0.0 of the Telnyx API",
+      "url": "https://api.telnyx.com/v2"
+    }
+  ]
+}

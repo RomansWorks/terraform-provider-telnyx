@@ -1,0 +1,1080 @@
+{
+  "components": {
+    "parameters": {
+      "IncludeCancelledAccounts": {
+        "description": "Specifies if cancelled accounts should be included in the results.",
+        "in": "query",
+        "name": "include_cancelled_accounts",
+        "required": false,
+        "schema": {
+          "default": false,
+          "example": true,
+          "type": "boolean"
+        }
+      },
+      "PageConsolidated": {
+        "description": "Consolidated page parameter (deepObject style). Originally: page[number], page[size]",
+        "explode": true,
+        "in": "query",
+        "name": "page",
+        "schema": {
+          "properties": {
+            "number": {
+              "default": 1,
+              "description": "The page number to load",
+              "minimum": 1,
+              "type": "integer"
+            },
+            "size": {
+              "default": 20,
+              "description": "The size of the page",
+              "maximum": 250,
+              "minimum": 1,
+              "type": "integer"
+            }
+          },
+          "type": "object"
+        },
+        "style": "deepObject"
+      },
+      "managed-accounts_FilterConsolidated": {
+        "description": "Consolidated filter parameter (deepObject style). Originally: filter[email][contains], filter[email][eq], filter[organization_name][contains], filter[organization_name][eq], filter[status][eq]",
+        "explode": true,
+        "in": "query",
+        "name": "filter",
+        "required": false,
+        "schema": {
+          "additionalProperties": false,
+          "example": {
+            "email": {
+              "contains": "john"
+            },
+            "organization_name": {
+              "eq": "Example Company LLC"
+            }
+          },
+          "properties": {
+            "email": {
+              "additionalProperties": false,
+              "properties": {
+                "contains": {
+                  "description": "If present, email containing the given value will be returned. Matching is not case-sensitive. Requires at least three characters.",
+                  "type": "string"
+                },
+                "eq": {
+                  "description": "If present, only returns results with the \u003ccode\u003eemail\u003c/code\u003e matching exactly the value given.",
+                  "type": "string"
+                }
+              },
+              "type": "object"
+            },
+            "organization_name": {
+              "additionalProperties": false,
+              "properties": {
+                "contains": {
+                  "description": "If present, only returns results with the \u003ccode\u003eorganization_name\u003c/code\u003e containing the given value. Matching is not case-sensitive. Requires at least three characters.",
+                  "type": "string"
+                },
+                "eq": {
+                  "description": "If present, only returns results with the \u003ccode\u003eorganization_name\u003c/code\u003e matching exactly the value given.",
+                  "type": "string"
+                }
+              },
+              "type": "object"
+            },
+            "status": {
+              "additionalProperties": false,
+              "properties": {
+                "eq": {
+                  "description": "If present, only returns managed accounts with the \u003ccode\u003estatus\u003c/code\u003e matching exactly the value given. Use \u003ccode\u003eenabled\u003c/code\u003e or \u003ccode\u003edisabled\u003c/code\u003e to filter accounts by whether they are currently able to use Telnyx services.",
+                  "enum": [
+                    "all",
+                    "active",
+                    "enabled",
+                    "cancelled",
+                    "disabled",
+                    "blocked"
+                  ],
+                  "example": "enabled",
+                  "type": "string"
+                }
+              },
+              "type": "object"
+            }
+          },
+          "type": "object"
+        },
+        "style": "deepObject"
+      },
+      "managed-accounts_Sort": {
+        "description": "Specifies the sort order for results. By default sorting direction is ascending. To have the results sorted in descending order add the \u003ccode\u003e -\u003c/code\u003e prefix.\u003cbr/\u003e\u003cbr/\u003e\nThat is: \u003cul\u003e\n  \u003cli\u003e\n    \u003ccode\u003eemail\u003c/code\u003e: sorts the result by the\n    \u003ccode\u003eemail\u003c/code\u003e field in ascending order.\n  \u003c/li\u003e\n\n  \u003cli\u003e\n    \u003ccode\u003e-email\u003c/code\u003e: sorts the result by the\n    \u003ccode\u003eemail\u003c/code\u003e field in descending order.\n  \u003c/li\u003e\n\u003c/ul\u003e \u003cbr/\u003e If not given, results are sorted by \u003ccode\u003ecreated_at\u003c/code\u003e in descending order.",
+        "in": "query",
+        "name": "sort",
+        "required": false,
+        "schema": {
+          "default": "created_at",
+          "enum": [
+            "created_at",
+            "email"
+          ],
+          "example": "email",
+          "type": "string"
+        }
+      }
+    },
+    "responses": {
+      "UnprocessableManagedAccountEntity": {
+        "content": {
+          "application/json": {
+            "example": {
+              "errors": [
+                {
+                  "code": "10027",
+                  "detail": "The server understood the syntax of the request but was unable to process the instructions.",
+                  "title": "Unprocessable Entity"
+                }
+              ]
+            },
+            "schema": {
+              "properties": {
+                "errors": {
+                  "items": {
+                    "$ref": "#/components/schemas/UnprocessableEntityError"
+                  },
+                  "type": "array"
+                }
+              },
+              "type": "object"
+            }
+          }
+        },
+        "description": "Unprocessable entity. Check the 'detail' field in response for details."
+      },
+      "managed-accounts_ForbiddenResponse": {
+        "description": "Unauthorized response. Happens when the current user is not authorized to access the endpoint."
+      },
+      "managed-accounts_UnauthorizedResponse": {
+        "description": "Unauthenticated response. Happens when the current user cannot be authenticated."
+      }
+    },
+    "schemas": {
+      "CreateManagedAccountRequest": {
+        "example": {
+          "business_name": "Larry's Cat Food Inc",
+          "email": "larry_cat_food@customer.org",
+          "managed_account_allow_custom_pricing": false,
+          "password": "3jVjLq!tMuWKyWx4NN*CvhnB",
+          "rollup_billing": false
+        },
+        "properties": {
+          "business_name": {
+            "description": "The name of the business for which the new managed account is being created, that will be used as the managed accounts's organization's name.",
+            "example": "Larry's Cat Food Inc",
+            "type": "string"
+          },
+          "email": {
+            "description": "The email address for the managed account. If not provided, the email address will be generated based on the email address of the manager account.",
+            "example": "new_managed_account@customer.org",
+            "type": "string"
+          },
+          "managed_account_allow_custom_pricing": {
+            "description": "Boolean value that indicates if the managed account is able to have custom pricing set for it or not. If false, uses the pricing of the manager account. Defaults to false. This value may be changed after creation, but there may be time lag between when the value is changed and pricing changes take effect.",
+            "example": false,
+            "type": "boolean"
+          },
+          "password": {
+            "description": "Password for the managed account. If a password is not supplied, the account will not be able to be signed into directly. (A password reset may still be performed later to enable sign-in via password.)",
+            "example": "3jVjLq!tMuWKyWx4NN*CvhnB",
+            "type": "string"
+          },
+          "rollup_billing": {
+            "description": "Boolean value that indicates if the billing information and charges to the managed account \"roll up\" to the manager account. If true, the managed account will not have its own balance and will use the shared balance with the manager account. This value cannot be changed after account creation without going through Telnyx support as changes require manual updates to the account ledger. Defaults to false.",
+            "example": false,
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "business_name"
+        ],
+        "title": "Create Managed Account Request",
+        "type": "object"
+      },
+      "ManagedAccount": {
+        "properties": {
+          "api_key": {
+            "description": "The managed account's V2 API access key",
+            "example": "KEY01236170692E74656C6E79782E636F6D_YmlnIGlyb24gaXMgZGVhZA",
+            "type": "string"
+          },
+          "api_token": {
+            "description": "The managed account's V1 API token",
+            "example": "x6oexQNHTs-fZ7-QsDMOeg",
+            "type": "string"
+          },
+          "api_user": {
+            "description": "The manager account's email, which serves as the V1 API user identifier",
+            "example": "managed_account@example.com",
+            "type": "string"
+          },
+          "balance": {
+            "$ref": "#/components/schemas/ManagedAccountBalance"
+          },
+          "created_at": {
+            "description": "ISO 8601 formatted date indicating when the resource was created.",
+            "example": "2018-02-02T22:25:27.521Z",
+            "type": "string"
+          },
+          "email": {
+            "description": "The managed account's email.",
+            "example": "user@example.com",
+            "format": "email",
+            "type": "string"
+          },
+          "id": {
+            "description": "Uniquely identifies the managed account.",
+            "example": "f65ceda4-6522-4ad6-aede-98de83385123",
+            "format": "uuid",
+            "type": "string"
+          },
+          "managed_account_allow_custom_pricing": {
+            "description": "Boolean value that indicates if the managed account is able to have custom pricing set for it or not. If false, uses the pricing of the manager account. Defaults to false. There may be time lag between when the value is changed and pricing changes take effect.",
+            "example": true,
+            "type": "boolean"
+          },
+          "manager_account_id": {
+            "description": "The ID of the manager account associated with the managed account.",
+            "example": "f65ceda4-6522-4ad6-aede-98de83385123",
+            "type": "string"
+          },
+          "organization_name": {
+            "description": "The organization the managed account is associated with.",
+            "example": "Example Company LLC",
+            "type": "string"
+          },
+          "record_type": {
+            "description": "Identifies the type of the resource.",
+            "enum": [
+              "managed_account"
+            ],
+            "example": "managed_account",
+            "type": "string"
+          },
+          "rollup_billing": {
+            "description": "Boolean value that indicates if the billing information and charges to the managed account \"roll up\" to the manager account. If true, the managed account will not have its own balance and will use the shared balance with the manager account. This value cannot be changed after account creation without going through Telnyx support as changes require manual updates to the account ledger. Defaults to false.",
+            "example": false,
+            "type": "boolean"
+          },
+          "updated_at": {
+            "description": "ISO 8601 formatted date indicating when the resource was updated.",
+            "example": "2018-02-02T22:25:27.521Z",
+            "type": "string"
+          }
+        },
+        "required": [
+          "record_type",
+          "id",
+          "email",
+          "api_key",
+          "api_user",
+          "api_token",
+          "manager_account_id",
+          "created_at",
+          "updated_at"
+        ],
+        "title": "ManagedAccount",
+        "type": "object"
+      },
+      "ManagedAccountBalance": {
+        "example": {
+          "available_credit": "400.00",
+          "balance": "300.00",
+          "credit_limit": "100.00",
+          "currency": "USD",
+          "record_type": "balance"
+        },
+        "properties": {
+          "available_credit": {
+            "description": "Available amount to spend (balance + credit limit)",
+            "example": "400.00",
+            "type": "string",
+            "x-format": "decimal"
+          },
+          "balance": {
+            "description": "The account's current balance.",
+            "example": "300.00",
+            "type": "string",
+            "x-format": "decimal"
+          },
+          "credit_limit": {
+            "description": "The account's credit limit.",
+            "example": "100.00",
+            "type": "string",
+            "x-format": "decimal"
+          },
+          "currency": {
+            "description": "The ISO 4217 currency identifier.",
+            "example": "USD",
+            "type": "string",
+            "x-format": "iso4217"
+          },
+          "record_type": {
+            "description": "Identifies the type of the resource.",
+            "enum": [
+              "balance"
+            ],
+            "example": "balance",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "ManagedAccountMultiListing": {
+        "properties": {
+          "api_user": {
+            "description": "The manager account's email, which serves as the V1 API user identifier",
+            "example": "managed_account@example.com",
+            "type": "string"
+          },
+          "created_at": {
+            "description": "ISO 8601 formatted date indicating when the resource was created.",
+            "example": "2018-02-02T22:25:27.521Z",
+            "type": "string"
+          },
+          "email": {
+            "description": "The managed account's email.",
+            "example": "user@example.com",
+            "format": "email",
+            "type": "string"
+          },
+          "id": {
+            "description": "Uniquely identifies the managed account.",
+            "example": "f65ceda4-6522-4ad6-aede-98de83385123",
+            "format": "uuid",
+            "type": "string"
+          },
+          "managed_account_allow_custom_pricing": {
+            "description": "Boolean value that indicates if the managed account is able to have custom pricing set for it or not. If false, uses the pricing of the manager account. Defaults to false. There may be time lag between when the value is changed and pricing changes take effect.",
+            "example": true,
+            "type": "boolean"
+          },
+          "manager_account_id": {
+            "description": "The ID of the manager account associated with the managed account.",
+            "example": "f65ceda4-6522-4ad6-aede-98de83385123",
+            "type": "string"
+          },
+          "organization_name": {
+            "description": "The organization the managed account is associated with.",
+            "example": "Example Company LLC",
+            "type": "string"
+          },
+          "record_type": {
+            "description": "Identifies the type of the resource.",
+            "enum": [
+              "managed_account"
+            ],
+            "example": "managed_account",
+            "type": "string"
+          },
+          "rollup_billing": {
+            "description": "Boolean value that indicates if the billing information and charges to the managed account \"roll up\" to the manager account. If true, the managed account will not have its own balance and will use the shared balance with the manager account. This value cannot be changed after account creation without going through Telnyx support as changes require manual updates to the account ledger. Defaults to false.",
+            "example": false,
+            "type": "boolean"
+          },
+          "updated_at": {
+            "description": "ISO 8601 formatted date indicating when the resource was updated.",
+            "example": "2018-02-02T22:25:27.521Z",
+            "type": "string"
+          }
+        },
+        "required": [
+          "record_type",
+          "id",
+          "email",
+          "api_user",
+          "manager_account_id",
+          "created_at",
+          "updated_at"
+        ],
+        "title": "ManagedAccount",
+        "type": "object"
+      },
+      "ManagedAccountsGlobalOutboundChannels": {
+        "example": {
+          "allocatable_global_outbound_channels": 500,
+          "record_type": "allocatable_global_outbound_channels",
+          "total_global_channels_allocated": 135
+        },
+        "properties": {
+          "allocatable_global_outbound_channels": {
+            "description": "The total amount of allocatable global outbound channels available to the authenticated manager. Will be 0 if the feature is not enabled for their account.",
+            "example": 500,
+            "type": "integer"
+          },
+          "managed_account_allow_custom_pricing": {
+            "description": "Boolean value that indicates if the managed account is able to have custom pricing set for it or not. If false, uses the pricing of the manager account. Defaults to false. This value may be changed, but there may be time lag between when the value is changed and pricing changes take effect.",
+            "example": false,
+            "type": "boolean"
+          },
+          "record_type": {
+            "description": "The type of the data contained in this record.",
+            "example": "allocatable_global_outbound_channels",
+            "type": "string"
+          },
+          "total_global_channels_allocated": {
+            "description": "The total number of allocatable global outbound channels currently allocated across all managed accounts for the authenticated user. This includes any amount of channels allocated by default at managed account creation time. Will be 0 if the feature is not enabled for their account.",
+            "example": 135,
+            "type": "integer"
+          }
+        },
+        "title": "Managed Accounts Global Outbound Channels",
+        "type": "object"
+      },
+      "PaginationMeta": {
+        "properties": {
+          "page_number": {
+            "example": 2,
+            "type": "integer"
+          },
+          "page_size": {
+            "example": 25,
+            "type": "integer"
+          },
+          "total_pages": {
+            "example": 3,
+            "type": "integer"
+          },
+          "total_results": {
+            "example": 55,
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "SingleManagedAccountGlobalOutboundChannels": {
+        "example": {
+          "channel_limit": 30,
+          "email": "allocate_demo@customer.com",
+          "id": "096abcde-1122-3344-ab77-ff0123456789",
+          "manager_account_id": "beeabcde-1122-3344-ab77-ff0123456789",
+          "record_type": "managed_account_global_outbound_settings"
+        },
+        "properties": {
+          "channel_limit": {
+            "description": "Integer value that indicates the number of allocatable global outbound channels that are allocated to the managed account. If the value is 0 then the account will have no usable channels and will not be able to perform outbound calling.",
+            "example": 30,
+            "type": "integer"
+          },
+          "email": {
+            "description": "The email of the managed account.",
+            "example": "customer@example.org",
+            "type": "string"
+          },
+          "id": {
+            "description": "The user ID of the managed account.",
+            "example": "096abcde-1122-3344-ab77-ff0123456789",
+            "type": "string"
+          },
+          "manager_account_id": {
+            "description": "The user ID of the manager of the account.",
+            "example": "beeabcde-1122-3344-ab77-ff0123456789",
+            "type": "string"
+          },
+          "record_type": {
+            "description": "The name of the type of data in the response.",
+            "example": "managed_account_global_outbound_settings",
+            "type": "string"
+          }
+        },
+        "title": "Global Outbound Channels Details for a Managed Account",
+        "type": "object"
+      },
+      "UnprocessableEntityError": {
+        "properties": {
+          "code": {
+            "type": "string",
+            "x-format": "int64"
+          },
+          "detail": {
+            "type": "string"
+          },
+          "meta": {
+            "additionalProperties": true,
+            "type": "object"
+          },
+          "source": {
+            "properties": {
+              "parameter": {
+                "description": "Indicates which query parameter caused the error.",
+                "type": "string"
+              },
+              "pointer": {
+                "description": "JSON pointer (RFC6901) to the offending entity.",
+                "format": "json-pointer",
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
+          "title": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "title"
+        ],
+        "type": "object"
+      },
+      "UpdateManagedAccountGlobalChannelLimitRequest": {
+        "example": {
+          "channel_limit": 30
+        },
+        "properties": {
+          "channel_limit": {
+            "description": "Integer value that indicates the number of allocatable global outbound channels that should be allocated to the managed account. Must be 0 or more. If the value is 0 then the account will have no usable channels and will not be able to perform outbound calling.",
+            "example": 30,
+            "type": "integer"
+          }
+        },
+        "title": "Update Managed Account Global Outbound Channels Request",
+        "type": "object"
+      },
+      "UpdateManagedAccountRequest": {
+        "example": {
+          "managed_account_allow_custom_pricing": true
+        },
+        "properties": {
+          "managed_account_allow_custom_pricing": {
+            "description": "Boolean value that indicates if the managed account is able to have custom pricing set for it or not. If false, uses the pricing of the manager account. Defaults to false. This value may be changed, but there may be time lag between when the value is changed and pricing changes take effect.",
+            "example": false,
+            "type": "boolean"
+          }
+        },
+        "title": "Update Managed Account Request",
+        "type": "object"
+      }
+    },
+    "securitySchemes": {
+      "BearerAuth": {
+        "bearerFormat": "API key",
+        "description": "Telnyx API key supplied as `Authorization: Bearer \u003ctoken\u003e`. In production, auth may be validated by the API gateway and forwarded via Telnyx auth headers.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "Payment": {
+        "description": "Machine Payment Protocol credential used on paid retries, sent as `Authorization: Payment ...`. Obtained by paying a challenge returned in the `WWW-Authenticate` header of a 402 response. This is not a Telnyx API key; initial challenge requests use standard bearer authentication instead.",
+        "in": "header",
+        "name": "Authorization",
+        "type": "apiKey"
+      },
+      "agent-memory_bearerAuth": {
+        "description": "Telnyx API key",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "bearerAuth": {
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "branded-calling_bearerAuth": {
+        "description": "Telnyx API key. Generate one at https://portal.telnyx.com/#/app/api-keys.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "collections_bearerAuth": {
+        "description": "Telnyx API key. Collections and results are automatically scoped to the authenticated user's organization.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "number-reputation_bearerAuth": {
+        "description": "Telnyx API key. Generate one at https://portal.telnyx.com/#/app/api-keys.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "oauthClientAuth": {
+        "description": "OAuth 2.0 authentication for Telnyx API and MCP integrations",
+        "flows": {
+          "authorizationCode": {
+            "authorizationUrl": "https://api.telnyx.com/v2/oauth/authorize",
+            "refreshUrl": "https://api.telnyx.com/v2/oauth/token",
+            "scopes": {
+              "admin": "Administrative access to Telnyx resources"
+            },
+            "tokenUrl": "https://api.telnyx.com/v2/oauth/token"
+          },
+          "clientCredentials": {
+            "scopes": {
+              "admin": "Administrative access to Telnyx resources"
+            },
+            "tokenUrl": "https://api.telnyx.com/v2/oauth/token"
+          }
+        },
+        "type": "oauth2"
+      },
+      "outbound-voice-profiles_bearerAuth": {
+        "bearerFormat": "JWT",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "pay-connectors_bearerAuth": {
+        "description": "Telnyx API key, not the processor bearer token.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "pronunciation-dicts_bearerAuth": {
+        "description": "Telnyx API v2 key. Obtain from https://portal.telnyx.com",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "rcs-registration_bearerAuth": {
+        "bearerFormat": "API key",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "stored-payment-transactions_bearerAuth": {
+        "bearerFormat": "JWT",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "telnyxApiKey": {
+        "description": "Management-only Telnyx account credential.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "transcriptions-search_bearerAuth": {
+        "description": "Telnyx API key. Results are automatically scoped to the authenticated user's organization.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "web-search_bearerAuth": {
+        "description": "Telnyx API key",
+        "scheme": "bearer",
+        "type": "http"
+      }
+    }
+  },
+  "info": {
+    "contact": {
+      "email": "support@telnyx.com"
+    },
+    "description": "SIP trunking, SMS, MMS, Call Control and Telephony Data Services.",
+    "title": "Telnyx API",
+    "version": "2.0.0",
+    "x-endpoint-cost": "light",
+    "x-latency-category": "responsive"
+  },
+  "openapi": "3.1.0",
+  "paths": {
+    "/managed_accounts": {
+      "get": {
+        "description": "Lists the accounts managed by the current user. Users need to be explictly approved by Telnyx in order to become manager accounts.",
+        "operationId": "ListManagedAccounts",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/managed-accounts_FilterConsolidated"
+          },
+          {
+            "$ref": "#/components/parameters/PageConsolidated"
+          },
+          {
+            "$ref": "#/components/parameters/managed-accounts_Sort"
+          },
+          {
+            "$ref": "#/components/parameters/IncludeCancelledAccounts"
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "items": {
+                        "$ref": "#/components/schemas/ManagedAccountMultiListing"
+                      },
+                      "type": "array"
+                    },
+                    "meta": {
+                      "$ref": "#/components/schemas/PaginationMeta"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful response with a list of managed accounts."
+          },
+          "401": {
+            "$ref": "#/components/responses/managed-accounts_UnauthorizedResponse"
+          }
+        },
+        "summary": "Lists accounts managed by the current user.",
+        "tags": [
+          "Managed Accounts"
+        ],
+        "x-endpoint-cost": "medium"
+      },
+      "post": {
+        "description": "Create a new managed account owned by the authenticated user. You need to be explictly approved by Telnyx in order to become a manager account.",
+        "operationId": "CreateManagedAccount",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateManagedAccountRequest"
+              }
+            }
+          },
+          "description": "Parameters that define the managed account to be created",
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/ManagedAccount"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful response with information about a single managed account."
+          },
+          "401": {
+            "$ref": "#/components/responses/managed-accounts_UnauthorizedResponse"
+          },
+          "422": {
+            "$ref": "#/components/responses/UnprocessableManagedAccountEntity"
+          }
+        },
+        "summary": "Create a new managed account.",
+        "tags": [
+          "Managed Accounts"
+        ],
+        "x-endpoint-cost": "medium"
+      }
+    },
+    "/managed_accounts/allocatable_global_outbound_channels": {
+      "get": {
+        "description": "Display information about allocatable global outbound channels for the current user. Only usable by account managers.",
+        "operationId": "ListAllocatableGlobalOutboundChannels",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/ManagedAccountsGlobalOutboundChannels"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful response with information about allocatable global outbound channels."
+          },
+          "401": {
+            "$ref": "#/components/responses/managed-accounts_UnauthorizedResponse"
+          },
+          "403": {
+            "$ref": "#/components/responses/managed-accounts_ForbiddenResponse"
+          }
+        },
+        "summary": "Display information about allocatable global outbound channels for the current user.",
+        "tags": [
+          "Managed Accounts"
+        ],
+        "x-endpoint-cost": "medium"
+      }
+    },
+    "/managed_accounts/{id}": {
+      "get": {
+        "description": "Retrieves the details of a single managed account.",
+        "operationId": "RetrieveManagedAccount",
+        "parameters": [
+          {
+            "description": "Managed Account User ID",
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/ManagedAccount"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful response with information about a single managed account."
+          },
+          "401": {
+            "$ref": "#/components/responses/managed-accounts_UnauthorizedResponse"
+          },
+          "404": {
+            "description": "Resource not found"
+          }
+        },
+        "summary": "Retrieve a managed account",
+        "tags": [
+          "Managed Accounts"
+        ]
+      },
+      "patch": {
+        "description": "Updates the specified managed account's attributes and returns the updated account.",
+        "operationId": "UpdateManagedAccount",
+        "parameters": [
+          {
+            "description": "Managed Account User ID",
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateManagedAccountRequest"
+              }
+            }
+          },
+          "description": "Parameters that define the updates to the managed account",
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/ManagedAccount"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful response with information about a single managed account."
+          },
+          "401": {
+            "$ref": "#/components/responses/managed-accounts_UnauthorizedResponse"
+          },
+          "404": {
+            "description": "Resource not found"
+          },
+          "422": {
+            "$ref": "#/components/responses/UnprocessableManagedAccountEntity"
+          }
+        },
+        "summary": "Update a managed account",
+        "tags": [
+          "Managed Accounts"
+        ]
+      }
+    },
+    "/managed_accounts/{id}/actions/disable": {
+      "post": {
+        "description": "Disables a managed account, forbidding it to use Telnyx services, including sending or receiving phone calls and SMS messages. Ongoing phone calls will not be affected. The managed account and its sub-users will no longer be able to log in via the mission control portal.",
+        "operationId": "DisableManagedAccount",
+        "parameters": [
+          {
+            "description": "Managed Account User ID",
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/ManagedAccount"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful response with information about a single managed account."
+          },
+          "401": {
+            "$ref": "#/components/responses/managed-accounts_UnauthorizedResponse"
+          },
+          "404": {
+            "description": "Resource not found"
+          },
+          "422": {
+            "$ref": "#/components/responses/UnprocessableManagedAccountEntity"
+          }
+        },
+        "summary": "Disables a managed account",
+        "tags": [
+          "Managed Accounts"
+        ]
+      }
+    },
+    "/managed_accounts/{id}/actions/enable": {
+      "post": {
+        "description": "Enables a managed account and its sub-users to use Telnyx services.",
+        "operationId": "EnableManagedAccount",
+        "parameters": [
+          {
+            "description": "Managed Account User ID",
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "reenable_all_connections": {
+                    "default": false,
+                    "description": "When true, all connections owned by this managed account will automatically be re-enabled. Note: Any connections that do not pass validations will not be re-enabled.",
+                    "example": true,
+                    "type": "boolean"
+                  }
+                },
+                "type": "object"
+              }
+            }
+          },
+          "description": "Additional parameters for what to do when enabling the managed account",
+          "required": false
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/ManagedAccount"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful response with information about a single managed account."
+          },
+          "401": {
+            "$ref": "#/components/responses/managed-accounts_UnauthorizedResponse"
+          },
+          "404": {
+            "description": "Resource not found"
+          },
+          "422": {
+            "$ref": "#/components/responses/UnprocessableManagedAccountEntity"
+          }
+        },
+        "summary": "Enables a managed account",
+        "tags": [
+          "Managed Accounts"
+        ]
+      }
+    },
+    "/managed_accounts/{id}/update_global_channel_limit": {
+      "patch": {
+        "description": "Update the amount of allocatable global outbound channels allocated to a specific managed account.",
+        "operationId": "UpdateManagedAccountGlobalChannelLimit",
+        "parameters": [
+          {
+            "description": "Managed Account User ID",
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateManagedAccountGlobalChannelLimitRequest"
+              }
+            }
+          },
+          "description": "Parameters that define the changes to the global outbounds channels for the managed account",
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/SingleManagedAccountGlobalOutboundChannels"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful response with information about the allocatable global outbound channels for the given account."
+          },
+          "401": {
+            "$ref": "#/components/responses/managed-accounts_UnauthorizedResponse"
+          },
+          "404": {
+            "description": "Resource not found"
+          },
+          "422": {
+            "$ref": "#/components/responses/UnprocessableManagedAccountEntity"
+          }
+        },
+        "summary": "Update the amount of allocatable global outbound channels allocated to a specific managed account.",
+        "tags": [
+          "Managed Accounts"
+        ]
+      }
+    }
+  },
+  "security": [
+    {
+      "bearerAuth": []
+    }
+  ],
+  "servers": [
+    {
+      "description": "Version 2.0.0 of the Telnyx API",
+      "url": "https://api.telnyx.com/v2"
+    }
+  ]
+}

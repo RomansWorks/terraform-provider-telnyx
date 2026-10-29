@@ -1,0 +1,469 @@
+{
+  "components": {
+    "responses": {
+      "ProviderTimeout": {
+        "content": {
+          "application/json": {
+            "example": {
+              "error": {
+                "message": "Provider request timed out"
+              }
+            },
+            "schema": {
+              "$ref": "#/components/schemas/WebSearchError"
+            }
+          }
+        },
+        "description": "The upstream search provider timed out."
+      },
+      "web-search_BadRequest": {
+        "content": {
+          "application/json": {
+            "example": {
+              "error": {
+                "details": {},
+                "message": "Validation error"
+              }
+            },
+            "schema": {
+              "$ref": "#/components/schemas/WebSearchError"
+            }
+          }
+        },
+        "description": "Invalid request — validation error or invalid parameters."
+      },
+      "web-search_InternalServerError": {
+        "content": {
+          "application/json": {
+            "example": {
+              "error": {
+                "message": "Internal server error"
+              }
+            },
+            "schema": {
+              "$ref": "#/components/schemas/WebSearchError"
+            }
+          }
+        },
+        "description": "Internal server error."
+      },
+      "web-search_ProviderError": {
+        "content": {
+          "application/json": {
+            "example": {
+              "error": {
+                "message": "Provider request failed"
+              }
+            },
+            "schema": {
+              "$ref": "#/components/schemas/WebSearchError"
+            }
+          }
+        },
+        "description": "The upstream search provider returned an error."
+      },
+      "web-search_Unauthorized": {
+        "content": {
+          "application/json": {
+            "example": {
+              "errors": [
+                {
+                  "code": "10009",
+                  "detail": "Could not find any usable credentials in the request.",
+                  "meta": {
+                    "url": "https://developers.telnyx.com/docs/overview/errors/10009"
+                  },
+                  "title": "Authentication failed"
+                }
+              ]
+            },
+            "schema": {
+              "$ref": "#/components/schemas/web-search_GatewayError"
+            }
+          }
+        },
+        "description": "Unauthorized — missing or invalid API key.\n\nThe API Gateway returns this response before the request reaches the backend service. The error format follows the standard Telnyx JSON:API error envelope with `errors[]`, not the backend-level `WebSearchError` shape."
+      }
+    },
+    "schemas": {
+      "ContentResult": {
+        "properties": {
+          "html": {
+            "description": "Cleaned HTML content (if `html` format requested; may also be present on freshly crawled pages).",
+            "type": "string"
+          },
+          "markdown": {
+            "description": "Markdown content (if `markdown` format requested).",
+            "type": "string"
+          },
+          "metadata": {
+            "additionalProperties": true,
+            "description": "Page metadata (if `metadata` format requested).",
+            "properties": {
+              "favicon_url": {
+                "description": "Favicon URL (if available).",
+                "format": "uri",
+                "type": "string"
+              },
+              "site_name": {
+                "description": "Site name. Often empty.",
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
+          "title": {
+            "description": "Page title (if available).",
+            "type": "string"
+          },
+          "url": {
+            "description": "The source URL.",
+            "format": "uri",
+            "type": "string"
+          }
+        },
+        "required": [
+          "url"
+        ],
+        "type": "object"
+      },
+      "ContentsRequest": {
+        "properties": {
+          "crawl_timeout": {
+            "description": "Timeout for crawling each URL, in seconds (1-60).",
+            "example": 10,
+            "maximum": 60,
+            "minimum": 1,
+            "type": "integer"
+          },
+          "formats": {
+            "description": "Content formats to return. If omitted, `html` and `metadata` are returned by default. Retrieval is best-effort per URL: a format field appears only when that content could be produced, and a freshly crawled page may also include `html` even when not requested.",
+            "example": [
+              "markdown",
+              "metadata"
+            ],
+            "items": {
+              "enum": [
+                "html",
+                "markdown",
+                "metadata"
+              ],
+              "type": "string"
+            },
+            "maxItems": 3,
+            "type": "array"
+          },
+          "max_age": {
+            "description": "Maximum age of cached content in seconds. `null` means no limit.",
+            "example": null,
+            "minimum": 0,
+            "type": [
+              "integer",
+              "null"
+            ]
+          },
+          "urls": {
+            "description": "List of URLs to retrieve content from (max 20 for public API).",
+            "example": [
+              "https://en.wikipedia.org/wiki/Artificial_intelligence"
+            ],
+            "items": {
+              "format": "uri",
+              "type": "string"
+            },
+            "maxItems": 20,
+            "minItems": 1,
+            "type": "array"
+          }
+        },
+        "required": [
+          "urls"
+        ],
+        "type": "object"
+      },
+      "ContentsResponse": {
+        "properties": {
+          "results": {
+            "items": {
+              "$ref": "#/components/schemas/ContentResult"
+            },
+            "type": "array"
+          }
+        },
+        "type": "object"
+      },
+      "WebSearchError": {
+        "properties": {
+          "error": {
+            "properties": {
+              "details": {
+                "additionalProperties": true,
+                "description": "Additional error details (e.g. validation field errors).",
+                "type": "object"
+              },
+              "message": {
+                "description": "Human-readable error message.",
+                "type": "string"
+              }
+            },
+            "required": [
+              "message"
+            ],
+            "type": "object"
+          }
+        },
+        "type": "object"
+      },
+      "web-search_GatewayError": {
+        "description": "Standard Telnyx JSON:API error envelope returned by the API Gateway for authentication failures (401).",
+        "properties": {
+          "errors": {
+            "items": {
+              "properties": {
+                "code": {
+                  "description": "Telnyx error code.",
+                  "type": "string"
+                },
+                "detail": {
+                  "description": "Human-readable error detail.",
+                  "type": "string"
+                },
+                "meta": {
+                  "properties": {
+                    "url": {
+                      "format": "uri",
+                      "type": "string"
+                    }
+                  },
+                  "type": "object"
+                },
+                "source": {
+                  "properties": {
+                    "pointer": {
+                      "type": "string"
+                    }
+                  },
+                  "type": "object"
+                },
+                "title": {
+                  "description": "Error title.",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "code",
+                "title"
+              ],
+              "type": "object"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "errors"
+        ],
+        "type": "object"
+      }
+    },
+    "securitySchemes": {
+      "BearerAuth": {
+        "bearerFormat": "API key",
+        "description": "Telnyx API key supplied as `Authorization: Bearer \u003ctoken\u003e`. In production, auth may be validated by the API gateway and forwarded via Telnyx auth headers.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "Payment": {
+        "description": "Machine Payment Protocol credential used on paid retries, sent as `Authorization: Payment ...`. Obtained by paying a challenge returned in the `WWW-Authenticate` header of a 402 response. This is not a Telnyx API key; initial challenge requests use standard bearer authentication instead.",
+        "in": "header",
+        "name": "Authorization",
+        "type": "apiKey"
+      },
+      "agent-memory_bearerAuth": {
+        "description": "Telnyx API key",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "bearerAuth": {
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "branded-calling_bearerAuth": {
+        "description": "Telnyx API key. Generate one at https://portal.telnyx.com/#/app/api-keys.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "collections_bearerAuth": {
+        "description": "Telnyx API key. Collections and results are automatically scoped to the authenticated user's organization.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "number-reputation_bearerAuth": {
+        "description": "Telnyx API key. Generate one at https://portal.telnyx.com/#/app/api-keys.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "oauthClientAuth": {
+        "description": "OAuth 2.0 authentication for Telnyx API and MCP integrations",
+        "flows": {
+          "authorizationCode": {
+            "authorizationUrl": "https://api.telnyx.com/v2/oauth/authorize",
+            "refreshUrl": "https://api.telnyx.com/v2/oauth/token",
+            "scopes": {
+              "admin": "Administrative access to Telnyx resources"
+            },
+            "tokenUrl": "https://api.telnyx.com/v2/oauth/token"
+          },
+          "clientCredentials": {
+            "scopes": {
+              "admin": "Administrative access to Telnyx resources"
+            },
+            "tokenUrl": "https://api.telnyx.com/v2/oauth/token"
+          }
+        },
+        "type": "oauth2"
+      },
+      "outbound-voice-profiles_bearerAuth": {
+        "bearerFormat": "JWT",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "pay-connectors_bearerAuth": {
+        "description": "Telnyx API key, not the processor bearer token.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "pronunciation-dicts_bearerAuth": {
+        "description": "Telnyx API v2 key. Obtain from https://portal.telnyx.com",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "rcs-registration_bearerAuth": {
+        "bearerFormat": "API key",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "stored-payment-transactions_bearerAuth": {
+        "bearerFormat": "JWT",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "telnyxApiKey": {
+        "description": "Management-only Telnyx account credential.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "transcriptions-search_bearerAuth": {
+        "description": "Telnyx API key. Results are automatically scoped to the authenticated user's organization.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "web-search_bearerAuth": {
+        "description": "Telnyx API key",
+        "scheme": "bearer",
+        "type": "http"
+      }
+    }
+  },
+  "info": {
+    "contact": {
+      "email": "support@telnyx.com"
+    },
+    "description": "SIP trunking, SMS, MMS, Call Control and Telephony Data Services.",
+    "title": "Telnyx API",
+    "version": "2.0.0",
+    "x-endpoint-cost": "light",
+    "x-latency-category": "responsive"
+  },
+  "openapi": "3.1.0",
+  "paths": {
+    "/web_search/contents": {
+      "post": {
+        "description": "Retrieves clean HTML or Markdown content from a list of URLs. Supports up to 20 URLs per request (public API limit). Specify which formats to return: `html`, `markdown`, `metadata`.",
+        "operationId": "CreateWebSearchContents",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "example": {
+                "crawl_timeout": 10,
+                "formats": [
+                  "markdown",
+                  "metadata"
+                ],
+                "max_age": null,
+                "urls": [
+                  "https://en.wikipedia.org/wiki/Artificial_intelligence"
+                ]
+              },
+              "schema": {
+                "$ref": "#/components/schemas/ContentsRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "data": {
+                    "results": [
+                      {
+                        "markdown": "# Artificial intelligence\n\nArtificial intelligence (AI) is...",
+                        "metadata": {
+                          "favicon_url": "https://cdn.telnyx.com/favicon?domain=en.wikipedia.org\u0026size=128",
+                          "site_name": "Wikipedia"
+                        },
+                        "title": "Artificial intelligence - Wikipedia",
+                        "url": "https://en.wikipedia.org/wiki/Artificial_intelligence"
+                      }
+                    ]
+                  }
+                },
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/ContentsResponse"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful content retrieval response."
+          },
+          "400": {
+            "$ref": "#/components/responses/web-search_BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/web-search_Unauthorized"
+          },
+          "500": {
+            "$ref": "#/components/responses/web-search_InternalServerError"
+          },
+          "502": {
+            "$ref": "#/components/responses/web-search_ProviderError"
+          },
+          "504": {
+            "$ref": "#/components/responses/ProviderTimeout"
+          }
+        },
+        "summary": "Retrieve page contents",
+        "tags": [
+          "Contents"
+        ]
+      }
+    }
+  },
+  "security": [
+    {
+      "bearerAuth": []
+    }
+  ],
+  "servers": [
+    {
+      "description": "Version 2.0.0 of the Telnyx API",
+      "url": "https://api.telnyx.com/v2"
+    }
+  ]
+}

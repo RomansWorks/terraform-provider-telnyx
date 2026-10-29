@@ -1,0 +1,47 @@
+{
+  "openapi": "3.1.0",
+  "info": {"title": "Mini Telnyx", "version": "2.0.0"},
+  "servers": [{"url": "https://api.telnyx.com/v2"}],
+  "paths": {
+    "/ai/assistants": {
+      "get": {"operationId": "ListAssistants", "tags": ["Assistants"], "responses": {"200": {"description": "ok"}}},
+      "post": {"operationId": "CreateAssistant", "tags": ["Assistants"], "requestBody": {"content": {"application/json": {"schema": {"$ref": "#/components/schemas/AssistantRequest"}}}}, "responses": {"200": {"description": "ok"}}}
+    },
+    "/ai/assistants/{assistant_id}": {
+      "parameters": [{"$ref": "#/components/parameters/AssistantId"}],
+      "get": {"operationId": "GetAssistant", "tags": ["Assistants"], "responses": {"200": {"description": "ok", "content": {"application/json": {"schema": {"$ref": "#/components/schemas/Assistant"}}}}}},
+      "post": {"operationId": "UpdateAssistant", "tags": ["Assistants"], "responses": {"200": {"description": "ok"}}},
+      "delete": {"operationId": "DeleteAssistant", "tags": ["Assistants"], "responses": {"200": {"description": "ok"}}}
+    },
+    "/ai/avatars": {
+      "post": {"operationId": "CreateAvatar", "tags": ["Avatars"], "x-beta": true, "responses": {"200": {"description": "ok"}}}
+    },
+    "/ai/avatars/{avatar_id}": {
+      "get": {"operationId": "GetAvatar", "tags": ["Avatars"], "responses": {"200": {"description": "ok"}}},
+      "patch": {"operationId": "UpdateAvatar", "tags": ["Avatars"], "responses": {"200": {"description": "ok"}}}
+    },
+    "/payment/auto_recharge_prefs": {
+      "get": {"operationId": "GetPrefs", "tags": ["AutoRechargePreferences"], "responses": {"200": {"description": "ok"}}},
+      "patch": {"operationId": "UpdatePrefs", "tags": ["AutoRechargePreferences"], "responses": {"200": {"description": "ok"}}}
+    },
+    "/phone_numbers/{id}": {
+      "get": {"operationId": "GetNumber", "tags": ["Phone Numbers"], "responses": {"200": {"description": "ok"}}},
+      "patch": {"operationId": "UpdateNumber", "tags": ["Phone Numbers"], "responses": {"200": {"description": "ok"}}},
+      "delete": {"operationId": "DeleteNumber", "tags": ["Phone Numbers"], "responses": {"200": {"description": "ok"}}}
+    },
+    "/brand/feedback/{id}": {"get": {"operationId": "GetFeedback", "tags": ["Brands"], "responses": {"200": {"description": "ok"}}}},
+    "/brand_feedback/{id}": {"get": {"operationId": "GetFeedback", "tags": ["Brands"], "responses": {"200": {"description": "ok"}}}},
+    "/calls/{call_control_id}/actions/answer": {"post": {"operationId": "AnswerCall", "tags": ["Call Commands"], "responses": {"200": {"description": "ok"}}}},
+    "/ai/assistants/{assistant_id}/clone": {"post": {"operationId": "CloneAssistant", "tags": ["Assistants"], "responses": {"200": {"description": "ok"}}}}
+  },
+  "components": {
+    "parameters": {"AssistantId": {"name": "assistant_id", "in": "path", "required": true, "schema": {"type": "string"}}},
+    "schemas": {
+      "AssistantRequest": {"type": "object", "properties": {"name": {"type": "string"}, "tools": {"type": "array", "items": {"$ref": "#/components/schemas/Tool"}}}},
+      "Assistant": {"allOf": [{"$ref": "#/components/schemas/AssistantRequest"}, {"type": "object", "properties": {"id": {"type": "string"}}}]},
+      "Tool": {"type": "object", "properties": {"type": {"type": "string"}}},
+      "Unused": {"type": "string"}
+    },
+    "securitySchemes": {"bearerAuth": {"type": "http", "scheme": "bearer"}}
+  }
+}

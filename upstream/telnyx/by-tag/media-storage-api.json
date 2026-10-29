@@ -1,0 +1,661 @@
+{
+  "components": {
+    "parameters": {
+      "MediaName": {
+        "description": "Uniquely identifies a media resource.",
+        "in": "path",
+        "name": "media_name",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      }
+    },
+    "responses": {
+      "media-storage_GenericErrorResponse": {
+        "content": {
+          "application/json": {
+            "example": {
+              "errors": [
+                {
+                  "code": "string",
+                  "detail": "string",
+                  "source": {
+                    "parameter": "string",
+                    "pointer": "string"
+                  },
+                  "title": "string"
+                }
+              ]
+            },
+            "schema": {
+              "$ref": "#/components/schemas/Errors"
+            }
+          }
+        },
+        "description": "Unexpected error"
+      }
+    },
+    "schemas": {
+      "Error": {
+        "example": {
+          "code": "20207",
+          "description": "The street address provided is invalid.",
+          "source": {
+            "pointer": "/street_address"
+          },
+          "title": "Invalid street address"
+        },
+        "properties": {
+          "code": {
+            "type": "string",
+            "x-format": "int64"
+          },
+          "description": {
+            "type": "string"
+          },
+          "detail": {
+            "description": "A human-readable explanation of the error.",
+            "type": "string"
+          },
+          "meta": {
+            "additionalProperties": true,
+            "type": "object"
+          },
+          "source": {
+            "properties": {
+              "parameter": {
+                "description": "Indicates which query parameter caused the error.",
+                "type": "string"
+              },
+              "pointer": {
+                "description": "JSON pointer (RFC6901) to the offending entity.",
+                "format": "json-pointer",
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
+          "title": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "title"
+        ],
+        "type": "object"
+      },
+      "Errors": {
+        "properties": {
+          "errors": {
+            "items": {
+              "$ref": "#/components/schemas/Error"
+            },
+            "type": "array"
+          }
+        },
+        "type": "object"
+      },
+      "MediaResource": {
+        "example": {
+          "content_type": "application/xml",
+          "created_at": "2019-01-23T18:10:02.574Z",
+          "expires_at": "2020-01-23T18:10:02.574Z",
+          "media_name": "f5586561-8ff0-4291-a0ac-84fe544797bd",
+          "updated_at": "2019-01-23T18:10:02.574Z"
+        },
+        "properties": {
+          "content_type": {
+            "description": "Content type of the file",
+            "example": "application/xml",
+            "type": "string"
+          },
+          "created_at": {
+            "description": "ISO 8601 formatted date of when the media resource was created",
+            "example": "2019-01-23T18:10:02.574Z",
+            "type": "string"
+          },
+          "expires_at": {
+            "description": "ISO 8601 formatted date of when the media resource will expire and be deleted.",
+            "example": "2020-01-23T18:10:02.574Z",
+            "type": "string"
+          },
+          "media_name": {
+            "description": "Uniquely identifies a media resource.",
+            "type": "string"
+          },
+          "updated_at": {
+            "description": "ISO 8601 formatted date of when the media resource was last updated",
+            "example": "2019-01-23T18:10:02.574Z",
+            "type": "string"
+          }
+        },
+        "title": "Media Resource",
+        "type": "object"
+      },
+      "PaginationMeta": {
+        "properties": {
+          "page_number": {
+            "example": 2,
+            "type": "integer"
+          },
+          "page_size": {
+            "example": 25,
+            "type": "integer"
+          },
+          "total_pages": {
+            "example": 3,
+            "type": "integer"
+          },
+          "total_results": {
+            "example": 55,
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "UpdateMediaMultipartRequest": {
+        "example": {
+          "media": "string($binary)",
+          "ttl_secs": 86400
+        },
+        "properties": {
+          "media": {
+            "description": "The file you want to upload. The maximum allowed size is 20 MB.",
+            "format": "binary",
+            "type": "string"
+          },
+          "ttl_secs": {
+            "description": "The number of seconds after which the media resource will be deleted, defaults to 2 days. The maximum allowed vale is 630720000, which translates to 20 years.",
+            "example": 86400,
+            "type": "integer"
+          }
+        },
+        "title": "Upload media multipart request",
+        "type": "object"
+      },
+      "UpdateMediaRequest": {
+        "example": {
+          "media_url": "http://www.example.com/audio.mp3",
+          "ttl_secs": 86400
+        },
+        "properties": {
+          "media_url": {
+            "description": "The URL where the media to be stored in Telnyx network is currently hosted. The maximum allowed size is 20 MB.",
+            "example": "http://www.example.com/audio.mp3",
+            "type": "string"
+          },
+          "ttl_secs": {
+            "description": "The number of seconds after which the media resource will be deleted, defaults to 2 days. The maximum allowed vale is 630720000, which translates to 20 years.",
+            "example": 86400,
+            "type": "integer"
+          }
+        },
+        "title": "Upload media request",
+        "type": "object"
+      },
+      "UploadMediaMultipartRequest": {
+        "example": {
+          "media": "string($binary)",
+          "media_name": "my-file",
+          "ttl_secs": 86400
+        },
+        "properties": {
+          "media": {
+            "description": "The file you want to upload. The maximum allowed size is 20 MB.",
+            "format": "binary",
+            "type": "string"
+          },
+          "media_name": {
+            "description": "The unique identifier of a file.",
+            "example": "my_file",
+            "type": "string"
+          },
+          "ttl_secs": {
+            "description": "The number of seconds after which the media resource will be deleted, defaults to 2 days. The maximum allowed vale is 630720000, which translates to 20 years.",
+            "example": 86400,
+            "type": "integer"
+          }
+        },
+        "required": [
+          "media"
+        ],
+        "title": "Upload media multipart request",
+        "type": "object"
+      },
+      "UploadMediaRequest": {
+        "example": {
+          "media_name": "my-file",
+          "media_url": "http://www.example.com/audio.mp3",
+          "ttl_secs": 86400
+        },
+        "properties": {
+          "media_name": {
+            "description": "The unique identifier of a file.",
+            "example": "my_file",
+            "type": "string"
+          },
+          "media_url": {
+            "description": "The URL where the media to be stored in Telnyx network is currently hosted. The maximum allowed size is 20 MB.",
+            "example": "http://www.example.com/audio.mp3",
+            "type": "string"
+          },
+          "ttl_secs": {
+            "description": "The number of seconds after which the media resource will be deleted, defaults to 2 days. The maximum allowed vale is 630720000, which translates to 20 years.",
+            "example": 86400,
+            "type": "integer"
+          }
+        },
+        "required": [
+          "media_url"
+        ],
+        "title": "Upload media request",
+        "type": "object"
+      }
+    },
+    "securitySchemes": {
+      "BearerAuth": {
+        "bearerFormat": "API key",
+        "description": "Telnyx API key supplied as `Authorization: Bearer \u003ctoken\u003e`. In production, auth may be validated by the API gateway and forwarded via Telnyx auth headers.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "Payment": {
+        "description": "Machine Payment Protocol credential used on paid retries, sent as `Authorization: Payment ...`. Obtained by paying a challenge returned in the `WWW-Authenticate` header of a 402 response. This is not a Telnyx API key; initial challenge requests use standard bearer authentication instead.",
+        "in": "header",
+        "name": "Authorization",
+        "type": "apiKey"
+      },
+      "agent-memory_bearerAuth": {
+        "description": "Telnyx API key",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "bearerAuth": {
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "branded-calling_bearerAuth": {
+        "description": "Telnyx API key. Generate one at https://portal.telnyx.com/#/app/api-keys.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "collections_bearerAuth": {
+        "description": "Telnyx API key. Collections and results are automatically scoped to the authenticated user's organization.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "number-reputation_bearerAuth": {
+        "description": "Telnyx API key. Generate one at https://portal.telnyx.com/#/app/api-keys.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "oauthClientAuth": {
+        "description": "OAuth 2.0 authentication for Telnyx API and MCP integrations",
+        "flows": {
+          "authorizationCode": {
+            "authorizationUrl": "https://api.telnyx.com/v2/oauth/authorize",
+            "refreshUrl": "https://api.telnyx.com/v2/oauth/token",
+            "scopes": {
+              "admin": "Administrative access to Telnyx resources"
+            },
+            "tokenUrl": "https://api.telnyx.com/v2/oauth/token"
+          },
+          "clientCredentials": {
+            "scopes": {
+              "admin": "Administrative access to Telnyx resources"
+            },
+            "tokenUrl": "https://api.telnyx.com/v2/oauth/token"
+          }
+        },
+        "type": "oauth2"
+      },
+      "outbound-voice-profiles_bearerAuth": {
+        "bearerFormat": "JWT",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "pay-connectors_bearerAuth": {
+        "description": "Telnyx API key, not the processor bearer token.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "pronunciation-dicts_bearerAuth": {
+        "description": "Telnyx API v2 key. Obtain from https://portal.telnyx.com",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "rcs-registration_bearerAuth": {
+        "bearerFormat": "API key",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "stored-payment-transactions_bearerAuth": {
+        "bearerFormat": "JWT",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "telnyxApiKey": {
+        "description": "Management-only Telnyx account credential.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "transcriptions-search_bearerAuth": {
+        "description": "Telnyx API key. Results are automatically scoped to the authenticated user's organization.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "web-search_bearerAuth": {
+        "description": "Telnyx API key",
+        "scheme": "bearer",
+        "type": "http"
+      }
+    }
+  },
+  "info": {
+    "contact": {
+      "email": "support@telnyx.com"
+    },
+    "description": "SIP trunking, SMS, MMS, Call Control and Telephony Data Services.",
+    "title": "Telnyx API",
+    "version": "2.0.0",
+    "x-endpoint-cost": "light",
+    "x-latency-category": "responsive"
+  },
+  "openapi": "3.1.0",
+  "paths": {
+    "/media": {
+      "get": {
+        "description": "Returns a list of the media files stored on your account, with support for filtering.",
+        "operationId": "ListMediaStorage",
+        "parameters": [
+          {
+            "description": "Consolidated filter parameter (deepObject style). Originally: filter[content_type][]",
+            "explode": true,
+            "in": "query",
+            "name": "filter",
+            "schema": {
+              "properties": {
+                "content_type": {
+                  "description": "Filters files by given content types",
+                  "items": {
+                    "example": "application_xml",
+                    "type": "string"
+                  },
+                  "type": "array"
+                }
+              },
+              "type": "object"
+            },
+            "style": "deepObject"
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "items": {
+                        "$ref": "#/components/schemas/MediaResource"
+                      },
+                      "type": "array"
+                    },
+                    "meta": {
+                      "$ref": "#/components/schemas/PaginationMeta"
+                    }
+                  },
+                  "title": "List of media resources response",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "A response with a list of media resources"
+          },
+          "401": {
+            "$ref": "#/components/responses/media-storage_GenericErrorResponse"
+          },
+          "default": {
+            "$ref": "#/components/responses/media-storage_GenericErrorResponse"
+          }
+        },
+        "summary": "List uploaded media",
+        "tags": [
+          "Media Storage API"
+        ]
+      },
+      "post": {
+        "description": "Upload media file to Telnyx so it can be used with other Telnyx services",
+        "operationId": "CreateMediaStorage",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UploadMediaRequest"
+              }
+            },
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/UploadMediaMultipartRequest"
+              }
+            }
+          },
+          "description": "Upload media request",
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/MediaResource"
+                    }
+                  },
+                  "title": "Media resource response",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "A response describing a media resource"
+          },
+          "401": {
+            "$ref": "#/components/responses/media-storage_GenericErrorResponse"
+          },
+          "422": {
+            "$ref": "#/components/responses/media-storage_GenericErrorResponse"
+          },
+          "default": {
+            "$ref": "#/components/responses/media-storage_GenericErrorResponse"
+          }
+        },
+        "summary": "Upload media",
+        "tags": [
+          "Media Storage API"
+        ]
+      }
+    },
+    "/media/{media_name}": {
+      "delete": {
+        "description": "Permanently deletes the specified media file from storage.",
+        "operationId": "DeleteMediaStorage",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/MediaName"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "The media was deleted successfully."
+          },
+          "401": {
+            "$ref": "#/components/responses/media-storage_GenericErrorResponse"
+          },
+          "404": {
+            "$ref": "#/components/responses/media-storage_GenericErrorResponse"
+          },
+          "default": {
+            "$ref": "#/components/responses/media-storage_GenericErrorResponse"
+          }
+        },
+        "summary": "Deletes stored media",
+        "tags": [
+          "Media Storage API"
+        ]
+      },
+      "get": {
+        "description": "Returns the information about a stored media file.",
+        "operationId": "GetMediaStorage",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/MediaName"
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/MediaResource"
+                    }
+                  },
+                  "title": "Media resource response",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "A response describing a media resource"
+          },
+          "401": {
+            "$ref": "#/components/responses/media-storage_GenericErrorResponse"
+          },
+          "404": {
+            "$ref": "#/components/responses/media-storage_GenericErrorResponse"
+          },
+          "default": {
+            "$ref": "#/components/responses/media-storage_GenericErrorResponse"
+          }
+        },
+        "summary": "Retrieve stored media",
+        "tags": [
+          "Media Storage API"
+        ]
+      },
+      "put": {
+        "description": "Updates the specified stored media file and returns the updated resource.",
+        "operationId": "UpdateMediaStorage",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/MediaName"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateMediaRequest"
+              }
+            },
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateMediaMultipartRequest"
+              }
+            }
+          },
+          "description": "Update media request",
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/MediaResource"
+                    }
+                  },
+                  "title": "Media resource response",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "A response describing a media resource"
+          },
+          "401": {
+            "$ref": "#/components/responses/media-storage_GenericErrorResponse"
+          },
+          "404": {
+            "$ref": "#/components/responses/media-storage_GenericErrorResponse"
+          },
+          "422": {
+            "$ref": "#/components/responses/media-storage_GenericErrorResponse"
+          },
+          "default": {
+            "$ref": "#/components/responses/media-storage_GenericErrorResponse"
+          }
+        },
+        "summary": "Update stored media",
+        "tags": [
+          "Media Storage API"
+        ]
+      }
+    },
+    "/media/{media_name}/download": {
+      "get": {
+        "description": "Downloads the raw content of the specified stored media file.",
+        "operationId": "DownloadMedia",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/MediaName"
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/octet-stream": {
+                "schema": {
+                  "format": "binary",
+                  "type": "string"
+                }
+              }
+            },
+            "description": "A response describing a media resource"
+          },
+          "401": {
+            "$ref": "#/components/responses/media-storage_GenericErrorResponse"
+          },
+          "404": {
+            "$ref": "#/components/responses/media-storage_GenericErrorResponse"
+          },
+          "422": {
+            "$ref": "#/components/responses/media-storage_GenericErrorResponse"
+          },
+          "default": {
+            "$ref": "#/components/responses/media-storage_GenericErrorResponse"
+          }
+        },
+        "summary": "Download stored media",
+        "tags": [
+          "Media Storage API"
+        ]
+      }
+    }
+  },
+  "security": [
+    {
+      "bearerAuth": []
+    }
+  ],
+  "servers": [
+    {
+      "description": "Version 2.0.0 of the Telnyx API",
+      "url": "https://api.telnyx.com/v2"
+    }
+  ]
+}

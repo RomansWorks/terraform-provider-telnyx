@@ -1,0 +1,996 @@
+{
+  "components": {
+    "parameters": {
+      "PageConsolidated": {
+        "description": "Consolidated page parameter (deepObject style). Originally: page[number], page[size]",
+        "explode": true,
+        "in": "query",
+        "name": "page",
+        "schema": {
+          "properties": {
+            "number": {
+              "default": 1,
+              "description": "The page number to load",
+              "minimum": 1,
+              "type": "integer"
+            },
+            "size": {
+              "default": 20,
+              "description": "The size of the page",
+              "maximum": 250,
+              "minimum": 1,
+              "type": "integer"
+            }
+          },
+          "type": "object"
+        },
+        "style": "deepObject"
+      }
+    },
+    "responses": {
+      "messaging_GenericErrorResponse_0b38e7044b": {
+        "content": {
+          "application/json": {
+            "example": {
+              "errors": [
+                {
+                  "code": "string",
+                  "detail": "string",
+                  "source": {
+                    "parameter": "string",
+                    "pointer": "/data/attributes/phone_number"
+                  },
+                  "title": "string"
+                }
+              ]
+            },
+            "schema": {
+              "$ref": "#/components/schemas/messaging_Errors_0b38e7044b"
+            }
+          }
+        },
+        "description": "Unexpected error"
+      },
+      "phone-numbers_messaging_GenericErrorResponse": {
+        "content": {
+          "application/json": {
+            "example": {
+              "errors": [
+                {
+                  "code": "10007",
+                  "detail": "An unexpected error occured.",
+                  "title": "Unexpected error"
+                }
+              ]
+            },
+            "schema": {
+              "$ref": "#/components/schemas/messaging_Errors"
+            }
+          }
+        },
+        "description": "Unexpected error"
+      }
+    },
+    "schemas": {
+      "BulkMessagingSettingsUpdatePhoneNumbers": {
+        "example": {
+          "failed": [],
+          "order_id": "00000000-0000-0000-0000-000000000000",
+          "pending": [],
+          "record_type": "messaging_numbers_bulk_update",
+          "success": [
+            "+18880000000",
+            "+18880000001",
+            "+18880000002"
+          ]
+        },
+        "properties": {
+          "failed": {
+            "description": "Phone numbers that failed to update.",
+            "items": {
+              "type": "string",
+              "x-format": "+E.164"
+            },
+            "type": "array"
+          },
+          "order_id": {
+            "description": "Order ID to verify bulk update status.",
+            "format": "uuid",
+            "readOnly": true,
+            "type": "string"
+          },
+          "pending": {
+            "description": "Phone numbers pending to be updated.",
+            "items": {
+              "type": "string",
+              "x-format": "+E.164"
+            },
+            "type": "array"
+          },
+          "record_type": {
+            "description": "Identifies the type of the resource.",
+            "enum": [
+              "messaging_numbers_bulk_update"
+            ],
+            "example": "messaging_numbers_bulk_update",
+            "readOnly": true,
+            "type": "string"
+          },
+          "success": {
+            "description": "Phoned numbers updated successfully.",
+            "items": {
+              "type": "string",
+              "x-format": "+E.164"
+            },
+            "type": "array"
+          }
+        },
+        "type": "object"
+      },
+      "BulkMessagingSettingsUpdatePhoneNumbersRequest": {
+        "example": {
+          "messaging_profile_id": "00000000-0000-0000-0000-000000000000",
+          "numbers": [
+            "+18880000000",
+            "+18880000001",
+            "+18880000002"
+          ]
+        },
+        "properties": {
+          "assign_only": {
+            "default": false,
+            "description": "If true, only assign numbers to the profile without changing other settings.",
+            "type": "boolean"
+          },
+          "messaging_profile_id": {
+            "description": "Configure the messaging profile these phone numbers are assigned to:\n\n* Set this field to `\"\"` to unassign each number from their respective messaging profile\n* Set this field to a quoted UUID of a messaging profile to assign these numbers to that messaging profile",
+            "type": "string"
+          },
+          "numbers": {
+            "description": "The list of phone numbers to update.",
+            "items": {
+              "type": "string",
+              "x-format": "+E.164"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "messaging_profile_id",
+          "numbers"
+        ],
+        "type": "object"
+      },
+      "MessagingFeatureSet": {
+        "description": "The set of features available for a specific messaging use case (SMS or MMS). Features\ncan vary depending on the characteristics the phone number, as well as its current\nproduct configuration.\n",
+        "example": {
+          "domestic_two_way": true,
+          "international_inbound": false,
+          "international_outbound": true
+        },
+        "properties": {
+          "domestic_two_way": {
+            "description": "Send messages to and receive messages from numbers in the same country.",
+            "type": "boolean"
+          },
+          "international_inbound": {
+            "description": "Receive messages from numbers in other countries.",
+            "type": "boolean"
+          },
+          "international_outbound": {
+            "description": "Send messages to numbers in other countries.",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "domestic_two_way",
+          "international_inbound",
+          "international_outbound"
+        ],
+        "type": [
+          "object",
+          "null"
+        ]
+      },
+      "NumberHealthMetrics": {
+        "description": "High level health metrics about the number and it's messaging sending patterns.\n",
+        "example": {
+          "inbound_outbound_ratio": 1,
+          "message_count": 10,
+          "spam_ratio": 10,
+          "success_ratio": 2
+        },
+        "properties": {
+          "inbound_outbound_ratio": {
+            "description": "The ratio of messages received to the number of messages sent.",
+            "format": "float",
+            "type": "number"
+          },
+          "message_count": {
+            "description": "The number of messages analyzed for the health metrics.",
+            "type": "integer"
+          },
+          "spam_ratio": {
+            "description": "The ratio of messages blocked for spam to the number of messages attempted.",
+            "format": "float",
+            "type": "number"
+          },
+          "success_ratio": {
+            "description": "The ratio of messages sucessfully delivered to the number of messages attempted.",
+            "format": "float",
+            "type": "number"
+          }
+        },
+        "required": [
+          "message_count",
+          "inbound_outbound_ratio",
+          "success_ratio",
+          "spam_ratio"
+        ],
+        "type": "object"
+      },
+      "PhoneNumberWithMessagingSettings": {
+        "example": {
+          "country_code": "US",
+          "created_at": "2019-01-23T18:10:02.574Z",
+          "eligible_messaging_products": [
+            "A2P"
+          ],
+          "features": {
+            "mms": null,
+            "sms": {
+              "domestic_two_way": true,
+              "international_inbound": true,
+              "international_outbound": true
+            }
+          },
+          "health": {
+            "inbound_outbound_ratio": 0.43,
+            "message_count": 122,
+            "spam_ratio": 0.06,
+            "success_ratio": 0.94
+          },
+          "id": "1293384261075731499",
+          "messaging_product": "A2P",
+          "messaging_profile_id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+          "phone_number": "+18005550001",
+          "record_type": "messaging_settings",
+          "traffic_type": "A2P",
+          "type": "tollfree",
+          "updated_at": "2019-01-23T18:10:02.574Z"
+        },
+        "properties": {
+          "country_code": {
+            "description": "ISO 3166-1 alpha-2 country code.",
+            "example": "US",
+            "pattern": "^[A-Z]{2}$",
+            "readOnly": true,
+            "type": "string"
+          },
+          "created_at": {
+            "description": "ISO 8601 formatted date indicating when the resource was created.",
+            "format": "date-time",
+            "readOnly": true,
+            "type": "string"
+          },
+          "eligible_messaging_products": {
+            "description": "The messaging products that this number can be registered to use",
+            "items": {
+              "type": "string"
+            },
+            "readOnly": true,
+            "type": "array"
+          },
+          "features": {
+            "properties": {
+              "mms": {
+                "$ref": "#/components/schemas/MessagingFeatureSet"
+              },
+              "sms": {
+                "$ref": "#/components/schemas/MessagingFeatureSet"
+              }
+            },
+            "readOnly": true,
+            "type": "object"
+          },
+          "health": {
+            "$ref": "#/components/schemas/NumberHealthMetrics"
+          },
+          "id": {
+            "description": "Identifies the type of resource.",
+            "readOnly": true,
+            "type": "string"
+          },
+          "messaging_product": {
+            "description": "The messaging product that the number is registered to use",
+            "example": "P2P",
+            "type": "string"
+          },
+          "messaging_profile_id": {
+            "description": "Unique identifier for a messaging profile.",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "organization_id": {
+            "description": "The organization that owns this phone number.",
+            "type": "string"
+          },
+          "phone_number": {
+            "description": "+E.164 formatted phone number.",
+            "readOnly": true,
+            "type": "string",
+            "x-format": "e164"
+          },
+          "record_type": {
+            "description": "Identifies the type of the resource.",
+            "enum": [
+              "messaging_phone_number",
+              "messaging_settings"
+            ],
+            "example": "messaging_settings",
+            "readOnly": true,
+            "type": "string"
+          },
+          "tags": {
+            "description": "Tags associated with this phone number.",
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "traffic_type": {
+            "description": "The messaging traffic or use case for which the number is currently configured.",
+            "example": "P2P",
+            "readOnly": true,
+            "type": "string"
+          },
+          "type": {
+            "description": "The type of the phone number",
+            "enum": [
+              "long-code",
+              "toll-free",
+              "short-code",
+              "longcode",
+              "tollfree",
+              "shortcode"
+            ],
+            "readOnly": true,
+            "type": "string"
+          },
+          "updated_at": {
+            "description": "ISO 8601 formatted date indicating when the resource was updated.",
+            "format": "date-time",
+            "readOnly": true,
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "UpdatePhoneNumberMessagingSettingsRequest": {
+        "example": {
+          "messaging_product": "P2P",
+          "messaging_profile_id": "dd50eba1-a0c0-4563-9925-b25e842a7cb6"
+        },
+        "properties": {
+          "messaging_product": {
+            "description": "Configure the messaging product for this number:\n\n* Omit this field or set its value to `null` to keep the current value.\n* Set this field to a quoted product ID to set this phone number to that product",
+            "example": "P2P",
+            "type": "string"
+          },
+          "messaging_profile_id": {
+            "description": "Configure the messaging profile this phone number is assigned to:\n\n* Omit this field or set its value to `null` to keep the current value.\n* Set this field to `\"\"` to unassign the number from its messaging profile\n* Set this field to a quoted UUID of a messaging profile to assign this number to that messaging profile",
+            "type": "string"
+          },
+          "tags": {
+            "description": "Tags to set on this phone number.",
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          }
+        },
+        "type": "object"
+      },
+      "messaging_Error": {
+        "properties": {
+          "code": {
+            "type": "string",
+            "x-format": "integer"
+          },
+          "detail": {
+            "type": "string"
+          },
+          "meta": {
+            "type": "object"
+          },
+          "source": {
+            "properties": {
+              "parameter": {
+                "description": "Indicates which query parameter caused the error.",
+                "type": "string"
+              },
+              "pointer": {
+                "description": "JSON pointer (RFC6901) to the offending entity.",
+                "format": "json-pointer",
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
+          "title": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "title"
+        ]
+      },
+      "messaging_Error_0b38e7044b": {
+        "properties": {
+          "code": {
+            "type": "string",
+            "x-format": "integer"
+          },
+          "detail": {
+            "type": "string"
+          },
+          "meta": {
+            "type": "object"
+          },
+          "source": {
+            "properties": {
+              "parameter": {
+                "description": "Indicates which query parameter caused the error.",
+                "type": "string"
+              },
+              "pointer": {
+                "description": "JSON pointer (RFC6901) to the offending entity.",
+                "format": "json-pointer",
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
+          "title": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "title"
+        ]
+      },
+      "messaging_Errors": {
+        "properties": {
+          "errors": {
+            "items": {
+              "$ref": "#/components/schemas/messaging_Error"
+            },
+            "type": "array"
+          }
+        }
+      },
+      "messaging_Errors_0b38e7044b": {
+        "properties": {
+          "errors": {
+            "items": {
+              "$ref": "#/components/schemas/messaging_Error_0b38e7044b"
+            },
+            "type": "array"
+          }
+        }
+      },
+      "messaging_PaginationMeta_0b38e7044b": {
+        "properties": {
+          "page_number": {
+            "example": 2,
+            "type": "integer"
+          },
+          "page_size": {
+            "example": 25,
+            "type": "integer"
+          },
+          "total_pages": {
+            "example": 3,
+            "type": "integer"
+          },
+          "total_results": {
+            "example": 55,
+            "type": "integer"
+          }
+        },
+        "required": [
+          "total_pages",
+          "total_results",
+          "page_size",
+          "page_number"
+        ],
+        "type": "object"
+      }
+    },
+    "securitySchemes": {
+      "BearerAuth": {
+        "bearerFormat": "API key",
+        "description": "Telnyx API key supplied as `Authorization: Bearer \u003ctoken\u003e`. In production, auth may be validated by the API gateway and forwarded via Telnyx auth headers.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "Payment": {
+        "description": "Machine Payment Protocol credential used on paid retries, sent as `Authorization: Payment ...`. Obtained by paying a challenge returned in the `WWW-Authenticate` header of a 402 response. This is not a Telnyx API key; initial challenge requests use standard bearer authentication instead.",
+        "in": "header",
+        "name": "Authorization",
+        "type": "apiKey"
+      },
+      "agent-memory_bearerAuth": {
+        "description": "Telnyx API key",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "bearerAuth": {
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "branded-calling_bearerAuth": {
+        "description": "Telnyx API key. Generate one at https://portal.telnyx.com/#/app/api-keys.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "collections_bearerAuth": {
+        "description": "Telnyx API key. Collections and results are automatically scoped to the authenticated user's organization.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "number-reputation_bearerAuth": {
+        "description": "Telnyx API key. Generate one at https://portal.telnyx.com/#/app/api-keys.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "oauthClientAuth": {
+        "description": "OAuth 2.0 authentication for Telnyx API and MCP integrations",
+        "flows": {
+          "authorizationCode": {
+            "authorizationUrl": "https://api.telnyx.com/v2/oauth/authorize",
+            "refreshUrl": "https://api.telnyx.com/v2/oauth/token",
+            "scopes": {
+              "admin": "Administrative access to Telnyx resources"
+            },
+            "tokenUrl": "https://api.telnyx.com/v2/oauth/token"
+          },
+          "clientCredentials": {
+            "scopes": {
+              "admin": "Administrative access to Telnyx resources"
+            },
+            "tokenUrl": "https://api.telnyx.com/v2/oauth/token"
+          }
+        },
+        "type": "oauth2"
+      },
+      "outbound-voice-profiles_bearerAuth": {
+        "bearerFormat": "JWT",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "pay-connectors_bearerAuth": {
+        "description": "Telnyx API key, not the processor bearer token.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "pronunciation-dicts_bearerAuth": {
+        "description": "Telnyx API v2 key. Obtain from https://portal.telnyx.com",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "rcs-registration_bearerAuth": {
+        "bearerFormat": "API key",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "stored-payment-transactions_bearerAuth": {
+        "bearerFormat": "JWT",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "telnyxApiKey": {
+        "description": "Management-only Telnyx account credential.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "transcriptions-search_bearerAuth": {
+        "description": "Telnyx API key. Results are automatically scoped to the authenticated user's organization.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "web-search_bearerAuth": {
+        "description": "Telnyx API key",
+        "scheme": "bearer",
+        "type": "http"
+      }
+    }
+  },
+  "info": {
+    "contact": {
+      "email": "support@telnyx.com"
+    },
+    "description": "SIP trunking, SMS, MMS, Call Control and Telephony Data Services.",
+    "title": "Telnyx API",
+    "version": "2.0.0",
+    "x-endpoint-cost": "light",
+    "x-latency-category": "responsive"
+  },
+  "openapi": "3.1.0",
+  "paths": {
+    "/messaging_numbers/bulk_updates": {
+      "post": {
+        "description": "Update the messaging settings of multiple phone numbers in a single request.",
+        "operationId": "BulkUpdateMessagingSettingsOnPhoneNumbers",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BulkMessagingSettingsUpdatePhoneNumbersRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/BulkMessagingSettingsUpdatePhoneNumbers"
+                    }
+                  },
+                  "title": "Retrieve bulk update messaging settings Response",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful response with details about messaging bulk update phone numbers."
+          },
+          "4XX": {
+            "$ref": "#/components/responses/phone-numbers_messaging_GenericErrorResponse"
+          }
+        },
+        "summary": "Bulk update phone number profiles",
+        "tags": [
+          "Number Settings"
+        ],
+        "x-latency-category": "responsive"
+      }
+    },
+    "/messaging_numbers/bulk_updates/{order_id}": {
+      "get": {
+        "description": "Retrieve the status of a previously submitted bulk update of messaging settings.",
+        "operationId": "GetBulkUpdateMessagingSettingsOnPhoneNumbersStatus",
+        "parameters": [
+          {
+            "description": "Order ID to verify bulk update status.",
+            "in": "path",
+            "name": "order_id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/BulkMessagingSettingsUpdatePhoneNumbers"
+                    }
+                  },
+                  "title": "Retrieve bulk update messaging settings Response",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful response with details about messaging bulk update phone numbers."
+          },
+          "4XX": {
+            "$ref": "#/components/responses/phone-numbers_messaging_GenericErrorResponse"
+          }
+        },
+        "summary": "Retrieve bulk update status",
+        "tags": [
+          "Number Settings"
+        ],
+        "x-latency-category": "responsive"
+      }
+    },
+    "/messaging_numbers_bulk_updates": {
+      "post": {
+        "description": "Starts a bulk update of messaging-profile assignments for the supplied phone numbers. The response identifies the order used to monitor processing.",
+        "operationId": "BulkUpdateMessagingSettingsOnPhoneNumbers",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BulkMessagingSettingsUpdatePhoneNumbersRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/BulkMessagingSettingsUpdatePhoneNumbers"
+                    }
+                  },
+                  "title": "Retrieve bulk update messaging settings Response",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful response with details about messaging bulk update phone numbers."
+          },
+          "4XX": {
+            "$ref": "#/components/responses/messaging_GenericErrorResponse_0b38e7044b"
+          }
+        },
+        "summary": "Bulk update phone number profiles",
+        "tags": [
+          "Number Settings"
+        ]
+      }
+    },
+    "/messaging_numbers_bulk_updates/{order_id}": {
+      "get": {
+        "description": "Returns processing status and results for a bulk messaging-settings update order.",
+        "operationId": "GetBulkUpdateMessagingSettingsOnPhoneNumbersStatus",
+        "parameters": [
+          {
+            "description": "Order ID to verify bulk update status.",
+            "in": "path",
+            "name": "order_id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/BulkMessagingSettingsUpdatePhoneNumbers"
+                    }
+                  },
+                  "title": "Retrieve bulk update messaging settings Response",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful response with details about messaging bulk update phone numbers."
+          },
+          "4XX": {
+            "$ref": "#/components/responses/messaging_GenericErrorResponse_0b38e7044b"
+          }
+        },
+        "summary": "Retrieve bulk update status",
+        "tags": [
+          "Number Settings"
+        ]
+      }
+    },
+    "/phone_numbers/messaging": {
+      "get": {
+        "description": "Returns phone numbers with their current messaging product and messaging-profile assignments.",
+        "operationId": "ListPhoneNumbersWithMessagingSettings",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/PageConsolidated"
+          },
+          {
+            "description": "Filter by messaging profile ID.",
+            "in": "query",
+            "name": "filter[messaging_profile_id]",
+            "required": false,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Filter by exact phone number (supports comma-separated list).",
+            "in": "query",
+            "name": "filter[phone_number]",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Filter by phone number substring.",
+            "in": "query",
+            "name": "filter[phone_number][contains]",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Filter by phone number type.",
+            "in": "query",
+            "name": "filter[type]",
+            "required": false,
+            "schema": {
+              "enum": [
+                "tollfree",
+                "longcode",
+                "shortcode"
+              ],
+              "type": "string"
+            }
+          },
+          {
+            "description": "Sort by phone number.",
+            "in": "query",
+            "name": "sort[phone_number]",
+            "required": false,
+            "schema": {
+              "enum": [
+                "asc",
+                "desc"
+              ],
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "items": {
+                        "$ref": "#/components/schemas/PhoneNumberWithMessagingSettings"
+                      },
+                      "type": "array"
+                    },
+                    "meta": {
+                      "$ref": "#/components/schemas/messaging_PaginationMeta_0b38e7044b"
+                    }
+                  },
+                  "title": "List Messaging Settings Response",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful response with a list of phone numbers with messaging settings."
+          },
+          "4XX": {
+            "$ref": "#/components/responses/messaging_GenericErrorResponse_0b38e7044b"
+          }
+        },
+        "summary": "List phone numbers with messaging settings",
+        "tags": [
+          "Number Settings"
+        ],
+        "x-group-parameters": "true"
+      }
+    },
+    "/phone_numbers/{id}/messaging": {
+      "get": {
+        "description": "Returns the messaging product and messaging-profile assignment for the specified phone number.",
+        "operationId": "GetPhoneNumberMessagingSettings",
+        "parameters": [
+          {
+            "description": "Identifies the type of resource.",
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/PhoneNumberWithMessagingSettings"
+                    }
+                  },
+                  "title": "Retrieve Messaging Settings Response",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful response with details about a phone number including messaging settings."
+          },
+          "4XX": {
+            "$ref": "#/components/responses/messaging_GenericErrorResponse_0b38e7044b"
+          }
+        },
+        "summary": "Retrieve a phone number with messaging settings",
+        "tags": [
+          "Number Settings"
+        ]
+      },
+      "patch": {
+        "description": "Updates the messaging product, messaging profile, or both for the specified phone number.",
+        "operationId": "UpdatePhoneNumberMessagingSettings",
+        "parameters": [
+          {
+            "description": "The phone number to update.",
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdatePhoneNumberMessagingSettingsRequest"
+              }
+            }
+          },
+          "description": "The new configuration to set for this phone number.\n\nTo avoid modifying a value, either omit the field or set its value to `null`.",
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/PhoneNumberWithMessagingSettings"
+                    }
+                  },
+                  "title": "Retrieve Messaging Settings Response",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful response with details about a phone number including messaging settings."
+          },
+          "4XX": {
+            "$ref": "#/components/responses/messaging_GenericErrorResponse_0b38e7044b"
+          }
+        },
+        "summary": "Update the messaging profile and/or messaging product of a phone number",
+        "tags": [
+          "Number Settings"
+        ]
+      }
+    }
+  },
+  "security": [
+    {
+      "bearerAuth": []
+    }
+  ],
+  "servers": [
+    {
+      "description": "Version 2.0.0 of the Telnyx API",
+      "url": "https://api.telnyx.com/v2"
+    }
+  ]
+}

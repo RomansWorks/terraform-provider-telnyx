@@ -1,0 +1,476 @@
+{
+  "components": {
+    "parameters": {
+      "FilterBasicStatusLifecycle": {
+        "description": "Filter by a specific status of the resource's lifecycle.",
+        "in": "query",
+        "name": "filter[status]",
+        "required": false,
+        "schema": {
+          "enum": [
+            "in-progress",
+            "completed",
+            "failed"
+          ],
+          "example": "in-progress",
+          "type": "string"
+        }
+      },
+      "FilterSIMCardGroupId": {
+        "description": "A valid SIM card group ID.",
+        "in": "query",
+        "name": "filter[sim_card_group_id]",
+        "schema": {
+          "example": "47a1c2b0-cc7b-4ab1-bb98-b33fb0fc61b9",
+          "format": "uuid",
+          "type": "string"
+        }
+      },
+      "ResourceId": {
+        "description": "Identifies the resource.",
+        "in": "path",
+        "name": "id",
+        "required": true,
+        "schema": {
+          "example": "6a09cdc3-8948-47f0-aa62-74ac943d6c58",
+          "format": "uuid",
+          "type": "string"
+        }
+      },
+      "wireless_PageNumber_c5290d5308": {
+        "description": "The page number to load.",
+        "in": "query",
+        "name": "page[number]",
+        "schema": {
+          "default": 1,
+          "minimum": 1,
+          "type": "integer"
+        }
+      },
+      "wireless_PageSize_c5290d5308": {
+        "description": "The size of the page.",
+        "in": "query",
+        "name": "page[size]",
+        "schema": {
+          "default": 20,
+          "maximum": 250,
+          "minimum": 1,
+          "type": "integer"
+        }
+      }
+    },
+    "responses": {
+      "wireless_GenericErrorResponse_c5290d5308": {
+        "content": {
+          "application/json": {
+            "examples": {
+              "unexpectedError": {
+                "summary": "Unexpected API error",
+                "value": {
+                  "errors": [
+                    {
+                      "code": "10007",
+                      "detail": "An unexpected error occured.",
+                      "title": "Unexpected error"
+                    }
+                  ]
+                }
+              }
+            },
+            "schema": {
+              "$ref": "#/components/schemas/Errors"
+            }
+          }
+        },
+        "description": "Unexpected error"
+      }
+    },
+    "schemas": {
+      "Error": {
+        "example": {
+          "code": "20207",
+          "description": "The street address provided is invalid.",
+          "source": {
+            "pointer": "/street_address"
+          },
+          "title": "Invalid street address"
+        },
+        "properties": {
+          "code": {
+            "type": "string",
+            "x-format": "int64"
+          },
+          "description": {
+            "type": "string"
+          },
+          "detail": {
+            "description": "A human-readable explanation of the error.",
+            "type": "string"
+          },
+          "meta": {
+            "additionalProperties": true,
+            "type": "object"
+          },
+          "source": {
+            "properties": {
+              "parameter": {
+                "description": "Indicates which query parameter caused the error.",
+                "type": "string"
+              },
+              "pointer": {
+                "description": "JSON pointer (RFC6901) to the offending entity.",
+                "format": "json-pointer",
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
+          "title": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "title"
+        ],
+        "type": "object"
+      },
+      "Errors": {
+        "properties": {
+          "errors": {
+            "items": {
+              "$ref": "#/components/schemas/Error"
+            },
+            "type": "array"
+          }
+        },
+        "type": "object"
+      },
+      "PaginationMeta": {
+        "properties": {
+          "page_number": {
+            "example": 2,
+            "type": "integer"
+          },
+          "page_size": {
+            "example": 25,
+            "type": "integer"
+          },
+          "total_pages": {
+            "example": 3,
+            "type": "integer"
+          },
+          "total_results": {
+            "example": 55,
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "SIMCardGroupAction": {
+        "description": "This object represents a SIM card group action request. It allows tracking the current status of an operation that impacts the SIM card group and SIM card in it.",
+        "properties": {
+          "created_at": {
+            "description": "ISO 8601 formatted date-time indicating when the resource was created.",
+            "example": "2018-02-02T22:25:27.521Z",
+            "readOnly": true,
+            "type": "string"
+          },
+          "id": {
+            "description": "Identifies the resource.",
+            "example": "6a09cdc3-8948-47f0-aa62-74ac943d6c58",
+            "format": "uuid",
+            "readOnly": true,
+            "type": "string"
+          },
+          "record_type": {
+            "example": "sim_card_group_action",
+            "readOnly": true,
+            "type": "string"
+          },
+          "settings": {
+            "description": "A JSON object representation of the action params.",
+            "properties": {
+              "private_wireless_gateway_id": {
+                "description": "The identification of the related Private Wireless Gateway resource.",
+                "example": "6a09cdc3-8948-47f0-aa62-74ac943d6c58",
+                "format": "uuid",
+                "type": "string"
+              },
+              "wireless_blocklist_id": {
+                "description": "The identification of the related Wireless Blocklist resource.",
+                "example": "6a09cdc3-8948-47f0-aa62-74ac943d6c58",
+                "format": "uuid",
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
+          "sim_card_group_id": {
+            "description": "The SIM card group identification.",
+            "example": "6a09cdc3-8948-47f0-aa62-74ac943d6c58",
+            "format": "uuid",
+            "type": "string"
+          },
+          "status": {
+            "enum": [
+              "in-progress",
+              "completed",
+              "failed"
+            ],
+            "example": "in-progress",
+            "type": "string"
+          },
+          "type": {
+            "description": "Represents the type of the operation requested.",
+            "enum": [
+              "set_private_wireless_gateway",
+              "remove_private_wireless_gateway",
+              "set_wireless_blocklist",
+              "remove_wireless_blocklist"
+            ],
+            "example": "set_private_wireless_gateway",
+            "type": "string"
+          },
+          "updated_at": {
+            "description": "ISO 8601 formatted date-time indicating when the resource was updated.",
+            "example": "2018-02-02T22:25:27.521Z",
+            "readOnly": true,
+            "type": "string"
+          }
+        },
+        "title": "SIMCardGroupAction",
+        "type": "object"
+      }
+    },
+    "securitySchemes": {
+      "BearerAuth": {
+        "bearerFormat": "API key",
+        "description": "Telnyx API key supplied as `Authorization: Bearer \u003ctoken\u003e`. In production, auth may be validated by the API gateway and forwarded via Telnyx auth headers.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "Payment": {
+        "description": "Machine Payment Protocol credential used on paid retries, sent as `Authorization: Payment ...`. Obtained by paying a challenge returned in the `WWW-Authenticate` header of a 402 response. This is not a Telnyx API key; initial challenge requests use standard bearer authentication instead.",
+        "in": "header",
+        "name": "Authorization",
+        "type": "apiKey"
+      },
+      "agent-memory_bearerAuth": {
+        "description": "Telnyx API key",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "bearerAuth": {
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "branded-calling_bearerAuth": {
+        "description": "Telnyx API key. Generate one at https://portal.telnyx.com/#/app/api-keys.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "collections_bearerAuth": {
+        "description": "Telnyx API key. Collections and results are automatically scoped to the authenticated user's organization.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "number-reputation_bearerAuth": {
+        "description": "Telnyx API key. Generate one at https://portal.telnyx.com/#/app/api-keys.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "oauthClientAuth": {
+        "description": "OAuth 2.0 authentication for Telnyx API and MCP integrations",
+        "flows": {
+          "authorizationCode": {
+            "authorizationUrl": "https://api.telnyx.com/v2/oauth/authorize",
+            "refreshUrl": "https://api.telnyx.com/v2/oauth/token",
+            "scopes": {
+              "admin": "Administrative access to Telnyx resources"
+            },
+            "tokenUrl": "https://api.telnyx.com/v2/oauth/token"
+          },
+          "clientCredentials": {
+            "scopes": {
+              "admin": "Administrative access to Telnyx resources"
+            },
+            "tokenUrl": "https://api.telnyx.com/v2/oauth/token"
+          }
+        },
+        "type": "oauth2"
+      },
+      "outbound-voice-profiles_bearerAuth": {
+        "bearerFormat": "JWT",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "pay-connectors_bearerAuth": {
+        "description": "Telnyx API key, not the processor bearer token.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "pronunciation-dicts_bearerAuth": {
+        "description": "Telnyx API v2 key. Obtain from https://portal.telnyx.com",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "rcs-registration_bearerAuth": {
+        "bearerFormat": "API key",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "stored-payment-transactions_bearerAuth": {
+        "bearerFormat": "JWT",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "telnyxApiKey": {
+        "description": "Management-only Telnyx account credential.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "transcriptions-search_bearerAuth": {
+        "description": "Telnyx API key. Results are automatically scoped to the authenticated user's organization.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "web-search_bearerAuth": {
+        "description": "Telnyx API key",
+        "scheme": "bearer",
+        "type": "http"
+      }
+    }
+  },
+  "info": {
+    "contact": {
+      "email": "support@telnyx.com"
+    },
+    "description": "SIP trunking, SMS, MMS, Call Control and Telephony Data Services.",
+    "title": "Telnyx API",
+    "version": "2.0.0",
+    "x-endpoint-cost": "light",
+    "x-latency-category": "responsive"
+  },
+  "openapi": "3.1.0",
+  "paths": {
+    "/sim_card_group_actions": {
+      "get": {
+        "description": "This API allows listing a paginated collection a SIM card group actions. It allows to explore a collection of existing asynchronous operation using specific filters.",
+        "operationId": "GetSimCardGroupActions",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/wireless_PageNumber_c5290d5308"
+          },
+          {
+            "$ref": "#/components/parameters/wireless_PageSize_c5290d5308"
+          },
+          {
+            "$ref": "#/components/parameters/FilterSIMCardGroupId"
+          },
+          {
+            "$ref": "#/components/parameters/FilterBasicStatusLifecycle"
+          },
+          {
+            "description": "Filter by action type.",
+            "in": "query",
+            "name": "filter[type]",
+            "required": false,
+            "schema": {
+              "enum": [
+                "set_private_wireless_gateway",
+                "remove_private_wireless_gateway",
+                "set_wireless_blocklist",
+                "remove_wireless_blocklist"
+              ],
+              "example": "set_private_wireless_gateway",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "items": {
+                        "$ref": "#/components/schemas/SIMCardGroupAction"
+                      },
+                      "type": "array"
+                    },
+                    "meta": {
+                      "$ref": "#/components/schemas/PaginationMeta"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "default": {
+            "$ref": "#/components/responses/wireless_GenericErrorResponse_c5290d5308"
+          }
+        },
+        "summary": "List SIM card group actions",
+        "tags": [
+          "SIM Card Group Actions"
+        ]
+      }
+    },
+    "/sim_card_group_actions/{id}": {
+      "get": {
+        "description": "This API allows fetching detailed information about a SIM card group action resource to make follow-ups in an existing asynchronous operation.",
+        "operationId": "GetSimCardGroupAction",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/ResourceId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/SIMCardGroupAction"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "default": {
+            "$ref": "#/components/responses/wireless_GenericErrorResponse_c5290d5308"
+          }
+        },
+        "summary": "Get SIM card group action details",
+        "tags": [
+          "SIM Card Group Actions"
+        ]
+      }
+    }
+  },
+  "security": [
+    {
+      "bearerAuth": []
+    }
+  ],
+  "servers": [
+    {
+      "description": "Version 2.0.0 of the Telnyx API",
+      "url": "https://api.telnyx.com/v2"
+    }
+  ]
+}

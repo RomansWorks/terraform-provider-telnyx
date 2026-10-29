@@ -1,0 +1,916 @@
+{
+  "components": {
+    "schemas": {
+      "CreateSqlDatabaseRequest": {
+        "properties": {
+          "name": {
+            "description": "Database name. Lowercase letters, numbers, and hyphens only; must start and end with a letter or number.",
+            "example": "my-database",
+            "maxLength": 255,
+            "minLength": 1,
+            "pattern": "^[a-z0-9]([a-z0-9-]*[a-z0-9])?$",
+            "type": "string"
+          }
+        },
+        "required": [
+          "name"
+        ],
+        "type": "object"
+      },
+      "Error": {
+        "example": {
+          "code": "20207",
+          "description": "The street address provided is invalid.",
+          "source": {
+            "pointer": "/street_address"
+          },
+          "title": "Invalid street address"
+        },
+        "properties": {
+          "code": {
+            "type": "string",
+            "x-format": "int64"
+          },
+          "description": {
+            "type": "string"
+          },
+          "detail": {
+            "description": "A human-readable explanation of the error.",
+            "type": "string"
+          },
+          "meta": {
+            "additionalProperties": true,
+            "type": "object"
+          },
+          "source": {
+            "properties": {
+              "parameter": {
+                "description": "Indicates which query parameter caused the error.",
+                "type": "string"
+              },
+              "pointer": {
+                "description": "JSON pointer (RFC6901) to the offending entity.",
+                "format": "json-pointer",
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
+          "title": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "title"
+        ],
+        "type": "object"
+      },
+      "ErrorMeta": {
+        "properties": {
+          "url": {
+            "example": "https://docs.telnyx.com/api/errors/10005",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "ErrorSource": {
+        "properties": {
+          "parameter": {
+            "example": "id",
+            "type": "string"
+          },
+          "pointer": {
+            "example": "/id",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "Errors": {
+        "properties": {
+          "errors": {
+            "items": {
+              "$ref": "#/components/schemas/Error"
+            },
+            "type": "array"
+          }
+        },
+        "type": "object"
+      },
+      "GenericErrorResponse": {
+        "properties": {
+          "errors": {
+            "items": {
+              "$ref": "#/components/schemas/edge-compute_Error"
+            },
+            "type": "array"
+          }
+        },
+        "type": "object"
+      },
+      "SqlDatabase": {
+        "properties": {
+          "created_at": {
+            "example": "2026-06-18T14:48:17Z",
+            "format": "date-time",
+            "type": "string"
+          },
+          "id": {
+            "example": "550e8400-e29b-41d4-a716-446655440000",
+            "format": "uuid",
+            "type": "string"
+          },
+          "name": {
+            "example": "my-database",
+            "type": "string"
+          },
+          "record_type": {
+            "example": "storage_sqldb",
+            "type": "string"
+          },
+          "status": {
+            "description": "Provisioning status. A database is usable once `status` is `provision_ok`. Once deletion completes, the database no longer appears in the API.",
+            "enum": [
+              "pending",
+              "provision_ok",
+              "provision_failed",
+              "deleting",
+              "delete_failed"
+            ],
+            "example": "provision_ok",
+            "type": "string"
+          },
+          "updated_at": {
+            "example": "2026-06-18T14:48:17Z",
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "SqlDatabaseListResponseWrapper": {
+        "properties": {
+          "data": {
+            "items": {
+              "$ref": "#/components/schemas/SqlDatabase"
+            },
+            "type": "array"
+          },
+          "meta": {
+            "$ref": "#/components/schemas/edge-compute_PaginationMeta"
+          }
+        },
+        "type": "object"
+      },
+      "SqlDatabaseQueryRequest": {
+        "properties": {
+          "params": {
+            "description": "Positional bind parameters, in placeholder order. Each value is a string, a number, a boolean, or null; booleans are cast to `1`/`0`. The count must match the number of `?` placeholders exactly — a mismatch is rejected with 422 rather than binding null for the ones you left out. (Not enforced for multi-statement scripts or named parameters, where the placeholder count is not the number bound.)",
+            "example": [
+              "alice"
+            ],
+            "items": {
+              "type": [
+                "string",
+                "number",
+                "boolean",
+                "null"
+              ]
+            },
+            "type": "array"
+          },
+          "sql": {
+            "description": "The SQL to run. Use positional `?` placeholders and supply the values in `params` rather than interpolating them into this string.",
+            "example": "SELECT * FROM users WHERE name = ?",
+            "type": "string"
+          }
+        },
+        "required": [
+          "sql"
+        ],
+        "type": "object"
+      },
+      "SqlDatabaseQueryResponseWrapper": {
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/SqlDatabaseQueryResult"
+          }
+        },
+        "type": "object"
+      },
+      "SqlDatabaseQueryResult": {
+        "properties": {
+          "count": {
+            "description": "Number of rows returned.",
+            "example": 1,
+            "type": "integer"
+          },
+          "duration": {
+            "description": "Wall-clock duration of the request, in milliseconds.",
+            "example": 2.5,
+            "type": "number"
+          },
+          "meta": {
+            "$ref": "#/components/schemas/SqlDatabaseQueryResultMeta"
+          },
+          "results": {
+            "description": "The result rows, each a map of column name to value. Empty for statements that return no rows.",
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "type": "array"
+          },
+          "success": {
+            "example": true,
+            "type": "boolean"
+          }
+        },
+        "type": "object"
+      },
+      "SqlDatabaseQueryResultMeta": {
+        "properties": {
+          "changes": {
+            "description": "Number of rows added, changed, or removed by the statement.",
+            "example": 0,
+            "type": "integer"
+          },
+          "duration": {
+            "description": "Wall-clock duration of the statement, in milliseconds.",
+            "example": 1.2,
+            "type": "number"
+          },
+          "last_row_id": {
+            "description": "Rowid of the last inserted row, when applicable.",
+            "example": 0,
+            "type": "integer"
+          },
+          "rows_read": {
+            "example": 3,
+            "type": "integer"
+          },
+          "rows_written": {
+            "example": 0,
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "SqlDatabaseResponseWrapper": {
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/SqlDatabase"
+          }
+        },
+        "type": "object"
+      },
+      "edge-compute_Error": {
+        "properties": {
+          "code": {
+            "example": "10005",
+            "type": "string"
+          },
+          "detail": {
+            "example": "The requested function does not exist or you don't have access to it",
+            "type": "string"
+          },
+          "meta": {
+            "$ref": "#/components/schemas/ErrorMeta"
+          },
+          "source": {
+            "$ref": "#/components/schemas/ErrorSource"
+          },
+          "title": {
+            "example": "Function not found",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "edge-compute_PaginationMeta": {
+        "properties": {
+          "page_number": {
+            "example": 1,
+            "type": "integer"
+          },
+          "page_size": {
+            "example": 20,
+            "type": "integer"
+          },
+          "total_pages": {
+            "example": 3,
+            "type": "integer"
+          },
+          "total_results": {
+            "example": 52,
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      }
+    },
+    "securitySchemes": {
+      "BearerAuth": {
+        "bearerFormat": "API key",
+        "description": "Telnyx API key supplied as `Authorization: Bearer \u003ctoken\u003e`. In production, auth may be validated by the API gateway and forwarded via Telnyx auth headers.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "Payment": {
+        "description": "Machine Payment Protocol credential used on paid retries, sent as `Authorization: Payment ...`. Obtained by paying a challenge returned in the `WWW-Authenticate` header of a 402 response. This is not a Telnyx API key; initial challenge requests use standard bearer authentication instead.",
+        "in": "header",
+        "name": "Authorization",
+        "type": "apiKey"
+      },
+      "agent-memory_bearerAuth": {
+        "description": "Telnyx API key",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "bearerAuth": {
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "branded-calling_bearerAuth": {
+        "description": "Telnyx API key. Generate one at https://portal.telnyx.com/#/app/api-keys.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "collections_bearerAuth": {
+        "description": "Telnyx API key. Collections and results are automatically scoped to the authenticated user's organization.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "number-reputation_bearerAuth": {
+        "description": "Telnyx API key. Generate one at https://portal.telnyx.com/#/app/api-keys.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "oauthClientAuth": {
+        "description": "OAuth 2.0 authentication for Telnyx API and MCP integrations",
+        "flows": {
+          "authorizationCode": {
+            "authorizationUrl": "https://api.telnyx.com/v2/oauth/authorize",
+            "refreshUrl": "https://api.telnyx.com/v2/oauth/token",
+            "scopes": {
+              "admin": "Administrative access to Telnyx resources"
+            },
+            "tokenUrl": "https://api.telnyx.com/v2/oauth/token"
+          },
+          "clientCredentials": {
+            "scopes": {
+              "admin": "Administrative access to Telnyx resources"
+            },
+            "tokenUrl": "https://api.telnyx.com/v2/oauth/token"
+          }
+        },
+        "type": "oauth2"
+      },
+      "outbound-voice-profiles_bearerAuth": {
+        "bearerFormat": "JWT",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "pay-connectors_bearerAuth": {
+        "description": "Telnyx API key, not the processor bearer token.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "pronunciation-dicts_bearerAuth": {
+        "description": "Telnyx API v2 key. Obtain from https://portal.telnyx.com",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "rcs-registration_bearerAuth": {
+        "bearerFormat": "API key",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "stored-payment-transactions_bearerAuth": {
+        "bearerFormat": "JWT",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "telnyxApiKey": {
+        "description": "Management-only Telnyx account credential.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "transcriptions-search_bearerAuth": {
+        "description": "Telnyx API key. Results are automatically scoped to the authenticated user's organization.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "web-search_bearerAuth": {
+        "description": "Telnyx API key",
+        "scheme": "bearer",
+        "type": "http"
+      }
+    }
+  },
+  "info": {
+    "contact": {
+      "email": "support@telnyx.com"
+    },
+    "description": "SIP trunking, SMS, MMS, Call Control and Telephony Data Services.",
+    "title": "Telnyx API",
+    "version": "2.0.0",
+    "x-endpoint-cost": "light",
+    "x-latency-category": "responsive"
+  },
+  "openapi": "3.1.0",
+  "paths": {
+    "/storage/sqldbs": {
+      "get": {
+        "description": "Lists the SQL databases for the authenticated user's organization. Results use page-based pagination (`page[number]`/`page[size]`) and can be filtered and sorted.",
+        "operationId": "ListSqlDatabases",
+        "parameters": [
+          {
+            "description": "The page number to load.",
+            "in": "query",
+            "name": "page[number]",
+            "schema": {
+              "default": 1,
+              "minimum": 1,
+              "type": "integer"
+            }
+          },
+          {
+            "description": "The size of the page. Values above 250 are treated as 250.",
+            "in": "query",
+            "name": "page[size]",
+            "schema": {
+              "default": 20,
+              "maximum": 250,
+              "minimum": 1,
+              "type": "integer"
+            }
+          },
+          {
+            "description": "Filter by exact name match.",
+            "in": "query",
+            "name": "filter[name]",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Filter by provisioning status.",
+            "in": "query",
+            "name": "filter[status]",
+            "schema": {
+              "enum": [
+                "pending",
+                "provision_ok",
+                "provision_failed",
+                "deleting",
+                "delete_failed"
+              ],
+              "type": "string"
+            }
+          },
+          {
+            "description": "Sort field; prefix with `-` for descending order.",
+            "in": "query",
+            "name": "sort",
+            "schema": {
+              "default": "-created_at",
+              "enum": [
+                "name",
+                "-name",
+                "status",
+                "-status",
+                "created_at",
+                "-created_at"
+              ],
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SqlDatabaseListResponseWrapper"
+                }
+              }
+            },
+            "description": "SQL databases retrieved successfully"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Errors"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Errors"
+                }
+              }
+            },
+            "description": "Validation error — an unsupported `sort` or `filter` value"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GenericErrorResponse"
+                }
+              }
+            },
+            "description": "Internal server error"
+          }
+        },
+        "summary": "List SQL databases",
+        "tags": [
+          "sql databases"
+        ]
+      },
+      "post": {
+        "description": "Creates a new SQL database. Provisioning is asynchronous: the database is returned with status `pending` and becomes usable once it reaches `provision_ok`.",
+        "operationId": "CreateSqlDatabase",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateSqlDatabaseRequest"
+              }
+            }
+          },
+          "description": "SQL database creation request",
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SqlDatabaseResponseWrapper"
+                }
+              }
+            },
+            "description": "SQL database created successfully (status `pending`)"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Errors"
+                }
+              }
+            },
+            "description": "Bad request — the request body is malformed"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Errors"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Errors"
+                }
+              }
+            },
+            "description": "Conflict — a database with this name already exists for your organization"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Errors"
+                }
+              }
+            },
+            "description": "Validation error — `name` is missing or not a valid database name"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GenericErrorResponse"
+                }
+              }
+            },
+            "description": "Internal server error"
+          }
+        },
+        "summary": "Create a SQL database",
+        "tags": [
+          "sql databases"
+        ]
+      }
+    },
+    "/storage/sqldbs/{id}": {
+      "delete": {
+        "description": "Deletes a SQL database and all of the data it holds. Deletion is asynchronous and returns `202` with an empty body — the record is not removed synchronously. Poll `GET /storage/sqldbs/{id}`, which returns `404` once the database has been purged; there is no durable `deleted` state. A database still bound by a function is refused with `409` unless `force=true`.",
+        "operationId": "DeleteSqlDatabase",
+        "parameters": [
+          {
+            "description": "SQL database ID",
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Delete the database even when functions still bind it. Their bindings stop resolving.",
+            "in": "query",
+            "name": "force",
+            "schema": {
+              "default": false,
+              "type": "boolean"
+            }
+          }
+        ],
+        "responses": {
+          "202": {
+            "description": "Accepted — deletion runs asynchronously. The body is empty; poll `GET /storage/sqldbs/{id}` until it returns `404`."
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Errors"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Errors"
+                }
+              }
+            },
+            "description": "SQL database not found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Errors"
+                }
+              }
+            },
+            "description": "Conflict — the database is already being deleted, or is still bound by one or more functions"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Errors"
+                }
+              }
+            },
+            "description": "Validation error — `id` is not a valid identifier"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GenericErrorResponse"
+                }
+              }
+            },
+            "description": "Internal server error"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Errors"
+                }
+              }
+            },
+            "description": "Cannot verify whether the database is still in use; retry, or pass `force=true`"
+          }
+        },
+        "summary": "Delete a SQL database",
+        "tags": [
+          "sql databases"
+        ]
+      },
+      "get": {
+        "description": "Retrieves a SQL database by its ID, including its provisioning status.",
+        "operationId": "GetSqlDatabase",
+        "parameters": [
+          {
+            "description": "SQL database ID",
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SqlDatabaseResponseWrapper"
+                }
+              }
+            },
+            "description": "SQL database retrieved successfully"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Errors"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Errors"
+                }
+              }
+            },
+            "description": "SQL database not found"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Errors"
+                }
+              }
+            },
+            "description": "Validation error — `id` is not a valid identifier"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GenericErrorResponse"
+                }
+              }
+            },
+            "description": "Internal server error"
+          }
+        },
+        "summary": "Get a SQL database",
+        "tags": [
+          "sql databases"
+        ]
+      }
+    },
+    "/storage/sqldbs/{id}/actions/query": {
+      "post": {
+        "description": "Runs SQL against the database and returns the resulting rows — empty for statements that return none, such as DDL. Bind positional `?` placeholders with `params` rather than interpolating values into the SQL string.",
+        "operationId": "QuerySqlDatabase",
+        "parameters": [
+          {
+            "description": "SQL database ID",
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SqlDatabaseQueryRequest"
+              }
+            }
+          },
+          "description": "The SQL to run, and any positional bind parameters",
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SqlDatabaseQueryResponseWrapper"
+                }
+              }
+            },
+            "description": "The SQL result"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Errors"
+                }
+              }
+            },
+            "description": "Bad request — the request body is malformed"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Errors"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Errors"
+                }
+              }
+            },
+            "description": "SQL database not found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Errors"
+                }
+              }
+            },
+            "description": "Conflict — the database is not ready yet. This is transient; retry once it reaches `provision_ok`."
+          },
+          "413": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Errors"
+                }
+              }
+            },
+            "description": "The SQL body exceeds the maximum size (8 MiB)"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Errors"
+                }
+              }
+            },
+            "description": "Validation error — an invalid `id`, empty `sql`, an unsupported bind parameter, the wrong number of bind parameters for the placeholders in `sql`, or a SQL error raised by the database. Also returned for a script over roughly 4 MiB, whose detail ends in `stream too large`: that transport ceiling is reached before the 8 MiB `413`, so ~4 MiB is the size to plan against"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GenericErrorResponse"
+                }
+              }
+            },
+            "description": "Internal server error"
+          }
+        },
+        "summary": "Run SQL against a SQL database",
+        "tags": [
+          "sql databases"
+        ]
+      }
+    }
+  },
+  "security": [
+    {
+      "bearerAuth": []
+    }
+  ],
+  "servers": [
+    {
+      "description": "Version 2.0.0 of the Telnyx API",
+      "url": "https://api.telnyx.com/v2"
+    }
+  ]
+}

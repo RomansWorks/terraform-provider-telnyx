@@ -1,0 +1,828 @@
+{
+  "components": {
+    "schemas": {
+      "Filter": {
+        "description": "Query filter criteria. Note: The first filter object must specify filter_type as 'and'. You cannot follow an 'or' with another 'and'.",
+        "properties": {
+          "billing_group": {
+            "description": "Billing group UUID to filter by",
+            "example": "adfaa016-f921-4b6c-97bb-e4c1dad231c5",
+            "type": "string"
+          },
+          "cld": {
+            "description": "Called line identification (destination number)",
+            "example": "+13129457420",
+            "type": "string"
+          },
+          "cld_filter": {
+            "description": "Filter type for CLD matching",
+            "enum": [
+              "contains",
+              "starts_with",
+              "ends_with"
+            ],
+            "type": "string"
+          },
+          "cli": {
+            "description": "Calling line identification (caller ID)",
+            "example": "+13129457420",
+            "type": "string"
+          },
+          "cli_filter": {
+            "description": "Filter type for CLI matching",
+            "enum": [
+              "contains",
+              "starts_with",
+              "ends_with"
+            ],
+            "type": "string"
+          },
+          "filter_type": {
+            "description": "Logical operator for combining filters",
+            "enum": [
+              "and",
+              "or"
+            ],
+            "type": "string"
+          },
+          "tags_list": {
+            "description": "Tag name to filter by",
+            "example": "tag1",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "MdrDeleteDetailReportResponse": {
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/MdrDetailReportResponse"
+          }
+        },
+        "type": "object"
+      },
+      "MdrDetailReportResponse": {
+        "properties": {
+          "connections": {
+            "items": {
+              "format": "int64",
+              "type": "integer"
+            },
+            "type": "array"
+          },
+          "created_at": {
+            "example": "2020-07-01T00:00:00-06:00",
+            "format": "date-time",
+            "type": "string"
+          },
+          "directions": {
+            "items": {
+              "enum": [
+                "INBOUND",
+                "OUTBOUND"
+              ],
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "end_date": {
+            "example": "2020-07-01T00:00:00-06:00",
+            "format": "date-time",
+            "type": "string"
+          },
+          "filters": {
+            "items": {
+              "$ref": "#/components/schemas/Filter"
+            },
+            "type": "array"
+          },
+          "id": {
+            "description": "Identifies the resource",
+            "format": "uuid",
+            "type": "string"
+          },
+          "profiles": {
+            "description": "List of messaging profile IDs",
+            "example": [
+              "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+              "7d4e3f8a-9b2c-4e1d-8f5a-1a2b3c4d5e6f"
+            ],
+            "items": {
+              "format": "uuid",
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "record_type": {
+            "example": "mdr_report",
+            "type": "string"
+          },
+          "record_types": {
+            "items": {
+              "enum": [
+                "INCOMPLETE",
+                "COMPLETED",
+                "ERRORS"
+              ],
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "report_name": {
+            "example": "report_name_8hvb45Gu",
+            "type": "string"
+          },
+          "report_url": {
+            "example": "http://portal.telnyx.com/downloads/report_name_8hvb45Gu.csv",
+            "type": "string"
+          },
+          "start_date": {
+            "example": "2020-07-01T00:00:00-06:00",
+            "format": "date-time",
+            "type": "string"
+          },
+          "status": {
+            "enum": [
+              "PENDING",
+              "COMPLETE",
+              "FAILED",
+              "EXPIRED"
+            ],
+            "type": "string"
+          },
+          "updated_at": {
+            "example": "2020-07-01T00:00:00-06:00",
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "MdrDetailedRequest": {
+        "description": "Request object for MDR detailed report",
+        "properties": {
+          "connections": {
+            "description": "List of connections to filter by",
+            "example": [
+              123,
+              456
+            ],
+            "items": {
+              "format": "int64",
+              "type": "integer"
+            },
+            "type": "array"
+          },
+          "directions": {
+            "description": "List of directions to filter by (Inbound = 1, Outbound = 2)",
+            "example": [
+              1,
+              2
+            ],
+            "items": {
+              "format": "int32",
+              "type": "integer"
+            },
+            "type": "array"
+          },
+          "end_time": {
+            "description": "End time in ISO format. Note: If end time includes the last 4 hours, some MDRs might not appear in this report, due to wait time for downstream message delivery confirmation",
+            "example": "2024-02-12T23:59:59Z",
+            "format": "date-time",
+            "type": "string"
+          },
+          "filters": {
+            "description": "List of filters to apply",
+            "items": {
+              "$ref": "#/components/schemas/Filter"
+            },
+            "type": "array"
+          },
+          "include_message_body": {
+            "description": "Whether to include message body in the report",
+            "example": true,
+            "type": "boolean"
+          },
+          "managed_accounts": {
+            "description": "List of managed accounts to include",
+            "example": [
+              "f47ac10b-58cc-4372-a567-0e02b2c3d479",
+              "6ba7b810-9dad-11d1-80b4-00c04fd430c8"
+            ],
+            "items": {
+              "format": "uuid",
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "profiles": {
+            "description": "List of messaging profile IDs to filter by",
+            "example": [
+              "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+              "7d4e3f8a-9b2c-4e1d-8f5a-1a2b3c4d5e6f"
+            ],
+            "items": {
+              "format": "uuid",
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "record_types": {
+            "description": "List of record types to filter by (Complete = 1, Incomplete = 2, Errors = 3)",
+            "example": [
+              1,
+              2
+            ],
+            "items": {
+              "format": "int32",
+              "type": "integer"
+            },
+            "type": "array"
+          },
+          "report_name": {
+            "description": "Name of the report",
+            "example": "My MDR Report",
+            "type": "string"
+          },
+          "select_all_managed_accounts": {
+            "description": "Whether to select all managed accounts",
+            "example": false,
+            "type": "boolean"
+          },
+          "start_time": {
+            "description": "Start time in ISO format",
+            "example": "2024-02-01T00:00:00Z",
+            "format": "date-time",
+            "type": "string"
+          },
+          "timezone": {
+            "description": "Timezone for the report",
+            "example": "UTC",
+            "type": "string"
+          }
+        },
+        "required": [
+          "start_time",
+          "end_time"
+        ],
+        "type": "object"
+      },
+      "MdrGetDetailReportByIdResponse": {
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/MdrDetailReportResponse"
+          }
+        },
+        "type": "object"
+      },
+      "MdrGetDetailReportResponse": {
+        "properties": {
+          "data": {
+            "items": {
+              "$ref": "#/components/schemas/MdrDetailReportResponse"
+            },
+            "type": "array"
+          },
+          "meta": {
+            "$ref": "#/components/schemas/batch-csv_PaginationMeta_705dfa7312"
+          }
+        },
+        "type": "object"
+      },
+      "MdrPostDetailReportResponse": {
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/MdrDetailReportResponse"
+          }
+        },
+        "type": "object"
+      },
+      "batch-csv_PaginationMeta": {
+        "properties": {
+          "page_number": {
+            "example": 2,
+            "format": "int32",
+            "type": "integer"
+          },
+          "page_size": {
+            "example": 25,
+            "format": "int32",
+            "type": "integer"
+          },
+          "total_pages": {
+            "example": 3,
+            "format": "int32",
+            "type": "integer"
+          },
+          "total_results": {
+            "example": 55,
+            "format": "int32",
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "batch-csv_PaginationMeta_705dfa7312": {
+        "properties": {
+          "page_number": {
+            "example": 2,
+            "format": "int32",
+            "type": "integer"
+          },
+          "page_size": {
+            "example": 25,
+            "format": "int32",
+            "type": "integer"
+          },
+          "total_pages": {
+            "example": 3,
+            "format": "int32",
+            "type": "integer"
+          },
+          "total_results": {
+            "example": 55,
+            "format": "int32",
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "legacy_published_account_billing_usage_reports_MdrGetDetailReportResponse": {
+        "properties": {
+          "data": {
+            "items": {
+              "$ref": "#/components/schemas/MdrDetailReportResponse"
+            },
+            "type": "array"
+          },
+          "meta": {
+            "$ref": "#/components/schemas/batch-csv_PaginationMeta"
+          }
+        },
+        "type": "object"
+      }
+    },
+    "securitySchemes": {
+      "BearerAuth": {
+        "bearerFormat": "API key",
+        "description": "Telnyx API key supplied as `Authorization: Bearer \u003ctoken\u003e`. In production, auth may be validated by the API gateway and forwarded via Telnyx auth headers.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "Payment": {
+        "description": "Machine Payment Protocol credential used on paid retries, sent as `Authorization: Payment ...`. Obtained by paying a challenge returned in the `WWW-Authenticate` header of a 402 response. This is not a Telnyx API key; initial challenge requests use standard bearer authentication instead.",
+        "in": "header",
+        "name": "Authorization",
+        "type": "apiKey"
+      },
+      "agent-memory_bearerAuth": {
+        "description": "Telnyx API key",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "bearerAuth": {
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "branded-calling_bearerAuth": {
+        "description": "Telnyx API key. Generate one at https://portal.telnyx.com/#/app/api-keys.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "collections_bearerAuth": {
+        "description": "Telnyx API key. Collections and results are automatically scoped to the authenticated user's organization.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "number-reputation_bearerAuth": {
+        "description": "Telnyx API key. Generate one at https://portal.telnyx.com/#/app/api-keys.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "oauthClientAuth": {
+        "description": "OAuth 2.0 authentication for Telnyx API and MCP integrations",
+        "flows": {
+          "authorizationCode": {
+            "authorizationUrl": "https://api.telnyx.com/v2/oauth/authorize",
+            "refreshUrl": "https://api.telnyx.com/v2/oauth/token",
+            "scopes": {
+              "admin": "Administrative access to Telnyx resources"
+            },
+            "tokenUrl": "https://api.telnyx.com/v2/oauth/token"
+          },
+          "clientCredentials": {
+            "scopes": {
+              "admin": "Administrative access to Telnyx resources"
+            },
+            "tokenUrl": "https://api.telnyx.com/v2/oauth/token"
+          }
+        },
+        "type": "oauth2"
+      },
+      "outbound-voice-profiles_bearerAuth": {
+        "bearerFormat": "JWT",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "pay-connectors_bearerAuth": {
+        "description": "Telnyx API key, not the processor bearer token.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "pronunciation-dicts_bearerAuth": {
+        "description": "Telnyx API v2 key. Obtain from https://portal.telnyx.com",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "rcs-registration_bearerAuth": {
+        "bearerFormat": "API key",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "stored-payment-transactions_bearerAuth": {
+        "bearerFormat": "JWT",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "telnyxApiKey": {
+        "description": "Management-only Telnyx account credential.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "transcriptions-search_bearerAuth": {
+        "description": "Telnyx API key. Results are automatically scoped to the authenticated user's organization.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "web-search_bearerAuth": {
+        "description": "Telnyx API key",
+        "scheme": "bearer",
+        "type": "http"
+      }
+    }
+  },
+  "info": {
+    "contact": {
+      "email": "support@telnyx.com"
+    },
+    "description": "SIP trunking, SMS, MMS, Call Control and Telephony Data Services.",
+    "title": "Telnyx API",
+    "version": "2.0.0",
+    "x-endpoint-cost": "light",
+    "x-latency-category": "responsive"
+  },
+  "openapi": "3.1.0",
+  "paths": {
+    "/legacy/reporting/batch_detail_records/messaging": {
+      "get": {
+        "description": "Retrieves all MDR detailed report requests for the authenticated user",
+        "operationId": "getMdrRequests",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MdrGetDetailReportResponse"
+                }
+              }
+            },
+            "description": "MDR detailed report requests retrieved successfully"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        },
+        "summary": "Get all MDR detailed report requests",
+        "tags": [
+          "MDR Detailed Reports"
+        ],
+        "x-latency-category": "responsive"
+      },
+      "post": {
+        "description": "Creates a new MDR detailed report request with the specified filters",
+        "operationId": "submitMdrRequest",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MdrDetailedRequest"
+              }
+            }
+          },
+          "description": "MDR detailed report request data",
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MdrPostDetailReportResponse"
+                }
+              }
+            },
+            "description": "MDR detailed report request created successfully"
+          },
+          "400": {
+            "description": "Invalid request parameters"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        },
+        "summary": "Create a new MDR detailed report request",
+        "tags": [
+          "MDR Detailed Reports"
+        ],
+        "x-latency-category": "responsive"
+      }
+    },
+    "/legacy/reporting/batch_detail_records/messaging/{id}": {
+      "delete": {
+        "description": "Deletes a specific MDR detailed report request by ID",
+        "operationId": "deleteMdrRequest",
+        "parameters": [
+          {
+            "description": "Unique identifier of the resource.",
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MdrDeleteDetailReportResponse"
+                }
+              }
+            },
+            "description": "MDR detailed report request deleted successfully"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Report not found"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        },
+        "summary": "Delete a MDR detailed report request",
+        "tags": [
+          "MDR Detailed Reports"
+        ],
+        "x-latency-category": "responsive"
+      },
+      "get": {
+        "description": "Retrieves a specific MDR detailed report request by ID",
+        "operationId": "getMdrRequest",
+        "parameters": [
+          {
+            "description": "Unique identifier of the resource.",
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MdrGetDetailReportByIdResponse"
+                }
+              }
+            },
+            "description": "MDR detailed report request retrieved successfully"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Report not found"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        },
+        "summary": "Get a specific MDR detailed report request",
+        "tags": [
+          "MDR Detailed Reports"
+        ],
+        "x-latency-category": "responsive"
+      }
+    },
+    "/legacy_reporting/batch_detail_records/messaging": {
+      "get": {
+        "description": "Retrieves all MDR detailed report requests for the authenticated user",
+        "operationId": "getMdrRequests",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/legacy_published_account_billing_usage_reports_MdrGetDetailReportResponse"
+                }
+              }
+            },
+            "description": "MDR detailed report requests retrieved successfully"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        },
+        "summary": "Get all MDR detailed report requests",
+        "tags": [
+          "MDR Detailed Reports"
+        ],
+        "x-latency-category": "responsive"
+      },
+      "post": {
+        "description": "Creates a new MDR detailed report request with the specified filters",
+        "operationId": "submitMdrRequest",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MdrDetailedRequest"
+              }
+            }
+          },
+          "description": "MDR detailed report request data",
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MdrPostDetailReportResponse"
+                }
+              }
+            },
+            "description": "MDR detailed report request created successfully"
+          },
+          "400": {
+            "description": "Invalid request parameters"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        },
+        "summary": "Create a new MDR detailed report request",
+        "tags": [
+          "MDR Detailed Reports"
+        ],
+        "x-latency-category": "responsive"
+      }
+    },
+    "/legacy_reporting/batch_detail_records/messaging/{id}": {
+      "delete": {
+        "description": "Deletes a specific MDR detailed report request by ID",
+        "operationId": "deleteMdrRequest",
+        "parameters": [
+          {
+            "description": "Unique identifier of the resource.",
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MdrDeleteDetailReportResponse"
+                }
+              }
+            },
+            "description": "MDR detailed report request deleted successfully"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Report not found"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        },
+        "summary": "Delete a MDR detailed report request",
+        "tags": [
+          "MDR Detailed Reports"
+        ],
+        "x-latency-category": "responsive"
+      },
+      "get": {
+        "description": "Retrieves a specific MDR detailed report request by ID",
+        "operationId": "getMdrRequest",
+        "parameters": [
+          {
+            "description": "Unique identifier of the resource.",
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MdrGetDetailReportByIdResponse"
+                }
+              }
+            },
+            "description": "MDR detailed report request retrieved successfully"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Report not found"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        },
+        "summary": "Get a specific MDR detailed report request",
+        "tags": [
+          "MDR Detailed Reports"
+        ],
+        "x-latency-category": "responsive"
+      }
+    }
+  },
+  "security": [
+    {
+      "bearerAuth": []
+    }
+  ],
+  "servers": [
+    {
+      "description": "Version 2.0.0 of the Telnyx API",
+      "url": "https://api.telnyx.com/v2"
+    }
+  ]
+}

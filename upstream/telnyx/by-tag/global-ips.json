@@ -1,0 +1,2078 @@
+{
+  "components": {
+    "parameters": {
+      "PageConsolidated": {
+        "description": "Consolidated page parameter (deepObject style). Originally: page[number], page[size]",
+        "explode": true,
+        "in": "query",
+        "name": "page",
+        "schema": {
+          "properties": {
+            "number": {
+              "default": 1,
+              "description": "The page number to load",
+              "minimum": 1,
+              "type": "integer"
+            },
+            "size": {
+              "default": 20,
+              "description": "The size of the page",
+              "maximum": 250,
+              "minimum": 1,
+              "type": "integer"
+            }
+          },
+          "type": "object"
+        },
+        "style": "deepObject"
+      },
+      "ResourceId": {
+        "description": "Identifies the resource.",
+        "in": "path",
+        "name": "id",
+        "required": true,
+        "schema": {
+          "example": "6a09cdc3-8948-47f0-aa62-74ac943d6c58",
+          "format": "uuid",
+          "type": "string"
+        }
+      }
+    },
+    "responses": {
+      "GenericErrorResponse": {
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Errors"
+            }
+          }
+        },
+        "description": "Unexpected error"
+      },
+      "netapps_GenericErrorResponse": {
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/netapps_Errors"
+            }
+          }
+        },
+        "description": "Unexpected error"
+      },
+      "netapps_UnprocessableEntity_17904fcfbc": {
+        "content": {
+          "application/json": {
+            "example": {
+              "errors": [
+                {
+                  "code": "10027",
+                  "detail": "The server understood the syntax of the request but was unable to process the instructions.",
+                  "title": "Unprocessable Entity"
+                }
+              ]
+            },
+            "schema": {
+              "$ref": "#/components/schemas/Errors"
+            }
+          }
+        },
+        "description": "Unprocessable entity. Check the 'detail' field in response for details."
+      }
+    },
+    "schemas": {
+      "Error": {
+        "example": {
+          "code": "20207",
+          "description": "The street address provided is invalid.",
+          "source": {
+            "pointer": "/street_address"
+          },
+          "title": "Invalid street address"
+        },
+        "properties": {
+          "code": {
+            "type": "string",
+            "x-format": "int64"
+          },
+          "description": {
+            "type": "string"
+          },
+          "detail": {
+            "description": "A human-readable explanation of the error.",
+            "type": "string"
+          },
+          "meta": {
+            "additionalProperties": true,
+            "type": "object"
+          },
+          "source": {
+            "properties": {
+              "parameter": {
+                "description": "Indicates which query parameter caused the error.",
+                "type": "string"
+              },
+              "pointer": {
+                "description": "JSON pointer (RFC6901) to the offending entity.",
+                "format": "json-pointer",
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
+          "title": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "title"
+        ],
+        "type": "object"
+      },
+      "Errors": {
+        "properties": {
+          "errors": {
+            "items": {
+              "$ref": "#/components/schemas/Error"
+            },
+            "type": "array"
+          }
+        },
+        "type": "object"
+      },
+      "GlobalIP": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/Record"
+          },
+          {
+            "properties": {
+              "description": {
+                "description": "A user specified description for the address.",
+                "example": "test interface",
+                "type": "string"
+              },
+              "ip_address": {
+                "description": "The Global IP address.",
+                "example": "198.51.100.1",
+                "readOnly": true,
+                "type": "string"
+              },
+              "name": {
+                "description": "A user specified name for the address.",
+                "example": "test interface",
+                "type": "string"
+              },
+              "ports": {
+                "additionalProperties": true,
+                "description": "A Global IP ports grouped by protocol code.",
+                "example": {
+                  "tcp": [
+                    80,
+                    8080
+                  ],
+                  "udp": [
+                    5000,
+                    5050
+                  ]
+                },
+                "type": "object"
+              },
+              "record_type": {
+                "description": "Identifies the type of the resource.",
+                "example": "global_ip",
+                "readOnly": true,
+                "type": "string"
+              }
+            },
+            "title": "Global IP",
+            "type": "object"
+          }
+        ]
+      },
+      "GlobalIPAllowedPort": {
+        "allOf": [
+          {
+            "properties": {
+              "first_port": {
+                "description": "First port of a range.",
+                "example": 1024,
+                "type": "integer"
+              },
+              "id": {
+                "description": "Identifies the resource.",
+                "example": "6a09cdc3-8948-47f0-aa62-74ac943d6c58",
+                "format": "uuid",
+                "readOnly": true,
+                "type": "string"
+              },
+              "last_port": {
+                "description": "Last port of a range.",
+                "example": 49151,
+                "type": "integer"
+              },
+              "name": {
+                "description": "A name for the Global IP ports range.",
+                "example": "TCP Registered",
+                "type": "string"
+              },
+              "protocol_code": {
+                "description": "The Global IP Protocol code.",
+                "example": "tcp",
+                "readOnly": true,
+                "type": "string"
+              },
+              "record_type": {
+                "description": "Identifies the type of the resource.",
+                "example": "global_ip_allowed_port",
+                "readOnly": true,
+                "type": "string"
+              }
+            },
+            "title": "Global IP Allowed Port Range",
+            "type": "object"
+          }
+        ]
+      },
+      "GlobalIPHealthCheck": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/Record"
+          },
+          {
+            "properties": {
+              "global_ip_id": {
+                "description": "Global IP ID.",
+                "example": "a836125b-20b6-452e-9c03-2653f09c7ed7",
+                "format": "uuid",
+                "type": "string"
+              },
+              "health_check_params": {
+                "additionalProperties": true,
+                "description": "A Global IP health check params.",
+                "example": {
+                  "path": "/",
+                  "port": 8080
+                },
+                "type": "object"
+              },
+              "health_check_type": {
+                "description": "The Global IP health check type.",
+                "example": "http_status_2xx",
+                "type": "string"
+              },
+              "record_type": {
+                "description": "Identifies the type of the resource.",
+                "example": "global_ip_health_check",
+                "readOnly": true,
+                "type": "string"
+              }
+            },
+            "title": "Global IP health check",
+            "type": "object"
+          }
+        ]
+      },
+      "GlobalIPProtocol": {
+        "allOf": [
+          {
+            "properties": {
+              "code": {
+                "description": "The Global IP Protocol code.",
+                "example": "tcp",
+                "readOnly": true,
+                "type": "string"
+              },
+              "name": {
+                "description": "A name for Global IP Protocol.",
+                "example": "TCP",
+                "type": "string"
+              },
+              "record_type": {
+                "description": "Identifies the type of the resource.",
+                "example": "global_ip_protocol",
+                "readOnly": true,
+                "type": "string"
+              }
+            },
+            "title": "Global IP Protocol",
+            "type": "object"
+          }
+        ]
+      },
+      "GlobalIpAssignment": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/Record"
+          },
+          {
+            "properties": {
+              "global_ip_id": {
+                "description": "Global IP ID.",
+                "example": "a836125b-20b6-452e-9c03-2653f09c7ed7",
+                "format": "uuid",
+                "type": "string"
+              },
+              "is_announced": {
+                "description": "Status of BGP announcement.",
+                "readOnly": true,
+                "type": "boolean"
+              },
+              "is_connected": {
+                "description": "Wireguard peer is connected.",
+                "readOnly": true,
+                "type": "boolean"
+              },
+              "is_in_maintenance": {
+                "description": "Enable/disable BGP announcement.",
+                "type": "boolean"
+              },
+              "record_type": {
+                "description": "Identifies the type of the resource.",
+                "example": "global_ip_assignment",
+                "readOnly": true,
+                "type": "string"
+              },
+              "status": {
+                "$ref": "#/components/schemas/InterfaceStatus"
+              },
+              "wireguard_peer_id": {
+                "description": "Wireguard peer ID.",
+                "example": "e66c496d-4a85-423b-8b2a-8e63fac20320",
+                "format": "uuid",
+                "type": "string"
+              }
+            },
+            "title": "Global IP",
+            "type": "object"
+          }
+        ]
+      },
+      "GlobalIpAssignmentHealthMetric": {
+        "properties": {
+          "global_ip": {
+            "properties": {
+              "id": {
+                "description": "Global IP ID.",
+                "example": "a836125b-20b6-452e-9c03-2653f09c7ed7",
+                "format": "uuid",
+                "type": "string"
+              },
+              "ip_address": {
+                "description": "The Global IP address.",
+                "example": "192.0.2.1",
+                "readOnly": true,
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
+          "global_ip_assignment": {
+            "properties": {
+              "id": {
+                "description": "Global IP assignment ID.",
+                "example": "a836125b-20b6-452e-9c03-2653f09c7ed7",
+                "format": "uuid",
+                "type": "string"
+              },
+              "wireguard_peer": {
+                "properties": {
+                  "ip_address": {
+                    "description": "The IP address of the interface.",
+                    "example": "73.47.1.23",
+                    "type": "string"
+                  },
+                  "name": {
+                    "description": "A user specified name for the interface.",
+                    "example": "Wireguard Peer 1",
+                    "type": "string"
+                  }
+                },
+                "type": "object"
+              },
+              "wireguard_peer_id": {
+                "description": "Wireguard peer ID.",
+                "example": "e66c496d-4a85-423b-8b2a-8e63fac20320",
+                "format": "uuid",
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
+          "health": {
+            "properties": {
+              "fail": {
+                "description": "The number of failed health checks.",
+                "example": 0,
+                "type": "number"
+              },
+              "pass": {
+                "description": "The number of successful health checks.",
+                "example": 100,
+                "type": "number"
+              }
+            },
+            "type": "object"
+          },
+          "timestamp": {
+            "description": "The timestamp of the metric.",
+            "example": "2020-01-01T00:00:00.000Z",
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "GlobalIpAssignmentUpdate": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/GlobalIpAssignment"
+          },
+          {
+            "properties": {
+              "global_ip_id": {
+                "readOnly": true,
+                "type": "string"
+              },
+              "wireguard_peer_id": {
+                "readOnly": true,
+                "type": "string"
+              }
+            },
+            "title": "Global IP",
+            "type": "object"
+          }
+        ]
+      },
+      "GlobalIpAssignmentUsageMetric": {
+        "properties": {
+          "global_ip": {
+            "properties": {
+              "id": {
+                "description": "Global IP ID.",
+                "example": "a836125b-20b6-452e-9c03-2653f09c7ed7",
+                "format": "uuid",
+                "type": "string"
+              },
+              "ip_address": {
+                "description": "The Global IP address.",
+                "example": "64.1.4.130",
+                "readOnly": true,
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
+          "global_ip_assignment": {
+            "properties": {
+              "id": {
+                "description": "Global IP assignment ID.",
+                "example": "a836125b-20b6-452e-9c03-2653f09c7ed7",
+                "format": "uuid",
+                "type": "string"
+              },
+              "wireguard_peer": {
+                "properties": {
+                  "ip_address": {
+                    "description": "The IP address of the interface.",
+                    "example": "172.1.0.1",
+                    "type": "string"
+                  },
+                  "name": {
+                    "description": "A user specified name for the interface.",
+                    "example": "Wireguard Peer 1",
+                    "type": "string"
+                  }
+                },
+                "type": "object"
+              },
+              "wireguard_peer_id": {
+                "description": "Wireguard peer ID.",
+                "example": "e66c496d-4a85-423b-8b2a-8e63fac20320",
+                "format": "uuid",
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
+          "received": {
+            "properties": {
+              "amount": {
+                "description": "The amount of data received.",
+                "example": 100000,
+                "type": "number"
+              },
+              "unit": {
+                "description": "The unit of the amount of data received.",
+                "example": "B",
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
+          "timestamp": {
+            "description": "The timestamp of the metric.",
+            "example": "2020-01-01T00:00:00.000Z",
+            "format": "date-time",
+            "type": "string"
+          },
+          "transmitted": {
+            "properties": {
+              "amount": {
+                "description": "The amount of data transmitted.",
+                "example": 100000,
+                "type": "number"
+              },
+              "unit": {
+                "description": "The unit of the amount of data transmitted.",
+                "example": "B",
+                "type": "string"
+              }
+            },
+            "type": "object"
+          }
+        },
+        "type": "object"
+      },
+      "GlobalIpHealthCheckType": {
+        "allOf": [
+          {
+            "properties": {
+              "health_check_params": {
+                "additionalProperties": true,
+                "description": "Global IP Health check params.",
+                "example": {
+                  "health_check_params": {
+                    "path": "str",
+                    "port": "int"
+                  }
+                },
+                "type": "object"
+              },
+              "health_check_type": {
+                "description": "Global IP Health check type.",
+                "example": "http_status_2xx",
+                "type": "string"
+              },
+              "record_type": {
+                "description": "Identifies the type of the resource.",
+                "example": "global_ip_health_check_type",
+                "readOnly": true,
+                "type": "string"
+              }
+            },
+            "title": "Global IP Health Check Type",
+            "type": "object"
+          }
+        ]
+      },
+      "GlobalIpLatencyMetric": {
+        "properties": {
+          "global_ip": {
+            "properties": {
+              "id": {
+                "description": "Global IP ID.",
+                "example": "a836125b-20b6-452e-9c03-2653f09c7ed7",
+                "format": "uuid",
+                "type": "string"
+              },
+              "ip_address": {
+                "description": "The Global IP address.",
+                "example": "192.0.2.1",
+                "readOnly": true,
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
+          "mean_latency": {
+            "properties": {
+              "amount": {
+                "description": "The average latency.",
+                "example": 100,
+                "type": "number"
+              },
+              "unit": {
+                "description": "The unit of the average latency.",
+                "example": "ms",
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
+          "percentile_latency": {
+            "properties": {
+              "0": {
+                "properties": {
+                  "amount": {
+                    "description": "The minimum latency.",
+                    "example": 100,
+                    "type": "number"
+                  },
+                  "unit": {
+                    "description": "The unit of the minimum latency.",
+                    "example": "ms",
+                    "type": "string"
+                  }
+                },
+                "type": "object"
+              },
+              "100": {
+                "properties": {
+                  "amount": {
+                    "description": "The maximum latency.",
+                    "example": 100,
+                    "type": "number"
+                  },
+                  "unit": {
+                    "description": "The unit of the maximum latency.",
+                    "example": "ms",
+                    "type": "string"
+                  }
+                },
+                "type": "object"
+              },
+              "25": {
+                "properties": {
+                  "amount": {
+                    "description": "The 25th percentile latency.",
+                    "example": 100,
+                    "type": "number"
+                  },
+                  "unit": {
+                    "description": "The unit of the 25th percentile latency.",
+                    "example": "ms",
+                    "type": "string"
+                  }
+                },
+                "type": "object"
+              },
+              "50": {
+                "properties": {
+                  "amount": {
+                    "description": "The 50th percentile latency.",
+                    "example": 100,
+                    "type": "number"
+                  },
+                  "unit": {
+                    "description": "The unit of the 50th percentile latency.",
+                    "example": "ms",
+                    "type": "string"
+                  }
+                },
+                "type": "object"
+              },
+              "75": {
+                "properties": {
+                  "amount": {
+                    "description": "The 75th percentile latency.",
+                    "example": 100,
+                    "type": "number"
+                  },
+                  "unit": {
+                    "description": "The unit of the 75th percentile latency.",
+                    "example": "ms",
+                    "type": "string"
+                  }
+                },
+                "type": "object"
+              },
+              "90": {
+                "properties": {
+                  "amount": {
+                    "description": "The 90th percentile latency.",
+                    "example": 100,
+                    "type": "number"
+                  },
+                  "unit": {
+                    "description": "The unit of the 90th percentile latency.",
+                    "example": "ms",
+                    "type": "string"
+                  }
+                },
+                "type": "object"
+              },
+              "99": {
+                "properties": {
+                  "amount": {
+                    "description": "The 99th percentile latency.",
+                    "example": 100,
+                    "type": "number"
+                  },
+                  "unit": {
+                    "description": "The unit of the 99th percentile latency.",
+                    "example": "ms",
+                    "type": "string"
+                  }
+                },
+                "type": "object"
+              }
+            },
+            "type": "object"
+          },
+          "prober_location": {
+            "properties": {
+              "id": {
+                "description": "Location ID.",
+                "example": "a836125b-20b6-452e-9c03-2653f09c7ed7",
+                "format": "uuid",
+                "type": "string"
+              },
+              "lat": {
+                "description": "Latitude.",
+                "example": 52.370216,
+                "type": "number"
+              },
+              "lon": {
+                "description": "Longitude.",
+                "example": 4.895168,
+                "type": "number"
+              },
+              "name": {
+                "description": "Location name.",
+                "example": "Amsterdam",
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
+          "timestamp": {
+            "description": "The timestamp of the metric.",
+            "example": "2020-01-01T00:00:00.000Z",
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "GlobalIpUsageMetric": {
+        "properties": {
+          "global_ip": {
+            "properties": {
+              "id": {
+                "description": "Global IP ID.",
+                "example": "a836125b-20b6-452e-9c03-2653f09c7ed7",
+                "format": "uuid",
+                "type": "string"
+              },
+              "ip_address": {
+                "description": "The Global IP address.",
+                "example": "64.1.2.130",
+                "readOnly": true,
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
+          "received": {
+            "properties": {
+              "amount": {
+                "description": "The amount of data received.",
+                "example": 100000,
+                "type": "number"
+              },
+              "unit": {
+                "description": "The unit of the amount of data received.",
+                "example": "B",
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
+          "timestamp": {
+            "description": "The timestamp of the metric.",
+            "example": "2020-01-01T00:00:00.000Z",
+            "format": "date-time",
+            "type": "string"
+          },
+          "transmitted": {
+            "properties": {
+              "amount": {
+                "description": "The amount of data transmitted.",
+                "example": 100000,
+                "type": "number"
+              },
+              "unit": {
+                "description": "The unit of the amount of data transmitted.",
+                "example": "B",
+                "type": "string"
+              }
+            },
+            "type": "object"
+          }
+        },
+        "type": "object"
+      },
+      "InterfaceStatus": {
+        "description": "The current status of the interface deployment.",
+        "enum": [
+          "created",
+          "provisioning",
+          "provisioned",
+          "deleting"
+        ],
+        "example": "provisioned",
+        "readOnly": true,
+        "type": "string"
+      },
+      "PaginationMeta": {
+        "properties": {
+          "page_number": {
+            "example": 2,
+            "type": "integer"
+          },
+          "page_size": {
+            "example": 25,
+            "type": "integer"
+          },
+          "total_pages": {
+            "example": 3,
+            "type": "integer"
+          },
+          "total_results": {
+            "example": 55,
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "Record": {
+        "properties": {
+          "created_at": {
+            "description": "ISO 8601 formatted date-time indicating when the resource was created.",
+            "example": "2018-02-02T22:25:27.521Z",
+            "readOnly": true,
+            "type": "string"
+          },
+          "id": {
+            "description": "Identifies the resource.",
+            "example": "6a09cdc3-8948-47f0-aa62-74ac943d6c58",
+            "format": "uuid",
+            "readOnly": true,
+            "type": "string"
+          },
+          "record_type": {
+            "description": "Identifies the type of the resource.",
+            "example": "sample_record_type",
+            "readOnly": true,
+            "type": "string"
+          },
+          "updated_at": {
+            "description": "ISO 8601 formatted date-time indicating when the resource was updated.",
+            "example": "2018-02-02T22:25:27.521Z",
+            "readOnly": true,
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "netapps_Error": {
+        "properties": {
+          "code": {
+            "type": "string"
+          },
+          "detail": {
+            "type": "string"
+          },
+          "meta": {
+            "additionalProperties": true,
+            "type": "object"
+          },
+          "source": {
+            "properties": {
+              "parameter": {
+                "description": "Indicates which query parameter caused the error.",
+                "type": "string"
+              },
+              "pointer": {
+                "description": "JSON pointer (RFC6901) to the offending entity.",
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
+          "title": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "title"
+        ],
+        "type": "object"
+      },
+      "netapps_Errors": {
+        "properties": {
+          "errors": {
+            "items": {
+              "$ref": "#/components/schemas/netapps_Error"
+            },
+            "type": "array"
+          }
+        },
+        "type": "object"
+      }
+    },
+    "securitySchemes": {
+      "BearerAuth": {
+        "bearerFormat": "API key",
+        "description": "Telnyx API key supplied as `Authorization: Bearer \u003ctoken\u003e`. In production, auth may be validated by the API gateway and forwarded via Telnyx auth headers.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "Payment": {
+        "description": "Machine Payment Protocol credential used on paid retries, sent as `Authorization: Payment ...`. Obtained by paying a challenge returned in the `WWW-Authenticate` header of a 402 response. This is not a Telnyx API key; initial challenge requests use standard bearer authentication instead.",
+        "in": "header",
+        "name": "Authorization",
+        "type": "apiKey"
+      },
+      "agent-memory_bearerAuth": {
+        "description": "Telnyx API key",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "bearerAuth": {
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "branded-calling_bearerAuth": {
+        "description": "Telnyx API key. Generate one at https://portal.telnyx.com/#/app/api-keys.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "collections_bearerAuth": {
+        "description": "Telnyx API key. Collections and results are automatically scoped to the authenticated user's organization.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "number-reputation_bearerAuth": {
+        "description": "Telnyx API key. Generate one at https://portal.telnyx.com/#/app/api-keys.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "oauthClientAuth": {
+        "description": "OAuth 2.0 authentication for Telnyx API and MCP integrations",
+        "flows": {
+          "authorizationCode": {
+            "authorizationUrl": "https://api.telnyx.com/v2/oauth/authorize",
+            "refreshUrl": "https://api.telnyx.com/v2/oauth/token",
+            "scopes": {
+              "admin": "Administrative access to Telnyx resources"
+            },
+            "tokenUrl": "https://api.telnyx.com/v2/oauth/token"
+          },
+          "clientCredentials": {
+            "scopes": {
+              "admin": "Administrative access to Telnyx resources"
+            },
+            "tokenUrl": "https://api.telnyx.com/v2/oauth/token"
+          }
+        },
+        "type": "oauth2"
+      },
+      "outbound-voice-profiles_bearerAuth": {
+        "bearerFormat": "JWT",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "pay-connectors_bearerAuth": {
+        "description": "Telnyx API key, not the processor bearer token.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "pronunciation-dicts_bearerAuth": {
+        "description": "Telnyx API v2 key. Obtain from https://portal.telnyx.com",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "rcs-registration_bearerAuth": {
+        "bearerFormat": "API key",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "stored-payment-transactions_bearerAuth": {
+        "bearerFormat": "JWT",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "telnyxApiKey": {
+        "description": "Management-only Telnyx account credential.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "transcriptions-search_bearerAuth": {
+        "description": "Telnyx API key. Results are automatically scoped to the authenticated user's organization.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "web-search_bearerAuth": {
+        "description": "Telnyx API key",
+        "scheme": "bearer",
+        "type": "http"
+      }
+    }
+  },
+  "info": {
+    "contact": {
+      "email": "support@telnyx.com"
+    },
+    "description": "SIP trunking, SMS, MMS, Call Control and Telephony Data Services.",
+    "title": "Telnyx API",
+    "version": "2.0.0",
+    "x-endpoint-cost": "light",
+    "x-latency-category": "responsive"
+  },
+  "openapi": "3.1.0",
+  "paths": {
+    "/global_ip_allowed_ports": {
+      "get": {
+        "description": "Returns the ports allowed for Global IP traffic, for use when configuring Global IP resources.",
+        "operationId": "ListGlobalIpAllowedPorts",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "items": {
+                        "$ref": "#/components/schemas/GlobalIPAllowedPort"
+                      },
+                      "type": "array"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful response"
+          },
+          "422": {
+            "$ref": "#/components/responses/GenericErrorResponse"
+          },
+          "default": {
+            "$ref": "#/components/responses/GenericErrorResponse"
+          }
+        },
+        "summary": "List all Global IP Allowed Ports",
+        "tags": [
+          "Global IPs"
+        ]
+      }
+    },
+    "/global_ip_assignment_health": {
+      "get": {
+        "description": "Retrieve health check metrics for your Global IP assignments.",
+        "operationId": "GetGlobalIpAssignmentHealth",
+        "parameters": [
+          {
+            "description": "Consolidated filter parameter (deepObject style). Originally: filter[global_ip_id][in], filter[global_ip_assignment_id][in]",
+            "explode": true,
+            "in": "query",
+            "name": "filter",
+            "schema": {
+              "additionalProperties": false,
+              "properties": {
+                "global_ip_assignment_id": {
+                  "oneOf": [
+                    {
+                      "description": "Filter by exact Global IP Assignment ID",
+                      "type": "string"
+                    },
+                    {
+                      "additionalProperties": false,
+                      "description": "Filtering operations",
+                      "properties": {
+                        "in": {
+                          "description": "Filter by Global IP Assignment ID(s) separated by commas",
+                          "type": "string"
+                        }
+                      },
+                      "type": "object"
+                    }
+                  ]
+                },
+                "global_ip_id": {
+                  "oneOf": [
+                    {
+                      "description": "Filter by exact Global IP ID",
+                      "type": "string"
+                    },
+                    {
+                      "additionalProperties": false,
+                      "description": "Filtering operations",
+                      "properties": {
+                        "in": {
+                          "description": "Filter by Global IP ID(s) separated by commas",
+                          "type": "string"
+                        }
+                      },
+                      "type": "object"
+                    }
+                  ]
+                }
+              },
+              "type": "object"
+            },
+            "style": "deepObject"
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "items": {
+                        "$ref": "#/components/schemas/GlobalIpAssignmentHealthMetric"
+                      },
+                      "type": "array"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful response"
+          },
+          "422": {
+            "$ref": "#/components/responses/GenericErrorResponse"
+          },
+          "default": {
+            "$ref": "#/components/responses/GenericErrorResponse"
+          }
+        },
+        "summary": "Global IP Assignment Health Check Metrics",
+        "tags": [
+          "Global IPs"
+        ]
+      }
+    },
+    "/global_ip_assignments": {
+      "get": {
+        "description": "Returns a paginated list of your Global IP assignments, the links between Global IPs and the WireGuard peers that receive their traffic.",
+        "operationId": "ListGlobalIpAssignments",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/PageConsolidated"
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "items": {
+                        "$ref": "#/components/schemas/GlobalIpAssignment"
+                      },
+                      "type": "array"
+                    },
+                    "meta": {
+                      "$ref": "#/components/schemas/PaginationMeta"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful response"
+          },
+          "422": {
+            "$ref": "#/components/responses/GenericErrorResponse"
+          },
+          "default": {
+            "$ref": "#/components/responses/GenericErrorResponse"
+          }
+        },
+        "summary": "List all Global IP assignments",
+        "tags": [
+          "Global IPs"
+        ]
+      },
+      "post": {
+        "description": "Assigns a Global IP to a WireGuard peer so traffic destined for the IP is delivered over that peer's tunnel. Assignment is asynchronous, so the request is accepted and completes in the background.",
+        "operationId": "CreateGlobalIpAssignment",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/GlobalIpAssignment"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "202": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/GlobalIpAssignment"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Assignment request accepted. Provisioning is asynchronous; poll GET /global_ip_assignments/{id} with the returned id to check status."
+          },
+          "422": {
+            "$ref": "#/components/responses/netapps_UnprocessableEntity_17904fcfbc"
+          },
+          "default": {
+            "$ref": "#/components/responses/GenericErrorResponse"
+          }
+        },
+        "summary": "Create a Global IP assignment",
+        "tags": [
+          "Global IPs"
+        ]
+      }
+    },
+    "/global_ip_assignments/usage": {
+      "get": {
+        "description": "Retrieve usage metrics for your Global IP assignments.",
+        "operationId": "GetGlobalIpAssignmentUsage",
+        "parameters": [
+          {
+            "description": "Consolidated filter parameter (deepObject style). Originally: filter[global_ip_assignment_id][in], filter[global_ip_id][in]",
+            "explode": true,
+            "in": "query",
+            "name": "filter",
+            "schema": {
+              "additionalProperties": false,
+              "properties": {
+                "global_ip_assignment_id": {
+                  "oneOf": [
+                    {
+                      "description": "Filter by exact Global IP Assignment ID",
+                      "type": "string"
+                    },
+                    {
+                      "additionalProperties": false,
+                      "description": "Filtering operations",
+                      "properties": {
+                        "in": {
+                          "description": "Filter by Global IP Assignment ID(s) separated by commas",
+                          "type": "string"
+                        }
+                      },
+                      "type": "object"
+                    }
+                  ]
+                },
+                "global_ip_id": {
+                  "oneOf": [
+                    {
+                      "description": "Filter by exact Global IP ID",
+                      "type": "string"
+                    },
+                    {
+                      "additionalProperties": false,
+                      "description": "Filtering operations",
+                      "properties": {
+                        "in": {
+                          "description": "Filter by Global IP ID(s) separated by commas",
+                          "type": "string"
+                        }
+                      },
+                      "type": "object"
+                    }
+                  ]
+                }
+              },
+              "type": "object"
+            },
+            "style": "deepObject"
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "items": {
+                        "$ref": "#/components/schemas/GlobalIpAssignmentUsageMetric"
+                      },
+                      "type": "array"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful response"
+          },
+          "422": {
+            "$ref": "#/components/responses/netapps_GenericErrorResponse"
+          },
+          "default": {
+            "$ref": "#/components/responses/netapps_GenericErrorResponse"
+          }
+        },
+        "summary": "Global IP Assignment Usage Metrics",
+        "tags": [
+          "Global IPs"
+        ],
+        "x-latency-category": "responsive"
+      }
+    },
+    "/global_ip_assignments/{id}": {
+      "delete": {
+        "description": "Deletes the specified Global IP assignment, detaching the Global IP from its WireGuard peer.",
+        "operationId": "DeleteGlobalIpAssignment",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/ResourceId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/GlobalIpAssignment"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful response"
+          },
+          "422": {
+            "$ref": "#/components/responses/GenericErrorResponse"
+          },
+          "default": {
+            "$ref": "#/components/responses/GenericErrorResponse"
+          }
+        },
+        "summary": "Delete a Global IP assignment",
+        "tags": [
+          "Global IPs"
+        ]
+      },
+      "get": {
+        "description": "Returns the details of a single Global IP assignment, including the Global IP and WireGuard peer it links.",
+        "operationId": "GetGlobalIpAssignment",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/ResourceId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/GlobalIpAssignment"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful response"
+          },
+          "422": {
+            "$ref": "#/components/responses/GenericErrorResponse"
+          },
+          "default": {
+            "$ref": "#/components/responses/GenericErrorResponse"
+          }
+        },
+        "summary": "Retrieve a Global IP assignment",
+        "tags": [
+          "Global IPs"
+        ]
+      },
+      "patch": {
+        "description": "Updates the specified Global IP assignment with the provided fields and returns the updated assignment.",
+        "operationId": "UpdateGlobalIpAssignment",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/ResourceId"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/GlobalIpAssignmentUpdate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/GlobalIpAssignment"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful response"
+          },
+          "422": {
+            "$ref": "#/components/responses/GenericErrorResponse"
+          },
+          "default": {
+            "$ref": "#/components/responses/GenericErrorResponse"
+          }
+        },
+        "summary": "Update a Global IP assignment",
+        "tags": [
+          "Global IPs"
+        ]
+      }
+    },
+    "/global_ip_assignments_usage": {
+      "get": {
+        "description": "Retrieve usage metrics for your Global IP assignments.",
+        "operationId": "GetGlobalIpAssignmentUsage",
+        "parameters": [
+          {
+            "description": "Consolidated filter parameter (deepObject style). Originally: filter[global_ip_assignment_id][in], filter[global_ip_id][in]",
+            "explode": true,
+            "in": "query",
+            "name": "filter",
+            "schema": {
+              "additionalProperties": false,
+              "properties": {
+                "global_ip_assignment_id": {
+                  "oneOf": [
+                    {
+                      "description": "Filter by exact Global IP Assignment ID",
+                      "type": "string"
+                    },
+                    {
+                      "additionalProperties": false,
+                      "description": "Filtering operations",
+                      "properties": {
+                        "in": {
+                          "description": "Filter by Global IP Assignment ID(s) separated by commas",
+                          "type": "string"
+                        }
+                      },
+                      "type": "object"
+                    }
+                  ]
+                },
+                "global_ip_id": {
+                  "oneOf": [
+                    {
+                      "description": "Filter by exact Global IP ID",
+                      "type": "string"
+                    },
+                    {
+                      "additionalProperties": false,
+                      "description": "Filtering operations",
+                      "properties": {
+                        "in": {
+                          "description": "Filter by Global IP ID(s) separated by commas",
+                          "type": "string"
+                        }
+                      },
+                      "type": "object"
+                    }
+                  ]
+                }
+              },
+              "type": "object"
+            },
+            "style": "deepObject"
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "items": {
+                        "$ref": "#/components/schemas/GlobalIpAssignmentUsageMetric"
+                      },
+                      "type": "array"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful response"
+          },
+          "422": {
+            "$ref": "#/components/responses/GenericErrorResponse"
+          },
+          "default": {
+            "$ref": "#/components/responses/GenericErrorResponse"
+          }
+        },
+        "summary": "Global IP Assignment Usage Metrics",
+        "tags": [
+          "Global IPs"
+        ]
+      }
+    },
+    "/global_ip_health_check_types": {
+      "get": {
+        "description": "Returns the health check types available for Global IPs, for use when creating Global IP health checks.",
+        "operationId": "ListGlobalIpHealthCheckTypes",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "items": {
+                        "$ref": "#/components/schemas/GlobalIpHealthCheckType"
+                      },
+                      "type": "array"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful response"
+          },
+          "422": {
+            "$ref": "#/components/responses/GenericErrorResponse"
+          },
+          "default": {
+            "$ref": "#/components/responses/GenericErrorResponse"
+          }
+        },
+        "summary": "List all Global IP Health check types",
+        "tags": [
+          "Global IPs"
+        ]
+      }
+    },
+    "/global_ip_health_checks": {
+      "get": {
+        "description": "Returns a paginated list of the Global IP health checks configured on your account.",
+        "operationId": "ListGlobalIpHealthChecks",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/PageConsolidated"
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "items": {
+                        "$ref": "#/components/schemas/GlobalIPHealthCheck"
+                      },
+                      "type": "array"
+                    },
+                    "meta": {
+                      "$ref": "#/components/schemas/PaginationMeta"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful response"
+          },
+          "422": {
+            "$ref": "#/components/responses/GenericErrorResponse"
+          },
+          "default": {
+            "$ref": "#/components/responses/GenericErrorResponse"
+          }
+        },
+        "summary": "List all Global IP health checks",
+        "tags": [
+          "Global IPs"
+        ]
+      },
+      "post": {
+        "description": "Creates a health check for a Global IP to monitor the health of its assignments. Creation is asynchronous, so the request is accepted and the health check becomes active once provisioning completes.",
+        "operationId": "CreateGlobalIpHealthCheck",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/GlobalIPHealthCheck"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "202": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/GlobalIPHealthCheck"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Creation request accepted. Provisioning is asynchronous; poll GET /global_ip_health_checks/{id} with the returned id to check status."
+          },
+          "422": {
+            "$ref": "#/components/responses/netapps_UnprocessableEntity_17904fcfbc"
+          },
+          "default": {
+            "$ref": "#/components/responses/GenericErrorResponse"
+          }
+        },
+        "summary": "Create a Global IP health check",
+        "tags": [
+          "Global IPs"
+        ]
+      }
+    },
+    "/global_ip_health_checks/{id}": {
+      "delete": {
+        "description": "Deletes the specified Global IP health check so it no longer monitors the Global IP's assignments.",
+        "operationId": "DeleteGlobalIpHealthCheck",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/ResourceId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/GlobalIPHealthCheck"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful response"
+          },
+          "422": {
+            "$ref": "#/components/responses/GenericErrorResponse"
+          },
+          "default": {
+            "$ref": "#/components/responses/GenericErrorResponse"
+          }
+        },
+        "summary": "Delete a Global IP health check",
+        "tags": [
+          "Global IPs"
+        ]
+      },
+      "get": {
+        "description": "Returns the details of a single Global IP health check, including its type and configuration.",
+        "operationId": "GetGlobalIpHealthCheck",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/ResourceId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/GlobalIPHealthCheck"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful response"
+          },
+          "422": {
+            "$ref": "#/components/responses/GenericErrorResponse"
+          },
+          "default": {
+            "$ref": "#/components/responses/GenericErrorResponse"
+          }
+        },
+        "summary": "Retrieve a Global IP health check",
+        "tags": [
+          "Global IPs"
+        ]
+      }
+    },
+    "/global_ip_latency": {
+      "get": {
+        "description": "Retrieve latency metrics measured for your Global IPs.",
+        "operationId": "GetGlobalIpLatency",
+        "parameters": [
+          {
+            "description": "Consolidated filter parameter (deepObject style). Originally: filter[global_ip_id][in]",
+            "explode": true,
+            "in": "query",
+            "name": "filter",
+            "schema": {
+              "additionalProperties": false,
+              "properties": {
+                "global_ip_id": {
+                  "oneOf": [
+                    {
+                      "description": "Filter by exact Global IP ID",
+                      "type": "string"
+                    },
+                    {
+                      "additionalProperties": false,
+                      "description": "Filtering operations",
+                      "properties": {
+                        "in": {
+                          "description": "Filter by Global IP ID(s) separated by commas",
+                          "type": "string"
+                        }
+                      },
+                      "type": "object"
+                    }
+                  ]
+                }
+              },
+              "type": "object"
+            },
+            "style": "deepObject"
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "items": {
+                        "$ref": "#/components/schemas/GlobalIpLatencyMetric"
+                      },
+                      "type": "array"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful response"
+          },
+          "422": {
+            "$ref": "#/components/responses/GenericErrorResponse"
+          },
+          "default": {
+            "$ref": "#/components/responses/GenericErrorResponse"
+          }
+        },
+        "summary": "Global IP Latency Metrics",
+        "tags": [
+          "Global IPs"
+        ]
+      }
+    },
+    "/global_ip_protocols": {
+      "get": {
+        "description": "Returns the network protocols supported for Global IP traffic, for use when configuring Global IP resources.",
+        "operationId": "ListGlobalIpProtocols",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "items": {
+                        "$ref": "#/components/schemas/GlobalIPProtocol"
+                      },
+                      "type": "array"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful response"
+          },
+          "422": {
+            "$ref": "#/components/responses/GenericErrorResponse"
+          },
+          "default": {
+            "$ref": "#/components/responses/GenericErrorResponse"
+          }
+        },
+        "summary": "List all Global IP Protocols",
+        "tags": [
+          "Global IPs"
+        ]
+      }
+    },
+    "/global_ip_usage": {
+      "get": {
+        "description": "Retrieve usage metrics for your Global IPs.",
+        "operationId": "GetGlobalIpUsage",
+        "parameters": [
+          {
+            "description": "Consolidated filter parameter (deepObject style). Originally: filter[global_ip_id][in]",
+            "explode": true,
+            "in": "query",
+            "name": "filter",
+            "schema": {
+              "additionalProperties": false,
+              "properties": {
+                "global_ip_id": {
+                  "oneOf": [
+                    {
+                      "description": "Filter by exact Global IP ID",
+                      "type": "string"
+                    },
+                    {
+                      "additionalProperties": false,
+                      "description": "Filtering operations",
+                      "properties": {
+                        "in": {
+                          "description": "Filter by Global IP ID(s) separated by commas",
+                          "type": "string"
+                        }
+                      },
+                      "type": "object"
+                    }
+                  ]
+                }
+              },
+              "type": "object"
+            },
+            "style": "deepObject"
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "items": {
+                        "$ref": "#/components/schemas/GlobalIpUsageMetric"
+                      },
+                      "type": "array"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful response"
+          },
+          "422": {
+            "$ref": "#/components/responses/GenericErrorResponse"
+          },
+          "default": {
+            "$ref": "#/components/responses/GenericErrorResponse"
+          }
+        },
+        "summary": "Global IP Usage Metrics",
+        "tags": [
+          "Global IPs"
+        ]
+      }
+    },
+    "/global_ips": {
+      "get": {
+        "description": "Returns a paginated list of the Global IPs on your account, including each IP's address and configuration.",
+        "operationId": "ListGlobalIps",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/PageConsolidated"
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "items": {
+                        "$ref": "#/components/schemas/GlobalIP"
+                      },
+                      "type": "array"
+                    },
+                    "meta": {
+                      "$ref": "#/components/schemas/PaginationMeta"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful response"
+          },
+          "422": {
+            "$ref": "#/components/responses/GenericErrorResponse"
+          },
+          "default": {
+            "$ref": "#/components/responses/GenericErrorResponse"
+          }
+        },
+        "summary": "List all Global IPs",
+        "tags": [
+          "Global IPs"
+        ]
+      },
+      "post": {
+        "description": "Requests creation of a new Global IP, a static IP address announced from the Telnyx network. Provisioning is asynchronous, so the request is accepted and the Global IP becomes available once provisioning completes.",
+        "operationId": "CreateGlobalIp",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/GlobalIP"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "202": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/GlobalIP"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Creation request accepted. Provisioning is asynchronous; poll GET /global_ips/{id} with the returned id to check status."
+          },
+          "422": {
+            "$ref": "#/components/responses/netapps_UnprocessableEntity_17904fcfbc"
+          },
+          "default": {
+            "$ref": "#/components/responses/GenericErrorResponse"
+          }
+        },
+        "summary": "Create a Global IP",
+        "tags": [
+          "Global IPs"
+        ]
+      }
+    },
+    "/global_ips/{id}": {
+      "delete": {
+        "description": "Deletes the specified Global IP and releases its address back to Telnyx.",
+        "operationId": "DeleteGlobalIp",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/ResourceId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/GlobalIP"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful response"
+          },
+          "422": {
+            "$ref": "#/components/responses/GenericErrorResponse"
+          },
+          "default": {
+            "$ref": "#/components/responses/GenericErrorResponse"
+          }
+        },
+        "summary": "Delete a Global IP",
+        "tags": [
+          "Global IPs"
+        ]
+      },
+      "get": {
+        "description": "Returns the details of a single Global IP, including its address and current configuration.",
+        "operationId": "GetGlobalIp",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/ResourceId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/GlobalIP"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful response"
+          },
+          "422": {
+            "$ref": "#/components/responses/GenericErrorResponse"
+          },
+          "default": {
+            "$ref": "#/components/responses/GenericErrorResponse"
+          }
+        },
+        "summary": "Retrieve a Global IP",
+        "tags": [
+          "Global IPs"
+        ]
+      }
+    }
+  },
+  "security": [
+    {
+      "bearerAuth": []
+    }
+  ],
+  "servers": [
+    {
+      "description": "Version 2.0.0 of the Telnyx API",
+      "url": "https://api.telnyx.com/v2"
+    }
+  ]
+}

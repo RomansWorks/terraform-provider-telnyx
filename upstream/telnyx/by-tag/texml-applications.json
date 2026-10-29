@@ -1,0 +1,1332 @@
+{
+  "components": {
+    "parameters": {
+      "SortApplication": {
+        "description": "Specifies the sort order for results. By default sorting direction is ascending. To have the results sorted in descending order add the \u003ccode\u003e -\u003c/code\u003e prefix.\u003cbr/\u003e\u003cbr/\u003e\nThat is: \u003cul\u003e\n  \u003cli\u003e\n    \u003ccode\u003efriendly_name\u003c/code\u003e: sorts the result by the\n    \u003ccode\u003efriendly_name\u003c/code\u003e field in ascending order.\n  \u003c/li\u003e\n\n  \u003cli\u003e\n    \u003ccode\u003e-friendly_name\u003c/code\u003e: sorts the result by the\n    \u003ccode\u003efriendly_name\u003c/code\u003e field in descending order.\n  \u003c/li\u003e\n\u003c/ul\u003e \u003cbr/\u003e If not given, results are sorted by \u003ccode\u003ecreated_at\u003c/code\u003e in descending order.",
+        "in": "query",
+        "name": "sort",
+        "schema": {
+          "default": "created_at",
+          "enum": [
+            "created_at",
+            "friendly_name",
+            "active"
+          ],
+          "example": "friendly_name",
+          "type": "string"
+        }
+      },
+      "call-scripting_FilterConsolidated": {
+        "description": "Consolidated filter parameter (deepObject style). Originally: filter[outbound_voice_profile_id], filter[friendly_name]",
+        "explode": true,
+        "in": "query",
+        "name": "filter",
+        "schema": {
+          "properties": {
+            "friendly_name": {
+              "default": "null",
+              "description": "If present, applications with \u003ccode\u003efriendly_name\u003c/code\u003e containing the given value will be returned. Matching is not case-sensitive. Requires at least three characters.",
+              "type": "string"
+            },
+            "outbound_voice_profile_id": {
+              "description": "Identifies the associated outbound voice profile.",
+              "example": "1293384261075731499",
+              "type": "string"
+            }
+          },
+          "type": "object"
+        },
+        "style": "deepObject"
+      },
+      "call-scripting_PageConsolidated": {
+        "description": "Consolidated page parameter (deepObject style). Originally: page[size], page[number]",
+        "explode": true,
+        "in": "query",
+        "name": "page",
+        "schema": {
+          "properties": {
+            "number": {
+              "default": 1,
+              "description": "The page number to load",
+              "minimum": 1,
+              "type": "integer"
+            },
+            "size": {
+              "default": 250,
+              "description": "The size of the page",
+              "maximum": 250,
+              "minimum": 1,
+              "type": "integer"
+            }
+          },
+          "type": "object"
+        },
+        "style": "deepObject"
+      },
+      "id": {
+        "description": "Identifies the resource.",
+        "in": "path",
+        "name": "id",
+        "required": true,
+        "schema": {
+          "example": "1293384261075731499",
+          "type": "string"
+        }
+      }
+    },
+    "responses": {
+      "NotFoundResponseApp": {
+        "content": {
+          "application/json": {
+            "examples": {
+              "notFound": {
+                "value": {
+                  "errors": [
+                    {
+                      "code": "10005",
+                      "detail": "The requested resource or URL could not be found.",
+                      "meta": {
+                        "url": "https://developers.telnyx.com/docs/overview/errors/10005"
+                      },
+                      "source": {
+                        "pointer": "/"
+                      },
+                      "title": "Resource not found"
+                    }
+                  ]
+                }
+              }
+            },
+            "schema": {
+              "$ref": "#/components/schemas/call-scripting_ErrorResponse"
+            }
+          }
+        },
+        "description": "The requested resource doesn't exist."
+      },
+      "UnauthenticatedResponse": {
+        "content": {
+          "application/json": {
+            "examples": {
+              "Authentication Failed": {
+                "value": {
+                  "errors": [
+                    {
+                      "code": "10009",
+                      "detail": "Could not understand the provided credentials.",
+                      "meta": {
+                        "url": "https://developers.telnyx.com/docs/overview/errors/10009"
+                      },
+                      "title": "Authentication failed"
+                    }
+                  ]
+                }
+              }
+            },
+            "schema": {
+              "$ref": "#/components/schemas/call-scripting_ErrorResponse"
+            }
+          }
+        },
+        "description": "Unauthorized"
+      },
+      "call-scripting_BadRequestResponse": {
+        "content": {
+          "application/json": {
+            "examples": {
+              "conference_ended": {
+                "summary": "Conference already ended",
+                "value": {
+                  "errors": [
+                    {
+                      "code": "90019",
+                      "detail": "This conference is no longer active and can't receive commands.",
+                      "title": "Conference has already ended"
+                    }
+                  ]
+                }
+              },
+              "participant_on_hold": {
+                "summary": "Participant on hold",
+                "value": {
+                  "errors": [
+                    {
+                      "code": "90047",
+                      "detail": "This participant is on hold",
+                      "title": "Participant on hold"
+                    }
+                  ]
+                }
+              }
+            },
+            "schema": {
+              "$ref": "#/components/schemas/call-scripting_ErrorResponse"
+            }
+          }
+        },
+        "description": "Bad request. The request could not be understood or was missing required parameters."
+      },
+      "call-scripting_NotFoundResponse_c75353cb83": {
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/call-scripting_ResourceNotFoundError_c75353cb83"
+            }
+          }
+        },
+        "description": "Resource not found"
+      },
+      "call-scripting_UnauthorizedResponse": {
+        "content": {
+          "application/json": {
+            "examples": {
+              "notAuthorized": {
+                "value": {
+                  "errors": [
+                    {
+                      "code": "10010",
+                      "detail": "You are not authorized to access the requested resource.",
+                      "meta": {
+                        "url": "https://developers.telnyx.com/docs/overview/errors/10010"
+                      },
+                      "source": {
+                        "pointer": "/"
+                      },
+                      "title": "Not authorized"
+                    }
+                  ]
+                }
+              }
+            },
+            "schema": {
+              "$ref": "#/components/schemas/call-scripting_ErrorResponse"
+            }
+          }
+        },
+        "description": "The user doesn't have the required permissions to perform the requested action."
+      },
+      "call-scripting_UnprocessableEntityResponse_c75353cb83": {
+        "content": {
+          "application/json": {
+            "examples": {
+              "invalid_enumerated_value": {
+                "summary": "Invalid enumerated value",
+                "value": {
+                  "errors": [
+                    {
+                      "code": "10032",
+                      "detail": "Status must be one of completed",
+                      "source": {
+                        "pointer": "/Status"
+                      },
+                      "title": "Invalid enumerated value"
+                    }
+                  ]
+                }
+              },
+              "invalid_parameter_type": {
+                "summary": "Invalid parameter type",
+                "value": {
+                  "errors": [
+                    {
+                      "code": "10026",
+                      "detail": "The 'To' parameter must be of type 'string'",
+                      "source": {
+                        "pointer": "/To"
+                      },
+                      "title": "Invalid parameter type"
+                    }
+                  ]
+                }
+              },
+              "invalid_send_digits": {
+                "summary": "Invalid SendDigits format",
+                "value": {
+                  "errors": [
+                    {
+                      "code": "90014",
+                      "detail": "The 'SendDigits' parameter must be a 'string' made of a combination of either 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, A, B, C, D, w, W, * or #",
+                      "source": {
+                        "pointer": "/SendDigits"
+                      },
+                      "title": "Invalid value for SendDigits"
+                    }
+                  ]
+                }
+              },
+              "missing_required_parameter": {
+                "summary": "Missing required parameter",
+                "value": {
+                  "errors": [
+                    {
+                      "code": "10004",
+                      "detail": "Can't be blank: ApplicationId",
+                      "source": {
+                        "pointer": "/ApplicationId"
+                      },
+                      "title": "Missing required parameter"
+                    }
+                  ]
+                }
+              }
+            },
+            "schema": {
+              "$ref": "#/components/schemas/call-scripting_ErrorResponse"
+            }
+          }
+        },
+        "description": "Unprocessable entity. The request was well-formed but contains semantic errors."
+      }
+    },
+    "schemas": {
+      "AnchorsiteOverride": {
+        "default": "Latency",
+        "description": "`Latency` directs Telnyx to route media through the site with the lowest round-trip time to the user's connection. Telnyx calculates this time using ICMP ping messages. This can be disabled by specifying a site to handle all media.",
+        "enum": [
+          "Latency",
+          "Chicago, IL",
+          "Ashburn, VA",
+          "San Jose, CA",
+          "Sydney, Australia",
+          "Amsterdam, Netherlands",
+          "London, UK",
+          "Toronto, Canada",
+          "Vancouver, Canada",
+          "Frankfurt, Germany"
+        ],
+        "example": "Amsterdam, Netherlands",
+        "title": "Anchorsite Override",
+        "type": "string"
+      },
+      "ApplicationName": {
+        "description": "A user-assigned name to help manage the application.",
+        "example": "call-router",
+        "title": "Application Name",
+        "type": "string"
+      },
+      "ConnectionActive": {
+        "default": true,
+        "description": "Specifies whether the connection can be used.",
+        "example": false,
+        "title": "Connection Active",
+        "type": "boolean"
+      },
+      "CreateTexmlApplicationRequest": {
+        "example": {
+          "active": false,
+          "anchorsite_override": "Amsterdam, Netherlands",
+          "call_cost_in_webhooks": false,
+          "dtmf_type": "Inband",
+          "first_command_timeout": true,
+          "first_command_timeout_secs": 10,
+          "friendly_name": "call-router",
+          "inbound": {
+            "channel_limit": 10,
+            "shaken_stir_enabled": true,
+            "sip_subdomain": "example",
+            "sip_subdomain_receive_settings": "only_my_connections"
+          },
+          "outbound": {
+            "channel_limit": 10,
+            "outbound_voice_profile_id": "1293384261075731499"
+          },
+          "status_callback": "https://example.com",
+          "status_callback_method": "get",
+          "tags": [
+            "tag1",
+            "tag2"
+          ],
+          "voice_fallback_url": "https://fallback.example.com",
+          "voice_method": "get",
+          "voice_url": "https://example.com"
+        },
+        "properties": {
+          "active": {
+            "$ref": "#/components/schemas/ConnectionActive"
+          },
+          "anchorsite_override": {
+            "$ref": "#/components/schemas/AnchorsiteOverride"
+          },
+          "call_cost_in_webhooks": {
+            "default": false,
+            "description": "Specifies if call cost webhooks should be sent for this TeXML Application.",
+            "type": "boolean"
+          },
+          "dtmf_type": {
+            "$ref": "#/components/schemas/DtmfType"
+          },
+          "first_command_timeout": {
+            "$ref": "#/components/schemas/FirstCommandTimeout"
+          },
+          "first_command_timeout_secs": {
+            "$ref": "#/components/schemas/FirstCommandTimeoutSecs"
+          },
+          "friendly_name": {
+            "$ref": "#/components/schemas/ApplicationName"
+          },
+          "inbound": {
+            "properties": {
+              "channel_limit": {
+                "default": null,
+                "description": "When set, this will limit the total number of inbound calls to phone numbers associated with this connection.",
+                "example": 10,
+                "type": "integer"
+              },
+              "shaken_stir_enabled": {
+                "default": false,
+                "description": "When enabled Telnyx will include Shaken/Stir data in the Webhook for new inbound calls.",
+                "example": false,
+                "type": "boolean"
+              },
+              "sip_subdomain": {
+                "default": null,
+                "description": "Specifies a subdomain that can be used to receive Inbound calls to a Connection, in the same way a phone number is used, from a SIP endpoint. Example: the subdomain \"example.sip.telnyx.com\" can be called from any SIP endpoint by using the SIP URI \"sip:@example.sip.telnyx.com\" where the user part can be any alphanumeric value. TLS signaling is supported. SRTP media encryption requires TLS transport.",
+                "example": "example",
+                "type": "string"
+              },
+              "sip_subdomain_receive_settings": {
+                "default": "from_anyone",
+                "description": "This option can be enabled to receive calls from: \"Anyone\" (any SIP endpoint in the public Internet) or \"Only my connections\" (any connection assigned to the same Telnyx user).",
+                "enum": [
+                  "only_my_connections",
+                  "from_anyone"
+                ],
+                "example": "only_my_connections",
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
+          "outbound": {
+            "properties": {
+              "channel_limit": {
+                "default": null,
+                "description": "When set, this will limit the total number of outbound calls to phone numbers associated with this connection.",
+                "example": 10,
+                "type": "integer"
+              },
+              "outbound_voice_profile_id": {
+                "$ref": "#/components/schemas/OutboundVoiceProfileId"
+              }
+            },
+            "type": "object"
+          },
+          "status_callback": {
+            "default": null,
+            "description": "URL for Telnyx to send requests to containing information about call progress events.",
+            "example": "https://example.com",
+            "format": "uri",
+            "type": "string"
+          },
+          "status_callback_method": {
+            "default": "post",
+            "description": "HTTP request method Telnyx should use when requesting the status_callback URL.",
+            "enum": [
+              "get",
+              "post"
+            ],
+            "example": "get",
+            "type": "string"
+          },
+          "tags": {
+            "description": "Tags associated with the Texml Application.",
+            "example": [
+              "tag1",
+              "tag2"
+            ],
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "voice_fallback_url": {
+            "default": null,
+            "description": "URL to which Telnyx will deliver your XML Translator webhooks if we get an error response from your voice_url.",
+            "example": "https://fallback.example.com",
+            "format": "uri",
+            "type": "string"
+          },
+          "voice_method": {
+            "default": "post",
+            "description": "HTTP request method Telnyx will use to interact with your XML Translator webhooks. Either 'get' or 'post'.",
+            "enum": [
+              "get",
+              "post"
+            ],
+            "example": "get",
+            "type": "string"
+          },
+          "voice_url": {
+            "description": "URL to which Telnyx will deliver your XML Translator webhooks.",
+            "example": "https://example.com",
+            "format": "uri",
+            "type": "string"
+          }
+        },
+        "required": [
+          "friendly_name",
+          "voice_url"
+        ],
+        "title": "Create Texml Application Request",
+        "type": "object"
+      },
+      "CreatedAt": {
+        "description": "ISO 8601 formatted date indicating when the resource was created.",
+        "example": "2020-02-02T22:25:27.521Z",
+        "title": "Created At",
+        "type": "string"
+      },
+      "DtmfType": {
+        "default": "RFC 2833",
+        "description": "Sets the type of DTMF digits sent from Telnyx to this Connection. Note that DTMF digits sent to Telnyx will be accepted in all formats.",
+        "enum": [
+          "RFC 2833",
+          "Inband",
+          "SIP INFO"
+        ],
+        "example": "Inband",
+        "title": "DTMF Type",
+        "type": "string"
+      },
+      "FirstCommandTimeout": {
+        "default": false,
+        "description": "Specifies whether calls to phone numbers associated with this connection should hangup after timing out.",
+        "example": true,
+        "title": "First Command Timeout",
+        "type": "boolean"
+      },
+      "FirstCommandTimeoutSecs": {
+        "default": 30,
+        "description": "Specifies how many seconds to wait before timing out a dial command.",
+        "example": 10,
+        "title": "First Command Timeout Secs",
+        "type": "integer"
+      },
+      "IntId": {
+        "description": "Uniquely identifies the resource.",
+        "example": "1293384261075731499",
+        "title": "Int ID",
+        "type": "string"
+      },
+      "OutboundVoiceProfileId": {
+        "description": "Identifies the associated outbound voice profile.",
+        "example": "1293384261075731499",
+        "title": "Outbound Voice Profile ID",
+        "type": "string"
+      },
+      "TexmlApplication": {
+        "example": {
+          "active": false,
+          "anchorsite_override": "Amsterdam, Netherlands",
+          "call_cost_in_webhooks": false,
+          "created_at": "2020-02-02T22:25:27.521Z",
+          "dtmf_type": "Inband",
+          "first_command_timeout": true,
+          "first_command_timeout_secs": 10,
+          "friendly_name": "call-router",
+          "id": "1293384261075731499",
+          "inbound": {
+            "channel_limit": 10,
+            "shaken_stir_enabled": true,
+            "sip_subdomain": "example",
+            "sip_subdomain_receive_settings": "only_my_connections"
+          },
+          "outbound": {
+            "channel_limit": 10,
+            "outbound_voice_profile_id": "1293384261075731499"
+          },
+          "record_type": "texml_application",
+          "status_callback": "https://example.com",
+          "status_callback_method": "get",
+          "tags": [
+            "tag1",
+            "tag2"
+          ],
+          "updated_at": "2020-02-03T22:25:27.521Z",
+          "voice_fallback_url": "https://fallback.example.com",
+          "voice_method": "get",
+          "voice_url": "https://example.com"
+        },
+        "properties": {
+          "active": {
+            "$ref": "#/components/schemas/ConnectionActive"
+          },
+          "anchorsite_override": {
+            "$ref": "#/components/schemas/AnchorsiteOverride"
+          },
+          "call_cost_in_webhooks": {
+            "default": false,
+            "description": "Specifies if call cost webhooks should be sent for this TeXML Application.",
+            "type": "boolean"
+          },
+          "created_at": {
+            "$ref": "#/components/schemas/CreatedAt"
+          },
+          "dtmf_type": {
+            "$ref": "#/components/schemas/DtmfType"
+          },
+          "first_command_timeout": {
+            "$ref": "#/components/schemas/FirstCommandTimeout"
+          },
+          "first_command_timeout_secs": {
+            "$ref": "#/components/schemas/FirstCommandTimeoutSecs"
+          },
+          "friendly_name": {
+            "$ref": "#/components/schemas/ApplicationName"
+          },
+          "id": {
+            "$ref": "#/components/schemas/IntId"
+          },
+          "inbound": {
+            "properties": {
+              "channel_limit": {
+                "default": null,
+                "description": "When set, this will limit the total number of inbound calls to phone numbers associated with this connection.",
+                "example": 10,
+                "type": "integer"
+              },
+              "shaken_stir_enabled": {
+                "default": false,
+                "description": "When enabled Telnyx will include Shaken/Stir data in the Webhook for new inbound calls.",
+                "example": false,
+                "type": "boolean"
+              },
+              "sip_subdomain": {
+                "default": null,
+                "description": "Specifies a subdomain that can be used to receive Inbound calls to a Connection, in the same way a phone number is used, from a SIP endpoint. Example: the subdomain \"example.sip.telnyx.com\" can be called from any SIP endpoint by using the SIP URI \"sip:@example.sip.telnyx.com\" where the user part can be any alphanumeric value. TLS signaling is supported. SRTP media encryption requires TLS transport.",
+                "example": "example",
+                "type": "string"
+              },
+              "sip_subdomain_receive_settings": {
+                "default": "from_anyone",
+                "description": "This option can be enabled to receive calls from: \"Anyone\" (any SIP endpoint in the public Internet) or \"Only my connections\" (any connection assigned to the same Telnyx user).",
+                "enum": [
+                  "only_my_connections",
+                  "from_anyone"
+                ],
+                "example": "only_my_connections",
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
+          "outbound": {
+            "properties": {
+              "channel_limit": {
+                "default": null,
+                "description": "When set, this will limit the total number of outbound calls to phone numbers associated with this connection.",
+                "example": 10,
+                "type": "integer"
+              },
+              "outbound_voice_profile_id": {
+                "$ref": "#/components/schemas/OutboundVoiceProfileId"
+              }
+            },
+            "type": "object"
+          },
+          "record_type": {
+            "description": "Identifies the type of the resource.",
+            "example": "texml_application",
+            "type": "string"
+          },
+          "status_callback": {
+            "default": null,
+            "description": "URL for Telnyx to send requests to containing information about call progress events.",
+            "example": "https://example.com",
+            "format": "uri",
+            "type": "string"
+          },
+          "status_callback_method": {
+            "default": "post",
+            "description": "HTTP request method Telnyx should use when requesting the status_callback URL.",
+            "enum": [
+              "get",
+              "post"
+            ],
+            "example": "get",
+            "type": "string"
+          },
+          "tags": {
+            "description": "Tags associated with the Texml Application.",
+            "example": [
+              "tag1",
+              "tag2"
+            ],
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "updated_at": {
+            "$ref": "#/components/schemas/UpdatedAt"
+          },
+          "voice_fallback_url": {
+            "default": null,
+            "description": "URL to which Telnyx will deliver your XML Translator webhooks if we get an error response from your voice_url.",
+            "example": "https://fallback.example.com",
+            "format": "uri",
+            "type": "string"
+          },
+          "voice_method": {
+            "default": "post",
+            "description": "HTTP request method Telnyx will use to interact with your XML Translator webhooks. Either 'get' or 'post'.",
+            "enum": [
+              "get",
+              "post"
+            ],
+            "example": "get",
+            "type": "string"
+          },
+          "voice_url": {
+            "description": "URL to which Telnyx will deliver your XML Translator webhooks.",
+            "example": "https://example.com",
+            "format": "uri",
+            "type": "string"
+          }
+        },
+        "title": "Texml Application",
+        "type": "object"
+      },
+      "UpdateTexmlApplicationRequest": {
+        "example": {
+          "active": false,
+          "anchorsite_override": "Amsterdam, Netherlands",
+          "call_cost_in_webhooks": false,
+          "dtmf_type": "Inband",
+          "first_command_timeout": true,
+          "first_command_timeout_secs": 10,
+          "friendly_name": "call-router",
+          "inbound": {
+            "channel_limit": 10,
+            "shaken_stir_enabled": true,
+            "sip_subdomain": "example",
+            "sip_subdomain_receive_settings": "only_my_connections"
+          },
+          "outbound": {
+            "channel_limit": 10,
+            "outbound_voice_profile_id": "1293384261075731499"
+          },
+          "status_callback": "https://example.com",
+          "status_callback_method": "get",
+          "tags": [
+            "tag1",
+            "tag2"
+          ],
+          "voice_fallback_url": "https://fallback.example.com",
+          "voice_method": "get",
+          "voice_url": "https://example.com"
+        },
+        "properties": {
+          "active": {
+            "$ref": "#/components/schemas/ConnectionActive"
+          },
+          "anchorsite_override": {
+            "$ref": "#/components/schemas/AnchorsiteOverride"
+          },
+          "call_cost_in_webhooks": {
+            "default": false,
+            "description": "Specifies if call cost webhooks should be sent for this TeXML Application.",
+            "type": "boolean"
+          },
+          "dtmf_type": {
+            "$ref": "#/components/schemas/DtmfType"
+          },
+          "first_command_timeout": {
+            "$ref": "#/components/schemas/FirstCommandTimeout"
+          },
+          "first_command_timeout_secs": {
+            "$ref": "#/components/schemas/FirstCommandTimeoutSecs"
+          },
+          "friendly_name": {
+            "$ref": "#/components/schemas/ApplicationName"
+          },
+          "inbound": {
+            "properties": {
+              "channel_limit": {
+                "default": null,
+                "description": "When set, this will limit the total number of inbound calls to phone numbers associated with this connection.",
+                "example": 10,
+                "type": "integer"
+              },
+              "shaken_stir_enabled": {
+                "default": false,
+                "description": "When enabled Telnyx will include Shaken/Stir data in the Webhook for new inbound calls.",
+                "example": false,
+                "type": "boolean"
+              },
+              "sip_subdomain": {
+                "default": null,
+                "description": "Specifies a subdomain that can be used to receive Inbound calls to a Connection, in the same way a phone number is used, from a SIP endpoint. Example: the subdomain \"example.sip.telnyx.com\" can be called from any SIP endpoint by using the SIP URI \"sip:@example.sip.telnyx.com\" where the user part can be any alphanumeric value. TLS signaling is supported. SRTP media encryption requires TLS transport.",
+                "example": "example",
+                "type": "string"
+              },
+              "sip_subdomain_receive_settings": {
+                "default": "from_anyone",
+                "description": "This option can be enabled to receive calls from: \"Anyone\" (any SIP endpoint in the public Internet) or \"Only my connections\" (any connection assigned to the same Telnyx user).",
+                "enum": [
+                  "only_my_connections",
+                  "from_anyone"
+                ],
+                "example": "only_my_connections",
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
+          "outbound": {
+            "properties": {
+              "channel_limit": {
+                "default": null,
+                "description": "When set, this will limit the total number of outbound calls to phone numbers associated with this connection.",
+                "example": 10,
+                "type": "integer"
+              },
+              "outbound_voice_profile_id": {
+                "$ref": "#/components/schemas/OutboundVoiceProfileId"
+              }
+            },
+            "type": "object"
+          },
+          "status_callback": {
+            "default": null,
+            "description": "URL for Telnyx to send requests to containing information about call progress events.",
+            "example": "https://example.com",
+            "format": "uri",
+            "type": "string"
+          },
+          "status_callback_method": {
+            "default": "post",
+            "description": "HTTP request method Telnyx should use when requesting the status_callback URL.",
+            "enum": [
+              "get",
+              "post"
+            ],
+            "example": "get",
+            "type": "string"
+          },
+          "tags": {
+            "description": "Tags associated with the Texml Application.",
+            "example": [
+              "tag1",
+              "tag2"
+            ],
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "voice_fallback_url": {
+            "default": null,
+            "description": "URL to which Telnyx will deliver your XML Translator webhooks if we get an error response from your voice_url.",
+            "example": "https://fallback.example.com",
+            "format": "uri",
+            "type": "string"
+          },
+          "voice_method": {
+            "default": "post",
+            "description": "HTTP request method Telnyx will use to interact with your XML Translator webhooks. Either 'get' or 'post'.",
+            "enum": [
+              "get",
+              "post"
+            ],
+            "example": "get",
+            "type": "string"
+          },
+          "voice_url": {
+            "description": "URL to which Telnyx will deliver your XML Translator webhooks.",
+            "example": "https://example.com",
+            "format": "uri",
+            "type": "string"
+          }
+        },
+        "required": [
+          "friendly_name",
+          "voice_url"
+        ],
+        "title": "Update Texml Application Request",
+        "type": "object"
+      },
+      "UpdatedAt": {
+        "description": "ISO 8601 formatted date indicating when the resource was updated.",
+        "example": "2020-02-03T22:25:27.521Z",
+        "title": "Updated At",
+        "type": "string"
+      },
+      "call-scripting_ErrorResponse": {
+        "properties": {
+          "errors": {
+            "items": {
+              "properties": {
+                "code": {
+                  "type": "string"
+                },
+                "detail": {
+                  "type": "string"
+                },
+                "meta": {
+                  "properties": {
+                    "url": {
+                      "format": "uri",
+                      "type": "string"
+                    }
+                  },
+                  "type": "object"
+                },
+                "source": {
+                  "properties": {
+                    "pointer": {
+                      "type": "string"
+                    }
+                  },
+                  "type": "object"
+                },
+                "title": {
+                  "type": "string"
+                }
+              },
+              "type": "object"
+            },
+            "type": "array"
+          }
+        },
+        "type": "object"
+      },
+      "call-scripting_PaginationMeta": {
+        "properties": {
+          "page_number": {
+            "example": 2,
+            "type": "integer"
+          },
+          "page_size": {
+            "example": 25,
+            "type": "integer"
+          },
+          "total_pages": {
+            "example": 3,
+            "type": "integer"
+          },
+          "total_results": {
+            "example": 55,
+            "type": "integer"
+          }
+        },
+        "title": "Pagination Meta",
+        "type": "object"
+      },
+      "call-scripting_ResourceNotFoundError_c75353cb83": {
+        "example": {
+          "errors": [
+            {
+              "detail": "Resource not found"
+            }
+          ]
+        },
+        "properties": {
+          "errors": {
+            "items": {
+              "properties": {
+                "detail": {
+                  "type": "string"
+                }
+              },
+              "type": "object"
+            },
+            "type": "array"
+          }
+        },
+        "title": "Resource not found",
+        "type": "object"
+      }
+    },
+    "securitySchemes": {
+      "BearerAuth": {
+        "bearerFormat": "API key",
+        "description": "Telnyx API key supplied as `Authorization: Bearer \u003ctoken\u003e`. In production, auth may be validated by the API gateway and forwarded via Telnyx auth headers.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "Payment": {
+        "description": "Machine Payment Protocol credential used on paid retries, sent as `Authorization: Payment ...`. Obtained by paying a challenge returned in the `WWW-Authenticate` header of a 402 response. This is not a Telnyx API key; initial challenge requests use standard bearer authentication instead.",
+        "in": "header",
+        "name": "Authorization",
+        "type": "apiKey"
+      },
+      "agent-memory_bearerAuth": {
+        "description": "Telnyx API key",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "bearerAuth": {
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "branded-calling_bearerAuth": {
+        "description": "Telnyx API key. Generate one at https://portal.telnyx.com/#/app/api-keys.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "collections_bearerAuth": {
+        "description": "Telnyx API key. Collections and results are automatically scoped to the authenticated user's organization.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "number-reputation_bearerAuth": {
+        "description": "Telnyx API key. Generate one at https://portal.telnyx.com/#/app/api-keys.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "oauthClientAuth": {
+        "description": "OAuth 2.0 authentication for Telnyx API and MCP integrations",
+        "flows": {
+          "authorizationCode": {
+            "authorizationUrl": "https://api.telnyx.com/v2/oauth/authorize",
+            "refreshUrl": "https://api.telnyx.com/v2/oauth/token",
+            "scopes": {
+              "admin": "Administrative access to Telnyx resources"
+            },
+            "tokenUrl": "https://api.telnyx.com/v2/oauth/token"
+          },
+          "clientCredentials": {
+            "scopes": {
+              "admin": "Administrative access to Telnyx resources"
+            },
+            "tokenUrl": "https://api.telnyx.com/v2/oauth/token"
+          }
+        },
+        "type": "oauth2"
+      },
+      "outbound-voice-profiles_bearerAuth": {
+        "bearerFormat": "JWT",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "pay-connectors_bearerAuth": {
+        "description": "Telnyx API key, not the processor bearer token.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "pronunciation-dicts_bearerAuth": {
+        "description": "Telnyx API v2 key. Obtain from https://portal.telnyx.com",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "rcs-registration_bearerAuth": {
+        "bearerFormat": "API key",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "stored-payment-transactions_bearerAuth": {
+        "bearerFormat": "JWT",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "telnyxApiKey": {
+        "description": "Management-only Telnyx account credential.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "transcriptions-search_bearerAuth": {
+        "description": "Telnyx API key. Results are automatically scoped to the authenticated user's organization.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "web-search_bearerAuth": {
+        "description": "Telnyx API key",
+        "scheme": "bearer",
+        "type": "http"
+      }
+    }
+  },
+  "info": {
+    "contact": {
+      "email": "support@telnyx.com"
+    },
+    "description": "SIP trunking, SMS, MMS, Call Control and Telephony Data Services.",
+    "title": "Telnyx API",
+    "version": "2.0.0",
+    "x-endpoint-cost": "light",
+    "x-latency-category": "responsive"
+  },
+  "openapi": "3.1.0",
+  "paths": {
+    "/texml_applications": {
+      "get": {
+        "description": "Returns a list of your TeXML Applications.",
+        "operationId": "FindTexmlApplications",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/call-scripting_PageConsolidated"
+          },
+          {
+            "$ref": "#/components/parameters/call-scripting_FilterConsolidated"
+          },
+          {
+            "$ref": "#/components/parameters/SortApplication"
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "items": {
+                        "$ref": "#/components/schemas/TexmlApplication"
+                      },
+                      "type": "array"
+                    },
+                    "meta": {
+                      "$ref": "#/components/schemas/call-scripting_PaginationMeta"
+                    }
+                  },
+                  "title": "Get All Texml Applications Response",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful response"
+          },
+          "400": {
+            "$ref": "#/components/responses/call-scripting_BadRequestResponse"
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthenticatedResponse"
+          },
+          "403": {
+            "$ref": "#/components/responses/call-scripting_UnauthorizedResponse"
+          }
+        },
+        "summary": "List all TeXML Applications",
+        "tags": [
+          "TeXML Applications"
+        ],
+        "x-endpoint-cost": "medium"
+      },
+      "post": {
+        "description": "Creates a TeXML application, which defines the voice URLs and settings used to serve TeXML instructions for calls, and returns the created application.",
+        "operationId": "CreateTexmlApplication",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateTexmlApplicationRequest"
+              }
+            }
+          },
+          "description": "Parameters that can be set when creating a TeXML Application",
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/TexmlApplication"
+                    }
+                  },
+                  "title": "Texml Application Response",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful response"
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthenticatedResponse"
+          },
+          "403": {
+            "$ref": "#/components/responses/call-scripting_UnauthorizedResponse"
+          },
+          "404": {
+            "$ref": "#/components/responses/call-scripting_NotFoundResponse_c75353cb83"
+          },
+          "422": {
+            "$ref": "#/components/responses/call-scripting_UnprocessableEntityResponse_c75353cb83"
+          }
+        },
+        "summary": "Creates a TeXML Application",
+        "tags": [
+          "TeXML Applications"
+        ],
+        "x-endpoint-cost": "medium"
+      }
+    },
+    "/texml_applications/{id}": {
+      "delete": {
+        "description": "Permanently deletes the specified TeXML application from your account.",
+        "operationId": "DeleteTexmlApplication",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/id"
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/TexmlApplication"
+                    }
+                  },
+                  "title": "Texml Application Response",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful response"
+          },
+          "400": {
+            "$ref": "#/components/responses/call-scripting_BadRequestResponse"
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthenticatedResponse"
+          },
+          "403": {
+            "$ref": "#/components/responses/call-scripting_UnauthorizedResponse"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFoundResponseApp"
+          }
+        },
+        "summary": "Deletes a TeXML Application",
+        "tags": [
+          "TeXML Applications"
+        ]
+      },
+      "get": {
+        "description": "Retrieves the details of an existing TeXML Application.",
+        "operationId": "GetTexmlApplication",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/id"
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/TexmlApplication"
+                    }
+                  },
+                  "title": "Texml Application Response",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful response"
+          },
+          "400": {
+            "$ref": "#/components/responses/call-scripting_BadRequestResponse"
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthenticatedResponse"
+          },
+          "403": {
+            "$ref": "#/components/responses/call-scripting_UnauthorizedResponse"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFoundResponseApp"
+          }
+        },
+        "summary": "Retrieve a TeXML Application",
+        "tags": [
+          "TeXML Applications"
+        ]
+      },
+      "patch": {
+        "description": "Updates settings of an existing TeXML Application.",
+        "operationId": "UpdateTexmlApplication",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/id"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateTexmlApplicationRequest"
+              }
+            }
+          },
+          "description": "Parameters that can be updated in a TeXML Application",
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/TexmlApplication"
+                    }
+                  },
+                  "title": "Texml Application Response",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful response"
+          },
+          "400": {
+            "$ref": "#/components/responses/call-scripting_BadRequestResponse"
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthenticatedResponse"
+          },
+          "403": {
+            "$ref": "#/components/responses/call-scripting_UnauthorizedResponse"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFoundResponseApp"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "errors": [
+                    {
+                      "detail": "A previous update to this connection is still in progress. Please try again later."
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/call-scripting_ErrorResponse"
+                }
+              }
+            },
+            "description": "Conflict. Another update to this application is still in progress. Wait and retry the request later."
+          },
+          "422": {
+            "$ref": "#/components/responses/call-scripting_UnprocessableEntityResponse_c75353cb83"
+          }
+        },
+        "summary": "Update a TeXML Application",
+        "tags": [
+          "TeXML Applications"
+        ]
+      }
+    }
+  },
+  "security": [
+    {
+      "bearerAuth": []
+    }
+  ],
+  "servers": [
+    {
+      "description": "Version 2.0.0 of the Telnyx API",
+      "url": "https://api.telnyx.com/v2"
+    }
+  ]
+}

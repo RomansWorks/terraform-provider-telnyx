@@ -1,0 +1,1624 @@
+{
+  "components": {
+    "headers": {
+      "IdempotentReplayed": {
+        "description": "Present with value `true` when Edge replayed a stored successful response for the supplied Idempotency-Key. Omitted for first-time requests and error responses.",
+        "schema": {
+          "enum": [
+            true
+          ],
+          "example": true,
+          "type": "boolean"
+        }
+      }
+    },
+    "parameters": {
+      "IdempotencyKey": {
+        "description": "Optional opaque, unquoted key for safely retrying the same logical request. Keys must contain 1 to 255 letters, numbers, hyphens, or underscores. Generate a unique UUID v4 for each operation and reuse it only when retrying that operation with the same request. Invalid headers—including duplicate, empty, malformed, or overlong values—return 400 with error code 10015. A request already in progress with the same key returns 409; reusing the key with a different request returns 422. Only successful responses are replayed, for up to 24 hours. Do not include sensitive data in the key.",
+        "example": "8e03978e-40d5-43e8-bc93-6894a57f9326",
+        "in": "header",
+        "name": "Idempotency-Key",
+        "required": false,
+        "schema": {
+          "maxLength": 255,
+          "minLength": 1,
+          "pattern": "^[A-Za-z0-9_-]{1,255}$",
+          "type": "string"
+        }
+      },
+      "PageConsolidated": {
+        "description": "Consolidated page parameter (deepObject style). Originally: page[number], page[size]",
+        "explode": true,
+        "in": "query",
+        "name": "page",
+        "schema": {
+          "properties": {
+            "number": {
+              "default": 1,
+              "description": "The page number to load",
+              "minimum": 1,
+              "type": "integer"
+            },
+            "size": {
+              "default": 20,
+              "description": "The size of the page",
+              "maximum": 250,
+              "minimum": 1,
+              "type": "integer"
+            }
+          },
+          "type": "object"
+        },
+        "style": "deepObject"
+      }
+    },
+    "responses": {
+      "IdempotencyPayloadTooLargeResponse": {
+        "content": {
+          "application/json": {
+            "example": {
+              "errors": [
+                {
+                  "code": "10007",
+                  "detail": "The request body exceeds the Edge replay-protection limit for idempotent requests.",
+                  "title": "Payload Too Large"
+                }
+              ]
+            },
+            "schema": {
+              "$ref": "#/components/schemas/messaging_Errors_0b38e7044b"
+            }
+          }
+        },
+        "description": "Payload Too Large. A request sent with an Idempotency-Key whose body exceeds the endpoint's Edge replay-protection limit (256 KB) is rejected before it reaches the service (code 10007). Requests sent without the header are not subject to this limit."
+      },
+      "IdempotencyProtectionUnavailableResponse": {
+        "content": {
+          "application/json": {
+            "example": {
+              "errors": [
+                {
+                  "code": "10016",
+                  "detail": "Edge idempotency protection is temporarily unavailable. Please try again later.",
+                  "title": "Service Unavailable"
+                }
+              ]
+            },
+            "schema": {
+              "$ref": "#/components/schemas/messaging_Errors_0b38e7044b"
+            }
+          }
+        },
+        "description": "Service unavailable (10016), including unavailable Edge idempotency protection for a keyed request. Retry with the same key."
+      },
+      "messaging_GenericErrorResponse_0b38e7044b": {
+        "content": {
+          "application/json": {
+            "example": {
+              "errors": [
+                {
+                  "code": "string",
+                  "detail": "string",
+                  "source": {
+                    "parameter": "string",
+                    "pointer": "/data/attributes/phone_number"
+                  },
+                  "title": "string"
+                }
+              ]
+            },
+            "schema": {
+              "$ref": "#/components/schemas/messaging_Errors_0b38e7044b"
+            }
+          }
+        },
+        "description": "Unexpected error"
+      },
+      "messaging_IdempotencyConflictResponse": {
+        "content": {
+          "application/json": {
+            "example": {
+              "errors": [
+                {
+                  "code": "10036",
+                  "detail": "A request with this Idempotency-Key is already being processed.",
+                  "source": {
+                    "pointer": "/header/Idempotency-Key"
+                  },
+                  "title": "Resource is being processed"
+                }
+              ]
+            },
+            "schema": {
+              "$ref": "#/components/schemas/messaging_Errors_0b38e7044b"
+            }
+          }
+        },
+        "description": "A request with the same Idempotency-Key is still being processed (10036). Retry later with the same key and request."
+      },
+      "rcs_messaging_GenericErrorResponse": {
+        "content": {
+          "application/json": {
+            "example": {
+              "errors": [
+                {
+                  "code": "10007",
+                  "detail": "An unexpected error occured.",
+                  "title": "Unexpected error"
+                }
+              ]
+            },
+            "schema": {
+              "$ref": "#/components/schemas/messaging_Errors"
+            }
+          }
+        },
+        "description": "Unexpected error"
+      }
+    },
+    "schemas": {
+      "MMSFallback": {
+        "properties": {
+          "from": {
+            "description": "Phone number in +E.164 format",
+            "example": "+13125551234",
+            "type": "string"
+          },
+          "media_urls": {
+            "description": "List of media URLs",
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "subject": {
+            "description": "Subject of the message",
+            "example": "Test Message",
+            "type": "string"
+          },
+          "text": {
+            "description": "Text",
+            "example": "Hello world!",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "RCSAction": {
+        "description": "When tapped, initiates the corresponding native action on the device.",
+        "properties": {
+          "create_calendar_event_action": {
+            "$ref": "#/components/schemas/RCSCreateCalendarEventAction"
+          },
+          "dial_action": {
+            "$ref": "#/components/schemas/RCSDialAction"
+          },
+          "fallback_url": {
+            "description": "Fallback URL to use if a client doesn't support a suggested action. Fallback URLs open in new browser windows. Maximum 2048 characters.",
+            "format": "url",
+            "type": "string"
+          },
+          "open_url_action": {
+            "$ref": "#/components/schemas/RCSOpenUrlAction"
+          },
+          "postback_data": {
+            "description": "Payload (base64 encoded) that will be sent to the agent in the user event that results when the user taps the suggested action. Maximum 2048 characters.",
+            "type": "string"
+          },
+          "share_location_action": {
+            "$ref": "#/components/schemas/RCSShareLocationAction"
+          },
+          "text": {
+            "description": "Text that is shown in the suggested action. Maximum 25 characters.",
+            "example": "Hello world",
+            "type": "string"
+          },
+          "view_location_action": {
+            "$ref": "#/components/schemas/RCSViewLocationAction"
+          }
+        },
+        "type": "object"
+      },
+      "RCSAgent": {
+        "properties": {
+          "agent_id": {
+            "description": "RCS Agent ID",
+            "example": "TestAgent",
+            "type": "string"
+          },
+          "agent_name": {
+            "description": "Human readable agent name",
+            "example": "Test Agent",
+            "type": "string"
+          },
+          "created_at": {
+            "description": "Date and time when the resource was created",
+            "example": "2024-01-01T12:00:00.000Z",
+            "format": "date-time",
+            "type": "string"
+          },
+          "enabled": {
+            "description": "Specifies whether the agent is enabled",
+            "example": true,
+            "type": "boolean"
+          },
+          "profile_id": {
+            "description": "Messaging profile ID associated with the RCS Agent",
+            "example": "4001932a-b8a3-42fc-9389-021be6388909",
+            "format": "uuid",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "updated_at": {
+            "description": "Date and time when the resource was updated",
+            "example": "2024-01-01T12:00:00.000Z",
+            "format": "date-time",
+            "type": "string"
+          },
+          "user_id": {
+            "description": "User ID associated with the RCS Agent",
+            "example": "2ecf295b-36c6-4d43-ad05-71eb1e560518",
+            "type": "string"
+          },
+          "webhook_failover_url": {
+            "description": "Failover URL to receive RCS events",
+            "example": "http://example.com",
+            "format": "url",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "webhook_url": {
+            "description": "URL to receive RCS events",
+            "example": "http://example.com",
+            "format": "url",
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "type": "object"
+      },
+      "RCSAgentMessage": {
+        "properties": {
+          "content_message": {
+            "$ref": "#/components/schemas/RCSContentMessage"
+          },
+          "event": {
+            "$ref": "#/components/schemas/RCSEvent"
+          },
+          "expire_time": {
+            "description": "Timestamp in UTC of when this message is considered expired",
+            "example": "2024-10-02T15:01:23Z",
+            "format": "date-time",
+            "type": "string"
+          },
+          "ttl": {
+            "description": "Duration in seconds ending with 's'",
+            "example": "10.5s",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "RCSAgentResponse": {
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/RCSAgent"
+          }
+        },
+        "type": "object"
+      },
+      "RCSAgentUpdate": {
+        "properties": {
+          "profile_id": {
+            "description": "Messaging profile ID associated with the RCS Agent",
+            "example": "4001932a-b8a3-42fc-9389-021be6388909",
+            "format": "uuid",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "webhook_failover_url": {
+            "description": "Failover URL to receive RCS events",
+            "example": "http://example.com",
+            "format": "url",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "webhook_url": {
+            "description": "URL to receive RCS events",
+            "example": "http://example.com",
+            "format": "url",
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "type": "object"
+      },
+      "RCSCapabilitiesBulk": {
+        "properties": {
+          "data": {
+            "items": {
+              "$ref": "#/components/schemas/RCSCapabilitiesInternal"
+            },
+            "type": "array"
+          }
+        },
+        "type": "object"
+      },
+      "RCSCapabilitiesInternal": {
+        "properties": {
+          "agent_id": {
+            "description": "RCS agent ID",
+            "example": "TestAgent",
+            "type": "string"
+          },
+          "agent_name": {
+            "description": "RCS agent name",
+            "example": "Testing agent",
+            "type": "string"
+          },
+          "features": {
+            "description": "List of RCS capabilities",
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "phone_number": {
+            "description": "Phone number",
+            "example": "+13125551234",
+            "type": "string"
+          },
+          "record_type": {
+            "description": "Identifies the type of the resource",
+            "enum": [
+              "rcs.capabilities"
+            ],
+            "example": "rcs.capabilities",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "RCSCapabilitiesSingle": {
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/RCSCapabilitiesInternal"
+          }
+        },
+        "type": "object"
+      },
+      "RCSCapabilityListRequest": {
+        "properties": {
+          "agent_id": {
+            "description": "RCS Agent ID",
+            "example": "TestAgent",
+            "type": "string"
+          },
+          "phone_numbers": {
+            "description": "List of phone numbers to check",
+            "items": {
+              "example": "+13125551234",
+              "type": "string"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "agent_id",
+          "phone_numbers"
+        ],
+        "type": "object"
+      },
+      "RCSCardContent": {
+        "properties": {
+          "description": {
+            "description": "Description of the card (at most 2000 characters)",
+            "type": "string"
+          },
+          "media": {
+            "$ref": "#/components/schemas/RCSMedia"
+          },
+          "suggestions": {
+            "description": "List of suggestions to include in the card. Maximum 10 suggestions.",
+            "items": {
+              "$ref": "#/components/schemas/RCSSuggestion"
+            },
+            "type": "array"
+          },
+          "title": {
+            "description": "Title of the card (at most 200 characters)",
+            "example": "Elephant",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "RCSCarouselCard": {
+        "description": "Carousel of cards.",
+        "properties": {
+          "card_contents": {
+            "description": "The list of contents for each card in the carousel. A carousel can have a minimum of 2 cards and a maximum 10 cards.",
+            "items": {
+              "$ref": "#/components/schemas/RCSCardContent"
+            },
+            "type": "array"
+          },
+          "card_width": {
+            "description": "The width of the cards in the carousel.",
+            "enum": [
+              "CARD_WIDTH_UNSPECIFIED",
+              "SMALL",
+              "MEDIUM"
+            ],
+            "example": "SMALL",
+            "type": "string"
+          }
+        },
+        "required": [
+          "card_width",
+          "card_contents"
+        ],
+        "type": "object"
+      },
+      "RCSContentInfo": {
+        "properties": {
+          "file_url": {
+            "description": "Publicly reachable URL of the file.",
+            "example": "https://example.com/elephant.jpg",
+            "format": "url",
+            "type": "string"
+          },
+          "force_refresh": {
+            "description": "If set the URL content will not be cached.",
+            "type": "boolean"
+          },
+          "thumbnail_url": {
+            "description": "Publicly reachable URL of the thumbnail. Maximum size of 100 kB.",
+            "format": "url",
+            "type": "string"
+          }
+        },
+        "required": [
+          "file_url"
+        ],
+        "type": "object"
+      },
+      "RCSContentMessage": {
+        "properties": {
+          "content_info": {
+            "$ref": "#/components/schemas/RCSContentInfo"
+          },
+          "rich_card": {
+            "$ref": "#/components/schemas/RCSRichCard"
+          },
+          "suggestions": {
+            "description": "List of suggested actions and replies",
+            "items": {
+              "$ref": "#/components/schemas/RCSSuggestion"
+            },
+            "type": "array"
+          },
+          "text": {
+            "description": "Text (maximum 3072 characters)",
+            "example": "Hello world!",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "RCSCreateCalendarEventAction": {
+        "description": "Opens the user's default calendar app and starts the new calendar event flow with the agent-specified event data pre-filled.",
+        "properties": {
+          "description": {
+            "description": "Event description. Maximum 500 characters.",
+            "type": "string"
+          },
+          "end_time": {
+            "example": "2024-10-02T15:02:31Z",
+            "format": "date-time",
+            "type": "string"
+          },
+          "start_time": {
+            "example": "2024-10-02T15:01:23Z",
+            "format": "date-time",
+            "type": "string"
+          },
+          "title": {
+            "description": "Event title. Maximum 100 characters.",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "RCSDeeplinkResponse": {
+        "properties": {
+          "data": {
+            "properties": {
+              "url": {
+                "description": "The generated deeplink URL",
+                "example": "sms:+18445550001?service_id=my_agent_id%40rbm.goog\u0026body=hello%20world",
+                "type": "string"
+              }
+            },
+            "required": [
+              "url"
+            ],
+            "type": "object"
+          }
+        },
+        "required": [
+          "data"
+        ],
+        "type": "object"
+      },
+      "RCSDialAction": {
+        "description": "Opens the user's default dialer app with the agent-specified phone number filled in.",
+        "properties": {
+          "phone_number": {
+            "description": "Phone number in +E.164 format",
+            "example": "+13125551234",
+            "type": "string"
+          }
+        },
+        "required": [
+          "phone_number"
+        ],
+        "type": "object"
+      },
+      "RCSEvent": {
+        "description": "RCS Event to send to the recipient",
+        "properties": {
+          "event_type": {
+            "enum": [
+              "TYPE_UNSPECIFIED",
+              "IS_TYPING",
+              "READ"
+            ],
+            "example": "IS_TYPING",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "RCSFrom": {
+        "properties": {
+          "agent_id": {
+            "description": "agent ID",
+            "example": "Agent007",
+            "type": "string"
+          },
+          "agent_name": {
+            "example": "Test Agent",
+            "type": "string"
+          },
+          "carrier": {
+            "example": "Telnyx",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "RCSLatLng": {
+        "properties": {
+          "latitude": {
+            "description": "The latitude in degrees. It must be in the range [-90.0, +90.0].",
+            "example": 41.8,
+            "type": "number"
+          },
+          "longitude": {
+            "description": "The longitude in degrees. It must be in the range [-180.0, +180.0].",
+            "example": -87.6,
+            "type": "number"
+          }
+        },
+        "required": [
+          "latitude",
+          "longitude"
+        ],
+        "type": "object"
+      },
+      "RCSMedia": {
+        "description": "A media file within a rich card.",
+        "properties": {
+          "content_info": {
+            "$ref": "#/components/schemas/RCSContentInfo"
+          },
+          "height": {
+            "description": "The height of the media within a rich card with a vertical layout. For a standalone card with horizontal layout, height is not customizable, and this field is ignored.",
+            "enum": [
+              "HEIGHT_UNSPECIFIED",
+              "SHORT",
+              "MEDIUM",
+              "TALL"
+            ],
+            "example": "MEDIUM",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "RCSMessage": {
+        "properties": {
+          "agent_id": {
+            "description": "RCS Agent ID",
+            "example": "Agent007",
+            "type": "string"
+          },
+          "agent_message": {
+            "$ref": "#/components/schemas/RCSAgentMessage"
+          },
+          "messaging_profile_id": {
+            "description": "A valid messaging profile ID",
+            "type": "string"
+          },
+          "mms_fallback": {
+            "$ref": "#/components/schemas/MMSFallback"
+          },
+          "sms_fallback": {
+            "$ref": "#/components/schemas/SMSFallback"
+          },
+          "to": {
+            "description": "Phone number in +E.164 format",
+            "example": "+13125551234",
+            "type": "string"
+          },
+          "type": {
+            "description": "Message type - must be set to \"RCS\"",
+            "enum": [
+              "RCS"
+            ],
+            "example": "RCS",
+            "type": "string"
+          },
+          "webhook_url": {
+            "description": "The URL where webhooks related to this message will be sent.",
+            "format": "url",
+            "type": "string"
+          }
+        },
+        "required": [
+          "agent_id",
+          "to",
+          "messaging_profile_id",
+          "agent_message"
+        ],
+        "type": "object"
+      },
+      "RCSOpenUrlAction": {
+        "description": "Opens the user's default web browser app to the specified URL.",
+        "properties": {
+          "application": {
+            "description": "URL open application, browser or webview.",
+            "enum": [
+              "OPEN_URL_APPLICATION_UNSPECIFIED",
+              "BROWSER",
+              "WEBVIEW"
+            ],
+            "example": "BROWSER",
+            "type": "string"
+          },
+          "description": {
+            "description": "Accessbility description for webview.",
+            "type": "string"
+          },
+          "url": {
+            "example": "http://example.com",
+            "format": "url",
+            "type": "string"
+          },
+          "webview_view_mode": {
+            "enum": [
+              "WEBVIEW_VIEW_MODE_UNSPECIFIED",
+              "FULL",
+              "HALF",
+              "TALL"
+            ],
+            "example": "HALF",
+            "type": "string"
+          }
+        },
+        "required": [
+          "url",
+          "application",
+          "webview_view_mode"
+        ],
+        "type": "object"
+      },
+      "RCSReply": {
+        "properties": {
+          "postback_data": {
+            "description": "Payload (base64 encoded) that will be sent to the agent in the user event that results when the user taps the suggested action. Maximum 2048 characters.",
+            "type": "string"
+          },
+          "text": {
+            "description": "Text that is shown in the suggested reply (maximum 25 characters)",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "RCSResponse": {
+        "properties": {
+          "data": {
+            "properties": {
+              "body": {
+                "$ref": "#/components/schemas/RCSAgentMessage"
+              },
+              "direction": {
+                "example": "outbound",
+                "type": "string"
+              },
+              "encoding": {
+                "example": "utf-8",
+                "type": "string"
+              },
+              "from": {
+                "$ref": "#/components/schemas/RCSFrom"
+              },
+              "id": {
+                "description": "message ID",
+                "example": "4031938e-60e4-4235-a8dd-0b1c55a23e7a",
+                "type": "string"
+              },
+              "messaging_profile_id": {
+                "example": "4001781e-626f-4a41-a914-b1b682150f94",
+                "type": "string"
+              },
+              "organization_id": {
+                "example": "9f61d8e1-7687-4d6d-9cae-9ff682985983",
+                "type": "string"
+              },
+              "received_at": {
+                "format": "date-time",
+                "type": "string"
+              },
+              "record_type": {
+                "example": "message",
+                "type": "string"
+              },
+              "to": {
+                "$ref": "#/components/schemas/RCSTo"
+              },
+              "type": {
+                "example": "RCS",
+                "type": "string"
+              },
+              "wait_seconds": {
+                "description": "Seconds the message is queued due to rate limiting before being sent to the carrier. Represents the maximum wait across all applicable rate limits (account, carrier, campaign). 0.0 = no queuing delay.",
+                "example": 0.5,
+                "format": "float",
+                "type": [
+                  "number",
+                  "null"
+                ]
+              }
+            },
+            "type": "object"
+          }
+        },
+        "type": "object"
+      },
+      "RCSRichCard": {
+        "properties": {
+          "carousel_card": {
+            "$ref": "#/components/schemas/RCSCarouselCard"
+          },
+          "standalone_card": {
+            "$ref": "#/components/schemas/RCSStandaloneCard"
+          }
+        },
+        "type": "object"
+      },
+      "RCSShareLocationAction": {
+        "description": "Opens the RCS app's location chooser so the user can pick a location to send back to the agent.",
+        "type": "object"
+      },
+      "RCSStandaloneCard": {
+        "description": "Standalone card",
+        "properties": {
+          "card_content": {
+            "$ref": "#/components/schemas/RCSCardContent"
+          },
+          "card_orientation": {
+            "description": "Orientation of the card.",
+            "enum": [
+              "CARD_ORIENTATION_UNSPECIFIED",
+              "HORIZONTAL",
+              "VERTICAL"
+            ],
+            "example": "HORIZONTAL",
+            "type": "string"
+          },
+          "thumbnail_image_alignment": {
+            "description": "Image preview alignment for standalone cards with horizontal layout.",
+            "enum": [
+              "THUMBNAIL_IMAGE_ALIGNMENT_UNSPECIFIED",
+              "LEFT",
+              "RIGHT"
+            ],
+            "example": "LEFT",
+            "type": "string"
+          }
+        },
+        "required": [
+          "card_orientation",
+          "thumbnail_image_alignment",
+          "card_content"
+        ],
+        "type": "object"
+      },
+      "RCSSuggestion": {
+        "properties": {
+          "action": {
+            "$ref": "#/components/schemas/RCSAction"
+          },
+          "reply": {
+            "$ref": "#/components/schemas/RCSReply"
+          }
+        },
+        "type": "object"
+      },
+      "RCSTestNumberInviteResponse": {
+        "properties": {
+          "data": {
+            "properties": {
+              "agent_id": {
+                "description": "RCS agent ID",
+                "example": "TestAgent",
+                "type": "string"
+              },
+              "phone_number": {
+                "description": "Phone number that was invited for testing",
+                "example": "+13125551234",
+                "type": "string"
+              },
+              "record_type": {
+                "description": "Identifies the type of the resource",
+                "enum": [
+                  "rcs.test_number_invite"
+                ],
+                "example": "rcs.test_number_invite",
+                "type": "string"
+              },
+              "status": {
+                "description": "Status of the test number invitation",
+                "example": "PENDING",
+                "type": "string"
+              }
+            },
+            "type": "object"
+          }
+        },
+        "required": [
+          "data"
+        ],
+        "type": "object"
+      },
+      "RCSTo": {
+        "items": {
+          "$ref": "#/components/schemas/RCSToItem"
+        },
+        "type": "array"
+      },
+      "RCSToItem": {
+        "properties": {
+          "carrier": {
+            "example": "Verizon Wireless",
+            "type": "string"
+          },
+          "line_type": {
+            "example": "Wireless",
+            "type": "string"
+          },
+          "phone_number": {
+            "example": "+13125551234",
+            "type": "string"
+          },
+          "status": {
+            "example": "queued",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "RCSViewLocationAction": {
+        "description": "Opens the user's default map app and selects the agent-specified location.",
+        "properties": {
+          "label": {
+            "description": "The label of the pin dropped",
+            "type": "string"
+          },
+          "lat_long": {
+            "$ref": "#/components/schemas/RCSLatLng"
+          },
+          "query": {
+            "description": "query string (Android only)",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "SMSFallback": {
+        "properties": {
+          "from": {
+            "description": "Phone number in +E.164 format",
+            "example": "+13125551234",
+            "type": "string"
+          },
+          "text": {
+            "description": "Text (maximum 3072 characters)",
+            "example": "Hello world!",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "messaging_Error": {
+        "properties": {
+          "code": {
+            "type": "string",
+            "x-format": "integer"
+          },
+          "detail": {
+            "type": "string"
+          },
+          "meta": {
+            "type": "object"
+          },
+          "source": {
+            "properties": {
+              "parameter": {
+                "description": "Indicates which query parameter caused the error.",
+                "type": "string"
+              },
+              "pointer": {
+                "description": "JSON pointer (RFC6901) to the offending entity.",
+                "format": "json-pointer",
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
+          "title": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "title"
+        ]
+      },
+      "messaging_Error_0b38e7044b": {
+        "properties": {
+          "code": {
+            "type": "string",
+            "x-format": "integer"
+          },
+          "detail": {
+            "type": "string"
+          },
+          "meta": {
+            "type": "object"
+          },
+          "source": {
+            "properties": {
+              "parameter": {
+                "description": "Indicates which query parameter caused the error.",
+                "type": "string"
+              },
+              "pointer": {
+                "description": "JSON pointer (RFC6901) to the offending entity.",
+                "format": "json-pointer",
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
+          "title": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "title"
+        ]
+      },
+      "messaging_Errors": {
+        "properties": {
+          "errors": {
+            "items": {
+              "$ref": "#/components/schemas/messaging_Error"
+            },
+            "type": "array"
+          }
+        }
+      },
+      "messaging_Errors_0b38e7044b": {
+        "properties": {
+          "errors": {
+            "items": {
+              "$ref": "#/components/schemas/messaging_Error_0b38e7044b"
+            },
+            "type": "array"
+          }
+        }
+      },
+      "messaging_PaginationMeta_0b38e7044b": {
+        "properties": {
+          "page_number": {
+            "example": 2,
+            "type": "integer"
+          },
+          "page_size": {
+            "example": 25,
+            "type": "integer"
+          },
+          "total_pages": {
+            "example": 3,
+            "type": "integer"
+          },
+          "total_results": {
+            "example": 55,
+            "type": "integer"
+          }
+        },
+        "required": [
+          "total_pages",
+          "total_results",
+          "page_size",
+          "page_number"
+        ],
+        "type": "object"
+      },
+      "messaging_RCSAgentsResponse": {
+        "properties": {
+          "data": {
+            "items": {
+              "$ref": "#/components/schemas/RCSAgent"
+            },
+            "type": "array"
+          },
+          "meta": {
+            "$ref": "#/components/schemas/messaging_PaginationMeta_0b38e7044b"
+          }
+        },
+        "type": "object"
+      }
+    },
+    "securitySchemes": {
+      "BearerAuth": {
+        "bearerFormat": "API key",
+        "description": "Telnyx API key supplied as `Authorization: Bearer \u003ctoken\u003e`. In production, auth may be validated by the API gateway and forwarded via Telnyx auth headers.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "Payment": {
+        "description": "Machine Payment Protocol credential used on paid retries, sent as `Authorization: Payment ...`. Obtained by paying a challenge returned in the `WWW-Authenticate` header of a 402 response. This is not a Telnyx API key; initial challenge requests use standard bearer authentication instead.",
+        "in": "header",
+        "name": "Authorization",
+        "type": "apiKey"
+      },
+      "agent-memory_bearerAuth": {
+        "description": "Telnyx API key",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "bearerAuth": {
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "branded-calling_bearerAuth": {
+        "description": "Telnyx API key. Generate one at https://portal.telnyx.com/#/app/api-keys.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "collections_bearerAuth": {
+        "description": "Telnyx API key. Collections and results are automatically scoped to the authenticated user's organization.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "number-reputation_bearerAuth": {
+        "description": "Telnyx API key. Generate one at https://portal.telnyx.com/#/app/api-keys.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "oauthClientAuth": {
+        "description": "OAuth 2.0 authentication for Telnyx API and MCP integrations",
+        "flows": {
+          "authorizationCode": {
+            "authorizationUrl": "https://api.telnyx.com/v2/oauth/authorize",
+            "refreshUrl": "https://api.telnyx.com/v2/oauth/token",
+            "scopes": {
+              "admin": "Administrative access to Telnyx resources"
+            },
+            "tokenUrl": "https://api.telnyx.com/v2/oauth/token"
+          },
+          "clientCredentials": {
+            "scopes": {
+              "admin": "Administrative access to Telnyx resources"
+            },
+            "tokenUrl": "https://api.telnyx.com/v2/oauth/token"
+          }
+        },
+        "type": "oauth2"
+      },
+      "outbound-voice-profiles_bearerAuth": {
+        "bearerFormat": "JWT",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "pay-connectors_bearerAuth": {
+        "description": "Telnyx API key, not the processor bearer token.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "pronunciation-dicts_bearerAuth": {
+        "description": "Telnyx API v2 key. Obtain from https://portal.telnyx.com",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "rcs-registration_bearerAuth": {
+        "bearerFormat": "API key",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "stored-payment-transactions_bearerAuth": {
+        "bearerFormat": "JWT",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "telnyxApiKey": {
+        "description": "Management-only Telnyx account credential.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "transcriptions-search_bearerAuth": {
+        "description": "Telnyx API key. Results are automatically scoped to the authenticated user's organization.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "web-search_bearerAuth": {
+        "description": "Telnyx API key",
+        "scheme": "bearer",
+        "type": "http"
+      }
+    }
+  },
+  "info": {
+    "contact": {
+      "email": "support@telnyx.com"
+    },
+    "description": "SIP trunking, SMS, MMS, Call Control and Telephony Data Services.",
+    "title": "Telnyx API",
+    "version": "2.0.0",
+    "x-endpoint-cost": "light",
+    "x-latency-category": "responsive"
+  },
+  "openapi": "3.1.0",
+  "paths": {
+    "/messages/rcs": {
+      "post": {
+        "description": "Queues an outbound RCS message through the selected RCS agent. Check recipient capabilities before sending features that require RCS support.",
+        "operationId": "SendRCSMessage",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/IdempotencyKey"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RCSMessage"
+              }
+            }
+          },
+          "description": "RCS message body",
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RCSResponse"
+                }
+              }
+            },
+            "description": "Successful operation",
+            "headers": {
+              "Idempotent-Replayed": {
+                "$ref": "#/components/headers/IdempotentReplayed"
+              }
+            }
+          },
+          "409": {
+            "$ref": "#/components/responses/messaging_IdempotencyConflictResponse"
+          },
+          "413": {
+            "$ref": "#/components/responses/IdempotencyPayloadTooLargeResponse"
+          },
+          "4XX": {
+            "$ref": "#/components/responses/messaging_GenericErrorResponse_0b38e7044b"
+          },
+          "503": {
+            "$ref": "#/components/responses/IdempotencyProtectionUnavailableResponse"
+          }
+        },
+        "summary": "Send an RCS message",
+        "tags": [
+          "RCS"
+        ]
+      }
+    },
+    "/messages/rcs/deeplinks/{agent_id}": {
+      "get": {
+        "description": "Generate a deeplink URL that can be used to start an RCS conversation with a specific agent.",
+        "operationId": "GenerateRCSDeeplink",
+        "parameters": [
+          {
+            "description": "RCS agent ID",
+            "in": "path",
+            "name": "agent_id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Phone number in E164 format (URL encoded)",
+            "example": "%2B18445550001",
+            "in": "query",
+            "name": "phone_number",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Pre-filled message body (URL encoded)",
+            "example": "hello%20world",
+            "in": "query",
+            "name": "body",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RCSDeeplinkResponse"
+                }
+              }
+            },
+            "description": "Successful response with deeplink URL"
+          },
+          "4XX": {
+            "$ref": "#/components/responses/messaging_GenericErrorResponse_0b38e7044b"
+          }
+        },
+        "summary": "Generate RCS deeplink",
+        "tags": [
+          "RCS"
+        ]
+      }
+    },
+    "/messages/rcs_deeplinks/{agent_id}": {
+      "get": {
+        "description": "Generate a deeplink URL that can be used to start an RCS conversation with a specific agent.",
+        "operationId": "GenerateRCSDeeplink",
+        "parameters": [
+          {
+            "description": "RCS agent ID",
+            "in": "path",
+            "name": "agent_id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Phone number in E164 format (URL encoded)",
+            "example": "%2B18445550001",
+            "in": "query",
+            "name": "phone_number",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Pre-filled message body (URL encoded)",
+            "example": "hello%20world",
+            "in": "query",
+            "name": "body",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RCSDeeplinkResponse"
+                }
+              }
+            },
+            "description": "Successful response with deeplink URL"
+          },
+          "4XX": {
+            "$ref": "#/components/responses/rcs_messaging_GenericErrorResponse"
+          }
+        },
+        "summary": "Generate RCS deeplink",
+        "tags": [
+          "RCS"
+        ],
+        "x-latency-category": "responsive"
+      }
+    },
+    "/messaging/rcs/agents": {
+      "get": {
+        "description": "Returns RCS agents available to the authenticated account.",
+        "operationId": "ListRCSAgents",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/PageConsolidated"
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/messaging_RCSAgentsResponse"
+                }
+              }
+            },
+            "description": "Successful reponse with the list of RCS agents"
+          },
+          "4XX": {
+            "$ref": "#/components/responses/messaging_GenericErrorResponse_0b38e7044b"
+          }
+        },
+        "summary": "List all RCS agents",
+        "tags": [
+          "RCS"
+        ]
+      }
+    },
+    "/messaging/rcs/agents/{id}": {
+      "get": {
+        "description": "Returns the configuration and current state of the specified RCS agent.",
+        "operationId": "GetRCSAgentById",
+        "parameters": [
+          {
+            "description": "RCS agent ID",
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RCSAgentResponse"
+                }
+              }
+            },
+            "description": "Successful response with the RCS agent"
+          },
+          "4XX": {
+            "$ref": "#/components/responses/messaging_GenericErrorResponse_0b38e7044b"
+          }
+        },
+        "summary": "Retrieve an RCS agent",
+        "tags": [
+          "RCS"
+        ]
+      },
+      "patch": {
+        "description": "Updates the supplied configuration fields on the specified RCS agent.",
+        "operationId": "UpdateRCSAgentById",
+        "parameters": [
+          {
+            "description": "RCS agent ID",
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RCSAgentUpdate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RCSAgentResponse"
+                }
+              }
+            },
+            "description": "Successful response with the updated RCS agent"
+          },
+          "4XX": {
+            "$ref": "#/components/responses/messaging_GenericErrorResponse_0b38e7044b"
+          }
+        },
+        "summary": "Modify an RCS agent",
+        "tags": [
+          "RCS"
+        ]
+      }
+    },
+    "/messaging/rcs/bulk_capabilities": {
+      "post": {
+        "description": "Returns RCS capability information for multiple recipients in one request.",
+        "operationId": "ListRCSCapabilitiesOfAPhoneNumbersBatch",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RCSCapabilityListRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RCSCapabilitiesBulk"
+                }
+              }
+            },
+            "description": "Successful response"
+          },
+          "4XX": {
+            "$ref": "#/components/responses/messaging_GenericErrorResponse_0b38e7044b"
+          }
+        },
+        "summary": "Check RCS capabilities (batch)",
+        "tags": [
+          "RCS"
+        ]
+      }
+    },
+    "/messaging/rcs/capabilities/{agent_id}/{phone_number}": {
+      "get": {
+        "description": "Returns the RCS features supported by the specified recipient for the selected agent.",
+        "operationId": "ListRCSCapabilitiesOfAPhoneNumber",
+        "parameters": [
+          {
+            "description": "RCS agent ID",
+            "in": "path",
+            "name": "agent_id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Phone number in E164 format",
+            "in": "path",
+            "name": "phone_number",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RCSCapabilitiesSingle"
+                }
+              }
+            },
+            "description": "Successful response"
+          },
+          "4XX": {
+            "$ref": "#/components/responses/messaging_GenericErrorResponse_0b38e7044b"
+          }
+        },
+        "summary": "Check RCS capabilities",
+        "tags": [
+          "RCS"
+        ]
+      }
+    },
+    "/messaging/rcs/test_number_invite/{id}/{phone_number}": {
+      "put": {
+        "description": "Adds a test phone number to an RCS agent for testing purposes.",
+        "operationId": "InviteATestNumberToRCS",
+        "parameters": [
+          {
+            "description": "RCS agent ID",
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Phone number in E164 format to invite for testing",
+            "in": "path",
+            "name": "phone_number",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RCSTestNumberInviteResponse"
+                }
+              }
+            },
+            "description": "Test number successfully invited to RCS agent"
+          },
+          "4XX": {
+            "$ref": "#/components/responses/messaging_GenericErrorResponse_0b38e7044b"
+          }
+        },
+        "summary": "Add RCS test number",
+        "tags": [
+          "RCS"
+        ]
+      }
+    }
+  },
+  "security": [
+    {
+      "bearerAuth": []
+    }
+  ],
+  "servers": [
+    {
+      "description": "Version 2.0.0 of the Telnyx API",
+      "url": "https://api.telnyx.com/v2"
+    }
+  ]
+}

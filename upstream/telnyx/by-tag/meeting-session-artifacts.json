@@ -1,0 +1,759 @@
+{
+  "components": {
+    "parameters": {
+      "ArtifactId": {
+        "description": "Unique identifier for a meeting session artifact.",
+        "in": "path",
+        "name": "artifact_id",
+        "required": true,
+        "schema": {
+          "examples": [
+            "mtgart_b2c3d4e5-f6a7-8901-bcde-f23456789012"
+          ],
+          "type": "string"
+        }
+      },
+      "MeetingSessionId": {
+        "description": "Unique identifier for the meeting session.",
+        "in": "path",
+        "name": "id",
+        "required": true,
+        "schema": {
+          "examples": [
+            "mtgsess_a1b2c3d4-e5f6-7890-abcd-ef1234567890"
+          ],
+          "type": "string"
+        }
+      }
+    },
+    "responses": {
+      "Forbidden": {
+        "content": {
+          "application/json": {
+            "example": {
+              "error": {
+                "code": "forbidden",
+                "message": "credential is not permitted"
+              }
+            },
+            "schema": {
+              "$ref": "#/components/schemas/meeting-sessions_ErrorResponse"
+            }
+          }
+        },
+        "description": "The authenticated credential is not permitted to perform this operation."
+      },
+      "MeetingArtifactUnavailable": {
+        "content": {
+          "application/json": {
+            "example": {
+              "error": {
+                "code": "not_configured",
+                "message": "artifact generation is not configured"
+              }
+            },
+            "schema": {
+              "$ref": "#/components/schemas/meeting-sessions_ErrorResponse"
+            }
+          }
+        },
+        "description": "Artifact generation or authentication is not configured or temporarily unavailable."
+      },
+      "MeetingReadAuthUnavailable": {
+        "content": {
+          "application/json": {
+            "example": {
+              "error": {
+                "code": "auth_unavailable",
+                "message": "authentication service unavailable"
+              }
+            },
+            "schema": {
+              "$ref": "#/components/schemas/meeting-sessions_ErrorResponse"
+            }
+          }
+        },
+        "description": "Authentication is temporarily unavailable."
+      },
+      "PayloadTooLarge": {
+        "content": {
+          "application/json": {
+            "example": {
+              "error": {
+                "code": "invalid_request",
+                "message": "request body too large"
+              }
+            },
+            "schema": {
+              "$ref": "#/components/schemas/meeting-sessions_ErrorResponse"
+            }
+          }
+        },
+        "description": "Payload Too Large"
+      },
+      "TooManyRequests": {
+        "content": {
+          "application/json": {
+            "example": {
+              "error": {
+                "code": "auth_overloaded",
+                "message": "authentication temporarily overloaded"
+              }
+            },
+            "schema": {
+              "$ref": "#/components/schemas/meeting-sessions_ErrorResponse"
+            }
+          }
+        },
+        "description": "Authentication is temporarily overloaded. Retry after the number of seconds in `Retry-After`.",
+        "headers": {
+          "Retry-After": {
+            "description": "Seconds to wait before retrying.",
+            "required": true,
+            "schema": {
+              "maximum": 5,
+              "minimum": 1,
+              "type": "integer"
+            }
+          }
+        }
+      },
+      "meeting-sessions_BadRequest": {
+        "content": {
+          "application/json": {
+            "example": {
+              "error": {
+                "code": "invalid_request",
+                "message": "request is invalid"
+              }
+            },
+            "schema": {
+              "$ref": "#/components/schemas/meeting-sessions_ErrorResponse"
+            }
+          }
+        },
+        "description": "Bad Request"
+      },
+      "meeting-sessions_Conflict": {
+        "content": {
+          "application/json": {
+            "example": {
+              "error": {
+                "code": "invalid_state",
+                "message": "only scheduled sessions can be updated"
+              }
+            },
+            "schema": {
+              "$ref": "#/components/schemas/meeting-sessions_ErrorResponse"
+            }
+          }
+        },
+        "description": "Conflict"
+      },
+      "meeting-sessions_InternalServerError": {
+        "content": {
+          "application/json": {
+            "example": {
+              "error": {
+                "code": "internal_error",
+                "message": "internal server error"
+              }
+            },
+            "schema": {
+              "$ref": "#/components/schemas/meeting-sessions_ErrorResponse"
+            }
+          }
+        },
+        "description": "Internal Server Error"
+      },
+      "meeting-sessions_NotFound": {
+        "content": {
+          "application/json": {
+            "example": {
+              "error": {
+                "code": "not_found",
+                "message": "meeting session not found"
+              }
+            },
+            "schema": {
+              "$ref": "#/components/schemas/meeting-sessions_ErrorResponse"
+            }
+          }
+        },
+        "description": "Not Found"
+      },
+      "meeting-sessions_Unauthorized": {
+        "content": {
+          "application/json": {
+            "example": {
+              "error": {
+                "code": "unauthorized",
+                "message": "invalid or missing credentials"
+              }
+            },
+            "schema": {
+              "$ref": "#/components/schemas/meeting-sessions_ErrorResponse"
+            }
+          }
+        },
+        "description": "Unauthorized. On api.telnyx.com, authentication is enforced by the API gateway before the request reaches the Meeting service, so a missing or invalid API key returns the standard Telnyx error envelope (`{\"errors\": [{\"code\": \"10009\", ...}]}`) rather than the single-`error` shape below."
+      }
+    },
+    "schemas": {
+      "ArtifactContent": {
+        "additionalProperties": false,
+        "properties": {
+          "text": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "text"
+        ],
+        "type": "object"
+      },
+      "CreateMeetingSessionArtifactRequest": {
+        "description": "One of two shapes: a named type on its own, or `custom` with the prompt it answers.",
+        "oneOf": [
+          {
+            "additionalProperties": false,
+            "properties": {
+              "type": {
+                "description": "What to generate from the transcript. `custom` is answered from a `prompt` you supply; the five named types need none.",
+                "enum": [
+                  "summary",
+                  "action_items",
+                  "decisions",
+                  "topics",
+                  "open_questions"
+                ],
+                "type": "string"
+              }
+            },
+            "required": [
+              "type"
+            ],
+            "title": "Named artifact",
+            "type": "object"
+          },
+          {
+            "additionalProperties": false,
+            "properties": {
+              "prompt": {
+                "description": "An open-ended request answered from the transcript. Required when `type` is `custom`, and rejected with 400 on any named type. Trimmed before storage and echoed back in artifact responses and the `artifact.completed` webhook.",
+                "maxLength": 4000,
+                "minLength": 1,
+                "type": "string"
+              },
+              "type": {
+                "const": "custom",
+                "description": "Answered from the `prompt` below rather than a fixed question.",
+                "type": "string"
+              }
+            },
+            "required": [
+              "type",
+              "prompt"
+            ],
+            "title": "Custom artifact",
+            "type": "object"
+          }
+        ],
+        "title": "CreateMeetingSessionArtifactRequest"
+      },
+      "MeetingSessionArtifact": {
+        "additionalProperties": false,
+        "examples": [
+          {
+            "content": null,
+            "created_at": "2025-01-15T10:30:00Z",
+            "failure_reason": null,
+            "id": "mtgart_550e8400-e29b-41d4-a716-446655440000",
+            "model_provenance": null,
+            "prompt": null,
+            "session_id": "mtgsess_550e8400-e29b-41d4-a716-446655440001",
+            "status": "pending",
+            "type": "action_items",
+            "updated_at": "2025-01-15T10:30:00Z"
+          },
+          {
+            "content": {
+              "text": "The team reviewed project goals and agreed on next steps."
+            },
+            "created_at": "2025-01-15T10:30:00Z",
+            "failure_reason": null,
+            "id": "mtgart_550e8400-e29b-41d4-a716-446655440002",
+            "model_provenance": {
+              "model": "example-model",
+              "provider": "example-provider"
+            },
+            "prompt": null,
+            "session_id": "mtgsess_550e8400-e29b-41d4-a716-446655440001",
+            "status": "completed",
+            "type": "summary",
+            "updated_at": "2025-01-15T10:31:00Z"
+          }
+        ],
+        "properties": {
+          "content": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ArtifactContent"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "created_at": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "failure_reason": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "id": {
+            "type": "string"
+          },
+          "model_provenance": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ModelProvenance"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "prompt": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "The prompt that produced this artifact, or null for a named type. Non-null only when `type` is `custom`; the five named types always return `null`."
+          },
+          "session_id": {
+            "type": "string"
+          },
+          "status": {
+            "enum": [
+              "pending",
+              "completed",
+              "failed"
+            ],
+            "type": "string"
+          },
+          "type": {
+            "enum": [
+              "summary",
+              "action_items",
+              "decisions",
+              "topics",
+              "open_questions",
+              "custom"
+            ],
+            "type": "string"
+          },
+          "updated_at": {
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "session_id",
+          "type",
+          "status",
+          "content",
+          "model_provenance",
+          "failure_reason",
+          "created_at",
+          "updated_at",
+          "prompt"
+        ],
+        "type": "object"
+      },
+      "MeetingSessionArtifactListResponse": {
+        "additionalProperties": false,
+        "properties": {
+          "data": {
+            "items": {
+              "$ref": "#/components/schemas/MeetingSessionArtifact"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "data"
+        ],
+        "type": "object"
+      },
+      "MeetingSessionArtifactResponse": {
+        "additionalProperties": false,
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/MeetingSessionArtifact"
+          }
+        },
+        "required": [
+          "data"
+        ],
+        "type": "object"
+      },
+      "ModelProvenance": {
+        "additionalProperties": false,
+        "properties": {
+          "model": {
+            "type": "string"
+          },
+          "provider": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "model",
+          "provider"
+        ],
+        "type": "object"
+      },
+      "meeting-sessions_ErrorResponse": {
+        "additionalProperties": false,
+        "examples": [
+          {
+            "error": {
+              "code": "invalid_request",
+              "message": "webhook_url is disabled"
+            }
+          },
+          {
+            "error": {
+              "code": "not_found",
+              "message": "meeting session not found"
+            }
+          },
+          {
+            "error": {
+              "code": "unsupported_capability",
+              "message": "avatar video is not supported on platform 'unknown'"
+            }
+          },
+          {
+            "error": {
+              "code": "internal_error",
+              "message": "internal server error"
+            }
+          }
+        ],
+        "properties": {
+          "error": {
+            "additionalProperties": false,
+            "properties": {
+              "code": {
+                "type": "string"
+              },
+              "message": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "code",
+              "message"
+            ],
+            "type": "object"
+          }
+        },
+        "required": [
+          "error"
+        ],
+        "type": "object"
+      }
+    },
+    "securitySchemes": {
+      "BearerAuth": {
+        "bearerFormat": "API key",
+        "description": "Telnyx API key supplied as `Authorization: Bearer \u003ctoken\u003e`. In production, auth may be validated by the API gateway and forwarded via Telnyx auth headers.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "Payment": {
+        "description": "Machine Payment Protocol credential used on paid retries, sent as `Authorization: Payment ...`. Obtained by paying a challenge returned in the `WWW-Authenticate` header of a 402 response. This is not a Telnyx API key; initial challenge requests use standard bearer authentication instead.",
+        "in": "header",
+        "name": "Authorization",
+        "type": "apiKey"
+      },
+      "agent-memory_bearerAuth": {
+        "description": "Telnyx API key",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "bearerAuth": {
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "branded-calling_bearerAuth": {
+        "description": "Telnyx API key. Generate one at https://portal.telnyx.com/#/app/api-keys.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "collections_bearerAuth": {
+        "description": "Telnyx API key. Collections and results are automatically scoped to the authenticated user's organization.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "number-reputation_bearerAuth": {
+        "description": "Telnyx API key. Generate one at https://portal.telnyx.com/#/app/api-keys.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "oauthClientAuth": {
+        "description": "OAuth 2.0 authentication for Telnyx API and MCP integrations",
+        "flows": {
+          "authorizationCode": {
+            "authorizationUrl": "https://api.telnyx.com/v2/oauth/authorize",
+            "refreshUrl": "https://api.telnyx.com/v2/oauth/token",
+            "scopes": {
+              "admin": "Administrative access to Telnyx resources"
+            },
+            "tokenUrl": "https://api.telnyx.com/v2/oauth/token"
+          },
+          "clientCredentials": {
+            "scopes": {
+              "admin": "Administrative access to Telnyx resources"
+            },
+            "tokenUrl": "https://api.telnyx.com/v2/oauth/token"
+          }
+        },
+        "type": "oauth2"
+      },
+      "outbound-voice-profiles_bearerAuth": {
+        "bearerFormat": "JWT",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "pay-connectors_bearerAuth": {
+        "description": "Telnyx API key, not the processor bearer token.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "pronunciation-dicts_bearerAuth": {
+        "description": "Telnyx API v2 key. Obtain from https://portal.telnyx.com",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "rcs-registration_bearerAuth": {
+        "bearerFormat": "API key",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "stored-payment-transactions_bearerAuth": {
+        "bearerFormat": "JWT",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "telnyxApiKey": {
+        "description": "Management-only Telnyx account credential.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "transcriptions-search_bearerAuth": {
+        "description": "Telnyx API key. Results are automatically scoped to the authenticated user's organization.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "web-search_bearerAuth": {
+        "description": "Telnyx API key",
+        "scheme": "bearer",
+        "type": "http"
+      }
+    }
+  },
+  "info": {
+    "contact": {
+      "email": "support@telnyx.com"
+    },
+    "description": "SIP trunking, SMS, MMS, Call Control and Telephony Data Services.",
+    "title": "Telnyx API",
+    "version": "2.0.0",
+    "x-endpoint-cost": "light",
+    "x-latency-category": "responsive"
+  },
+  "openapi": "3.1.0",
+  "paths": {
+    "/meeting_sessions/{id}/artifacts": {
+      "get": {
+        "description": "Returns a list of artifacts for a meeting session.",
+        "operationId": "listMeetingSessionArtifacts",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/MeetingSessionId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MeetingSessionArtifactListResponse"
+                }
+              }
+            },
+            "description": "Successful response with a list of meeting session artifacts."
+          },
+          "401": {
+            "$ref": "#/components/responses/meeting-sessions_Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/meeting-sessions_NotFound"
+          },
+          "429": {
+            "$ref": "#/components/responses/TooManyRequests"
+          },
+          "500": {
+            "$ref": "#/components/responses/meeting-sessions_InternalServerError"
+          },
+          "503": {
+            "$ref": "#/components/responses/MeetingReadAuthUnavailable"
+          }
+        },
+        "summary": "List meeting session artifacts",
+        "tags": [
+          "Meeting Session Artifacts"
+        ]
+      },
+      "post": {
+        "description": "Requests asynchronous generation of one artifact: `summary`, `action_items`, `decisions`, `topics`, `open_questions`, or `custom`. Each request produces one artifact. `custom` is answered from a `prompt` you supply, which is required for `custom` and rejected on the five named types. Generation requires transcript content and configured inference and currently reads at most the first 10,000 segments, so exceptionally long transcripts may produce incomplete artifacts or fail model limits. **Not idempotent, and every call is billed**: each request is a separate inference run, so a retry or a duplicate POST produces a second artifact and a second charge. Guard the call rather than relying on the service to collapse it. The automatic `summarize_on_end` attempt is billed on the same basis.",
+        "operationId": "createMeetingSessionArtifact",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/MeetingSessionId"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "example": {
+                "type": "summary"
+              },
+              "schema": {
+                "$ref": "#/components/schemas/CreateMeetingSessionArtifactRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "202": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MeetingSessionArtifactResponse"
+                }
+              }
+            },
+            "description": "Artifact creation accepted and is being processed asynchronously."
+          },
+          "400": {
+            "$ref": "#/components/responses/meeting-sessions_BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/meeting-sessions_Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/meeting-sessions_NotFound"
+          },
+          "409": {
+            "$ref": "#/components/responses/meeting-sessions_Conflict"
+          },
+          "413": {
+            "$ref": "#/components/responses/PayloadTooLarge"
+          },
+          "429": {
+            "$ref": "#/components/responses/TooManyRequests"
+          },
+          "500": {
+            "$ref": "#/components/responses/meeting-sessions_InternalServerError"
+          },
+          "503": {
+            "$ref": "#/components/responses/MeetingArtifactUnavailable"
+          }
+        },
+        "summary": "Create a meeting session artifact",
+        "tags": [
+          "Meeting Session Artifacts"
+        ]
+      }
+    },
+    "/meeting_sessions/{id}/artifacts/{artifact_id}": {
+      "get": {
+        "description": "Retrieves a single meeting session artifact by ID.",
+        "operationId": "retrieveMeetingSessionArtifact",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/MeetingSessionId"
+          },
+          {
+            "$ref": "#/components/parameters/ArtifactId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MeetingSessionArtifactResponse"
+                }
+              }
+            },
+            "description": "Successful response with the meeting session artifact."
+          },
+          "401": {
+            "$ref": "#/components/responses/meeting-sessions_Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/meeting-sessions_NotFound"
+          },
+          "429": {
+            "$ref": "#/components/responses/TooManyRequests"
+          },
+          "500": {
+            "$ref": "#/components/responses/meeting-sessions_InternalServerError"
+          },
+          "503": {
+            "$ref": "#/components/responses/MeetingReadAuthUnavailable"
+          }
+        },
+        "summary": "Retrieve a meeting session artifact",
+        "tags": [
+          "Meeting Session Artifacts"
+        ]
+      }
+    }
+  },
+  "security": [
+    {
+      "bearerAuth": []
+    }
+  ],
+  "servers": [
+    {
+      "description": "Version 2.0.0 of the Telnyx API",
+      "url": "https://api.telnyx.com/v2"
+    }
+  ]
+}

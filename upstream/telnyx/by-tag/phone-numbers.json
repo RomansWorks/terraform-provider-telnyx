@@ -1,0 +1,802 @@
+{
+  "components": {
+    "parameters": {
+      "BcPageNumber": {
+        "description": "1-based page number. Out-of-range values return an empty page with correct meta.",
+        "in": "query",
+        "name": "page[number]",
+        "required": false,
+        "schema": {
+          "default": 1,
+          "example": 1,
+          "minimum": 1,
+          "type": "integer"
+        }
+      },
+      "BcPageSize": {
+        "description": "Items per page. Maximum 250; values above are clamped to 250.",
+        "in": "query",
+        "name": "page[size]",
+        "required": false,
+        "schema": {
+          "default": 20,
+          "example": 20,
+          "maximum": 250,
+          "minimum": 1,
+          "type": "integer"
+        }
+      },
+      "DirId": {
+        "description": "The DIR id. Lowercase UUID.",
+        "in": "path",
+        "name": "dir_id",
+        "required": true,
+        "schema": {
+          "example": "16635d38-75a6-4481-82e8-69af60e05011",
+          "format": "uuid",
+          "type": "string"
+        }
+      }
+    },
+    "responses": {
+      "branded-calling_GenericErrorResponse": {
+        "content": {
+          "application/json": {
+            "examples": {
+              "bad_request": {
+                "description": "Returned when the request itself is well-formed but the resource is in a state that disallows this action (e.g. updating a DIR while it is being vetted, or deleting an enterprise that still has DIRs in vetting).",
+                "summary": "400 - request rejected by a state guard",
+                "value": {
+                  "errors": [
+                    {
+                      "code": "10015",
+                      "detail": "Cannot update DIR in 'verified' status",
+                      "meta": {
+                        "url": "https://developers.telnyx.com/docs/overview/errors/10015"
+                      },
+                      "title": "Bad Request"
+                    }
+                  ]
+                }
+              },
+              "conflict": {
+                "summary": "409 - request conflicts with current resource state",
+                "value": {
+                  "errors": [
+                    {
+                      "code": "10021",
+                      "detail": "DIR has 1 active infringement claim(s). Resolve the claim before making this change.",
+                      "meta": {
+                        "url": "https://developers.telnyx.com/docs/overview/errors/10021"
+                      },
+                      "title": "Resource in use"
+                    }
+                  ]
+                }
+              },
+              "not_found": {
+                "summary": "404 - resource does not exist or is not yours",
+                "value": {
+                  "errors": [
+                    {
+                      "code": "10009",
+                      "detail": "Enterprise not found.",
+                      "meta": {
+                        "url": "https://developers.telnyx.com/docs/overview/errors/10009"
+                      },
+                      "title": "Resource not found"
+                    }
+                  ]
+                }
+              },
+              "validation_error": {
+                "summary": "422 - request body failed validation",
+                "value": {
+                  "errors": [
+                    {
+                      "code": "10005",
+                      "detail": "field required",
+                      "meta": {
+                        "url": "https://developers.telnyx.com/docs/overview/errors/10005"
+                      },
+                      "source": {
+                        "pointer": "/body/legal_name"
+                      },
+                      "title": "Invalid parameters"
+                    }
+                  ]
+                }
+              }
+            },
+            "schema": {
+              "$ref": "#/components/schemas/branded-calling_Errors"
+            }
+          }
+        },
+        "description": "An error occurred. The response carries the standard Telnyx error envelope."
+      }
+    },
+    "schemas": {
+      "BulkAddPhoneNumbersRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "documents": {
+            "description": "Supporting documents covering this batch. At least one entry with `document_type: letter_of_authorization` is required - the LOA authorises Telnyx to register these numbers under the DIR. Each `document_id` must come from the Telnyx Documents API. Additional document types (e.g. business registration) may be included alongside the LOA.",
+            "items": {
+              "$ref": "#/components/schemas/Document"
+            },
+            "maxItems": 20,
+            "minItems": 1,
+            "type": "array"
+          },
+          "phone_numbers": {
+            "description": "1–15 phone numbers in E.164 format. 10-digit US numbers are auto-prefixed with `1`.",
+            "items": {
+              "example": "+19493253498",
+              "type": "string"
+            },
+            "maxItems": 15,
+            "minItems": 1,
+            "type": "array"
+          }
+        },
+        "required": [
+          "phone_numbers",
+          "documents"
+        ],
+        "type": "object"
+      },
+      "BulkDeletePhoneNumbersRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "phone_numbers": {
+            "description": "The phone numbers to remove from this brand, in E.164 format, up to 100 per request. They must currently be attached to this brand.",
+            "items": {
+              "example": "+19493253498",
+              "type": "string"
+            },
+            "maxItems": 100,
+            "minItems": 1,
+            "type": "array"
+          }
+        },
+        "required": [
+          "phone_numbers"
+        ],
+        "type": "object"
+      },
+      "DirPhoneNumber": {
+        "properties": {
+          "batch_id": {
+            "description": "Id of the batch this number was vetted as part of.",
+            "example": "0a4b1f5e-2f12-4c0c-9a98-9b3a7d8b8e62",
+            "format": "uuid",
+            "nullable": true,
+            "type": "string"
+          },
+          "created_at": {
+            "example": "2026-04-26T18:11:42.850928Z",
+            "format": "date-time",
+            "readOnly": true,
+            "type": "string"
+          },
+          "dir_id": {
+            "example": "16635d38-75a6-4481-82e8-69af60e05011",
+            "format": "uuid",
+            "type": "string"
+          },
+          "enterprise_id": {
+            "example": "4a6192a4-573d-446d-b3ce-aff9117272a6",
+            "format": "uuid",
+            "type": "string"
+          },
+          "id": {
+            "example": "1f56eb76-4078-4af7-ad4d-564b027256ee",
+            "format": "uuid",
+            "readOnly": true,
+            "type": "string"
+          },
+          "loa_document_id": {
+            "description": "Id of the Letter of Authorization document attached to this number's batch.",
+            "example": null,
+            "format": "uuid",
+            "nullable": true,
+            "type": "string"
+          },
+          "phone_number": {
+            "description": "E.164 with leading `+`.",
+            "example": "+19493253498",
+            "type": "string"
+          },
+          "rejection_reason": {
+            "$ref": "#/components/schemas/RejectionReason",
+            "description": "Populated when `status` is `unsuccessful` or `permanently_rejected`.",
+            "nullable": true
+          },
+          "status": {
+            "$ref": "#/components/schemas/PhoneNumberStatus"
+          },
+          "updated_at": {
+            "example": "2026-04-26T18:12:11.123456Z",
+            "format": "date-time",
+            "readOnly": true,
+            "type": "string"
+          },
+          "verified_at": {
+            "example": "2026-04-26T18:12:11.123456Z",
+            "format": "date-time",
+            "nullable": true,
+            "readOnly": true,
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "Document": {
+        "properties": {
+          "description": {
+            "description": "An optional note describing this document, for example what it proves.",
+            "example": "Certificate of incorporation.",
+            "maxLength": 255,
+            "type": "string"
+          },
+          "document_id": {
+            "description": "Id returned by the Telnyx Documents API after you upload the file (upload via `POST /v2/documents`; see https://developers.telnyx.com/api/documents).",
+            "example": "2a7e8337-e803-4057-a4ae-26c40eb0bc6c",
+            "format": "uuid",
+            "type": "string"
+          },
+          "document_type": {
+            "description": "Type of supporting document. Pick the closest match to what the file actually contains; `other` triggers manual vetting and may slow approval. The matching short_name reference list is at `GET /v2/dir/document_types`.",
+            "enum": [
+              "letter_of_authorization",
+              "business_registration",
+              "articles_of_incorporation",
+              "certificate_of_good_standing",
+              "tax_document",
+              "ein_letter",
+              "trademark_registration",
+              "website_ownership",
+              "business_license",
+              "professional_license",
+              "government_id",
+              "utility_bill",
+              "bank_statement",
+              "business_credit_report",
+              "bank_reference_letter",
+              "other"
+            ],
+            "example": "business_registration",
+            "type": "string"
+          }
+        },
+        "required": [
+          "document_id",
+          "document_type"
+        ],
+        "type": "object"
+      },
+      "PhoneNumberBulkDeleteResponse": {
+        "description": "Bulk-delete partial-success response. `data` is the list of phone numbers that were soft-deleted. `meta.errors` holds per-number failures (e.g. number not associated with this DIR). When EVERY number in the request fails, the endpoint instead returns 400 with the canonical Telnyx error envelope and `data`/`meta` are absent.",
+        "properties": {
+          "data": {
+            "description": "Phone numbers that were successfully soft-deleted. Bare E.164 strings.",
+            "items": {
+              "example": "+19493253498",
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "meta": {
+            "properties": {
+              "errors": {
+                "description": "Per-number failures that did not block the call. Each entry has `phone_number`, `code`, `title`, `detail`.",
+                "items": {
+                  "$ref": "#/components/schemas/PhoneNumberItemError"
+                },
+                "type": "array"
+              }
+            },
+            "required": [
+              "errors"
+            ],
+            "type": "object"
+          }
+        },
+        "required": [
+          "data",
+          "meta"
+        ],
+        "type": "object"
+      },
+      "PhoneNumberBulkResponse": {
+        "description": "Bulk-add success response (HTTP 201). All numbers in the request were accepted into a single new batch. Every entry in `data` shares the same `batch_id` - read it from any element to obtain the batch id for subsequent `GET .../phone_number_batches/{batch_id}` calls. If any number in the request fails (schema-invalid, not in inventory, already attached to another DIR, etc.) the entire request is rejected with HTTP 400 and the canonical Telnyx error envelope; the success body described here is therefore an all-or-nothing payload.",
+        "properties": {
+          "data": {
+            "description": "Phone numbers accepted into the new batch. List order mirrors the request order. Each element shares the same `batch_id`.",
+            "items": {
+              "$ref": "#/components/schemas/DirPhoneNumber"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "data"
+        ],
+        "type": "object"
+      },
+      "PhoneNumberItemError": {
+        "description": "Per-number error returned by the bulk-delete endpoint. Bulk-add does not use this shape - it returns a 400 with the canonical envelope grouping numbers by failure category.",
+        "properties": {
+          "code": {
+            "description": "Stable per-number error code. Currently only `not_associated` is emitted, when the number is not attached to this DIR.",
+            "enum": [
+              "not_associated"
+            ],
+            "example": "not_associated",
+            "type": "string"
+          },
+          "detail": {
+            "example": "Phone number not associated with this DIR.",
+            "type": "string"
+          },
+          "phone_number": {
+            "example": "+19493253498",
+            "type": "string"
+          },
+          "title": {
+            "example": "Phone number not associated",
+            "type": "string"
+          }
+        },
+        "required": [
+          "phone_number",
+          "code",
+          "title",
+          "detail"
+        ],
+        "type": "object"
+      },
+      "PhoneNumberList": {
+        "properties": {
+          "data": {
+            "items": {
+              "$ref": "#/components/schemas/DirPhoneNumber"
+            },
+            "type": "array"
+          },
+          "meta": {
+            "$ref": "#/components/schemas/branded-calling_PaginationMeta"
+          }
+        },
+        "required": [
+          "data",
+          "meta"
+        ],
+        "type": "object"
+      },
+      "PhoneNumberStatus": {
+        "description": "Phone-number lifecycle status.\n- `submitted` / `in_review` - Telnyx is reviewing the batch this number belongs to.\n- `verified` - approved; the DIR's display identity will be shown on outbound calls from this number.\n- `unsuccessful` - Telnyx rejected this submission; the customer may re-add to retry.\n- `suspended` - temporarily disabled (e.g. by an active infringement claim on the DIR).\n- `expired` - verification expired; re-add to renew.\n- `permanently_rejected` - terminal; cannot be re-added on this or any other DIR you own.",
+        "enum": [
+          "submitted",
+          "in_review",
+          "verified",
+          "unsuccessful",
+          "suspended",
+          "expired",
+          "permanently_rejected"
+        ],
+        "type": "string"
+      },
+      "RejectionReason": {
+        "properties": {
+          "code": {
+            "example": "documentation_incomplete",
+            "type": "string"
+          },
+          "detail": {
+            "example": "Provided documents do not establish business identity.",
+            "type": "string"
+          },
+          "message": {
+            "description": "Customer-visible free-text comment from the Telnyx vetting team. Only the first entry of `rejection_reasons` carries this; the rest are `null`.",
+            "example": "Please re-upload a clearer scan of the certificate.",
+            "nullable": true,
+            "type": "string"
+          },
+          "title": {
+            "example": "Documentation incomplete",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "branded-calling_Error": {
+        "description": "A single entry in the canonical Telnyx error envelope. `code` is the stable Telnyx error catalog id; the human-readable explanation lives at `meta.url`. `detail` is a context-specific message; `source.pointer` (when present) names the offending field of the request.",
+        "properties": {
+          "code": {
+            "description": "Stable numeric Telnyx error catalog id. See `meta.url` for the full catalog entry.",
+            "example": "10005",
+            "type": "string"
+          },
+          "detail": {
+            "description": "Context-specific message describing what went wrong on this particular request. May embed offending values; do not rely on it for programmatic matching - branch on `code`.",
+            "example": "field required",
+            "type": "string"
+          },
+          "meta": {
+            "description": "Carries `url` linking to the Telnyx error catalog entry for this `code`. Useful for forwarding the user to documentation.",
+            "properties": {
+              "pending_check_codes": {
+                "description": "Codes of the pending vetting checks (e.g. `loa_signature_valid`).",
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              "pending_check_ids": {
+                "description": "Set on `422 vetting_checks_incomplete` responses from `/admin/dir/{id}/approve` and `/admin/phone-number-batches/approve`. Lists the still-pending vetting check ids.",
+                "items": {
+                  "format": "uuid",
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              "pending_check_labels": {
+                "description": "Human-readable labels of the pending vetting checks.",
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              "url": {
+                "example": "https://developers.telnyx.com/docs/overview/errors/10005",
+                "format": "uri",
+                "type": "string"
+              }
+            },
+            "required": [
+              "url"
+            ],
+            "type": "object"
+          },
+          "source": {
+            "description": "Optional pointer at the offending field of the request.",
+            "properties": {
+              "parameter": {
+                "example": "page[size]",
+                "type": "string"
+              },
+              "pointer": {
+                "example": "/body/legal_name",
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
+          "title": {
+            "description": "Short human-readable category, e.g. `Bad Request`, `Duplicate resource`, `Not Found`, `Forbidden`. Treat as advisory only - the stable identifier is `code`.",
+            "example": "Invalid parameters",
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "title",
+          "detail",
+          "meta"
+        ],
+        "type": "object"
+      },
+      "branded-calling_Errors": {
+        "description": "Canonical Telnyx error envelope. Returned on every 4xx and 5xx response from this service. `errors` is non-empty; multiple entries indicate multiple distinct problems with the same request (e.g. one entry per invalid phone number on a bulk operation).",
+        "properties": {
+          "errors": {
+            "description": "List of one or more error entries. Order is not significant.",
+            "items": {
+              "$ref": "#/components/schemas/branded-calling_Error"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "errors"
+        ],
+        "type": "object"
+      },
+      "branded-calling_PaginationMeta": {
+        "description": "JSON:API pagination metadata returned with every paginated list response. Page numbering is 1-based. `page_size` reports the number of items actually returned in `data` for this page; the requested size is taken from the `page[size]` query parameter.",
+        "properties": {
+          "page_number": {
+            "description": "1-based index of this page. Echoes the `page[number]` query parameter (default `1`).",
+            "example": 1,
+            "type": "integer"
+          },
+          "page_size": {
+            "description": "Number of items returned in this page's `data` array. Capped at 250.",
+            "example": 20,
+            "type": "integer"
+          },
+          "total_pages": {
+            "description": "Total number of pages available given the current `page_size`.",
+            "example": 3,
+            "type": "integer"
+          },
+          "total_results": {
+            "description": "Total number of items across all pages (excludes soft-deleted rows).",
+            "example": 42,
+            "type": "integer"
+          }
+        },
+        "required": [
+          "total_pages",
+          "total_results",
+          "page_number",
+          "page_size"
+        ],
+        "type": "object"
+      }
+    },
+    "securitySchemes": {
+      "BearerAuth": {
+        "bearerFormat": "API key",
+        "description": "Telnyx API key supplied as `Authorization: Bearer \u003ctoken\u003e`. In production, auth may be validated by the API gateway and forwarded via Telnyx auth headers.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "Payment": {
+        "description": "Machine Payment Protocol credential used on paid retries, sent as `Authorization: Payment ...`. Obtained by paying a challenge returned in the `WWW-Authenticate` header of a 402 response. This is not a Telnyx API key; initial challenge requests use standard bearer authentication instead.",
+        "in": "header",
+        "name": "Authorization",
+        "type": "apiKey"
+      },
+      "agent-memory_bearerAuth": {
+        "description": "Telnyx API key",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "bearerAuth": {
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "branded-calling_bearerAuth": {
+        "description": "Telnyx API key. Generate one at https://portal.telnyx.com/#/app/api-keys.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "collections_bearerAuth": {
+        "description": "Telnyx API key. Collections and results are automatically scoped to the authenticated user's organization.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "number-reputation_bearerAuth": {
+        "description": "Telnyx API key. Generate one at https://portal.telnyx.com/#/app/api-keys.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "oauthClientAuth": {
+        "description": "OAuth 2.0 authentication for Telnyx API and MCP integrations",
+        "flows": {
+          "authorizationCode": {
+            "authorizationUrl": "https://api.telnyx.com/v2/oauth/authorize",
+            "refreshUrl": "https://api.telnyx.com/v2/oauth/token",
+            "scopes": {
+              "admin": "Administrative access to Telnyx resources"
+            },
+            "tokenUrl": "https://api.telnyx.com/v2/oauth/token"
+          },
+          "clientCredentials": {
+            "scopes": {
+              "admin": "Administrative access to Telnyx resources"
+            },
+            "tokenUrl": "https://api.telnyx.com/v2/oauth/token"
+          }
+        },
+        "type": "oauth2"
+      },
+      "outbound-voice-profiles_bearerAuth": {
+        "bearerFormat": "JWT",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "pay-connectors_bearerAuth": {
+        "description": "Telnyx API key, not the processor bearer token.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "pronunciation-dicts_bearerAuth": {
+        "description": "Telnyx API v2 key. Obtain from https://portal.telnyx.com",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "rcs-registration_bearerAuth": {
+        "bearerFormat": "API key",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "stored-payment-transactions_bearerAuth": {
+        "bearerFormat": "JWT",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "telnyxApiKey": {
+        "description": "Management-only Telnyx account credential.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "transcriptions-search_bearerAuth": {
+        "description": "Telnyx API key. Results are automatically scoped to the authenticated user's organization.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "web-search_bearerAuth": {
+        "description": "Telnyx API key",
+        "scheme": "bearer",
+        "type": "http"
+      }
+    }
+  },
+  "info": {
+    "contact": {
+      "email": "support@telnyx.com"
+    },
+    "description": "SIP trunking, SMS, MMS, Call Control and Telephony Data Services.",
+    "title": "Telnyx API",
+    "version": "2.0.0",
+    "x-endpoint-cost": "light",
+    "x-latency-category": "responsive"
+  },
+  "openapi": "3.1.0",
+  "paths": {
+    "/dir/{dir_id}/phone_numbers": {
+      "delete": {
+        "description": "Deregister phone numbers from a DIR. The enterprise is resolved server-side from the DIR id. Returns a partial-success envelope.",
+        "operationId": "deleteDirPhoneNumbersSimplified",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/DirId"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "example": {
+                "phone_numbers": [
+                  "+19493253498"
+                ]
+              },
+              "schema": {
+                "$ref": "#/components/schemas/BulkDeletePhoneNumbersRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PhoneNumberBulkDeleteResponse"
+                }
+              }
+            },
+            "description": "Bulk-delete response. Inspect both `deleted` and `errors`."
+          },
+          "4XX": {
+            "$ref": "#/components/responses/branded-calling_GenericErrorResponse"
+          },
+          "default": {
+            "$ref": "#/components/responses/branded-calling_GenericErrorResponse"
+          }
+        },
+        "summary": "Remove phone numbers from a DIR",
+        "tags": [
+          "Phone Numbers"
+        ]
+      },
+      "get": {
+        "description": "List the phone numbers registered under a DIR. The enterprise is resolved server-side from the DIR id.",
+        "operationId": "listDirPhoneNumbersSimplified",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/DirId"
+          },
+          {
+            "$ref": "#/components/parameters/BcPageNumber"
+          },
+          {
+            "$ref": "#/components/parameters/BcPageSize"
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PhoneNumberList"
+                }
+              }
+            },
+            "description": "Paginated list of phone numbers."
+          },
+          "4XX": {
+            "$ref": "#/components/responses/branded-calling_GenericErrorResponse"
+          },
+          "default": {
+            "$ref": "#/components/responses/branded-calling_GenericErrorResponse"
+          }
+        },
+        "summary": "List phone numbers attached to a DIR",
+        "tags": [
+          "Phone Numbers"
+        ]
+      },
+      "post": {
+        "description": "Register phone numbers under a DIR. The enterprise is resolved server-side from the DIR id.\n\n**Pricing:** Adding phone numbers is free. Branded Calling fees are charged per DIR and per branded call. See https://telnyx.com/pricing/branded-calling for current pricing.",
+        "operationId": "addDirPhoneNumbersSimplified",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/DirId"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "example": {
+                "documents": [
+                  {
+                    "description": "LOA authorising Telnyx to register these numbers under the DIR.",
+                    "document_id": "2a7e8337-e803-4057-a4ae-26c40eb0bc6c",
+                    "document_type": "letter_of_authorization"
+                  }
+                ],
+                "phone_numbers": [
+                  "+19493253498",
+                  "+12134445566"
+                ]
+              },
+              "schema": {
+                "$ref": "#/components/schemas/BulkAddPhoneNumbersRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PhoneNumberBulkResponse"
+                }
+              }
+            },
+            "description": "Bulk-add response. Inspect both `added` and `errors`."
+          },
+          "4XX": {
+            "$ref": "#/components/responses/branded-calling_GenericErrorResponse"
+          },
+          "default": {
+            "$ref": "#/components/responses/branded-calling_GenericErrorResponse"
+          }
+        },
+        "summary": "Add phone numbers to a DIR",
+        "tags": [
+          "Phone Numbers"
+        ]
+      }
+    }
+  },
+  "security": [
+    {
+      "bearerAuth": []
+    }
+  ],
+  "servers": [
+    {
+      "description": "Version 2.0.0 of the Telnyx API",
+      "url": "https://api.telnyx.com/v2"
+    }
+  ]
+}

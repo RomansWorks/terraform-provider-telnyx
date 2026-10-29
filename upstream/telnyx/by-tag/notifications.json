@@ -1,0 +1,1456 @@
+{
+  "components": {
+    "parameters": {
+      "PageConsolidated": {
+        "description": "Consolidated page parameter (deepObject style). Originally: page[number], page[size]",
+        "explode": true,
+        "in": "query",
+        "name": "page",
+        "schema": {
+          "properties": {
+            "number": {
+              "default": 1,
+              "description": "The page number to load",
+              "minimum": 1,
+              "type": "integer"
+            },
+            "size": {
+              "default": 20,
+              "description": "The size of the page",
+              "maximum": 250,
+              "minimum": 1,
+              "type": "integer"
+            }
+          },
+          "type": "object"
+        },
+        "style": "deepObject"
+      },
+      "notifications_FilterConsolidated": {
+        "description": "Consolidated filter parameter (deepObject style). Originally: filter[associated_record_type][eq], filter[channel_type_id][eq], filter[notification_profile_id][eq], filter[notification_channel][eq], filter[notification_event_condition_id][eq], filter[status][eq]",
+        "explode": true,
+        "in": "query",
+        "name": "filter",
+        "required": false,
+        "schema": {
+          "properties": {
+            "associated_record_type": {
+              "properties": {
+                "eq": {
+                  "description": "Filter by the associated record type",
+                  "enum": [
+                    "account",
+                    "phone_number"
+                  ],
+                  "example": "phone_number",
+                  "type": "string"
+                }
+              },
+              "type": "object"
+            },
+            "channel_type_id": {
+              "properties": {
+                "eq": {
+                  "description": "Filter by the id of a channel type",
+                  "enum": [
+                    "webhook",
+                    "sms",
+                    "email",
+                    "voice"
+                  ],
+                  "example": "webhook",
+                  "type": "string"
+                }
+              },
+              "type": "object"
+            },
+            "notification_channel": {
+              "properties": {
+                "eq": {
+                  "description": "Filter by the id of a notification channel",
+                  "example": "12455643-3cf1-4683-ad23-1cd32f7d5e0a",
+                  "type": "string"
+                }
+              },
+              "type": "object"
+            },
+            "notification_event_condition_id": {
+              "properties": {
+                "eq": {
+                  "description": "Filter by the id of a notification channel",
+                  "example": "12455643-3cf1-4683-ad23-1cd32f7d5e0a",
+                  "type": "string"
+                }
+              },
+              "type": "object"
+            },
+            "notification_profile_id": {
+              "properties": {
+                "eq": {
+                  "description": "Filter by the id of a notification profile",
+                  "example": "12455643-3cf1-4683-ad23-1cd32f7d5e0a",
+                  "type": "string"
+                }
+              },
+              "type": "object"
+            },
+            "status": {
+              "properties": {
+                "eq": {
+                  "description": "The status of a notification setting",
+                  "enum": [
+                    "enabled",
+                    "enable-received",
+                    "enable-pending",
+                    "enable-submtited",
+                    "delete-received",
+                    "delete-pending",
+                    "delete-submitted",
+                    "deleted"
+                  ],
+                  "example": "enable-received",
+                  "type": "string"
+                }
+              },
+              "type": "object"
+            }
+          },
+          "type": "object"
+        },
+        "style": "deepObject"
+      },
+      "notifications_Id": {
+        "description": "The id of the resource.",
+        "in": "path",
+        "name": "id",
+        "required": true,
+        "schema": {
+          "format": "uuid",
+          "type": "string"
+        }
+      }
+    },
+    "responses": {
+      "notifications_BadRequestResponse": {
+        "content": {
+          "application/json": {
+            "example": {
+              "errors": [
+                {
+                  "code": "10015",
+                  "detail": "The request failed because it was not well-formed.",
+                  "title": "Bad Request"
+                }
+              ]
+            },
+            "schema": {
+              "$ref": "#/components/schemas/Errors"
+            }
+          }
+        },
+        "description": "Bad request, the request was unacceptable, often due to missing a required parameter."
+      },
+      "notifications_GenericErrorResponse": {
+        "content": {
+          "application/json": {
+            "example": {
+              "errors": [
+                {
+                  "code": "10007",
+                  "detail": "An unexpected error occured.",
+                  "title": "Unexpected error"
+                }
+              ]
+            },
+            "schema": {
+              "$ref": "#/components/schemas/Errors"
+            }
+          }
+        },
+        "description": "Unexpected error"
+      },
+      "notifications_NotFoundResponse": {
+        "content": {
+          "application/json": {
+            "example": {
+              "errors": [
+                {
+                  "code": "10005",
+                  "detail": "The requested resource or URL could not be found.",
+                  "title": "Resource not found"
+                }
+              ]
+            },
+            "schema": {
+              "$ref": "#/components/schemas/Errors"
+            }
+          }
+        },
+        "description": "The requested resource doesn't exist."
+      },
+      "notifications_UnprocessableEntity": {
+        "content": {
+          "application/json": {
+            "example": {
+              "errors": [
+                {
+                  "code": "10027",
+                  "detail": "The server understood the syntax of the request but was unable to process the instructions.",
+                  "title": "Unprocessable Entity"
+                }
+              ]
+            },
+            "schema": {
+              "$ref": "#/components/schemas/Errors"
+            }
+          }
+        },
+        "description": "Unprocessable entity. Check the 'detail' field in response for details."
+      }
+    },
+    "schemas": {
+      "Error": {
+        "example": {
+          "code": "20207",
+          "description": "The street address provided is invalid.",
+          "source": {
+            "pointer": "/street_address"
+          },
+          "title": "Invalid street address"
+        },
+        "properties": {
+          "code": {
+            "type": "string",
+            "x-format": "int64"
+          },
+          "description": {
+            "type": "string"
+          },
+          "detail": {
+            "description": "A human-readable explanation of the error.",
+            "type": "string"
+          },
+          "meta": {
+            "additionalProperties": true,
+            "type": "object"
+          },
+          "source": {
+            "properties": {
+              "parameter": {
+                "description": "Indicates which query parameter caused the error.",
+                "type": "string"
+              },
+              "pointer": {
+                "description": "JSON pointer (RFC6901) to the offending entity.",
+                "format": "json-pointer",
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
+          "title": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "title"
+        ],
+        "type": "object"
+      },
+      "Errors": {
+        "properties": {
+          "errors": {
+            "items": {
+              "$ref": "#/components/schemas/Error"
+            },
+            "type": "array"
+          }
+        },
+        "type": "object"
+      },
+      "NotificationChannel": {
+        "description": "A Notification Channel",
+        "properties": {
+          "channel_destination": {
+            "description": "The destination associated with the channel type.",
+            "example": "+13125550000",
+            "type": "string"
+          },
+          "channel_type_id": {
+            "description": "A Channel Type ID",
+            "enum": [
+              "sms",
+              "voice",
+              "email",
+              "webhook"
+            ],
+            "type": "string"
+          },
+          "created_at": {
+            "description": "ISO 8601 formatted date indicating when the resource was created.",
+            "example": "2019-10-15T10:07:15.527Z",
+            "format": "date-time",
+            "readOnly": true,
+            "type": "string"
+          },
+          "id": {
+            "description": "A UUID.",
+            "example": "12455643-3cf1-4683-ad23-1cd32f7d5e0a",
+            "readOnly": true,
+            "type": "string"
+          },
+          "notification_profile_id": {
+            "description": "A UUID reference to the associated Notification Profile.",
+            "example": "12455643-3cf1-4683-ad23-1cd32f7d5e0a",
+            "type": "string"
+          },
+          "updated_at": {
+            "description": "ISO 8601 formatted date indicating when the resource was updated.",
+            "example": "2019-10-15T10:07:15.527Z",
+            "format": "date-time",
+            "readOnly": true,
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "NotificationEvent": {
+        "description": "An object representing the available notifications.",
+        "properties": {
+          "created_at": {
+            "description": "ISO 8601 formatted date indicating when the resource was created.",
+            "example": "2019-10-15T10:07:15.527Z",
+            "format": "date-time",
+            "type": "string"
+          },
+          "enabled": {
+            "example": true,
+            "type": "boolean"
+          },
+          "id": {
+            "description": "A UUID.",
+            "example": "d5c395cd-9864-4609-b5e2-3f9fd4ce201a",
+            "readOnly": true,
+            "type": "string"
+          },
+          "name": {
+            "description": "A human readable name.",
+            "example": "Emergency Number Dialed",
+            "type": "string"
+          },
+          "notification_category": {
+            "example": "Calls",
+            "type": "string"
+          },
+          "updated_at": {
+            "description": "ISO 8601 formatted date indicating when the resource was updated.",
+            "example": "2019-10-15T10:07:15.527Z",
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "NotificationEventCondition": {
+        "properties": {
+          "allow_multiple_channels": {
+            "description": "Dictates whether a notification channel id needs to be provided when creating a notficiation setting.",
+            "example": false,
+            "type": "boolean"
+          },
+          "associated_record_type": {
+            "enum": [
+              "account",
+              "phone_number"
+            ],
+            "example": "phone_number",
+            "type": "string"
+          },
+          "asynchronous": {
+            "description": "Dictates whether a notification setting will take effect immediately.",
+            "example": true,
+            "type": "boolean"
+          },
+          "created_at": {
+            "description": "ISO 8601 formatted date indicating when the resource was created.",
+            "example": "2019-10-15T10:07:15.527Z",
+            "format": "date-time",
+            "type": "string"
+          },
+          "description": {
+            "example": "When emergency number dialed from phone number X",
+            "type": "string"
+          },
+          "enabled": {
+            "example": true,
+            "type": "boolean"
+          },
+          "id": {
+            "description": "A UUID.",
+            "example": "70c7c5cb-dce2-4124-accb-870d39dbe852",
+            "readOnly": true,
+            "type": "string"
+          },
+          "name": {
+            "example": "from phone number",
+            "type": "string"
+          },
+          "notification_event_id": {
+            "example": "d5c395cd-9864-4609-b5e2-3f9fd4ce201a",
+            "type": "string"
+          },
+          "parameters": {
+            "items": {
+              "properties": {
+                "data_type": {
+                  "example": "string",
+                  "type": "string"
+                },
+                "name": {
+                  "example": "phone_number",
+                  "type": "string"
+                },
+                "optional": {
+                  "example": false,
+                  "type": "boolean"
+                }
+              },
+              "type": "object"
+            },
+            "type": "array"
+          },
+          "supported_channels": {
+            "description": "Dictates the supported notification channel types that can be emitted.",
+            "example": [
+              "webhook",
+              "sms",
+              "email",
+              "voice"
+            ],
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "updated_at": {
+            "description": "ISO 8601 formatted date indicating when the resource was updated.",
+            "example": "2019-10-15T10:07:15.527Z",
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "NotificationProfile": {
+        "description": "A Collection of Notification Channels",
+        "properties": {
+          "created_at": {
+            "description": "ISO 8601 formatted date indicating when the resource was created.",
+            "example": "2019-10-15T10:07:15.527Z",
+            "format": "date-time",
+            "readOnly": true,
+            "type": "string"
+          },
+          "id": {
+            "description": "A UUID.",
+            "example": "12455643-3cf1-4683-ad23-1cd32f7d5e0a",
+            "readOnly": true,
+            "type": "string"
+          },
+          "name": {
+            "description": "A human readable name.",
+            "type": "string"
+          },
+          "updated_at": {
+            "description": "ISO 8601 formatted date indicating when the resource was updated.",
+            "example": "2019-10-15T10:07:15.527Z",
+            "format": "date-time",
+            "readOnly": true,
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "NotificationSetting": {
+        "properties": {
+          "associated_record_type": {
+            "example": "phone_number",
+            "readOnly": true,
+            "type": "string"
+          },
+          "associated_record_type_value": {
+            "example": "+13125550000",
+            "readOnly": true,
+            "type": "string"
+          },
+          "created_at": {
+            "description": "ISO 8601 formatted date indicating when the resource was created.",
+            "example": "2019-10-15T10:07:15.527Z",
+            "format": "date-time",
+            "readOnly": true,
+            "type": "string"
+          },
+          "id": {
+            "description": "A UUID.",
+            "example": "8eb5b5f9-5893-423c-9f15-b487713d44d4",
+            "readOnly": true,
+            "type": "string"
+          },
+          "notification_channel_id": {
+            "description": "A UUID reference to the associated Notification Channel.",
+            "example": "12455643-3cf1-4683-ad23-1cd32f7d5e0a",
+            "type": "string"
+          },
+          "notification_event_condition_id": {
+            "description": "A UUID reference to the associated Notification Event Condition.",
+            "example": "70c7c5cb-dce2-4124-accb-870d39dbe852",
+            "type": "string"
+          },
+          "notification_profile_id": {
+            "description": "A UUID reference to the associated Notification Profile.",
+            "example": "12455643-3cf1-4683-ad23-1cd32f7d5e0a",
+            "type": "string"
+          },
+          "parameters": {
+            "items": {
+              "properties": {
+                "name": {
+                  "example": "phone_number",
+                  "type": "string"
+                },
+                "value": {
+                  "example": "+13125550000",
+                  "type": "string"
+                }
+              },
+              "type": "object"
+            },
+            "type": "array"
+          },
+          "status": {
+            "description": "Most preferences apply immediately; however, other may needs to propagate.",
+            "enum": [
+              "enabled",
+              "enable-received",
+              "enable-pending",
+              "enable-submtited",
+              "delete-received",
+              "delete-pending",
+              "delete-submitted",
+              "deleted"
+            ],
+            "example": "enable-received",
+            "readOnly": true,
+            "type": "string"
+          },
+          "updated_at": {
+            "description": "ISO 8601 formatted date indicating when the resource was updated.",
+            "example": "2019-10-15T10:07:15.527Z",
+            "format": "date-time",
+            "readOnly": true,
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "PaginationMeta": {
+        "properties": {
+          "page_number": {
+            "example": 2,
+            "type": "integer"
+          },
+          "page_size": {
+            "example": 25,
+            "type": "integer"
+          },
+          "total_pages": {
+            "example": 3,
+            "type": "integer"
+          },
+          "total_results": {
+            "example": 55,
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      }
+    },
+    "securitySchemes": {
+      "BearerAuth": {
+        "bearerFormat": "API key",
+        "description": "Telnyx API key supplied as `Authorization: Bearer \u003ctoken\u003e`. In production, auth may be validated by the API gateway and forwarded via Telnyx auth headers.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "Payment": {
+        "description": "Machine Payment Protocol credential used on paid retries, sent as `Authorization: Payment ...`. Obtained by paying a challenge returned in the `WWW-Authenticate` header of a 402 response. This is not a Telnyx API key; initial challenge requests use standard bearer authentication instead.",
+        "in": "header",
+        "name": "Authorization",
+        "type": "apiKey"
+      },
+      "agent-memory_bearerAuth": {
+        "description": "Telnyx API key",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "bearerAuth": {
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "branded-calling_bearerAuth": {
+        "description": "Telnyx API key. Generate one at https://portal.telnyx.com/#/app/api-keys.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "collections_bearerAuth": {
+        "description": "Telnyx API key. Collections and results are automatically scoped to the authenticated user's organization.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "number-reputation_bearerAuth": {
+        "description": "Telnyx API key. Generate one at https://portal.telnyx.com/#/app/api-keys.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "oauthClientAuth": {
+        "description": "OAuth 2.0 authentication for Telnyx API and MCP integrations",
+        "flows": {
+          "authorizationCode": {
+            "authorizationUrl": "https://api.telnyx.com/v2/oauth/authorize",
+            "refreshUrl": "https://api.telnyx.com/v2/oauth/token",
+            "scopes": {
+              "admin": "Administrative access to Telnyx resources"
+            },
+            "tokenUrl": "https://api.telnyx.com/v2/oauth/token"
+          },
+          "clientCredentials": {
+            "scopes": {
+              "admin": "Administrative access to Telnyx resources"
+            },
+            "tokenUrl": "https://api.telnyx.com/v2/oauth/token"
+          }
+        },
+        "type": "oauth2"
+      },
+      "outbound-voice-profiles_bearerAuth": {
+        "bearerFormat": "JWT",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "pay-connectors_bearerAuth": {
+        "description": "Telnyx API key, not the processor bearer token.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "pronunciation-dicts_bearerAuth": {
+        "description": "Telnyx API v2 key. Obtain from https://portal.telnyx.com",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "rcs-registration_bearerAuth": {
+        "bearerFormat": "API key",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "stored-payment-transactions_bearerAuth": {
+        "bearerFormat": "JWT",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "telnyxApiKey": {
+        "description": "Management-only Telnyx account credential.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "transcriptions-search_bearerAuth": {
+        "description": "Telnyx API key. Results are automatically scoped to the authenticated user's organization.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "web-search_bearerAuth": {
+        "description": "Telnyx API key",
+        "scheme": "bearer",
+        "type": "http"
+      }
+    }
+  },
+  "info": {
+    "contact": {
+      "email": "support@telnyx.com"
+    },
+    "description": "SIP trunking, SMS, MMS, Call Control and Telephony Data Services.",
+    "title": "Telnyx API",
+    "version": "2.0.0",
+    "x-endpoint-cost": "light",
+    "x-latency-category": "responsive"
+  },
+  "openapi": "3.1.0",
+  "paths": {
+    "/notification_channels": {
+      "get": {
+        "description": "Returns a paginated list of your notification channels, the destinations that receive notifications.",
+        "operationId": "ListNotificationChannels",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/PageConsolidated"
+          },
+          {
+            "$ref": "#/components/parameters/notifications_FilterConsolidated"
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "items": {
+                        "$ref": "#/components/schemas/NotificationChannel"
+                      },
+                      "type": "array"
+                    },
+                    "meta": {
+                      "$ref": "#/components/schemas/PaginationMeta"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Returns a list of notification channels."
+          },
+          "400": {
+            "$ref": "#/components/responses/notifications_BadRequestResponse"
+          },
+          "422": {
+            "$ref": "#/components/responses/notifications_UnprocessableEntity"
+          },
+          "500": {
+            "$ref": "#/components/responses/notifications_GenericErrorResponse"
+          }
+        },
+        "summary": "List notification channels",
+        "tags": [
+          "Notifications"
+        ]
+      },
+      "post": {
+        "description": "Creates a new notification channel defining where notifications are delivered, and returns the created channel.",
+        "operationId": "CreateNotificationChannels",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/NotificationChannel"
+              }
+            }
+          },
+          "description": "Add a Notification Channel"
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/NotificationChannel"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "A Notification Channel response"
+          },
+          "400": {
+            "$ref": "#/components/responses/notifications_BadRequestResponse"
+          },
+          "422": {
+            "$ref": "#/components/responses/notifications_UnprocessableEntity"
+          },
+          "500": {
+            "$ref": "#/components/responses/notifications_GenericErrorResponse"
+          }
+        },
+        "summary": "Create a notification channel",
+        "tags": [
+          "Notifications"
+        ]
+      }
+    },
+    "/notification_channels/{id}": {
+      "delete": {
+        "description": "Deletes the specified notification channel so notifications are no longer delivered to it.",
+        "operationId": "DeleteNotificationChannel",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/notifications_Id"
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/NotificationChannel"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "A Notification Channel response"
+          },
+          "400": {
+            "$ref": "#/components/responses/notifications_BadRequestResponse"
+          },
+          "422": {
+            "$ref": "#/components/responses/notifications_UnprocessableEntity"
+          },
+          "500": {
+            "$ref": "#/components/responses/notifications_GenericErrorResponse"
+          }
+        },
+        "summary": "Delete a notification channel",
+        "tags": [
+          "Notifications"
+        ]
+      },
+      "get": {
+        "description": "Returns the details of a single notification channel by its identifier.",
+        "operationId": "GetNotificationChannel",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/notifications_Id"
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/NotificationChannel"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "A Notification Channel response"
+          },
+          "400": {
+            "$ref": "#/components/responses/notifications_BadRequestResponse"
+          },
+          "404": {
+            "$ref": "#/components/responses/notifications_NotFoundResponse"
+          },
+          "422": {
+            "$ref": "#/components/responses/notifications_UnprocessableEntity"
+          },
+          "500": {
+            "$ref": "#/components/responses/notifications_GenericErrorResponse"
+          }
+        },
+        "summary": "Get a notification channel",
+        "tags": [
+          "Notifications"
+        ]
+      },
+      "patch": {
+        "description": "Updates the specified notification channel and returns the updated channel.",
+        "operationId": "UpdateNotificationChannel",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/notifications_Id"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/NotificationChannel"
+              }
+            }
+          },
+          "description": "Update notification channel object",
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/NotificationChannel"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "A Notification Channel response"
+          },
+          "400": {
+            "$ref": "#/components/responses/notifications_BadRequestResponse"
+          },
+          "422": {
+            "$ref": "#/components/responses/notifications_UnprocessableEntity"
+          },
+          "500": {
+            "$ref": "#/components/responses/notifications_GenericErrorResponse"
+          }
+        },
+        "summary": "Update a notification channel",
+        "tags": [
+          "Notifications"
+        ]
+      }
+    },
+    "/notification_event_conditions": {
+      "get": {
+        "description": "Returns a list of your notifications events conditions.",
+        "operationId": "FindNotificationsEventsConditions",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/PageConsolidated"
+          },
+          {
+            "$ref": "#/components/parameters/notifications_FilterConsolidated"
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "items": {
+                        "$ref": "#/components/schemas/NotificationEventCondition"
+                      },
+                      "type": "array"
+                    },
+                    "meta": {
+                      "$ref": "#/components/schemas/PaginationMeta"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Returns a list of notification event conditions available."
+          },
+          "400": {
+            "$ref": "#/components/responses/notifications_BadRequestResponse"
+          },
+          "422": {
+            "$ref": "#/components/responses/notifications_UnprocessableEntity"
+          },
+          "500": {
+            "$ref": "#/components/responses/notifications_GenericErrorResponse"
+          }
+        },
+        "summary": "List all Notifications Events Conditions",
+        "tags": [
+          "Notifications"
+        ]
+      }
+    },
+    "/notification_events": {
+      "get": {
+        "description": "Returns a list of your notifications events.",
+        "operationId": "FindNotificationsEvents",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/PageConsolidated"
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "items": {
+                        "$ref": "#/components/schemas/NotificationEvent"
+                      },
+                      "type": "array"
+                    },
+                    "meta": {
+                      "$ref": "#/components/schemas/PaginationMeta"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Returns a list of notification events available."
+          },
+          "400": {
+            "$ref": "#/components/responses/notifications_BadRequestResponse"
+          },
+          "422": {
+            "$ref": "#/components/responses/notifications_UnprocessableEntity"
+          },
+          "500": {
+            "$ref": "#/components/responses/notifications_GenericErrorResponse"
+          }
+        },
+        "summary": "List all Notifications Events",
+        "tags": [
+          "Notifications"
+        ]
+      }
+    },
+    "/notification_profiles": {
+      "get": {
+        "description": "Returns a list of your notifications profiles.",
+        "operationId": "FindNotificationsProfiles",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/PageConsolidated"
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "items": {
+                        "$ref": "#/components/schemas/NotificationProfile"
+                      },
+                      "type": "array"
+                    },
+                    "meta": {
+                      "$ref": "#/components/schemas/PaginationMeta"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Returns a list of notification profiles."
+          },
+          "400": {
+            "$ref": "#/components/responses/notifications_BadRequestResponse"
+          },
+          "422": {
+            "$ref": "#/components/responses/notifications_UnprocessableEntity"
+          },
+          "500": {
+            "$ref": "#/components/responses/notifications_GenericErrorResponse"
+          }
+        },
+        "summary": "List all Notifications Profiles",
+        "tags": [
+          "Notifications"
+        ]
+      },
+      "post": {
+        "description": "Creates a new notification profile, a named grouping used to organize notification settings, and returns it.",
+        "operationId": "CreateNotificationProfile",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/NotificationProfile"
+              }
+            }
+          },
+          "description": "Add a Notification Profile"
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/NotificationProfile"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "A Notification Profile response"
+          },
+          "400": {
+            "$ref": "#/components/responses/notifications_BadRequestResponse"
+          },
+          "422": {
+            "$ref": "#/components/responses/notifications_UnprocessableEntity"
+          },
+          "500": {
+            "$ref": "#/components/responses/notifications_GenericErrorResponse"
+          }
+        },
+        "summary": "Create a notification profile",
+        "tags": [
+          "Notifications"
+        ]
+      }
+    },
+    "/notification_profiles/{id}": {
+      "delete": {
+        "description": "Deletes the specified notification profile from your account.",
+        "operationId": "DeleteNotificationProfile",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/notifications_Id"
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/NotificationProfile"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "A Notification Profile response"
+          },
+          "400": {
+            "$ref": "#/components/responses/notifications_BadRequestResponse"
+          },
+          "422": {
+            "$ref": "#/components/responses/notifications_UnprocessableEntity"
+          },
+          "500": {
+            "$ref": "#/components/responses/notifications_GenericErrorResponse"
+          }
+        },
+        "summary": "Delete a notification profile",
+        "tags": [
+          "Notifications"
+        ]
+      },
+      "get": {
+        "description": "Returns the details of a single notification profile by its identifier.",
+        "operationId": "GetNotificationProfile",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/notifications_Id"
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/NotificationProfile"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "A Notification Profile response"
+          },
+          "400": {
+            "$ref": "#/components/responses/notifications_BadRequestResponse"
+          },
+          "404": {
+            "$ref": "#/components/responses/notifications_NotFoundResponse"
+          },
+          "422": {
+            "$ref": "#/components/responses/notifications_UnprocessableEntity"
+          },
+          "500": {
+            "$ref": "#/components/responses/notifications_GenericErrorResponse"
+          }
+        },
+        "summary": "Get a notification profile",
+        "tags": [
+          "Notifications"
+        ]
+      },
+      "patch": {
+        "description": "Updates the specified notification profile and returns the updated profile.",
+        "operationId": "UpdateNotificationProfile",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/notifications_Id"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/NotificationProfile"
+              }
+            }
+          },
+          "description": "Update notification profile object",
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/NotificationProfile"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "A Notification Profile response"
+          },
+          "400": {
+            "$ref": "#/components/responses/notifications_BadRequestResponse"
+          },
+          "422": {
+            "$ref": "#/components/responses/notifications_UnprocessableEntity"
+          },
+          "500": {
+            "$ref": "#/components/responses/notifications_GenericErrorResponse"
+          }
+        },
+        "summary": "Update a notification profile",
+        "tags": [
+          "Notifications"
+        ]
+      }
+    },
+    "/notification_settings": {
+      "get": {
+        "description": "Returns a paginated list of your notification settings, which map notification event types to profiles and channels.",
+        "operationId": "ListNotificationSettings",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/PageConsolidated"
+          },
+          {
+            "$ref": "#/components/parameters/notifications_FilterConsolidated"
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "items": {
+                        "$ref": "#/components/schemas/NotificationSetting"
+                      },
+                      "type": "array"
+                    },
+                    "meta": {
+                      "$ref": "#/components/schemas/PaginationMeta"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Returns a list of notification settings."
+          },
+          "400": {
+            "$ref": "#/components/responses/notifications_BadRequestResponse"
+          },
+          "422": {
+            "$ref": "#/components/responses/notifications_UnprocessableEntity"
+          },
+          "500": {
+            "$ref": "#/components/responses/notifications_GenericErrorResponse"
+          }
+        },
+        "summary": "List notification settings",
+        "tags": [
+          "Notifications"
+        ]
+      },
+      "post": {
+        "description": "Adds a notification setting that enables delivery of a notification event type to a notification profile.",
+        "operationId": "CreateNotificationSetting",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/NotificationSetting"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/NotificationSetting"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "A Notification Setting response"
+          },
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/NotificationSetting"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "A Notification Setting response - async"
+          },
+          "400": {
+            "$ref": "#/components/responses/notifications_BadRequestResponse"
+          },
+          "422": {
+            "$ref": "#/components/responses/notifications_UnprocessableEntity"
+          },
+          "500": {
+            "$ref": "#/components/responses/notifications_GenericErrorResponse"
+          }
+        },
+        "summary": "Add a Notification Setting",
+        "tags": [
+          "Notifications"
+        ]
+      }
+    },
+    "/notification_settings/{id}": {
+      "delete": {
+        "description": "Deletes the specified notification setting, disabling that notification delivery.",
+        "operationId": "DeleteNotificationSetting",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/notifications_Id"
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/NotificationSetting"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "A Notification Setting response"
+          },
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/NotificationSetting"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "A Notification Setting response - async"
+          },
+          "400": {
+            "$ref": "#/components/responses/notifications_BadRequestResponse"
+          },
+          "422": {
+            "$ref": "#/components/responses/notifications_UnprocessableEntity"
+          },
+          "500": {
+            "$ref": "#/components/responses/notifications_GenericErrorResponse"
+          }
+        },
+        "summary": "Delete a notification setting",
+        "tags": [
+          "Notifications"
+        ]
+      },
+      "get": {
+        "description": "Returns the details of a single notification setting by its identifier.",
+        "operationId": "GetNotificationSetting",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/notifications_Id"
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/NotificationSetting"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "A Notification Setting response"
+          },
+          "400": {
+            "$ref": "#/components/responses/notifications_BadRequestResponse"
+          },
+          "404": {
+            "$ref": "#/components/responses/notifications_NotFoundResponse"
+          },
+          "422": {
+            "$ref": "#/components/responses/notifications_UnprocessableEntity"
+          },
+          "500": {
+            "$ref": "#/components/responses/notifications_GenericErrorResponse"
+          }
+        },
+        "summary": "Get a notification setting",
+        "tags": [
+          "Notifications"
+        ]
+      }
+    }
+  },
+  "security": [
+    {
+      "bearerAuth": []
+    }
+  ],
+  "servers": [
+    {
+      "description": "Version 2.0.0 of the Telnyx API",
+      "url": "https://api.telnyx.com/v2"
+    }
+  ]
+}

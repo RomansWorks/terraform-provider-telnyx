@@ -1,0 +1,627 @@
+{
+  "components": {
+    "parameters": {
+      "numbers_PageConsolidated_73c9788e53": {
+        "description": "Consolidated page parameter (deepObject style). Originally: page[size], page[number]",
+        "explode": true,
+        "in": "query",
+        "name": "page",
+        "schema": {
+          "properties": {
+            "number": {
+              "default": 1,
+              "description": "The page number to load",
+              "minimum": 1,
+              "type": "integer"
+            },
+            "size": {
+              "default": 20,
+              "description": "The size of the page",
+              "maximum": 250,
+              "minimum": 1,
+              "type": "integer"
+            }
+          },
+          "type": "object"
+        },
+        "style": "deepObject"
+      }
+    },
+    "responses": {
+      "GenericErrorResponse": {
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Errors"
+            }
+          }
+        },
+        "description": "Unexpected error"
+      },
+      "numbers_BadRequestResponse_73c9788e53": {
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Errors"
+            }
+          }
+        },
+        "description": "Bad request, the request was unacceptable, often due to missing a required parameter."
+      },
+      "numbers_NotFoundResponse_73c9788e53": {
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Errors"
+            }
+          }
+        },
+        "description": "The requested resource doesn't exist."
+      },
+      "numbers_UnauthorizedResponse_73c9788e53": {
+        "content": {
+          "application/json": {
+            "examples": {
+              "Authentication Failed": {
+                "value": {
+                  "errors": [
+                    {
+                      "code": "10009",
+                      "detail": "Could not understand the provided credentials.",
+                      "meta": {
+                        "url": "https://developers.telnyx.com/docs/overview/errors/10009"
+                      },
+                      "title": "Authentication failed"
+                    }
+                  ]
+                }
+              }
+            },
+            "schema": {
+              "$ref": "#/components/schemas/Errors"
+            }
+          }
+        },
+        "description": "Unauthorized"
+      },
+      "numbers_UnprocessableEntity_73c9788e53": {
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Errors"
+            }
+          }
+        },
+        "description": "Unprocessable entity. Check the 'detail' field in response for details."
+      }
+    },
+    "schemas": {
+      "CsvDownload": {
+        "example": {
+          "id": "42587e44-3a3e-46de-9255-0c9a7a1d1ec7",
+          "record_type": "csv_download",
+          "status": "pending",
+          "url": "https://www.telnyx.com/sample/42587e44-3a3e-46de-9255-0c9a7a1d1ec7"
+        },
+        "properties": {
+          "id": {
+            "description": "Identifies the resource.",
+            "example": "42587e44-3a3e-46de-9255-0c9a7a1d1ec7",
+            "readOnly": true,
+            "type": "string"
+          },
+          "record_type": {
+            "description": "Identifies the type of the resource.",
+            "example": "csv_download",
+            "readOnly": true,
+            "type": "string"
+          },
+          "status": {
+            "default": "pending",
+            "description": "Indicates the completion level of the CSV report. Only complete CSV download requests will be able to be retrieved.",
+            "enum": [
+              "pending",
+              "complete",
+              "failed",
+              "expired"
+            ],
+            "example": "pending",
+            "type": "string"
+          },
+          "url": {
+            "description": "The URL at which the CSV file can be retrieved.",
+            "example": "https://www.telnyx.com/sample/42587e44-3a3e-46de-9255-0c9a7a1d1ec7",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "Error": {
+        "example": {
+          "code": "20207",
+          "description": "The street address provided is invalid.",
+          "source": {
+            "pointer": "/street_address"
+          },
+          "title": "Invalid street address"
+        },
+        "properties": {
+          "code": {
+            "type": "string",
+            "x-format": "int64"
+          },
+          "description": {
+            "type": "string"
+          },
+          "detail": {
+            "description": "A human-readable explanation of the error.",
+            "type": "string"
+          },
+          "meta": {
+            "additionalProperties": true,
+            "type": "object"
+          },
+          "source": {
+            "properties": {
+              "parameter": {
+                "description": "Indicates which query parameter caused the error.",
+                "type": "string"
+              },
+              "pointer": {
+                "description": "JSON pointer (RFC6901) to the offending entity.",
+                "format": "json-pointer",
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
+          "title": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "title"
+        ],
+        "type": "object"
+      },
+      "Errors": {
+        "properties": {
+          "errors": {
+            "items": {
+              "$ref": "#/components/schemas/Error"
+            },
+            "type": "array"
+          }
+        },
+        "type": "object"
+      },
+      "PaginationMeta": {
+        "properties": {
+          "page_number": {
+            "example": 2,
+            "type": "integer"
+          },
+          "page_size": {
+            "example": 25,
+            "type": "integer"
+          },
+          "total_pages": {
+            "example": 3,
+            "type": "integer"
+          },
+          "total_results": {
+            "example": 55,
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      }
+    },
+    "securitySchemes": {
+      "BearerAuth": {
+        "bearerFormat": "API key",
+        "description": "Telnyx API key supplied as `Authorization: Bearer \u003ctoken\u003e`. In production, auth may be validated by the API gateway and forwarded via Telnyx auth headers.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "Payment": {
+        "description": "Machine Payment Protocol credential used on paid retries, sent as `Authorization: Payment ...`. Obtained by paying a challenge returned in the `WWW-Authenticate` header of a 402 response. This is not a Telnyx API key; initial challenge requests use standard bearer authentication instead.",
+        "in": "header",
+        "name": "Authorization",
+        "type": "apiKey"
+      },
+      "agent-memory_bearerAuth": {
+        "description": "Telnyx API key",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "bearerAuth": {
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "branded-calling_bearerAuth": {
+        "description": "Telnyx API key. Generate one at https://portal.telnyx.com/#/app/api-keys.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "collections_bearerAuth": {
+        "description": "Telnyx API key. Collections and results are automatically scoped to the authenticated user's organization.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "number-reputation_bearerAuth": {
+        "description": "Telnyx API key. Generate one at https://portal.telnyx.com/#/app/api-keys.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "oauthClientAuth": {
+        "description": "OAuth 2.0 authentication for Telnyx API and MCP integrations",
+        "flows": {
+          "authorizationCode": {
+            "authorizationUrl": "https://api.telnyx.com/v2/oauth/authorize",
+            "refreshUrl": "https://api.telnyx.com/v2/oauth/token",
+            "scopes": {
+              "admin": "Administrative access to Telnyx resources"
+            },
+            "tokenUrl": "https://api.telnyx.com/v2/oauth/token"
+          },
+          "clientCredentials": {
+            "scopes": {
+              "admin": "Administrative access to Telnyx resources"
+            },
+            "tokenUrl": "https://api.telnyx.com/v2/oauth/token"
+          }
+        },
+        "type": "oauth2"
+      },
+      "outbound-voice-profiles_bearerAuth": {
+        "bearerFormat": "JWT",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "pay-connectors_bearerAuth": {
+        "description": "Telnyx API key, not the processor bearer token.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "pronunciation-dicts_bearerAuth": {
+        "description": "Telnyx API v2 key. Obtain from https://portal.telnyx.com",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "rcs-registration_bearerAuth": {
+        "bearerFormat": "API key",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "stored-payment-transactions_bearerAuth": {
+        "bearerFormat": "JWT",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "telnyxApiKey": {
+        "description": "Management-only Telnyx account credential.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "transcriptions-search_bearerAuth": {
+        "description": "Telnyx API key. Results are automatically scoped to the authenticated user's organization.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "web-search_bearerAuth": {
+        "description": "Telnyx API key",
+        "scheme": "bearer",
+        "type": "http"
+      }
+    }
+  },
+  "info": {
+    "contact": {
+      "email": "support@telnyx.com"
+    },
+    "description": "SIP trunking, SMS, MMS, Call Control and Telephony Data Services.",
+    "title": "Telnyx API",
+    "version": "2.0.0",
+    "x-endpoint-cost": "light",
+    "x-latency-category": "responsive"
+  },
+  "openapi": "3.1.0",
+  "paths": {
+    "/phone_numbers/csv_downloads": {
+      "get": {
+        "description": "Returns CSV export jobs created for account phone numbers, including each export's current status and pagination metadata.",
+        "operationId": "ListCsvDownloads",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/numbers_PageConsolidated_73c9788e53"
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "items": {
+                        "$ref": "#/components/schemas/CsvDownload"
+                      },
+                      "type": "array"
+                    },
+                    "meta": {
+                      "$ref": "#/components/schemas/PaginationMeta"
+                    }
+                  },
+                  "title": "List CSV Downloads Response",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful response with a list of CSV downloads."
+          },
+          "400": {
+            "$ref": "#/components/responses/numbers_BadRequestResponse_73c9788e53"
+          },
+          "401": {
+            "$ref": "#/components/responses/numbers_UnauthorizedResponse_73c9788e53"
+          },
+          "404": {
+            "$ref": "#/components/responses/numbers_NotFoundResponse_73c9788e53"
+          },
+          "422": {
+            "$ref": "#/components/responses/numbers_UnprocessableEntity_73c9788e53"
+          },
+          "500": {
+            "$ref": "#/components/responses/GenericErrorResponse"
+          }
+        },
+        "summary": "List CSV downloads",
+        "tags": [
+          "CSV Downloads"
+        ],
+        "x-endpoint-cost": "medium",
+        "x-group-parameters": "true"
+      },
+      "post": {
+        "description": "Starts generation of a CSV export for phone numbers matching the supplied filters. The `csv_format` parameter selects the output format, and the response contains the resulting download record.",
+        "operationId": "CreateCsvDownload",
+        "parameters": [
+          {
+            "description": "Which format to use when generating the CSV file. The default for backwards compatibility is 'V1'",
+            "in": "query",
+            "name": "csv_format",
+            "required": false,
+            "schema": {
+              "default": "V1",
+              "enum": [
+                "V1",
+                "V2"
+              ],
+              "example": "V2",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Consolidated filter parameter (deepObject style). Originally: filter[has_bundle], filter[tag], filter[connection_id], filter[phone_number], filter[status], filter[voice.connection_name], filter[voice.usage_payment_method], filter[billing_group_id], filter[emergency_address_id], filter[customer_reference]",
+            "explode": true,
+            "in": "query",
+            "name": "filter",
+            "schema": {
+              "properties": {
+                "billing_group_id": {
+                  "description": "Filter by the billing_group_id associated with phone numbers. To filter to only phone numbers that have no billing group associated them, set the value of this filter to the string 'null'.",
+                  "example": "62e4bf2e-c278-4282-b524-488d9c9c43b2",
+                  "type": "string"
+                },
+                "connection_id": {
+                  "description": "Filter by connection_id.",
+                  "example": "1521916448077776306",
+                  "type": "string"
+                },
+                "customer_reference": {
+                  "description": "Filter numbers via the customer_reference set.",
+                  "type": "string"
+                },
+                "emergency_address_id": {
+                  "description": "Filter by the emergency_address_id associated with phone numbers. To filter only phone numbers that have no emergency address associated with them, set the value of this filter to the string 'null'.",
+                  "example": "9102160989215728032",
+                  "type": "string"
+                },
+                "has_bundle": {
+                  "description": "Filter by phone number that have bundles.",
+                  "type": "string"
+                },
+                "phone_number": {
+                  "description": "Filter by phone number. Requires at least three digits.\n             Non-numerical characters will result in no values being returned.",
+                  "type": "string"
+                },
+                "status": {
+                  "description": "Filter by phone number status.",
+                  "enum": [
+                    "purchase-pending",
+                    "purchase-failed",
+                    "port-pending",
+                    "active",
+                    "deleted",
+                    "port-failed",
+                    "emergency-only",
+                    "ported-out",
+                    "port-out-pending"
+                  ],
+                  "example": "active",
+                  "type": "string"
+                },
+                "tag": {
+                  "description": "Filter by phone number tags.",
+                  "type": "string"
+                },
+                "voice.connection_name": {
+                  "additionalProperties": false,
+                  "description": "Filter by voice connection name pattern matching.",
+                  "properties": {
+                    "contains": {
+                      "description": "Filter contains connection name. Requires at least three characters.",
+                      "example": "test",
+                      "type": "string"
+                    },
+                    "ends_with": {
+                      "description": "Filter ends with connection name. Requires at least three characters.",
+                      "example": "test",
+                      "type": "string"
+                    },
+                    "eq": {
+                      "description": "Filter by connection name.",
+                      "example": "test",
+                      "type": "string"
+                    },
+                    "starts_with": {
+                      "description": "Filter starts with connection name. Requires at least three characters.",
+                      "example": "test",
+                      "type": "string"
+                    }
+                  },
+                  "type": "object"
+                },
+                "voice.usage_payment_method": {
+                  "description": "Filter by usage_payment_method.",
+                  "enum": [
+                    "pay-per-minute",
+                    "channel"
+                  ],
+                  "example": "channel",
+                  "type": "string"
+                }
+              },
+              "type": "object"
+            },
+            "style": "deepObject"
+          },
+          {
+            "description": "When true, the CSV includes phone numbers from all managed accounts in addition to the requesting account's own numbers. Only applies to V2 format; ignored for V1. The export appends `user_id` and `email` columns identifying the account that owns each number. When a filter is provided, it applies to the combined set of numbers. Requires access to managed accounts; requests without that access are rejected.",
+            "in": "query",
+            "name": "include_managed_accounts",
+            "required": false,
+            "schema": {
+              "default": false,
+              "type": "boolean"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "items": {
+                        "$ref": "#/components/schemas/CsvDownload"
+                      },
+                      "type": "array"
+                    }
+                  },
+                  "title": "CSV Download Response",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful response with details about a CSV download."
+          },
+          "400": {
+            "$ref": "#/components/responses/numbers_BadRequestResponse_73c9788e53"
+          },
+          "401": {
+            "$ref": "#/components/responses/numbers_UnauthorizedResponse_73c9788e53"
+          },
+          "404": {
+            "$ref": "#/components/responses/numbers_NotFoundResponse_73c9788e53"
+          },
+          "422": {
+            "$ref": "#/components/responses/numbers_UnprocessableEntity_73c9788e53"
+          },
+          "500": {
+            "$ref": "#/components/responses/GenericErrorResponse"
+          }
+        },
+        "summary": "Create a CSV download",
+        "tags": [
+          "CSV Downloads"
+        ],
+        "x-endpoint-cost": "medium",
+        "x-latency-category": "background"
+      }
+    },
+    "/phone_numbers/csv_downloads/{id}": {
+      "get": {
+        "description": "Returns the current status and download details for the CSV export identified by `id`.",
+        "operationId": "GetCsvDownload",
+        "parameters": [
+          {
+            "description": "Identifies the CSV download.",
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "items": {
+                        "$ref": "#/components/schemas/CsvDownload"
+                      },
+                      "type": "array"
+                    }
+                  },
+                  "title": "CSV Download Response",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful response with details about a CSV download."
+          },
+          "400": {
+            "$ref": "#/components/responses/numbers_BadRequestResponse_73c9788e53"
+          },
+          "401": {
+            "$ref": "#/components/responses/numbers_UnauthorizedResponse_73c9788e53"
+          },
+          "404": {
+            "$ref": "#/components/responses/numbers_NotFoundResponse_73c9788e53"
+          },
+          "422": {
+            "$ref": "#/components/responses/numbers_UnprocessableEntity_73c9788e53"
+          },
+          "500": {
+            "$ref": "#/components/responses/GenericErrorResponse"
+          }
+        },
+        "summary": "Retrieve a CSV download",
+        "tags": [
+          "CSV Downloads"
+        ],
+        "x-endpoint-cost": "medium",
+        "x-latency-category": "background"
+      }
+    }
+  },
+  "security": [
+    {
+      "bearerAuth": []
+    }
+  ],
+  "servers": [
+    {
+      "description": "Version 2.0.0 of the Telnyx API",
+      "url": "https://api.telnyx.com/v2"
+    }
+  ]
+}

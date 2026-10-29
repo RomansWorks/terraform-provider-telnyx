@@ -1,0 +1,833 @@
+{
+  "components": {
+    "parameters": {
+      "AvatarId": {
+        "description": "Stable identifier of a Telnyx stock avatar or an organization-owned custom avatar.",
+        "in": "path",
+        "name": "avatar_id",
+        "required": true,
+        "schema": {
+          "$ref": "#/components/schemas/AvatarId"
+        }
+      }
+    },
+    "responses": {
+      "AvatarMutationBadRequestResponse": {
+        "content": {
+          "application/json": {
+            "example": {
+              "errors": [
+                {
+                  "code": "10015",
+                  "detail": "Telnyx stock avatars cannot be modified.",
+                  "meta": {
+                    "url": "https://developers.telnyx.com/docs/overview/errors/10015"
+                  },
+                  "title": "Bad Request"
+                }
+              ]
+            },
+            "schema": {
+              "$ref": "#/components/schemas/AvatarErrorResponse"
+            }
+          }
+        },
+        "description": "The avatar identifier is malformed, or the operation targets a Telnyx stock avatar, which is read-only."
+      },
+      "AvatarNotFoundResponse": {
+        "content": {
+          "application/json": {
+            "example": {
+              "errors": [
+                {
+                  "code": "10005",
+                  "detail": "Avatar avatar_0123456789abcdef0123456789abcdef does not exist.",
+                  "meta": {
+                    "url": "https://developers.telnyx.com/docs/overview/errors/10005"
+                  },
+                  "title": "Resource not found"
+                }
+              ]
+            },
+            "schema": {
+              "$ref": "#/components/schemas/AvatarErrorResponse"
+            }
+          }
+        },
+        "description": "The avatar does not exist or is not available to the authenticated organization."
+      },
+      "AvatarRequestValidationErrorResponse": {
+        "content": {
+          "application/json": {
+            "example": {
+              "errors": [
+                {
+                  "code": "10015",
+                  "detail": "The request contains invalid avatar parameters.",
+                  "meta": {
+                    "url": "https://developers.telnyx.com/docs/overview/errors/10015"
+                  },
+                  "title": "Bad Request"
+                }
+              ]
+            },
+            "schema": {
+              "$ref": "#/components/schemas/AvatarErrorResponse"
+            }
+          }
+        },
+        "description": "The request body, path parameter, or query parameter failed validation."
+      },
+      "AvatarServiceUnavailableResponse": {
+        "content": {
+          "application/json": {
+            "example": {
+              "errors": [
+                {
+                  "code": "10037",
+                  "detail": "Avatar storage is temporarily unavailable. Try again.",
+                  "meta": {
+                    "url": "https://developers.telnyx.com/docs/overview/errors/10037"
+                  },
+                  "title": "Service unavailable"
+                }
+              ]
+            },
+            "schema": {
+              "$ref": "#/components/schemas/AvatarErrorResponse"
+            }
+          }
+        },
+        "description": "Avatar storage is temporarily unavailable. Retry the operation."
+      },
+      "AvatarValidationErrorResponse": {
+        "content": {
+          "application/json": {
+            "example": {
+              "errors": [
+                {
+                  "code": "10027",
+                  "detail": "The image must be between 256 and 8192 pixels on each side.",
+                  "meta": {
+                    "url": "https://developers.telnyx.com/docs/overview/errors/10027"
+                  },
+                  "title": "Unprocessable Entity"
+                }
+              ]
+            },
+            "schema": {
+              "$ref": "#/components/schemas/AvatarErrorResponse"
+            }
+          }
+        },
+        "description": "The request, uploaded image, or organization quota failed validation. Uploaded images must not exceed 10 MiB."
+      }
+    },
+    "schemas": {
+      "Avatar": {
+        "additionalProperties": false,
+        "properties": {
+          "avatar_type": {
+            "$ref": "#/components/schemas/AvatarType"
+          },
+          "content_type": {
+            "$ref": "#/components/schemas/AvatarContentType"
+          },
+          "created_at": {
+            "description": "Time when the custom avatar was created.",
+            "example": "2026-10-13T14:00:00Z",
+            "format": "date-time",
+            "type": "string"
+          },
+          "height_px": {
+            "description": "Decoded height of a custom avatar image.",
+            "example": 1080,
+            "maximum": 8192,
+            "minimum": 256,
+            "type": "integer"
+          },
+          "hosted": {
+            "const": true,
+            "description": "Indicates that avatar rendering runs on Telnyx-operated infrastructure.",
+            "example": true,
+            "type": "boolean"
+          },
+          "id": {
+            "$ref": "#/components/schemas/AvatarId"
+          },
+          "image_url": {
+            "description": "HTTPS image URL suitable for an avatar selection thumbnail. If the URL expires, list or retrieve the avatar again to refresh it.",
+            "example": "https://example.com/avatar.png",
+            "format": "uri",
+            "pattern": "^https://",
+            "type": "string"
+          },
+          "image_url_expires_at": {
+            "description": "Expiration time of `image_url`. Omitted when the URL does not expire.",
+            "example": "2026-10-13T15:00:00Z",
+            "format": "date-time",
+            "type": "string"
+          },
+          "name": {
+            "description": "Customer-facing avatar name.",
+            "example": "Customer portrait",
+            "maxLength": 255,
+            "minLength": 1,
+            "type": "string"
+          },
+          "provider": {
+            "const": "telnyx",
+            "description": "Avatar provider. The first release supports Telnyx avatars.",
+            "example": "telnyx",
+            "type": "string"
+          },
+          "size_bytes": {
+            "description": "Size of a custom avatar image in bytes.",
+            "example": 248512,
+            "maximum": 10485760,
+            "minimum": 1,
+            "type": "integer"
+          },
+          "suggested_voice_id": {
+            "description": "Optional recommended Telnyx text-to-speech voice for this avatar. An omitted field or empty string means no recommendation is available. Custom avatars have no suggested voice. It is informational and selecting the avatar does not automatically change the AI Assistant's configured voice.",
+            "example": "Telnyx.Ultra.db6b0ed5-d5d3-463d-ae85-518a07d3c2b4",
+            "maxLength": 255,
+            "minLength": 0,
+            "readOnly": true,
+            "type": "string"
+          },
+          "updated_at": {
+            "description": "Time when the custom avatar was last updated.",
+            "example": "2026-10-13T14:00:00Z",
+            "format": "date-time",
+            "type": "string"
+          },
+          "width_px": {
+            "description": "Decoded width of a custom avatar image.",
+            "example": 1920,
+            "maximum": 8192,
+            "minimum": 256,
+            "type": "integer"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "provider",
+          "avatar_type",
+          "hosted",
+          "image_url"
+        ],
+        "type": "object"
+      },
+      "AvatarContentType": {
+        "description": "MIME type of a custom avatar image.",
+        "enum": [
+          "image/jpeg",
+          "image/png",
+          "image/webp"
+        ],
+        "type": "string"
+      },
+      "AvatarError": {
+        "additionalProperties": true,
+        "properties": {
+          "code": {
+            "description": "Telnyx error code.",
+            "example": "10015",
+            "type": "string"
+          },
+          "detail": {
+            "description": "Human-readable details about the error.",
+            "example": "The request failed because it was not well-formed.",
+            "type": "string"
+          },
+          "meta": {
+            "$ref": "#/components/schemas/AvatarErrorMeta"
+          },
+          "source": {
+            "$ref": "#/components/schemas/AvatarErrorSource"
+          },
+          "title": {
+            "description": "Short description of the error.",
+            "example": "Bad Request",
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "title",
+          "detail",
+          "meta"
+        ],
+        "type": "object"
+      },
+      "AvatarErrorMeta": {
+        "additionalProperties": true,
+        "properties": {
+          "url": {
+            "description": "Link to the Telnyx error-code documentation.",
+            "example": "https://developers.telnyx.com/docs/overview/errors/10027",
+            "format": "uri",
+            "type": "string"
+          }
+        },
+        "required": [
+          "url"
+        ],
+        "type": "object"
+      },
+      "AvatarErrorResponse": {
+        "properties": {
+          "errors": {
+            "items": {
+              "$ref": "#/components/schemas/AvatarError"
+            },
+            "minItems": 1,
+            "type": "array"
+          }
+        },
+        "required": [
+          "errors"
+        ],
+        "type": "object"
+      },
+      "AvatarErrorSource": {
+        "additionalProperties": true,
+        "properties": {
+          "pointer": {
+            "description": "Location of the invalid request value.",
+            "example": "/image_file",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "AvatarId": {
+        "description": "Stable identifier returned by the Avatars API. Discover available stock IDs with GET /v2/ai/avatars and filter[avatar_type]=stock rather than maintaining a fixed list. Custom avatar IDs use the `avatar_` prefix and must belong to the authenticated organization. The service validates that the selected avatar is available.",
+        "example": "avatar_0123456789abcdef0123456789abcdef",
+        "maxLength": 128,
+        "minLength": 1,
+        "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$",
+        "type": "string"
+      },
+      "AvatarListMeta": {
+        "properties": {
+          "page_number": {
+            "description": "Current page number.",
+            "example": 1,
+            "minimum": 1,
+            "type": "integer"
+          },
+          "page_size": {
+            "description": "Maximum number of avatars returned on each page.",
+            "example": 20,
+            "maximum": 100,
+            "minimum": 1,
+            "type": "integer"
+          },
+          "total_pages": {
+            "description": "Total number of pages for the current filters.",
+            "example": 1,
+            "minimum": 0,
+            "type": "integer"
+          },
+          "total_results": {
+            "description": "Total number of matching avatars.",
+            "example": 1,
+            "minimum": 0,
+            "type": "integer"
+          }
+        },
+        "required": [
+          "total_pages",
+          "total_results",
+          "page_number",
+          "page_size"
+        ],
+        "type": "object"
+      },
+      "AvatarListResponse": {
+        "additionalProperties": false,
+        "properties": {
+          "data": {
+            "items": {
+              "$ref": "#/components/schemas/Avatar"
+            },
+            "type": "array"
+          },
+          "meta": {
+            "$ref": "#/components/schemas/AvatarListMeta"
+          }
+        },
+        "required": [
+          "data",
+          "meta"
+        ],
+        "type": "object"
+      },
+      "AvatarResponse": {
+        "additionalProperties": false,
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/Avatar"
+          }
+        },
+        "required": [
+          "data"
+        ],
+        "type": "object"
+      },
+      "AvatarType": {
+        "description": "Whether the avatar is provided by Telnyx or was uploaded by the authenticated organization.",
+        "enum": [
+          "stock",
+          "custom"
+        ],
+        "type": "string"
+      },
+      "CreateAvatarRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "image_file": {
+            "description": "JPEG, PNG, or WebP image file. The maximum file size is 10 MiB.",
+            "format": "binary",
+            "type": "string"
+          },
+          "name": {
+            "description": "Customer-facing name of the custom avatar.",
+            "example": "Customer portrait",
+            "maxLength": 255,
+            "minLength": 1,
+            "type": "string"
+          }
+        },
+        "required": [
+          "image_file",
+          "name"
+        ],
+        "type": "object"
+      },
+      "UpdateAvatarRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "name": {
+            "description": "New customer-facing name of the custom avatar.",
+            "example": "Updated portrait",
+            "maxLength": 255,
+            "minLength": 1,
+            "type": "string"
+          }
+        },
+        "required": [
+          "name"
+        ],
+        "type": "object"
+      }
+    },
+    "securitySchemes": {
+      "BearerAuth": {
+        "bearerFormat": "API key",
+        "description": "Telnyx API key supplied as `Authorization: Bearer \u003ctoken\u003e`. In production, auth may be validated by the API gateway and forwarded via Telnyx auth headers.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "Payment": {
+        "description": "Machine Payment Protocol credential used on paid retries, sent as `Authorization: Payment ...`. Obtained by paying a challenge returned in the `WWW-Authenticate` header of a 402 response. This is not a Telnyx API key; initial challenge requests use standard bearer authentication instead.",
+        "in": "header",
+        "name": "Authorization",
+        "type": "apiKey"
+      },
+      "agent-memory_bearerAuth": {
+        "description": "Telnyx API key",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "bearerAuth": {
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "branded-calling_bearerAuth": {
+        "description": "Telnyx API key. Generate one at https://portal.telnyx.com/#/app/api-keys.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "collections_bearerAuth": {
+        "description": "Telnyx API key. Collections and results are automatically scoped to the authenticated user's organization.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "number-reputation_bearerAuth": {
+        "description": "Telnyx API key. Generate one at https://portal.telnyx.com/#/app/api-keys.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "oauthClientAuth": {
+        "description": "OAuth 2.0 authentication for Telnyx API and MCP integrations",
+        "flows": {
+          "authorizationCode": {
+            "authorizationUrl": "https://api.telnyx.com/v2/oauth/authorize",
+            "refreshUrl": "https://api.telnyx.com/v2/oauth/token",
+            "scopes": {
+              "admin": "Administrative access to Telnyx resources"
+            },
+            "tokenUrl": "https://api.telnyx.com/v2/oauth/token"
+          },
+          "clientCredentials": {
+            "scopes": {
+              "admin": "Administrative access to Telnyx resources"
+            },
+            "tokenUrl": "https://api.telnyx.com/v2/oauth/token"
+          }
+        },
+        "type": "oauth2"
+      },
+      "outbound-voice-profiles_bearerAuth": {
+        "bearerFormat": "JWT",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "pay-connectors_bearerAuth": {
+        "description": "Telnyx API key, not the processor bearer token.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "pronunciation-dicts_bearerAuth": {
+        "description": "Telnyx API v2 key. Obtain from https://portal.telnyx.com",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "rcs-registration_bearerAuth": {
+        "bearerFormat": "API key",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "stored-payment-transactions_bearerAuth": {
+        "bearerFormat": "JWT",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "telnyxApiKey": {
+        "description": "Management-only Telnyx account credential.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "transcriptions-search_bearerAuth": {
+        "description": "Telnyx API key. Results are automatically scoped to the authenticated user's organization.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "web-search_bearerAuth": {
+        "description": "Telnyx API key",
+        "scheme": "bearer",
+        "type": "http"
+      }
+    }
+  },
+  "info": {
+    "contact": {
+      "email": "support@telnyx.com"
+    },
+    "description": "SIP trunking, SMS, MMS, Call Control and Telephony Data Services.",
+    "title": "Telnyx API",
+    "version": "2.0.0",
+    "x-endpoint-cost": "light",
+    "x-latency-category": "responsive"
+  },
+  "openapi": "3.1.0",
+  "paths": {
+    "/ai/avatars": {
+      "get": {
+        "description": "Returns a paginated list of the Telnyx stock avatars and custom avatars available to the authenticated organization. Custom avatars owned by other organizations are never returned. The `image_url` value is suitable for displaying a thumbnail and may be refreshed by listing or retrieving the avatar again. `suggested_voice_id` recommends a compatible Telnyx voice for stock avatars and is an empty string for custom avatars; it does not change an AI Assistant's voice automatically.",
+        "operationId": "list_avatars_public_avatars_get",
+        "parameters": [
+          {
+            "description": "Number of avatars to return per page.",
+            "in": "query",
+            "name": "page[size]",
+            "required": false,
+            "schema": {
+              "default": 20,
+              "maximum": 100,
+              "minimum": 1,
+              "type": "integer"
+            }
+          },
+          {
+            "description": "Page number to retrieve, starting at 1.",
+            "in": "query",
+            "name": "page[number]",
+            "required": false,
+            "schema": {
+              "default": 1,
+              "minimum": 1,
+              "type": "integer"
+            }
+          },
+          {
+            "description": "Return avatars whose names contain this value, using case-insensitive matching.",
+            "in": "query",
+            "name": "filter[name]",
+            "required": false,
+            "schema": {
+              "maxLength": 255,
+              "minLength": 1,
+              "type": "string"
+            }
+          },
+          {
+            "description": "Return the avatar with this exact ID.",
+            "in": "query",
+            "name": "filter[id]",
+            "required": false,
+            "schema": {
+              "$ref": "#/components/schemas/AvatarId"
+            }
+          },
+          {
+            "description": "Return only stock or custom avatars.",
+            "in": "query",
+            "name": "filter[avatar_type]",
+            "required": false,
+            "schema": {
+              "$ref": "#/components/schemas/AvatarType"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "data": [
+                    {
+                      "avatar_type": "stock",
+                      "hosted": true,
+                      "id": "elena",
+                      "image_url": "https://example.com/avatars/elena.png",
+                      "name": "Elena",
+                      "provider": "telnyx",
+                      "suggested_voice_id": "Telnyx.Ultra.db6b0ed5-d5d3-463d-ae85-518a07d3c2b4"
+                    },
+                    {
+                      "avatar_type": "custom",
+                      "content_type": "image/png",
+                      "created_at": "2026-10-13T14:00:00Z",
+                      "height_px": 1080,
+                      "hosted": true,
+                      "id": "avatar_0123456789abcdef0123456789abcdef",
+                      "image_url": "https://example.com/avatar.png",
+                      "image_url_expires_at": "2026-10-13T15:00:00Z",
+                      "name": "Customer portrait",
+                      "provider": "telnyx",
+                      "size_bytes": 248512,
+                      "suggested_voice_id": "",
+                      "updated_at": "2026-10-13T14:00:00Z",
+                      "width_px": 1920
+                    }
+                  ],
+                  "meta": {
+                    "page_number": 1,
+                    "page_size": 20,
+                    "total_pages": 1,
+                    "total_results": 2
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/AvatarListResponse"
+                }
+              }
+            },
+            "description": "A page of available avatars."
+          },
+          "400": {
+            "$ref": "#/components/responses/AvatarRequestValidationErrorResponse"
+          },
+          "503": {
+            "$ref": "#/components/responses/AvatarServiceUnavailableResponse"
+          }
+        },
+        "summary": "List avatars",
+        "tags": [
+          "Avatars"
+        ]
+      },
+      "post": {
+        "description": "Uploads an image, validates its file type, size, safe decoding, and resolution, stores it in Telnyx-managed private storage, and creates an avatar owned by the authenticated organization. Creating an avatar does not update an AI Assistant; use the returned ID separately wherever the avatar is consumed. The avatar image is stored independently from the rendering model and background, which are selected where the avatar is consumed. Supported image types are JPEG, PNG, and WebP. Images may be up to 10 MiB, must be between 256 and 8192 pixels on each side, and may contain at most 40 megapixels. A per-organization custom-avatar quota applies; the create request returns an error when the quota is reached. For best results, use a 16:9 landscape image, preferably 1920 by 1080 pixels and at least 1280 by 720 pixels. Show one centered, front-facing person from the shoulders up, keep the full head and hair visible with space around it, and use a sharp, evenly lit image with unobstructed eyes and mouth. Use a transparent PNG or WebP when the avatar will be combined with a selectable background. These composition recommendations are not enforced in the first release; the first release does not validate the number of faces, pose, or image content.",
+        "operationId": "create_avatar_public_avatars_post",
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "example": {
+                "image_file": "string($binary)",
+                "name": "Customer portrait"
+              },
+              "schema": {
+                "$ref": "#/components/schemas/CreateAvatarRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "data": {
+                    "avatar_type": "custom",
+                    "content_type": "image/png",
+                    "created_at": "2026-10-13T14:00:00Z",
+                    "height_px": 1080,
+                    "hosted": true,
+                    "id": "avatar_0123456789abcdef0123456789abcdef",
+                    "image_url": "https://example.com/avatar.png",
+                    "image_url_expires_at": "2026-10-13T15:00:00Z",
+                    "name": "Customer portrait",
+                    "provider": "telnyx",
+                    "size_bytes": 248512,
+                    "suggested_voice_id": "",
+                    "updated_at": "2026-10-13T14:00:00Z",
+                    "width_px": 1920
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/AvatarResponse"
+                }
+              }
+            },
+            "description": "The custom avatar was validated, stored, and created."
+          },
+          "400": {
+            "$ref": "#/components/responses/AvatarRequestValidationErrorResponse"
+          },
+          "422": {
+            "$ref": "#/components/responses/AvatarValidationErrorResponse"
+          },
+          "503": {
+            "$ref": "#/components/responses/AvatarServiceUnavailableResponse"
+          }
+        },
+        "summary": "Create a custom avatar",
+        "tags": [
+          "Avatars"
+        ]
+      }
+    },
+    "/ai/avatars/{avatar_id}": {
+      "get": {
+        "description": "Returns a Telnyx stock avatar or a custom avatar owned by the authenticated organization. A custom avatar belonging to another organization is returned as not found.",
+        "operationId": "get_avatar_public_avatars__avatar_id__get",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/AvatarId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "data": {
+                    "avatar_type": "custom",
+                    "content_type": "image/png",
+                    "created_at": "2026-10-13T14:00:00Z",
+                    "height_px": 1080,
+                    "hosted": true,
+                    "id": "avatar_0123456789abcdef0123456789abcdef",
+                    "image_url": "https://example.com/avatar.png",
+                    "image_url_expires_at": "2026-10-13T15:00:00Z",
+                    "name": "Customer portrait",
+                    "provider": "telnyx",
+                    "size_bytes": 248512,
+                    "suggested_voice_id": "",
+                    "updated_at": "2026-10-13T14:00:00Z",
+                    "width_px": 1920
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/AvatarResponse"
+                }
+              }
+            },
+            "description": "The avatar."
+          },
+          "400": {
+            "$ref": "#/components/responses/AvatarRequestValidationErrorResponse"
+          },
+          "404": {
+            "$ref": "#/components/responses/AvatarNotFoundResponse"
+          },
+          "503": {
+            "$ref": "#/components/responses/AvatarServiceUnavailableResponse"
+          }
+        },
+        "summary": "Get an avatar",
+        "tags": [
+          "Avatars"
+        ]
+      },
+      "patch": {
+        "description": "Updates the customer-facing name of a custom avatar owned by the authenticated organization. Stock avatars cannot be modified. To replace the image, create a new custom avatar so existing references keep their original content.",
+        "operationId": "update_avatar_public_avatars__avatar_id__patch",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/AvatarId"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "example": {
+                "name": "Updated portrait"
+              },
+              "schema": {
+                "$ref": "#/components/schemas/UpdateAvatarRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AvatarResponse"
+                }
+              }
+            },
+            "description": "The custom avatar was updated."
+          },
+          "400": {
+            "$ref": "#/components/responses/AvatarMutationBadRequestResponse"
+          },
+          "404": {
+            "$ref": "#/components/responses/AvatarNotFoundResponse"
+          },
+          "422": {
+            "$ref": "#/components/responses/AvatarValidationErrorResponse"
+          },
+          "503": {
+            "$ref": "#/components/responses/AvatarServiceUnavailableResponse"
+          }
+        },
+        "summary": "Update a custom avatar",
+        "tags": [
+          "Avatars"
+        ]
+      }
+    }
+  },
+  "security": [
+    {
+      "bearerAuth": []
+    }
+  ],
+  "servers": [
+    {
+      "description": "Version 2.0.0 of the Telnyx API",
+      "url": "https://api.telnyx.com/v2"
+    }
+  ]
+}

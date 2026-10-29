@@ -1,0 +1,993 @@
+{
+  "components": {
+    "schemas": {
+      "CreateGenericPayConnectorRequest": {
+        "properties": {
+          "config": {
+            "$ref": "#/components/schemas/GenericPayConnectorConfig"
+          },
+          "mode": {
+            "default": "test",
+            "description": "Defaults to test on creation. Test restricts collected card numbers but still contacts the configured processor; use a processor sandbox URL and sandbox credentials. Live removes the test-card restriction. Neither mode locks API updates.",
+            "enum": [
+              "test",
+              "live"
+            ],
+            "type": "string"
+          },
+          "name": {
+            "description": "Unique within the authenticated organization. Used in resource paths and as connector_name in the Call Control Pay request. Cannot be renamed by update.",
+            "example": "my-payment-connector",
+            "maxLength": 255,
+            "minLength": 1,
+            "pattern": "\\S",
+            "type": "string"
+          },
+          "type": {
+            "default": "generic",
+            "description": "Connector type covered by this reference.",
+            "enum": [
+              "generic"
+            ],
+            "type": "string"
+          }
+        },
+        "required": [
+          "name",
+          "config"
+        ],
+        "type": "object"
+      },
+      "GenericPayConnectorConfig": {
+        "description": "Configuration for a generic connector. A config update replaces the complete object, not individual keys. Unknown config keys are discarded. Authentication credentials must be nonblank strings when required by the selected auth_type.",
+        "oneOf": [
+          {
+            "properties": {
+              "auth_type": {
+                "const": "basic"
+              },
+              "password": {
+                "description": "Basic password.",
+                "minLength": 1,
+                "pattern": "\\S",
+                "type": "string"
+              },
+              "username": {
+                "description": "Basic username.",
+                "minLength": 1,
+                "pattern": "\\S",
+                "type": "string"
+              }
+            },
+            "required": [
+              "username",
+              "password"
+            ],
+            "title": "Basic authentication (also the validation default)"
+          },
+          {
+            "properties": {
+              "auth_type": {
+                "const": "bearer"
+              },
+              "token": {
+                "description": "Processor bearer token.",
+                "minLength": 1,
+                "pattern": "\\S",
+                "type": "string"
+              }
+            },
+            "required": [
+              "auth_type",
+              "token"
+            ],
+            "title": "Bearer authentication"
+          },
+          {
+            "properties": {
+              "auth_type": {
+                "const": "none"
+              }
+            },
+            "required": [
+              "auth_type"
+            ],
+            "title": "No processor authentication"
+          }
+        ],
+        "properties": {
+          "auth_type": {
+            "description": "Processor authentication, separate from the Telnyx API key. If omitted, validation requires basic credentials but no Basic Authorization header is added. Explicitly set basic or bearer to send its corresponding Authorization header, or none for no processor authentication.",
+            "enum": [
+              "none",
+              "basic",
+              "bearer"
+            ],
+            "type": "string"
+          },
+          "endpoint_url": {
+            "description": "HTTP or HTTPS processor URL with a host. Use HTTPS to protect payment data in transit.",
+            "example": "https://processor.example.com/pay",
+            "pattern": "^https?://\\S+",
+            "type": "string"
+          },
+          "password": {
+            "description": "Nonblank string required for basic authentication. Write-only; omitted from responses. Re-send when replacing a basic-auth config.",
+            "writeOnly": true
+          },
+          "timeout": {
+            "default": 10000,
+            "description": "Processor HTTP timeout in milliseconds. Omitted or null uses 10000; null is removed before storage. Not the IVR digit-gather timeout.",
+            "maximum": 4294967295,
+            "minimum": 1,
+            "type": [
+              "integer",
+              "null"
+            ]
+          },
+          "token": {
+            "description": "Nonblank string required for bearer authentication. Write-only; omitted from responses. Re-send when replacing a bearer-auth config.",
+            "writeOnly": true
+          },
+          "username": {
+            "description": "Nonblank string required for basic authentication. Returned in connector responses."
+          }
+        },
+        "required": [
+          "endpoint_url"
+        ],
+        "type": "object"
+      },
+      "PayConnector": {
+        "description": "Organization-owned connector. Examples and config properties here describe generic connectors; listing is not restricted to that type unless filter[type]=generic is supplied. Passwords and bearer tokens are omitted, not masked. Defaults for auth_type and timeout need not appear in stored config.",
+        "properties": {
+          "config": {
+            "description": "Redacted stored configuration. Generic connector fields are shown here. Unknown config keys are discarded. Password and token are never returned.",
+            "properties": {
+              "auth_type": {
+                "description": "Stored processor authentication selection. Omitted if it was not explicitly configured.",
+                "enum": [
+                  "none",
+                  "basic",
+                  "bearer"
+                ],
+                "type": "string"
+              },
+              "endpoint_url": {
+                "description": "HTTP or HTTPS processor URL with a host. Use HTTPS to protect payment data in transit.",
+                "example": "https://processor.example.com/pay",
+                "pattern": "^https?://\\S+",
+                "type": "string"
+              },
+              "timeout": {
+                "description": "Stored processor HTTP timeout in milliseconds. Omitted when no timeout was configured; the effective runtime default is 10000.",
+                "maximum": 4294967295,
+                "minimum": 1,
+                "type": "integer"
+              },
+              "username": {
+                "description": "Stored username, when supplied. Required to be a nonblank string for basic authentication."
+              }
+            },
+            "type": "object"
+          },
+          "created_at": {
+            "description": "Creation time.",
+            "format": "date-time",
+            "type": "string"
+          },
+          "id": {
+            "description": "Connector identifier.",
+            "format": "uuid",
+            "type": "string"
+          },
+          "mode": {
+            "description": "Configured mode.",
+            "enum": [
+              "test",
+              "live"
+            ],
+            "type": "string"
+          },
+          "name": {
+            "description": "Connector name used for retrieval, update, deletion and Pay.",
+            "type": "string"
+          },
+          "organization_id": {
+            "description": "Owning organization; assigned from authentication, not request input.",
+            "type": "string"
+          },
+          "record_type": {
+            "description": "Resource type.",
+            "enum": [
+              "pay_connector"
+            ],
+            "type": "string"
+          },
+          "type": {
+            "description": "Connector type; generic is covered by this reference. Other types may appear in unfiltered lists.",
+            "type": "string"
+          },
+          "updated_at": {
+            "description": "Last update time.",
+            "format": "date-time",
+            "type": "string"
+          },
+          "user_id": {
+            "description": "Creating user; assigned from authentication, not request input.",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "PayConnectorErrors": {
+        "properties": {
+          "errors": {
+            "items": {
+              "properties": {
+                "code": {
+                  "description": "Telnyx error code.",
+                  "type": "string"
+                },
+                "detail": {
+                  "description": "Error detail.",
+                  "type": "string"
+                },
+                "source": {
+                  "properties": {
+                    "pointer": {
+                      "description": "Invalid field pointer.",
+                      "type": "string"
+                    }
+                  },
+                  "type": "object"
+                },
+                "title": {
+                  "description": "Error title.",
+                  "type": "string"
+                }
+              },
+              "type": "object"
+            },
+            "type": "array"
+          }
+        },
+        "type": "object"
+      },
+      "PayConnectorListResponse": {
+        "properties": {
+          "data": {
+            "items": {
+              "$ref": "#/components/schemas/PayConnector"
+            },
+            "type": "array"
+          },
+          "meta": {
+            "description": "Cursor pagination metadata. No total_count, page_count or page_number is returned.",
+            "properties": {
+              "end_cursor": {
+                "description": "Cursor for requesting the following page.",
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "page_size": {
+                "description": "Page size.",
+                "type": "integer"
+              },
+              "start_cursor": {
+                "description": "Cursor for requesting the preceding page.",
+                "type": [
+                  "string",
+                  "null"
+                ]
+              }
+            },
+            "type": "object"
+          }
+        },
+        "type": "object"
+      },
+      "PayConnectorResponse": {
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/PayConnector"
+          }
+        },
+        "type": "object"
+      },
+      "UpdateGenericPayConnectorRequest": {
+        "description": "Only type, mode and config are updated; the connector name is selected by the path. Omit config to preserve existing configuration and credentials. If supplied, send the entire replacement config including required credentials.",
+        "properties": {
+          "config": {
+            "$ref": "#/components/schemas/GenericPayConnectorConfig"
+          },
+          "mode": {
+            "description": "Omit to preserve the existing mode. Use an explicit test or live value.",
+            "enum": [
+              "test",
+              "live"
+            ],
+            "type": "string"
+          },
+          "type": {
+            "description": "Generic connector type. Omit to preserve the existing value.",
+            "enum": [
+              "generic"
+            ],
+            "type": "string"
+          }
+        },
+        "type": "object"
+      }
+    },
+    "securitySchemes": {
+      "BearerAuth": {
+        "bearerFormat": "API key",
+        "description": "Telnyx API key supplied as `Authorization: Bearer \u003ctoken\u003e`. In production, auth may be validated by the API gateway and forwarded via Telnyx auth headers.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "Payment": {
+        "description": "Machine Payment Protocol credential used on paid retries, sent as `Authorization: Payment ...`. Obtained by paying a challenge returned in the `WWW-Authenticate` header of a 402 response. This is not a Telnyx API key; initial challenge requests use standard bearer authentication instead.",
+        "in": "header",
+        "name": "Authorization",
+        "type": "apiKey"
+      },
+      "agent-memory_bearerAuth": {
+        "description": "Telnyx API key",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "bearerAuth": {
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "branded-calling_bearerAuth": {
+        "description": "Telnyx API key. Generate one at https://portal.telnyx.com/#/app/api-keys.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "collections_bearerAuth": {
+        "description": "Telnyx API key. Collections and results are automatically scoped to the authenticated user's organization.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "number-reputation_bearerAuth": {
+        "description": "Telnyx API key. Generate one at https://portal.telnyx.com/#/app/api-keys.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "oauthClientAuth": {
+        "description": "OAuth 2.0 authentication for Telnyx API and MCP integrations",
+        "flows": {
+          "authorizationCode": {
+            "authorizationUrl": "https://api.telnyx.com/v2/oauth/authorize",
+            "refreshUrl": "https://api.telnyx.com/v2/oauth/token",
+            "scopes": {
+              "admin": "Administrative access to Telnyx resources"
+            },
+            "tokenUrl": "https://api.telnyx.com/v2/oauth/token"
+          },
+          "clientCredentials": {
+            "scopes": {
+              "admin": "Administrative access to Telnyx resources"
+            },
+            "tokenUrl": "https://api.telnyx.com/v2/oauth/token"
+          }
+        },
+        "type": "oauth2"
+      },
+      "outbound-voice-profiles_bearerAuth": {
+        "bearerFormat": "JWT",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "pay-connectors_bearerAuth": {
+        "description": "Telnyx API key, not the processor bearer token.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "pronunciation-dicts_bearerAuth": {
+        "description": "Telnyx API v2 key. Obtain from https://portal.telnyx.com",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "rcs-registration_bearerAuth": {
+        "bearerFormat": "API key",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "stored-payment-transactions_bearerAuth": {
+        "bearerFormat": "JWT",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "telnyxApiKey": {
+        "description": "Management-only Telnyx account credential.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "transcriptions-search_bearerAuth": {
+        "description": "Telnyx API key. Results are automatically scoped to the authenticated user's organization.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "web-search_bearerAuth": {
+        "description": "Telnyx API key",
+        "scheme": "bearer",
+        "type": "http"
+      }
+    }
+  },
+  "info": {
+    "contact": {
+      "email": "support@telnyx.com"
+    },
+    "description": "SIP trunking, SMS, MMS, Call Control and Telephony Data Services.",
+    "title": "Telnyx API",
+    "version": "2.0.0",
+    "x-endpoint-cost": "light",
+    "x-latency-category": "responsive"
+  },
+  "openapi": "3.1.0",
+  "paths": {
+    "/pay_connectors": {
+      "get": {
+        "description": "List connectors belonging to the authenticated organization, including connectors created by other users in that organization. Set filter[type]=generic to restrict results to the type covered here. Results default to newest created_at first. Use meta.end_cursor as page[after] for the next page, or meta.start_cursor as page[before] for the preceding page. Omit both cursors for the first page; if both are supplied, page[after] takes precedence. Responses omit passwords and tokens.",
+        "operationId": "listPayConnectors",
+        "parameters": [
+          {
+            "description": "Number of records per page.",
+            "in": "query",
+            "name": "page[size]",
+            "schema": {
+              "default": 25,
+              "maximum": 249,
+              "minimum": 1,
+              "type": "integer"
+            }
+          },
+          {
+            "description": "Opaque cursor from meta.end_cursor.",
+            "in": "query",
+            "name": "page[after]",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Opaque cursor from meta.start_cursor.",
+            "in": "query",
+            "name": "page[before]",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Comma-separated created_at or updated_at fields, optionally prefixed with - for descending order.",
+            "in": "query",
+            "name": "sort",
+            "schema": {
+              "default": "-created_at",
+              "example": "-created_at",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Exact match on name.",
+            "in": "query",
+            "name": "filter[name]",
+            "schema": {
+              "example": "my-payment-connector",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Exact match on type.",
+            "in": "query",
+            "name": "filter[type]",
+            "schema": {
+              "example": "generic",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Exact match on mode.",
+            "in": "query",
+            "name": "filter[mode]",
+            "schema": {
+              "example": "test",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Equal to this created_at timestamp.",
+            "in": "query",
+            "name": "filter[created_at][eq]",
+            "schema": {
+              "example": "2026-10-01T00:00:00Z",
+              "type": "string"
+            }
+          },
+          {
+            "description": "After this created_at timestamp.",
+            "in": "query",
+            "name": "filter[created_at][gt]",
+            "schema": {
+              "example": "2026-10-01T00:00:00Z",
+              "type": "string"
+            }
+          },
+          {
+            "description": "At or after this created_at timestamp.",
+            "in": "query",
+            "name": "filter[created_at][gte]",
+            "schema": {
+              "example": "2026-10-01T00:00:00Z",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Before this created_at timestamp.",
+            "in": "query",
+            "name": "filter[created_at][lt]",
+            "schema": {
+              "example": "2026-10-01T00:00:00Z",
+              "type": "string"
+            }
+          },
+          {
+            "description": "At or before this created_at timestamp.",
+            "in": "query",
+            "name": "filter[created_at][lte]",
+            "schema": {
+              "example": "2026-10-01T00:00:00Z",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Equal to this updated_at timestamp.",
+            "in": "query",
+            "name": "filter[updated_at][eq]",
+            "schema": {
+              "example": "2026-10-01T00:00:00Z",
+              "type": "string"
+            }
+          },
+          {
+            "description": "After this updated_at timestamp.",
+            "in": "query",
+            "name": "filter[updated_at][gt]",
+            "schema": {
+              "example": "2026-10-01T00:00:00Z",
+              "type": "string"
+            }
+          },
+          {
+            "description": "At or after this updated_at timestamp.",
+            "in": "query",
+            "name": "filter[updated_at][gte]",
+            "schema": {
+              "example": "2026-10-01T00:00:00Z",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Before this updated_at timestamp.",
+            "in": "query",
+            "name": "filter[updated_at][lt]",
+            "schema": {
+              "example": "2026-10-01T00:00:00Z",
+              "type": "string"
+            }
+          },
+          {
+            "description": "At or before this updated_at timestamp.",
+            "in": "query",
+            "name": "filter[updated_at][lte]",
+            "schema": {
+              "example": "2026-10-01T00:00:00Z",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "data": [],
+                  "meta": {
+                    "end_cursor": null,
+                    "page_size": 25,
+                    "start_cursor": null
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/PayConnectorListResponse"
+                }
+              }
+            },
+            "description": "Organization connectors and cursor metadata."
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "errors": [
+                    {
+                      "code": "10000",
+                      "detail": "Provided cursor is invalid.",
+                      "source": {
+                        "pointer": "/after"
+                      },
+                      "title": "Invalid request"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/PayConnectorErrors"
+                }
+              }
+            },
+            "description": "Invalid filter, sort or cursor parameters."
+          }
+        },
+        "summary": "List Pay connectors",
+        "tags": [
+          "Pay Connectors"
+        ]
+      },
+      "post": {
+        "description": "Create a generic payment connector in the authenticated organization. The name must be unique in that organization. Authentication supplies ownership; do not send user_id or organization_id. Config is encrypted at rest; passwords and tokens are omitted from responses. This operation stores configuration and does not initiate a payment. See the [processor contract](/docs/voice/programmable-voice/pay#request-sent-to-the-payment-processor).",
+        "operationId": "createPayConnector",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "examples": {
+                "basic": {
+                  "summary": "Basic processor authentication",
+                  "value": {
+                    "config": {
+                      "auth_type": "basic",
+                      "endpoint_url": "https://processor.example.com/pay",
+                      "password": "\u003cprocessor-password\u003e",
+                      "username": "merchant-example"
+                    },
+                    "mode": "test",
+                    "name": "my-payment-connector",
+                    "type": "generic"
+                  }
+                },
+                "bearer": {
+                  "summary": "Bearer processor authentication",
+                  "value": {
+                    "config": {
+                      "auth_type": "bearer",
+                      "endpoint_url": "https://processor.example.com/pay",
+                      "token": "\u003cprocessor-bearer-token\u003e"
+                    },
+                    "mode": "test",
+                    "name": "my-payment-connector",
+                    "type": "generic"
+                  }
+                },
+                "none": {
+                  "summary": "None processor authentication",
+                  "value": {
+                    "config": {
+                      "auth_type": "none",
+                      "endpoint_url": "https://processor.example.com/pay"
+                    },
+                    "mode": "test",
+                    "name": "my-payment-connector",
+                    "type": "generic"
+                  }
+                }
+              },
+              "schema": {
+                "$ref": "#/components/schemas/CreateGenericPayConnectorRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "data": {
+                    "config": {
+                      "auth_type": "bearer",
+                      "endpoint_url": "https://processor.example.com/pay"
+                    },
+                    "created_at": "2026-10-01T12:00:00.000000Z",
+                    "id": "550e8400-e29b-41d4-a716-446655440000",
+                    "mode": "test",
+                    "name": "my-payment-connector",
+                    "organization_id": "organization-example",
+                    "record_type": "pay_connector",
+                    "type": "generic",
+                    "updated_at": "2026-10-01T12:00:00.000000Z",
+                    "user_id": "user-example"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/PayConnectorResponse"
+                }
+              }
+            },
+            "description": "Connector created. Credentials are omitted."
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "errors": [
+                    {
+                      "code": "10000",
+                      "detail": "The 'config' parameter is invalid. Please consult the documentation.",
+                      "source": {
+                        "pointer": "/config"
+                      },
+                      "title": "Invalid request"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/PayConnectorErrors"
+                }
+              }
+            },
+            "description": "Invalid fields or duplicate name in the organization."
+          }
+        },
+        "summary": "Create a Pay connector",
+        "tags": [
+          "Pay Connectors"
+        ]
+      }
+    },
+    "/pay_connectors/{name}": {
+      "delete": {
+        "description": "Delete a connector by name in the authenticated organization. Both test and live connectors can be deleted. Returns no response body on success; a missing name or a connector in another organization returns 404.",
+        "operationId": "deletePayConnector",
+        "parameters": [
+          {
+            "description": "Connector name, not its UUID. URL-encode the name as a path segment.",
+            "in": "path",
+            "name": "name",
+            "required": true,
+            "schema": {
+              "example": "my-payment-connector",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Connector deleted. No response body."
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "errors": [
+                    {
+                      "detail": "Resource not found"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/PayConnectorErrors"
+                }
+              }
+            },
+            "description": "Connector not found in the organization."
+          }
+        },
+        "summary": "Delete a Pay connector",
+        "tags": [
+          "Pay Connectors"
+        ]
+      },
+      "get": {
+        "description": "Retrieve a connector by name within the authenticated organization. Password and token are omitted. A missing name or a connector owned by another organization returns 404.",
+        "operationId": "getPayConnector",
+        "parameters": [
+          {
+            "description": "Connector name, not its UUID. URL-encode the name as a path segment.",
+            "in": "path",
+            "name": "name",
+            "required": true,
+            "schema": {
+              "example": "my-payment-connector",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "data": {
+                    "config": {
+                      "auth_type": "bearer",
+                      "endpoint_url": "https://processor.example.com/pay"
+                    },
+                    "created_at": "2026-10-01T12:00:00.000000Z",
+                    "id": "550e8400-e29b-41d4-a716-446655440000",
+                    "mode": "test",
+                    "name": "my-payment-connector",
+                    "organization_id": "organization-example",
+                    "record_type": "pay_connector",
+                    "type": "generic",
+                    "updated_at": "2026-10-01T12:00:00.000000Z",
+                    "user_id": "user-example"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/PayConnectorResponse"
+                }
+              }
+            },
+            "description": "Connector details with credentials omitted."
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "errors": [
+                    {
+                      "detail": "Resource not found"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/PayConnectorErrors"
+                }
+              }
+            },
+            "description": "Connector not found in the organization."
+          }
+        },
+        "summary": "Retrieve a Pay connector",
+        "tags": [
+          "Pay Connectors"
+        ]
+      },
+      "patch": {
+        "description": "Update a generic connector by name in the authenticated organization. Both test and live connectors can be updated through the API. Omitted fields remain unchanged. Supplying config replaces the entire config; it does not merge keys. Include endpoint_url and the credentials required for the selected auth_type on every config replacement. Omitting config preserves existing credentials, allowing a mode-only update. The path name cannot be renamed. Public updates use PATCH.",
+        "operationId": "updatePayConnector",
+        "parameters": [
+          {
+            "description": "Connector name, not its UUID. URL-encode the name as a path segment.",
+            "in": "path",
+            "name": "name",
+            "required": true,
+            "schema": {
+              "example": "my-payment-connector",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "examples": {
+                "modeOnly": {
+                  "summary": "Change mode without re-sending credentials",
+                  "value": {
+                    "mode": "live"
+                  }
+                },
+                "replaceConfig": {
+                  "summary": "Replace all config and re-send the bearer token",
+                  "value": {
+                    "config": {
+                      "auth_type": "bearer",
+                      "endpoint_url": "https://processor.example.com/pay",
+                      "timeout": 15000,
+                      "token": "\u003cprocessor-bearer-token\u003e"
+                    }
+                  }
+                }
+              },
+              "schema": {
+                "$ref": "#/components/schemas/UpdateGenericPayConnectorRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "data": {
+                    "config": {
+                      "auth_type": "bearer",
+                      "endpoint_url": "https://processor.example.com/pay"
+                    },
+                    "created_at": "2026-10-01T12:00:00.000000Z",
+                    "id": "550e8400-e29b-41d4-a716-446655440000",
+                    "mode": "live",
+                    "name": "my-payment-connector",
+                    "organization_id": "organization-example",
+                    "record_type": "pay_connector",
+                    "type": "generic",
+                    "updated_at": "2026-10-01T12:00:00.000000Z",
+                    "user_id": "user-example"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/PayConnectorResponse"
+                }
+              }
+            },
+            "description": "Updated connector after the modeOnly example, with credentials omitted."
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "errors": [
+                    {
+                      "detail": "Resource not found"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/PayConnectorErrors"
+                }
+              }
+            },
+            "description": "Connector not found in the organization."
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "errors": [
+                    {
+                      "code": "10000",
+                      "detail": "The 'config' parameter is invalid. Please consult the documentation.",
+                      "source": {
+                        "pointer": "/config"
+                      },
+                      "title": "Invalid request"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/PayConnectorErrors"
+                }
+              }
+            },
+            "description": "Invalid fields or duplicate name in the organization."
+          }
+        },
+        "summary": "Update a Pay connector",
+        "tags": [
+          "Pay Connectors"
+        ]
+      }
+    }
+  },
+  "security": [
+    {
+      "bearerAuth": []
+    }
+  ],
+  "servers": [
+    {
+      "description": "Version 2.0.0 of the Telnyx API",
+      "url": "https://api.telnyx.com/v2"
+    }
+  ]
+}

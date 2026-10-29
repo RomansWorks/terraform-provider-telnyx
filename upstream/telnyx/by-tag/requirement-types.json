@@ -1,0 +1,518 @@
+{
+  "components": {
+    "parameters": {
+      "DocReqsRequirementTypeId": {
+        "description": "Uniquely identifies the requirement_type record",
+        "example": "a38c217a-8019-48f8-bff6-0fdd9939075b",
+        "in": "path",
+        "name": "id",
+        "required": true,
+        "schema": {
+          "format": "uuid",
+          "type": "string"
+        }
+      },
+      "FilterRequirementTypesConsolidated": {
+        "description": "Consolidated filter parameter for requirement types (deepObject style). Originally: filter[name]",
+        "explode": true,
+        "in": "query",
+        "name": "filter",
+        "required": false,
+        "schema": {
+          "additionalProperties": false,
+          "properties": {
+            "name": {
+              "additionalProperties": false,
+              "properties": {
+                "contains": {
+                  "description": "Filters requirement types to those whose name contains a certain string.",
+                  "example": "utility bill",
+                  "type": "string"
+                }
+              },
+              "type": "object"
+            }
+          },
+          "type": "object"
+        },
+        "style": "deepObject"
+      },
+      "SortRequirementTypesConsolidated": {
+        "description": "Consolidated sort parameter for requirement types (deepObject style). Originally: sort[]",
+        "in": "query",
+        "name": "sort",
+        "required": false,
+        "schema": {
+          "description": "Specifies the sort order for results. If you want to sort by a field in ascending order, include it as a sort parameter. If you want to sort in descending order, prepend a `-` in front of the field name.",
+          "example": [
+            "name"
+          ],
+          "items": {
+            "enum": [
+              "name",
+              "created_at",
+              "updated_at",
+              "-name",
+              "-created_at",
+              "-updated_at"
+            ],
+            "type": "string"
+          },
+          "type": "array"
+        }
+      }
+    },
+    "responses": {
+      "documents_GenericErrorResponse": {
+        "content": {
+          "application/json": {
+            "example": {
+              "errors": [
+                {
+                  "code": "10007",
+                  "detail": "An unexpected error occured.",
+                  "title": "Unexpected error"
+                }
+              ]
+            },
+            "schema": {
+              "$ref": "#/components/schemas/Errors"
+            }
+          }
+        },
+        "description": "Unexpected error"
+      }
+    },
+    "schemas": {
+      "DocReqsRequirementType": {
+        "properties": {
+          "acceptance_criteria": {
+            "description": "Specifies objective criteria for acceptance",
+            "properties": {
+              "acceptable_characters": {
+                "description": "Specifies the allowed characters as a string",
+                "example": "abcdef0123456789",
+                "readOnly": false,
+                "type": "string"
+              },
+              "acceptable_values": {
+                "description": "Specifies the list of strictly possible values for the requirement. Ignored when empty",
+                "items": {
+                  "example": "US",
+                  "type": "string"
+                },
+                "readOnly": false,
+                "type": "array"
+              },
+              "locality_limit": {
+                "description": "Specifies geography-based acceptance criteria",
+                "example": "Issued by the same country that the phone number belongs to",
+                "readOnly": false,
+                "type": "string"
+              },
+              "max_length": {
+                "description": "Maximum length allowed for the value",
+                "example": 20,
+                "readOnly": false,
+                "type": "integer"
+              },
+              "min_length": {
+                "description": "Minimum length allowed for the value",
+                "example": 16,
+                "readOnly": false,
+                "type": "integer"
+              },
+              "time_limit": {
+                "description": "Specifies time-based acceptance criteria",
+                "example": "Current and not expired",
+                "readOnly": false,
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
+          "created_at": {
+            "description": "ISO 8601 formatted date-time indicating when the resource was created.",
+            "example": "2021-04-09T22:25:27.521Z",
+            "readOnly": true,
+            "type": "string"
+          },
+          "description": {
+            "description": "Describes the requirement type",
+            "example": "Proves the customer has a physical address in the same locality as the phone number",
+            "readOnly": false,
+            "type": "string"
+          },
+          "example": {
+            "description": "Provides one or more examples of acceptable documents",
+            "example": "Utility bill, internet bill, phone bill, or lease",
+            "readOnly": false,
+            "type": "string"
+          },
+          "id": {
+            "description": "Identifies the associated document",
+            "example": "6a09cdc3-8948-47f0-aa62-74ac943d6c58",
+            "format": "uuid",
+            "readOnly": true,
+            "type": "string"
+          },
+          "name": {
+            "description": "A short descriptive name for this requirement_type",
+            "example": "Proof of Address",
+            "readOnly": true,
+            "type": "string"
+          },
+          "record_type": {
+            "description": "Identifies the type of the resource",
+            "example": "requirement_type",
+            "readOnly": true,
+            "type": "string"
+          },
+          "type": {
+            "description": "Defines the type of this requirement type",
+            "enum": [
+              "document",
+              "address",
+              "textual"
+            ],
+            "example": "document",
+            "readOnly": false,
+            "type": "string"
+          },
+          "updated_at": {
+            "description": "ISO 8601 formatted date-time indicating when the resource was last updated.",
+            "example": "2021-04-12T20:20:20.020Z",
+            "readOnly": true,
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "DocReqsRequirementTypeList": {
+        "items": {
+          "$ref": "#/components/schemas/DocReqsRequirementType"
+        },
+        "type": "array"
+      },
+      "Error": {
+        "example": {
+          "code": "20207",
+          "description": "The street address provided is invalid.",
+          "source": {
+            "pointer": "/street_address"
+          },
+          "title": "Invalid street address"
+        },
+        "properties": {
+          "code": {
+            "type": "string",
+            "x-format": "int64"
+          },
+          "description": {
+            "type": "string"
+          },
+          "detail": {
+            "description": "A human-readable explanation of the error.",
+            "type": "string"
+          },
+          "meta": {
+            "additionalProperties": true,
+            "type": "object"
+          },
+          "source": {
+            "properties": {
+              "parameter": {
+                "description": "Indicates which query parameter caused the error.",
+                "type": "string"
+              },
+              "pointer": {
+                "description": "JSON pointer (RFC6901) to the offending entity.",
+                "format": "json-pointer",
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
+          "title": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "title"
+        ],
+        "type": "object"
+      },
+      "Errors": {
+        "properties": {
+          "errors": {
+            "items": {
+              "$ref": "#/components/schemas/Error"
+            },
+            "type": "array"
+          }
+        },
+        "type": "object"
+      },
+      "PaginationMeta": {
+        "properties": {
+          "page_number": {
+            "example": 2,
+            "type": "integer"
+          },
+          "page_size": {
+            "example": 25,
+            "type": "integer"
+          },
+          "total_pages": {
+            "example": 3,
+            "type": "integer"
+          },
+          "total_results": {
+            "example": 55,
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      }
+    },
+    "securitySchemes": {
+      "BearerAuth": {
+        "bearerFormat": "API key",
+        "description": "Telnyx API key supplied as `Authorization: Bearer \u003ctoken\u003e`. In production, auth may be validated by the API gateway and forwarded via Telnyx auth headers.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "Payment": {
+        "description": "Machine Payment Protocol credential used on paid retries, sent as `Authorization: Payment ...`. Obtained by paying a challenge returned in the `WWW-Authenticate` header of a 402 response. This is not a Telnyx API key; initial challenge requests use standard bearer authentication instead.",
+        "in": "header",
+        "name": "Authorization",
+        "type": "apiKey"
+      },
+      "agent-memory_bearerAuth": {
+        "description": "Telnyx API key",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "bearerAuth": {
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "branded-calling_bearerAuth": {
+        "description": "Telnyx API key. Generate one at https://portal.telnyx.com/#/app/api-keys.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "collections_bearerAuth": {
+        "description": "Telnyx API key. Collections and results are automatically scoped to the authenticated user's organization.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "number-reputation_bearerAuth": {
+        "description": "Telnyx API key. Generate one at https://portal.telnyx.com/#/app/api-keys.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "oauthClientAuth": {
+        "description": "OAuth 2.0 authentication for Telnyx API and MCP integrations",
+        "flows": {
+          "authorizationCode": {
+            "authorizationUrl": "https://api.telnyx.com/v2/oauth/authorize",
+            "refreshUrl": "https://api.telnyx.com/v2/oauth/token",
+            "scopes": {
+              "admin": "Administrative access to Telnyx resources"
+            },
+            "tokenUrl": "https://api.telnyx.com/v2/oauth/token"
+          },
+          "clientCredentials": {
+            "scopes": {
+              "admin": "Administrative access to Telnyx resources"
+            },
+            "tokenUrl": "https://api.telnyx.com/v2/oauth/token"
+          }
+        },
+        "type": "oauth2"
+      },
+      "outbound-voice-profiles_bearerAuth": {
+        "bearerFormat": "JWT",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "pay-connectors_bearerAuth": {
+        "description": "Telnyx API key, not the processor bearer token.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "pronunciation-dicts_bearerAuth": {
+        "description": "Telnyx API v2 key. Obtain from https://portal.telnyx.com",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "rcs-registration_bearerAuth": {
+        "bearerFormat": "API key",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "stored-payment-transactions_bearerAuth": {
+        "bearerFormat": "JWT",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "telnyxApiKey": {
+        "description": "Management-only Telnyx account credential.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "transcriptions-search_bearerAuth": {
+        "description": "Telnyx API key. Results are automatically scoped to the authenticated user's organization.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "web-search_bearerAuth": {
+        "description": "Telnyx API key",
+        "scheme": "bearer",
+        "type": "http"
+      }
+    }
+  },
+  "info": {
+    "contact": {
+      "email": "support@telnyx.com"
+    },
+    "description": "SIP trunking, SMS, MMS, Call Control and Telephony Data Services.",
+    "title": "Telnyx API",
+    "version": "2.0.0",
+    "x-endpoint-cost": "light",
+    "x-latency-category": "responsive"
+  },
+  "openapi": "3.1.0",
+  "paths": {
+    "/requirement_types": {
+      "get": {
+        "description": "List all requirement types ordered by created_at descending",
+        "operationId": "ListRequirementTypes",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/FilterRequirementTypesConsolidated"
+          },
+          {
+            "$ref": "#/components/parameters/SortRequirementTypesConsolidated"
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/DocReqsRequirementTypeList"
+                    },
+                    "meta": {
+                      "$ref": "#/components/schemas/PaginationMeta"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "errors": [
+                    {
+                      "code": "10027",
+                      "detail": "The server understood the syntax of the request but was unable to process the instructions.",
+                      "title": "Unprocessable Entity"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/Errors"
+                }
+              }
+            },
+            "description": "Unprocessable entity. Check the 'detail' field in response for details."
+          },
+          "default": {
+            "$ref": "#/components/responses/documents_GenericErrorResponse"
+          }
+        },
+        "summary": "List all requirement types",
+        "tags": [
+          "Requirement Types"
+        ],
+        "x-latency-category": "responsive"
+      }
+    },
+    "/requirement_types/{id}": {
+      "get": {
+        "description": "Returns the details of a single requirement type by its identifier, describing a kind of documentation needed for regulatory purposes.",
+        "operationId": "RetrieveRequirementType",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/DocReqsRequirementTypeId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/DocReqsRequirementType"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "errors": [
+                    {
+                      "code": "10027",
+                      "detail": "The server understood the syntax of the request but was unable to process the instructions.",
+                      "title": "Unprocessable Entity"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/Errors"
+                }
+              }
+            },
+            "description": "Unprocessable entity. Check the 'detail' field in response for details."
+          },
+          "default": {
+            "$ref": "#/components/responses/documents_GenericErrorResponse"
+          }
+        },
+        "summary": "Retrieve a requirement types",
+        "tags": [
+          "Requirement Types"
+        ],
+        "x-latency-category": "responsive"
+      }
+    }
+  },
+  "security": [
+    {
+      "bearerAuth": []
+    }
+  ],
+  "servers": [
+    {
+      "description": "Version 2.0.0 of the Telnyx API",
+      "url": "https://api.telnyx.com/v2"
+    }
+  ]
+}

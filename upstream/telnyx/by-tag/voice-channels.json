@@ -1,0 +1,790 @@
+{
+  "components": {
+    "parameters": {
+      "GcbChannelNumberZoneId": {
+        "description": "Channel zone identifier",
+        "in": "path",
+        "name": "channel_zone_id",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      },
+      "GcbChannelZoneId": {
+        "description": "Channel zone identifier",
+        "in": "path",
+        "name": "channel_zone_id",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      },
+      "voice-channels_PageConsolidated": {
+        "description": "Consolidated page parameter (deepObject style). Originally: page[size], page[number]",
+        "explode": true,
+        "in": "query",
+        "name": "page",
+        "schema": {
+          "properties": {
+            "number": {
+              "default": 1,
+              "description": "The page number to load",
+              "minimum": 1,
+              "type": "integer"
+            },
+            "size": {
+              "default": 20,
+              "description": "The size of the page",
+              "maximum": 250,
+              "minimum": 1,
+              "type": "integer"
+            }
+          },
+          "type": "object"
+        },
+        "style": "deepObject"
+      }
+    },
+    "responses": {
+      "GetGcbChannelZonesRequestResponse": {
+        "content": {
+          "application/json": {
+            "schema": {
+              "properties": {
+                "data": {
+                  "items": {
+                    "$ref": "#/components/schemas/GcbChannelZone"
+                  },
+                  "type": "array"
+                },
+                "meta": {
+                  "$ref": "#/components/schemas/PaginationMeta"
+                }
+              },
+              "type": "object"
+            }
+          }
+        },
+        "description": "A list of channel zones"
+      },
+      "voice-channels_GenericErrorResponse": {
+        "content": {
+          "application/json": {
+            "example": {
+              "errors": [
+                {
+                  "code": "10007",
+                  "detail": "An unexpected error occured.",
+                  "title": "Unexpected error"
+                }
+              ]
+            },
+            "schema": {
+              "$ref": "#/components/schemas/Errors"
+            }
+          }
+        },
+        "description": "Unexpected error"
+      }
+    },
+    "schemas": {
+      "Error": {
+        "example": {
+          "code": "20207",
+          "description": "The street address provided is invalid.",
+          "source": {
+            "pointer": "/street_address"
+          },
+          "title": "Invalid street address"
+        },
+        "properties": {
+          "code": {
+            "type": "string",
+            "x-format": "int64"
+          },
+          "description": {
+            "type": "string"
+          },
+          "detail": {
+            "description": "A human-readable explanation of the error.",
+            "type": "string"
+          },
+          "meta": {
+            "additionalProperties": true,
+            "type": "object"
+          },
+          "source": {
+            "properties": {
+              "parameter": {
+                "description": "Indicates which query parameter caused the error.",
+                "type": "string"
+              },
+              "pointer": {
+                "description": "JSON pointer (RFC6901) to the offending entity.",
+                "format": "json-pointer",
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
+          "title": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "title"
+        ],
+        "type": "object"
+      },
+      "Errors": {
+        "properties": {
+          "errors": {
+            "items": {
+              "$ref": "#/components/schemas/Error"
+            },
+            "type": "array"
+          }
+        },
+        "type": "object"
+      },
+      "GcbChannelZone": {
+        "properties": {
+          "channels": {
+            "example": 7,
+            "format": "int64",
+            "type": "integer"
+          },
+          "countries": {
+            "description": "List of countries (in ISO 3166-2, capitalized) members of the billing channel zone",
+            "example": [
+              "BE",
+              "EL",
+              "LT",
+              "PT",
+              "BG",
+              "ES",
+              "LU",
+              "RO",
+              "CZ",
+              "FR",
+              "HU",
+              "SI",
+              "DK",
+              "HR",
+              "MT",
+              "SK",
+              "DE",
+              "IT",
+              "NL",
+              "FI",
+              "EE",
+              "CY",
+              "AT",
+              "SE",
+              "IE",
+              "LV",
+              "PL"
+            ],
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "created_at": {
+            "description": "ISO 8601 formatted date of when the channel zone was created",
+            "example": "2019-01-23T18:10:02.574Z",
+            "type": "string"
+          },
+          "id": {
+            "example": "1653e6a1-4bfd-4857-97c6-6a51e1c34477",
+            "type": "string"
+          },
+          "name": {
+            "example": "Euro channel zone",
+            "type": "string"
+          },
+          "record_type": {
+            "enum": [
+              "channel_zone"
+            ],
+            "example": "channel_zone",
+            "type": "string"
+          },
+          "updated_at": {
+            "description": "ISO 8601 formatted date of when the channel zone was updated",
+            "example": "2019-01-23T18:10:02.574Z",
+            "type": "string"
+          }
+        },
+        "required": [
+          "record_type",
+          "countries",
+          "id",
+          "name",
+          "channels"
+        ],
+        "title": "Channel zone object",
+        "type": "object"
+      },
+      "PaginationMeta": {
+        "properties": {
+          "page_number": {
+            "example": 2,
+            "type": "integer"
+          },
+          "page_size": {
+            "example": 25,
+            "type": "integer"
+          },
+          "total_pages": {
+            "example": 3,
+            "type": "integer"
+          },
+          "total_results": {
+            "example": 55,
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      }
+    },
+    "securitySchemes": {
+      "BearerAuth": {
+        "bearerFormat": "API key",
+        "description": "Telnyx API key supplied as `Authorization: Bearer \u003ctoken\u003e`. In production, auth may be validated by the API gateway and forwarded via Telnyx auth headers.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "Payment": {
+        "description": "Machine Payment Protocol credential used on paid retries, sent as `Authorization: Payment ...`. Obtained by paying a challenge returned in the `WWW-Authenticate` header of a 402 response. This is not a Telnyx API key; initial challenge requests use standard bearer authentication instead.",
+        "in": "header",
+        "name": "Authorization",
+        "type": "apiKey"
+      },
+      "agent-memory_bearerAuth": {
+        "description": "Telnyx API key",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "bearerAuth": {
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "branded-calling_bearerAuth": {
+        "description": "Telnyx API key. Generate one at https://portal.telnyx.com/#/app/api-keys.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "collections_bearerAuth": {
+        "description": "Telnyx API key. Collections and results are automatically scoped to the authenticated user's organization.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "number-reputation_bearerAuth": {
+        "description": "Telnyx API key. Generate one at https://portal.telnyx.com/#/app/api-keys.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "oauthClientAuth": {
+        "description": "OAuth 2.0 authentication for Telnyx API and MCP integrations",
+        "flows": {
+          "authorizationCode": {
+            "authorizationUrl": "https://api.telnyx.com/v2/oauth/authorize",
+            "refreshUrl": "https://api.telnyx.com/v2/oauth/token",
+            "scopes": {
+              "admin": "Administrative access to Telnyx resources"
+            },
+            "tokenUrl": "https://api.telnyx.com/v2/oauth/token"
+          },
+          "clientCredentials": {
+            "scopes": {
+              "admin": "Administrative access to Telnyx resources"
+            },
+            "tokenUrl": "https://api.telnyx.com/v2/oauth/token"
+          }
+        },
+        "type": "oauth2"
+      },
+      "outbound-voice-profiles_bearerAuth": {
+        "bearerFormat": "JWT",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "pay-connectors_bearerAuth": {
+        "description": "Telnyx API key, not the processor bearer token.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "pronunciation-dicts_bearerAuth": {
+        "description": "Telnyx API v2 key. Obtain from https://portal.telnyx.com",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "rcs-registration_bearerAuth": {
+        "bearerFormat": "API key",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "stored-payment-transactions_bearerAuth": {
+        "bearerFormat": "JWT",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "telnyxApiKey": {
+        "description": "Management-only Telnyx account credential.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "transcriptions-search_bearerAuth": {
+        "description": "Telnyx API key. Results are automatically scoped to the authenticated user's organization.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "web-search_bearerAuth": {
+        "description": "Telnyx API key",
+        "scheme": "bearer",
+        "type": "http"
+      }
+    }
+  },
+  "info": {
+    "contact": {
+      "email": "support@telnyx.com"
+    },
+    "description": "SIP trunking, SMS, MMS, Call Control and Telephony Data Services.",
+    "title": "Telnyx API",
+    "version": "2.0.0",
+    "x-endpoint-cost": "light",
+    "x-latency-category": "responsive"
+  },
+  "openapi": "3.1.0",
+  "paths": {
+    "/channel_zones": {
+      "get": {
+        "description": "Returns the non-US voice channels for your account. voice channels allow you to use Channel Billing for calls to your Telnyx phone numbers. Please check the \u003ca href=\"https://support.telnyx.com/en/articles/8428806-global-channel-billing\"\u003eTelnyx Support Articles\u003c/a\u003e section for full information and examples of how to utilize Channel Billing.",
+        "operationId": "GetChannelZones",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/voice-channels_PageConsolidated"
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/GetGcbChannelZonesRequestResponse"
+          },
+          "400": {
+            "description": "Bad request"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Resource not found"
+          }
+        },
+        "summary": "List your voice channels for non-US zones",
+        "tags": [
+          "Voice Channels"
+        ]
+      }
+    },
+    "/channel_zones/{channel_zone_id}": {
+      "parameters": [
+        {
+          "$ref": "#/components/parameters/GcbChannelZoneId"
+        }
+      ],
+      "put": {
+        "description": "Update the number of Voice Channels for the Non-US Zones. This allows your account to handle multiple simultaneous inbound calls to Non-US numbers. Use this endpoint to increase or decrease your capacity based on expected call volume.",
+        "operationId": "PatchChannelZone",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "example": {
+                "channels": 0
+              },
+              "schema": {
+                "properties": {
+                  "channels": {
+                    "description": "The number of reserved channels",
+                    "format": "int64",
+                    "type": "integer"
+                  }
+                },
+                "required": [
+                  "channels"
+                ],
+                "type": "object"
+              }
+            }
+          },
+          "description": "Quantity of reserved channels and organizational update option",
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GcbChannelZone"
+                }
+              }
+            },
+            "description": "Successfuly patched channel zone"
+          },
+          "400": {
+            "description": "Bad request"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Resource not found"
+          },
+          "default": {
+            "$ref": "#/components/responses/voice-channels_GenericErrorResponse"
+          }
+        },
+        "summary": "Update voice channels for non-US Zones",
+        "tags": [
+          "Voice Channels"
+        ],
+        "x-codegen-request-body-name": "body"
+      }
+    },
+    "/inbound_channels": {
+      "get": {
+        "description": "Returns the US Zone voice channels for your account. voice channels allows you to use Channel Billing for calls to your Telnyx phone numbers. Please check the \u003ca href=\"https://support.telnyx.com/en/articles/8428806-global-channel-billing\"\u003eTelnyx Support Articles\u003c/a\u003e section for full information and examples of how to utilize Channel Billing.",
+        "operationId": "ListInboundChannels",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "properties": {
+                        "channels": {
+                          "description": "The current number of concurrent channels set for the account",
+                          "example": 7,
+                          "type": "integer"
+                        },
+                        "record_type": {
+                          "description": "Identifies the type of the response",
+                          "example": "inbound_channels",
+                          "type": "string"
+                        }
+                      },
+                      "type": "object"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "voice channels Response"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Resource not found"
+          },
+          "422": {
+            "description": "Unprocessable entity. Check message field in response for details."
+          }
+        },
+        "summary": "List your voice channels for US Zone",
+        "tags": [
+          "Voice Channels"
+        ],
+        "x-endpoint-cost": "medium"
+      },
+      "patch": {
+        "description": "Update the number of Voice Channels for the US Zone. This allows your account to handle multiple simultaneous inbound calls to US numbers. Use this endpoint to increase or decrease your capacity based on expected call volume.",
+        "operationId": "UpdateOutboundChannels",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "channels": {
+                    "description": "The new number of concurrent channels for the account",
+                    "example": 7,
+                    "type": "integer"
+                  }
+                },
+                "required": [
+                  "channels"
+                ],
+                "type": "object"
+              }
+            }
+          },
+          "description": "Voice channels update",
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "properties": {
+                        "channels": {
+                          "description": "The number of channels set for the account",
+                          "example": 7,
+                          "type": "integer"
+                        },
+                        "record_type": {
+                          "description": "Identifies the type of the response",
+                          "example": "inbound_channels",
+                          "type": "string"
+                        }
+                      },
+                      "type": "object"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Expected Update response"
+          },
+          "400": {
+            "description": "Bad request"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Resource not found"
+          },
+          "default": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "errors": [
+                    {
+                      "code": "10007",
+                      "detail": "An unexpected error occured.",
+                      "title": "Unexpected error"
+                    }
+                  ]
+                },
+                "schema": {
+                  "properties": {
+                    "errors": {
+                      "items": {
+                        "properties": {
+                          "code": {
+                            "type": "string"
+                          },
+                          "detail": {
+                            "type": "string"
+                          },
+                          "meta": {
+                            "type": "object"
+                          },
+                          "source": {
+                            "properties": {
+                              "parameter": {
+                                "description": "Indicates which query parameter caused the error.",
+                                "type": "string"
+                              },
+                              "pointer": {
+                                "description": "JSON pointer (RFC6901) to the offending entity.",
+                                "type": "string"
+                              }
+                            },
+                            "type": "object"
+                          },
+                          "title": {
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "code",
+                          "title"
+                        ]
+                      },
+                      "type": "array"
+                    }
+                  }
+                }
+              }
+            },
+            "description": "Unexpected error"
+          }
+        },
+        "summary": "Update voice channels for US Zone",
+        "tags": [
+          "Voice Channels"
+        ],
+        "x-endpoint-cost": "medium"
+      }
+    },
+    "/list": {
+      "get": {
+        "description": "Retrieve a list of all phone numbers using Channel Billing, grouped by Zone.",
+        "operationId": "GetAllNumbersChannelZones",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "items": {
+                        "properties": {
+                          "number_of_channels": {
+                            "example": 7,
+                            "type": "integer"
+                          },
+                          "numbers": {
+                            "items": {
+                              "properties": {
+                                "country": {
+                                  "example": "FR",
+                                  "type": "string"
+                                },
+                                "number": {
+                                  "example": "+15554441234",
+                                  "type": "string"
+                                }
+                              },
+                              "type": "object"
+                            },
+                            "type": "array"
+                          },
+                          "zone_id": {
+                            "example": "1653e6a1-4bfd-4857-97c6-6a51e1c34477",
+                            "type": "string"
+                          },
+                          "zone_name": {
+                            "example": "Euro channel zone",
+                            "type": "string"
+                          }
+                        },
+                        "type": "object"
+                      },
+                      "type": "array"
+                    },
+                    "meta": {
+                      "$ref": "#/components/schemas/PaginationMeta"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "A list of numbers using GCB, grouped by channel zone"
+          },
+          "400": {
+            "description": "Bad request"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Resource not found"
+          }
+        },
+        "summary": "List All Numbers using Channel Billing",
+        "tags": [
+          "Voice Channels"
+        ]
+      }
+    },
+    "/list/{channel_zone_id}": {
+      "get": {
+        "description": "Retrieve a list of phone numbers using Channel Billing for a specific Zone.",
+        "operationId": "GetNumbersChannelZones",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/GcbChannelNumberZoneId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "items": {
+                        "properties": {
+                          "number_of_channels": {
+                            "example": 7,
+                            "type": "integer"
+                          },
+                          "numbers": {
+                            "items": {
+                              "properties": {
+                                "country": {
+                                  "example": "FR",
+                                  "type": "string"
+                                },
+                                "number": {
+                                  "example": "+15554441234",
+                                  "type": "string"
+                                }
+                              },
+                              "type": "object"
+                            },
+                            "type": "array"
+                          },
+                          "zone_id": {
+                            "example": "1653e6a1-4bfd-4857-97c6-6a51e1c34477",
+                            "type": "string"
+                          },
+                          "zone_name": {
+                            "example": "Euro channel zone",
+                            "type": "string"
+                          }
+                        },
+                        "type": "object"
+                      },
+                      "type": "array"
+                    },
+                    "meta": {
+                      "$ref": "#/components/schemas/PaginationMeta"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "A list of numbers using GCB, grouped by channel zone"
+          },
+          "400": {
+            "description": "Bad request"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Resource not found"
+          }
+        },
+        "summary": "List Numbers using Channel Billing for a specific Zone",
+        "tags": [
+          "Voice Channels"
+        ]
+      }
+    }
+  },
+  "security": [
+    {
+      "bearerAuth": []
+    }
+  ],
+  "servers": [
+    {
+      "description": "Version 2.0.0 of the Telnyx API",
+      "url": "https://api.telnyx.com/v2"
+    }
+  ]
+}

@@ -1,0 +1,887 @@
+{
+  "components": {
+    "schemas": {
+      "ForgetSourceResponse": {
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/ForgottenSource"
+          }
+        },
+        "required": [
+          "data"
+        ],
+        "title": "ForgetSourceResponse",
+        "type": "object"
+      },
+      "ForgottenSource": {
+        "properties": {
+          "memories_deleted": {
+            "description": "Memories the profile held and no longer does, counted before and after across the whole profile: it includes memories derived from this source together with others, and anything else the profile lost in between. A report rather than an audit. The status carries the outcome.",
+            "title": "Memories Deleted",
+            "type": "integer"
+          },
+          "profile_id": {
+            "title": "Profile Id",
+            "type": "string"
+          },
+          "source_id": {
+            "description": "Identifies one source within its profile: an ingested session, or one remembered fact. Returned by `ingest` and `remember` when the write is accepted. Re-ingesting a session keeps its source id.",
+            "title": "Source Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "profile_id",
+          "source_id",
+          "memories_deleted"
+        ],
+        "title": "ForgottenSource",
+        "type": "object"
+      },
+      "PageMeta": {
+        "description": "Where a listing's page sits in the whole.\n\nA page is a snapshot: the counts it reports and the order it is drawn in\nboth move as writes land, so paging through a busy namespace can repeat or\nmiss an entry at a page boundary.",
+        "properties": {
+          "page_number": {
+            "description": "The page returned, counting from 1.",
+            "title": "Page Number",
+            "type": "integer"
+          },
+          "page_size": {
+            "description": "How many results a page holds.",
+            "title": "Page Size",
+            "type": "integer"
+          },
+          "total_pages": {
+            "description": "Pages that can be requested; 0 when nothing matched. Page until `page_number` reaches it rather than until a page comes back short: a page can hold fewer than `page_size` results without being the last. Capped at the deepest page served, so on a very large listing it covers fewer results than `total_results`.",
+            "title": "Total Pages",
+            "type": "integer"
+          },
+          "total_results": {
+            "description": "Results the request matched, including any past the deepest page.",
+            "title": "Total Results",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "page_number",
+          "page_size",
+          "total_pages",
+          "total_results"
+        ],
+        "title": "PageMeta",
+        "type": "object"
+      },
+      "Source": {
+        "properties": {
+          "created_at": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "When the source was first stored.",
+            "title": "Created At"
+          },
+          "id": {
+            "description": "Identifies one source within its profile: an ingested session, or one remembered fact. Returned by `ingest` and `remember` when the write is accepted. Re-ingesting a session keeps its source id.",
+            "title": "Id",
+            "type": "string"
+          },
+          "memory_count": {
+            "description": "Memories extracted from this source. A memory derived from several sources is not counted here.",
+            "title": "Memory Count",
+            "type": "integer"
+          },
+          "session_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "The session this source was ingested as. Null for a remembered fact.",
+            "title": "Session Id"
+          },
+          "updated_at": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "When the source was last written; re-ingesting moves it.",
+            "title": "Updated At"
+          }
+        },
+        "required": [
+          "id",
+          "session_id",
+          "memory_count"
+        ],
+        "title": "Source",
+        "type": "object"
+      },
+      "SourceListResponse": {
+        "properties": {
+          "data": {
+            "items": {
+              "$ref": "#/components/schemas/Source"
+            },
+            "title": "Data",
+            "type": "array"
+          },
+          "meta": {
+            "$ref": "#/components/schemas/PageMeta"
+          }
+        },
+        "required": [
+          "data",
+          "meta"
+        ],
+        "title": "SourceListResponse",
+        "type": "object"
+      },
+      "SourceResponse": {
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/SourceWithContent"
+          }
+        },
+        "required": [
+          "data"
+        ],
+        "title": "SourceResponse",
+        "type": "object"
+      },
+      "SourceWithContent": {
+        "properties": {
+          "content": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": [
+                  "array",
+                  "string",
+                  "number",
+                  "boolean"
+                ]
+              }
+            ],
+            "description": "What was stored, in the shape it was sent: an ingested JSON body as JSON, a string body or a remembered fact as a string. A session ingested before formats were recorded is returned as the text it was stored as.",
+            "title": "Content"
+          },
+          "created_at": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "When the source was first stored.",
+            "title": "Created At"
+          },
+          "id": {
+            "description": "Identifies one source within its profile: an ingested session, or one remembered fact. Returned by `ingest` and `remember` when the write is accepted. Re-ingesting a session keeps its source id.",
+            "title": "Id",
+            "type": "string"
+          },
+          "memory_count": {
+            "description": "Memories extracted from this source. A memory derived from several sources is not counted here.",
+            "title": "Memory Count",
+            "type": "integer"
+          },
+          "session_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "The session this source was ingested as. Null for a remembered fact.",
+            "title": "Session Id"
+          },
+          "updated_at": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "When the source was last written; re-ingesting moves it.",
+            "title": "Updated At"
+          }
+        },
+        "required": [
+          "id",
+          "session_id",
+          "memory_count",
+          "content"
+        ],
+        "title": "SourceWithContent",
+        "type": "object"
+      },
+      "TelnyxError": {
+        "properties": {
+          "code": {
+            "type": "string"
+          },
+          "detail": {
+            "type": "string"
+          },
+          "meta": {
+            "properties": {
+              "url": {
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
+          "source": {
+            "properties": {
+              "pointer": {
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
+          "title": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "TelnyxErrors": {
+        "properties": {
+          "errors": {
+            "items": {
+              "$ref": "#/components/schemas/TelnyxError"
+            },
+            "type": "array"
+          }
+        },
+        "type": "object"
+      }
+    },
+    "securitySchemes": {
+      "BearerAuth": {
+        "bearerFormat": "API key",
+        "description": "Telnyx API key supplied as `Authorization: Bearer \u003ctoken\u003e`. In production, auth may be validated by the API gateway and forwarded via Telnyx auth headers.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "Payment": {
+        "description": "Machine Payment Protocol credential used on paid retries, sent as `Authorization: Payment ...`. Obtained by paying a challenge returned in the `WWW-Authenticate` header of a 402 response. This is not a Telnyx API key; initial challenge requests use standard bearer authentication instead.",
+        "in": "header",
+        "name": "Authorization",
+        "type": "apiKey"
+      },
+      "agent-memory_bearerAuth": {
+        "description": "Telnyx API key",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "bearerAuth": {
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "branded-calling_bearerAuth": {
+        "description": "Telnyx API key. Generate one at https://portal.telnyx.com/#/app/api-keys.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "collections_bearerAuth": {
+        "description": "Telnyx API key. Collections and results are automatically scoped to the authenticated user's organization.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "number-reputation_bearerAuth": {
+        "description": "Telnyx API key. Generate one at https://portal.telnyx.com/#/app/api-keys.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "oauthClientAuth": {
+        "description": "OAuth 2.0 authentication for Telnyx API and MCP integrations",
+        "flows": {
+          "authorizationCode": {
+            "authorizationUrl": "https://api.telnyx.com/v2/oauth/authorize",
+            "refreshUrl": "https://api.telnyx.com/v2/oauth/token",
+            "scopes": {
+              "admin": "Administrative access to Telnyx resources"
+            },
+            "tokenUrl": "https://api.telnyx.com/v2/oauth/token"
+          },
+          "clientCredentials": {
+            "scopes": {
+              "admin": "Administrative access to Telnyx resources"
+            },
+            "tokenUrl": "https://api.telnyx.com/v2/oauth/token"
+          }
+        },
+        "type": "oauth2"
+      },
+      "outbound-voice-profiles_bearerAuth": {
+        "bearerFormat": "JWT",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "pay-connectors_bearerAuth": {
+        "description": "Telnyx API key, not the processor bearer token.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "pronunciation-dicts_bearerAuth": {
+        "description": "Telnyx API v2 key. Obtain from https://portal.telnyx.com",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "rcs-registration_bearerAuth": {
+        "bearerFormat": "API key",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "stored-payment-transactions_bearerAuth": {
+        "bearerFormat": "JWT",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "telnyxApiKey": {
+        "description": "Management-only Telnyx account credential.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "transcriptions-search_bearerAuth": {
+        "description": "Telnyx API key. Results are automatically scoped to the authenticated user's organization.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "web-search_bearerAuth": {
+        "description": "Telnyx API key",
+        "scheme": "bearer",
+        "type": "http"
+      }
+    }
+  },
+  "info": {
+    "contact": {
+      "email": "support@telnyx.com"
+    },
+    "description": "SIP trunking, SMS, MMS, Call Control and Telephony Data Services.",
+    "title": "Telnyx API",
+    "version": "2.0.0",
+    "x-endpoint-cost": "light",
+    "x-latency-category": "responsive"
+  },
+  "openapi": "3.1.0",
+  "paths": {
+    "/ai/memory/namespaces/{namespace}/profiles/{profile_id}/sources": {
+      "get": {
+        "description": "Everything a profile has stored and extracts memories from: each ingested session, and each remembered fact, which has no session. Content is not listed; read one source for it. A source whose ingest is still queued is not here yet. Re-ingesting a session moves it to the front, so a listing paged while sessions are written can repeat or miss one at a page boundary. A `session_id` narrows the listing to the source that session was stored as: one source or none, and none -- an empty page, not a 404 -- for a session never ingested, still queued, or another profile's.",
+        "operationId": "ListMemorySources",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "namespace",
+            "required": true,
+            "schema": {
+              "title": "Namespace",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "profile_id",
+            "required": true,
+            "schema": {
+              "title": "Profile Id",
+              "type": "string"
+            }
+          },
+          {
+            "description": "An ingested session, by the `session_id` it was ingested with. Narrows the request to the source that session was stored as.",
+            "in": "query",
+            "name": "session_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 128,
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Session Id"
+            }
+          },
+          {
+            "description": "The page to return, counting from 1. Bounded in depth: (page[number] - 1) * page[size] may be at most 10000.",
+            "in": "query",
+            "name": "page[number]",
+            "required": false,
+            "schema": {
+              "default": 1,
+              "maximum": 10001,
+              "minimum": 1,
+              "title": "Number",
+              "type": "integer"
+            }
+          },
+          {
+            "description": "How many results a page holds.",
+            "in": "query",
+            "name": "page[size]",
+            "required": false,
+            "schema": {
+              "default": 20,
+              "maximum": 100,
+              "minimum": 1,
+              "title": "Size",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "data": [
+                    {
+                      "created_at": "2026-08-26T21:14:11Z",
+                      "id": "b1e6c0a2-4f3d-4a2e-9c7b-8e1f2a3b4c5d",
+                      "memory_count": 3,
+                      "session_id": "conv_8901",
+                      "updated_at": "2026-08-26T21:14:11Z"
+                    },
+                    {
+                      "created_at": "2026-08-25T09:02:44Z",
+                      "id": "9af23d17-2b6c-4d8e-a1f0-3c4b5d6e7f80",
+                      "memory_count": 1,
+                      "session_id": null,
+                      "updated_at": "2026-08-25T09:02:44Z"
+                    }
+                  ],
+                  "meta": {
+                    "page_number": 1,
+                    "page_size": 20,
+                    "total_pages": 1,
+                    "total_results": 2
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/SourceListResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "errors": [
+                    {
+                      "code": "10009",
+                      "detail": "Could not find any usable credentials in the request.",
+                      "meta": {
+                        "url": "https://developers.telnyx.com/docs/overview/errors/10009"
+                      },
+                      "source": {
+                        "pointer": "/"
+                      },
+                      "title": "Authentication failed"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/TelnyxErrors"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "errors": [
+                    {
+                      "code": "namespace_not_found",
+                      "detail": "no such namespace"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/TelnyxErrors"
+                }
+              }
+            },
+            "description": "The namespace does not exist"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "errors": [
+                    {
+                      "code": "invalid_request",
+                      "detail": "limit is no longer supported: page with page[number] and page[size] instead"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/TelnyxErrors"
+                }
+              }
+            },
+            "description": "Invalid request"
+          },
+          "502": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "errors": [
+                    {
+                      "code": "upstream_error",
+                      "detail": "the memory dataplane is unavailable"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/TelnyxErrors"
+                }
+              }
+            },
+            "description": "Upstream error"
+          }
+        },
+        "summary": "List a profile's sources, most recently written first",
+        "tags": [
+          "Sources"
+        ]
+      }
+    },
+    "/ai/memory/namespaces/{namespace}/profiles/{profile_id}/sources/{source_id}": {
+      "delete": {
+        "description": "Deletes one source -- an ingested session or a remembered fact -- together with the memories derived from it. A memory derived from this source and others is deleted too, and derived again from what remains in the background. It answers only once the source is gone. A source that is not there -- never stored, another profile's, or already deleted -- answers 404, so on a `502` or a `504` repeat the identical request and read a 404 as done. An ingest of the same session that is still queued is not cancelled, and stores the session again when it runs. Nothing here can be undone.",
+        "operationId": "ForgetSource",
+        "parameters": [
+          {
+            "description": "The namespace. `default` exists for every organization.",
+            "in": "path",
+            "name": "namespace",
+            "required": true,
+            "schema": {
+              "description": "The namespace. `default` exists for every organization.",
+              "title": "Namespace",
+              "type": "string"
+            }
+          },
+          {
+            "description": "The profile: your identifier for the user, caller or agent this memory is about.",
+            "in": "path",
+            "name": "profile_id",
+            "required": true,
+            "schema": {
+              "description": "The profile: your identifier for the user, caller or agent this memory is about.",
+              "title": "Profile Id",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Identifies one source within its profile: an ingested session, or one remembered fact. Returned by `ingest` and `remember` when the write is accepted. Re-ingesting a session keeps its source id.",
+            "in": "path",
+            "name": "source_id",
+            "required": true,
+            "schema": {
+              "description": "Identifies one source within its profile: an ingested session, or one remembered fact. Returned by `ingest` and `remember` when the write is accepted. Re-ingesting a session keeps its source id.",
+              "title": "Source Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "data": {
+                    "memories_deleted": 3,
+                    "profile_id": "caller:+13128675309",
+                    "source_id": "b1e6c0a2-4f3d-4a2e-9c7b-8e1f2a3b4c5d"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ForgetSourceResponse"
+                }
+              }
+            },
+            "description": "The source and its memories are gone"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "errors": [
+                    {
+                      "code": "10009",
+                      "detail": "Could not find any usable credentials in the request.",
+                      "meta": {
+                        "url": "https://developers.telnyx.com/docs/overview/errors/10009"
+                      },
+                      "source": {
+                        "pointer": "/"
+                      },
+                      "title": "Authentication failed"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/TelnyxErrors"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "errors": [
+                    {
+                      "code": "source_not_found",
+                      "detail": "no such source"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/TelnyxErrors"
+                }
+              }
+            },
+            "description": "The source does not exist"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "errors": [
+                    {
+                      "code": "invalid_request",
+                      "detail": "source id must be a UUID"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/TelnyxErrors"
+                }
+              }
+            },
+            "description": "Invalid request"
+          },
+          "502": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "errors": [
+                    {
+                      "code": "upstream_error",
+                      "detail": "the memory dataplane is unavailable"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/TelnyxErrors"
+                }
+              }
+            },
+            "description": "Upstream error"
+          }
+        },
+        "summary": "Forget one source",
+        "tags": [
+          "Sources"
+        ]
+      },
+      "get": {
+        "description": "One source and its content, as it was stored: an ingested session's payload or a remembered fact. A source whose ingest is still queued answers 404 until it has been stored.",
+        "operationId": "GetMemorySource",
+        "parameters": [
+          {
+            "description": "The namespace. `default` exists for every organization.",
+            "in": "path",
+            "name": "namespace",
+            "required": true,
+            "schema": {
+              "description": "The namespace. `default` exists for every organization.",
+              "title": "Namespace",
+              "type": "string"
+            }
+          },
+          {
+            "description": "The profile: your identifier for the user, caller or agent this memory is about.",
+            "in": "path",
+            "name": "profile_id",
+            "required": true,
+            "schema": {
+              "description": "The profile: your identifier for the user, caller or agent this memory is about.",
+              "title": "Profile Id",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Identifies one source within its profile: an ingested session, or one remembered fact. Returned by `ingest` and `remember` when the write is accepted. Re-ingesting a session keeps its source id.",
+            "in": "path",
+            "name": "source_id",
+            "required": true,
+            "schema": {
+              "description": "Identifies one source within its profile: an ingested session, or one remembered fact. Returned by `ingest` and `remember` when the write is accepted. Re-ingesting a session keeps its source id.",
+              "title": "Source Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "data": {
+                    "content": {
+                      "messages": [
+                        {
+                          "content": "invoices go to 220 W Chicago Ave now",
+                          "role": "user"
+                        }
+                      ]
+                    },
+                    "created_at": "2026-08-26T21:14:11Z",
+                    "id": "b1e6c0a2-4f3d-4a2e-9c7b-8e1f2a3b4c5d",
+                    "memory_count": 3,
+                    "session_id": "conv_8901",
+                    "updated_at": "2026-08-26T21:14:11Z"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/SourceResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "errors": [
+                    {
+                      "code": "10009",
+                      "detail": "Could not find any usable credentials in the request.",
+                      "meta": {
+                        "url": "https://developers.telnyx.com/docs/overview/errors/10009"
+                      },
+                      "source": {
+                        "pointer": "/"
+                      },
+                      "title": "Authentication failed"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/TelnyxErrors"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "errors": [
+                    {
+                      "code": "source_not_found",
+                      "detail": "no such source"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/TelnyxErrors"
+                }
+              }
+            },
+            "description": "The source does not exist"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "errors": [
+                    {
+                      "code": "invalid_request",
+                      "detail": "source id must be a UUID"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/TelnyxErrors"
+                }
+              }
+            },
+            "description": "Invalid request"
+          },
+          "502": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "errors": [
+                    {
+                      "code": "upstream_error",
+                      "detail": "the memory dataplane is unavailable"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/TelnyxErrors"
+                }
+              }
+            },
+            "description": "Upstream error"
+          }
+        },
+        "summary": "Read one source, with what was stored",
+        "tags": [
+          "Sources"
+        ]
+      }
+    }
+  },
+  "security": [
+    {
+      "bearerAuth": []
+    }
+  ],
+  "servers": [
+    {
+      "description": "Version 2.0.0 of the Telnyx API",
+      "url": "https://api.telnyx.com/v2"
+    }
+  ]
+}

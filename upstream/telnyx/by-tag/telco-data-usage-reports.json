@@ -1,0 +1,748 @@
+{
+  "components": {
+    "schemas": {
+      "TelcoDataAggregation": {
+        "properties": {
+          "currency": {
+            "description": "Currency code",
+            "example": "USD",
+            "type": "string"
+          },
+          "total_cost": {
+            "description": "Total cost for this aggregation",
+            "example": 0.009,
+            "type": "number"
+          },
+          "total_dips": {
+            "description": "Total number of lookups performed",
+            "example": 3,
+            "type": "integer"
+          },
+          "type": {
+            "description": "Type of telco data lookup",
+            "example": "CNAM",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "TelcoDataGetUsageReportByIdResponse": {
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/TelcoDataUsageReportResponse"
+          }
+        },
+        "type": "object"
+      },
+      "TelcoDataGetUsageReportsResponse": {
+        "properties": {
+          "data": {
+            "items": {
+              "$ref": "#/components/schemas/TelcoDataUsageReportResponse"
+            },
+            "type": "array"
+          },
+          "meta": {
+            "$ref": "#/components/schemas/standard_PaginationMeta"
+          }
+        },
+        "type": "object"
+      },
+      "TelcoDataPostUsageReportResponse": {
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/TelcoDataUsageReportResponse"
+          }
+        },
+        "type": "object"
+      },
+      "TelcoDataUsageRecord": {
+        "properties": {
+          "aggregations": {
+            "description": "List of aggregations by lookup type",
+            "items": {
+              "$ref": "#/components/schemas/TelcoDataAggregation"
+            },
+            "type": "array"
+          },
+          "record_type": {
+            "description": "Record type identifier",
+            "example": "TelcoDataUsageRecord",
+            "type": "string"
+          },
+          "user_id": {
+            "description": "User ID",
+            "example": "d37bdd47-f301-42ec-b2ad-5a0465bfb632",
+            "format": "uuid",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "TelcoDataUsageReportResponse": {
+        "description": "Telco data usage report response",
+        "properties": {
+          "aggregation_type": {
+            "description": "Type of aggregation used in the report",
+            "example": "ALL",
+            "type": "string"
+          },
+          "created_at": {
+            "description": "Timestamp when the report was created",
+            "example": "2025-12-02T20:20:57.196925Z",
+            "format": "date-time",
+            "type": "string"
+          },
+          "end_date": {
+            "description": "End date of the report period",
+            "example": "2025-12-01",
+            "format": "date",
+            "type": "string"
+          },
+          "id": {
+            "description": "Unique identifier for the report",
+            "example": "9783f4d7-0bfc-427a-9d6b-bc659ad16e5b",
+            "format": "uuid",
+            "type": "string"
+          },
+          "managed_accounts": {
+            "description": "List of managed account IDs included in the report",
+            "example": [],
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "record_type": {
+            "description": "Record type identifier",
+            "example": "TelcoDataUsageReport",
+            "type": "string"
+          },
+          "report_url": {
+            "description": "URL to download the complete report",
+            "example": "https://portal-cdrs-usage.s3.amazonaws.com/telco_data_usage_report_2025-12-02.csv",
+            "type": "string"
+          },
+          "result": {
+            "description": "Array of usage records",
+            "items": {
+              "$ref": "#/components/schemas/TelcoDataUsageRecord"
+            },
+            "type": "array"
+          },
+          "start_date": {
+            "description": "Start date of the report period",
+            "example": "2025-11-01",
+            "format": "date",
+            "type": "string"
+          },
+          "status": {
+            "description": "Current status of the report",
+            "example": "COMPLETE",
+            "type": "string"
+          },
+          "updated_at": {
+            "description": "Timestamp when the report was last updated",
+            "example": "2025-12-02T20:21:08.237091Z",
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "TelcoDataUsageRequest": {
+        "properties": {
+          "aggregationType": {
+            "description": "Type of aggregation for the report",
+            "enum": [
+              "ALL",
+              "BY_ORGANIZATION_MEMBER"
+            ],
+            "example": "ALL",
+            "type": "string"
+          },
+          "endDate": {
+            "description": "End date for the usage report",
+            "example": "2025-02-10",
+            "format": "date",
+            "type": "string"
+          },
+          "managedAccounts": {
+            "description": "List of managed accounts to include in the report",
+            "example": [
+              "f47ac10b-58cc-4372-a567-0e02b2c3d479",
+              "6ba7b810-9dad-11d1-80b4-00c04fd430c8"
+            ],
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "startDate": {
+            "description": "Start date for the usage report",
+            "example": "2025-02-10",
+            "format": "date",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "standard_PaginationMeta": {
+        "properties": {
+          "page_number": {
+            "example": 2,
+            "format": "int32",
+            "type": "integer"
+          },
+          "page_size": {
+            "example": 25,
+            "format": "int32",
+            "type": "integer"
+          },
+          "total_pages": {
+            "example": 3,
+            "format": "int32",
+            "type": "integer"
+          },
+          "total_results": {
+            "example": 55,
+            "format": "int32",
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "standard_PaginationMeta_ffba4faa88": {
+        "properties": {
+          "page_number": {
+            "example": 2,
+            "format": "int32",
+            "type": "integer"
+          },
+          "page_size": {
+            "example": 25,
+            "format": "int32",
+            "type": "integer"
+          },
+          "total_pages": {
+            "example": 3,
+            "format": "int32",
+            "type": "integer"
+          },
+          "total_results": {
+            "example": 55,
+            "format": "int32",
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "standard_TelcoDataGetUsageReportsResponse": {
+        "properties": {
+          "data": {
+            "items": {
+              "$ref": "#/components/schemas/TelcoDataUsageReportResponse"
+            },
+            "type": "array"
+          },
+          "meta": {
+            "$ref": "#/components/schemas/standard_PaginationMeta_ffba4faa88"
+          }
+        },
+        "type": "object"
+      }
+    },
+    "securitySchemes": {
+      "BearerAuth": {
+        "bearerFormat": "API key",
+        "description": "Telnyx API key supplied as `Authorization: Bearer \u003ctoken\u003e`. In production, auth may be validated by the API gateway and forwarded via Telnyx auth headers.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "Payment": {
+        "description": "Machine Payment Protocol credential used on paid retries, sent as `Authorization: Payment ...`. Obtained by paying a challenge returned in the `WWW-Authenticate` header of a 402 response. This is not a Telnyx API key; initial challenge requests use standard bearer authentication instead.",
+        "in": "header",
+        "name": "Authorization",
+        "type": "apiKey"
+      },
+      "agent-memory_bearerAuth": {
+        "description": "Telnyx API key",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "bearerAuth": {
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "branded-calling_bearerAuth": {
+        "description": "Telnyx API key. Generate one at https://portal.telnyx.com/#/app/api-keys.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "collections_bearerAuth": {
+        "description": "Telnyx API key. Collections and results are automatically scoped to the authenticated user's organization.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "number-reputation_bearerAuth": {
+        "description": "Telnyx API key. Generate one at https://portal.telnyx.com/#/app/api-keys.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "oauthClientAuth": {
+        "description": "OAuth 2.0 authentication for Telnyx API and MCP integrations",
+        "flows": {
+          "authorizationCode": {
+            "authorizationUrl": "https://api.telnyx.com/v2/oauth/authorize",
+            "refreshUrl": "https://api.telnyx.com/v2/oauth/token",
+            "scopes": {
+              "admin": "Administrative access to Telnyx resources"
+            },
+            "tokenUrl": "https://api.telnyx.com/v2/oauth/token"
+          },
+          "clientCredentials": {
+            "scopes": {
+              "admin": "Administrative access to Telnyx resources"
+            },
+            "tokenUrl": "https://api.telnyx.com/v2/oauth/token"
+          }
+        },
+        "type": "oauth2"
+      },
+      "outbound-voice-profiles_bearerAuth": {
+        "bearerFormat": "JWT",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "pay-connectors_bearerAuth": {
+        "description": "Telnyx API key, not the processor bearer token.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "pronunciation-dicts_bearerAuth": {
+        "description": "Telnyx API v2 key. Obtain from https://portal.telnyx.com",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "rcs-registration_bearerAuth": {
+        "bearerFormat": "API key",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "stored-payment-transactions_bearerAuth": {
+        "bearerFormat": "JWT",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "telnyxApiKey": {
+        "description": "Management-only Telnyx account credential.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "transcriptions-search_bearerAuth": {
+        "description": "Telnyx API key. Results are automatically scoped to the authenticated user's organization.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "web-search_bearerAuth": {
+        "description": "Telnyx API key",
+        "scheme": "bearer",
+        "type": "http"
+      }
+    }
+  },
+  "info": {
+    "contact": {
+      "email": "support@telnyx.com"
+    },
+    "description": "SIP trunking, SMS, MMS, Call Control and Telephony Data Services.",
+    "title": "Telnyx API",
+    "version": "2.0.0",
+    "x-endpoint-cost": "light",
+    "x-latency-category": "responsive"
+  },
+  "openapi": "3.1.0",
+  "paths": {
+    "/legacy/reporting/usage_reports/number_lookup": {
+      "get": {
+        "description": "Retrieve a paginated list of telco data usage reports",
+        "operationId": "getTelcoDataUsageReports",
+        "parameters": [
+          {
+            "description": "Page number to retrieve (1-based).",
+            "in": "query",
+            "name": "page",
+            "schema": {
+              "format": "int32",
+              "type": "integer"
+            }
+          },
+          {
+            "description": "Filter results by per page.",
+            "in": "query",
+            "name": "per_page",
+            "schema": {
+              "format": "int32",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/standard_TelcoDataGetUsageReportsResponse"
+                }
+              }
+            },
+            "description": "Successfully retrieved telco data usage reports"
+          },
+          "400": {
+            "description": "Invalid request parameters"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        },
+        "summary": "List telco data usage reports",
+        "tags": [
+          "Telco Data Usage Reports"
+        ],
+        "x-latency-category": "responsive"
+      },
+      "post": {
+        "description": "Submits a new telco data (number lookup) usage report request. The report is generated asynchronously; retrieve it by its identifier once ready.",
+        "operationId": "submitTelcoDataUsageReport",
+        "requestBody": {
+          "content": {
+            "*/*": {
+              "schema": {
+                "$ref": "#/components/schemas/TelcoDataUsageRequest"
+              }
+            }
+          },
+          "description": "Telco data usage request data",
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TelcoDataPostUsageReportResponse"
+                }
+              }
+            },
+            "description": "Successfully submitted telco data usage report"
+          },
+          "400": {
+            "description": "Invalid request parameters"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "422": {
+            "description": "Unprocessable entity"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        },
+        "summary": "Submit telco data usage report",
+        "tags": [
+          "Telco Data Usage Reports"
+        ],
+        "x-latency-category": "responsive"
+      }
+    },
+    "/legacy/reporting/usage_reports/number_lookup/{id}": {
+      "delete": {
+        "description": "Delete a specific telco data usage report by its ID",
+        "operationId": "deleteTelcoDataUsageReport",
+        "parameters": [
+          {
+            "description": "Unique identifier of the resource.",
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successfully deleted telco data usage report"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Report not found"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        },
+        "summary": "Delete telco data usage report",
+        "tags": [
+          "Telco Data Usage Reports"
+        ],
+        "x-latency-category": "responsive"
+      },
+      "get": {
+        "description": "Retrieve a specific telco data usage report by its ID",
+        "operationId": "getTelcoDataUsageReport",
+        "parameters": [
+          {
+            "description": "Unique identifier of the resource.",
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TelcoDataGetUsageReportByIdResponse"
+                }
+              }
+            },
+            "description": "Successfully retrieved telco data usage report"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Report not found"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        },
+        "summary": "Get telco data usage report by ID",
+        "tags": [
+          "Telco Data Usage Reports"
+        ],
+        "x-latency-category": "responsive"
+      }
+    },
+    "/legacy_reporting/usage_reports/number_lookup": {
+      "get": {
+        "description": "Retrieve a paginated list of telco data usage reports",
+        "operationId": "getTelcoDataUsageReports",
+        "parameters": [
+          {
+            "description": "Page number to retrieve (1-based).",
+            "in": "query",
+            "name": "page",
+            "schema": {
+              "format": "int32",
+              "type": "integer"
+            }
+          },
+          {
+            "description": "Filter results by per page.",
+            "in": "query",
+            "name": "per_page",
+            "schema": {
+              "format": "int32",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TelcoDataGetUsageReportsResponse"
+                }
+              }
+            },
+            "description": "Successfully retrieved telco data usage reports"
+          },
+          "400": {
+            "description": "Invalid request parameters"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        },
+        "summary": "List telco data usage reports",
+        "tags": [
+          "Telco Data Usage Reports"
+        ],
+        "x-latency-category": "responsive"
+      },
+      "post": {
+        "description": "Submits a new telco data (number lookup) usage report request. The report is generated asynchronously; retrieve it by its identifier once ready.",
+        "operationId": "submitTelcoDataUsageReport",
+        "requestBody": {
+          "content": {
+            "*/*": {
+              "schema": {
+                "$ref": "#/components/schemas/TelcoDataUsageRequest"
+              }
+            }
+          },
+          "description": "Telco data usage request data",
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TelcoDataPostUsageReportResponse"
+                }
+              }
+            },
+            "description": "Successfully submitted telco data usage report"
+          },
+          "400": {
+            "description": "Invalid request parameters"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "422": {
+            "description": "Unprocessable entity"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        },
+        "summary": "Submit telco data usage report",
+        "tags": [
+          "Telco Data Usage Reports"
+        ],
+        "x-latency-category": "responsive"
+      }
+    },
+    "/legacy_reporting/usage_reports/number_lookup/{id}": {
+      "delete": {
+        "description": "Delete a specific telco data usage report by its ID",
+        "operationId": "deleteTelcoDataUsageReport",
+        "parameters": [
+          {
+            "description": "Unique identifier of the resource.",
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successfully deleted telco data usage report"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Report not found"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        },
+        "summary": "Delete telco data usage report",
+        "tags": [
+          "Telco Data Usage Reports"
+        ],
+        "x-latency-category": "responsive"
+      },
+      "get": {
+        "description": "Retrieve a specific telco data usage report by its ID",
+        "operationId": "getTelcoDataUsageReport",
+        "parameters": [
+          {
+            "description": "Unique identifier of the resource.",
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TelcoDataGetUsageReportByIdResponse"
+                }
+              }
+            },
+            "description": "Successfully retrieved telco data usage report"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Report not found"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        },
+        "summary": "Get telco data usage report by ID",
+        "tags": [
+          "Telco Data Usage Reports"
+        ],
+        "x-latency-category": "responsive"
+      }
+    }
+  },
+  "security": [
+    {
+      "bearerAuth": []
+    }
+  ],
+  "servers": [
+    {
+      "description": "Version 2.0.0 of the Telnyx API",
+      "url": "https://api.telnyx.com/v2"
+    }
+  ]
+}

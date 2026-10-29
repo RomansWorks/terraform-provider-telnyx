@@ -1,0 +1,1438 @@
+{
+  "components": {
+    "parameters": {
+      "TrafficPolicyProfileId": {
+        "description": "Identifies the traffic policy profile.",
+        "in": "path",
+        "name": "id",
+        "required": true,
+        "schema": {
+          "example": "6a09cdc3-8948-47f0-aa62-74ac943d6c58",
+          "format": "uuid",
+          "type": "string"
+        }
+      },
+      "wireless_PageNumber": {
+        "description": "The page number to load.",
+        "in": "query",
+        "name": "page[number]",
+        "schema": {
+          "default": 1,
+          "minimum": 1,
+          "type": "integer"
+        }
+      },
+      "wireless_PageNumber_c5290d5308": {
+        "description": "The page number to load.",
+        "in": "query",
+        "name": "page[number]",
+        "schema": {
+          "default": 1,
+          "minimum": 1,
+          "type": "integer"
+        }
+      },
+      "wireless_PageSize": {
+        "description": "The size of the page.",
+        "in": "query",
+        "name": "page[size]",
+        "schema": {
+          "default": 20,
+          "maximum": 250,
+          "minimum": 1,
+          "type": "integer"
+        }
+      },
+      "wireless_PageSize_c5290d5308": {
+        "description": "The size of the page.",
+        "in": "query",
+        "name": "page[size]",
+        "schema": {
+          "default": 20,
+          "maximum": 250,
+          "minimum": 1,
+          "type": "integer"
+        }
+      }
+    },
+    "responses": {
+      "ResourceNotFound": {
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/documents_Error"
+            }
+          }
+        },
+        "description": "Resource not found"
+      },
+      "sim-cards-configuration_wireless_GenericErrorResponse": {
+        "content": {
+          "application/json": {
+            "example": {
+              "errors": [
+                {
+                  "code": "10007",
+                  "detail": "An unexpected error occured.",
+                  "title": "Unexpected error"
+                }
+              ]
+            },
+            "schema": {
+              "$ref": "#/components/schemas/wireless_Errors"
+            }
+          }
+        },
+        "description": "Unexpected error"
+      },
+      "sim-cards-configuration_wireless_UnprocessableEntity": {
+        "content": {
+          "application/json": {
+            "example": {
+              "errors": [
+                {
+                  "code": "10027",
+                  "detail": "The server understood the syntax of the request but was unable to process the instructions.",
+                  "title": "Unprocessable Entity"
+                }
+              ]
+            },
+            "schema": {
+              "$ref": "#/components/schemas/wireless_Errors"
+            }
+          }
+        },
+        "description": "Unprocessable entity. Check the 'detail' field in response for details."
+      },
+      "wireless_GenericErrorResponse_c5290d5308": {
+        "content": {
+          "application/json": {
+            "examples": {
+              "unexpectedError": {
+                "summary": "Unexpected API error",
+                "value": {
+                  "errors": [
+                    {
+                      "code": "10007",
+                      "detail": "An unexpected error occured.",
+                      "title": "Unexpected error"
+                    }
+                  ]
+                }
+              }
+            },
+            "schema": {
+              "$ref": "#/components/schemas/Errors"
+            }
+          }
+        },
+        "description": "Unexpected error"
+      },
+      "wireless_ResourceNotFound": {
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/wireless_Error"
+            }
+          }
+        },
+        "description": "Resource not found"
+      },
+      "wireless_UnprocessableEntity_c5290d5308": {
+        "content": {
+          "application/json": {
+            "examples": {
+              "unprocessableEntity": {
+                "summary": "Request could not be processed",
+                "value": {
+                  "errors": [
+                    {
+                      "code": "10027",
+                      "detail": "The server understood the syntax of the request but was unable to process the instructions.",
+                      "title": "Unprocessable Entity"
+                    }
+                  ]
+                }
+              }
+            },
+            "schema": {
+              "$ref": "#/components/schemas/Errors"
+            }
+          }
+        },
+        "description": "Unprocessable entity. Check the 'detail' field in response for details."
+      }
+    },
+    "schemas": {
+      "Error": {
+        "example": {
+          "code": "20207",
+          "description": "The street address provided is invalid.",
+          "source": {
+            "pointer": "/street_address"
+          },
+          "title": "Invalid street address"
+        },
+        "properties": {
+          "code": {
+            "type": "string",
+            "x-format": "int64"
+          },
+          "description": {
+            "type": "string"
+          },
+          "detail": {
+            "description": "A human-readable explanation of the error.",
+            "type": "string"
+          },
+          "meta": {
+            "additionalProperties": true,
+            "type": "object"
+          },
+          "source": {
+            "properties": {
+              "parameter": {
+                "description": "Indicates which query parameter caused the error.",
+                "type": "string"
+              },
+              "pointer": {
+                "description": "JSON pointer (RFC6901) to the offending entity.",
+                "format": "json-pointer",
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
+          "title": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "title"
+        ],
+        "type": "object"
+      },
+      "Errors": {
+        "properties": {
+          "errors": {
+            "items": {
+              "$ref": "#/components/schemas/Error"
+            },
+            "type": "array"
+          }
+        },
+        "type": "object"
+      },
+      "PaginationMeta": {
+        "properties": {
+          "page_number": {
+            "example": 2,
+            "type": "integer"
+          },
+          "page_size": {
+            "example": 25,
+            "type": "integer"
+          },
+          "total_pages": {
+            "example": 3,
+            "type": "integer"
+          },
+          "total_results": {
+            "example": 55,
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "TrafficPolicyProfile": {
+        "properties": {
+          "created_at": {
+            "description": "ISO 8601 formatted date-time indicating when the resource was created.",
+            "example": "2018-02-02T22:25:27.521Z",
+            "readOnly": true,
+            "type": "string"
+          },
+          "domains": {
+            "description": "Array of domain names.",
+            "example": [
+              "www.hbomax.com",
+              "netflix.com"
+            ],
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "id": {
+            "description": "Identifies the resource.",
+            "example": "6a09cdc3-8948-47f0-aa62-74ac943d6c58",
+            "format": "uuid",
+            "readOnly": true,
+            "type": "string"
+          },
+          "ip_ranges": {
+            "description": "Array of IP ranges in CIDR notation.",
+            "example": [
+              "10.64.0.0/24",
+              "10.64.0.0/25"
+            ],
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "limit_bw_kbps": {
+            "description": "Bandwidth limit in kbps.",
+            "example": 512,
+            "type": [
+              "integer",
+              "null"
+            ]
+          },
+          "record_type": {
+            "example": "traffic_policy_profile",
+            "readOnly": true,
+            "type": "string"
+          },
+          "services": {
+            "description": "Array of PCEF service IDs included in the profile.",
+            "example": [
+              "service_123",
+              "service_456"
+            ],
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "type": {
+            "description": "The type of the traffic policy profile.",
+            "enum": [
+              "whitelist",
+              "blacklist",
+              "throttling"
+            ],
+            "example": "whitelist",
+            "type": "string"
+          },
+          "updated_at": {
+            "description": "ISO 8601 formatted date-time indicating when the resource was updated.",
+            "example": "2018-02-02T22:25:27.521Z",
+            "readOnly": true,
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "WirelessPcrfService": {
+        "properties": {
+          "group": {
+            "description": "The group the service belongs to.",
+            "example": "Streaming",
+            "type": "string"
+          },
+          "id": {
+            "description": "The service identifier.",
+            "example": "service_123",
+            "type": "string"
+          },
+          "name": {
+            "description": "The name of the service.",
+            "example": "Netflix",
+            "type": "string"
+          },
+          "resource_type": {
+            "example": "wireless_pcrf_service",
+            "readOnly": true,
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "documents_Error": {
+        "properties": {
+          "code": {
+            "type": "string"
+          },
+          "detail": {
+            "type": "string"
+          },
+          "meta": {
+            "additionalProperties": true,
+            "type": "object"
+          },
+          "source": {
+            "properties": {
+              "parameter": {
+                "description": "Indicates which query parameter caused the error.",
+                "type": "string"
+              },
+              "pointer": {
+                "description": "JSON pointer (RFC6901) to the offending entity.",
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
+          "title": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "title"
+        ],
+        "type": "object"
+      },
+      "wireless_Error": {
+        "properties": {
+          "code": {
+            "type": "string"
+          },
+          "detail": {
+            "type": "string"
+          },
+          "meta": {
+            "additionalProperties": true,
+            "type": "object"
+          },
+          "source": {
+            "properties": {
+              "parameter": {
+                "description": "Indicates which query parameter caused the error.",
+                "type": "string"
+              },
+              "pointer": {
+                "description": "JSON pointer (RFC6901) to the offending entity.",
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
+          "title": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "title"
+        ],
+        "type": "object"
+      },
+      "wireless_Errors": {
+        "properties": {
+          "errors": {
+            "items": {
+              "$ref": "#/components/schemas/wireless_Error"
+            },
+            "type": "array"
+          }
+        },
+        "type": "object"
+      }
+    },
+    "securitySchemes": {
+      "BearerAuth": {
+        "bearerFormat": "API key",
+        "description": "Telnyx API key supplied as `Authorization: Bearer \u003ctoken\u003e`. In production, auth may be validated by the API gateway and forwarded via Telnyx auth headers.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "Payment": {
+        "description": "Machine Payment Protocol credential used on paid retries, sent as `Authorization: Payment ...`. Obtained by paying a challenge returned in the `WWW-Authenticate` header of a 402 response. This is not a Telnyx API key; initial challenge requests use standard bearer authentication instead.",
+        "in": "header",
+        "name": "Authorization",
+        "type": "apiKey"
+      },
+      "agent-memory_bearerAuth": {
+        "description": "Telnyx API key",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "bearerAuth": {
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "branded-calling_bearerAuth": {
+        "description": "Telnyx API key. Generate one at https://portal.telnyx.com/#/app/api-keys.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "collections_bearerAuth": {
+        "description": "Telnyx API key. Collections and results are automatically scoped to the authenticated user's organization.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "number-reputation_bearerAuth": {
+        "description": "Telnyx API key. Generate one at https://portal.telnyx.com/#/app/api-keys.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "oauthClientAuth": {
+        "description": "OAuth 2.0 authentication for Telnyx API and MCP integrations",
+        "flows": {
+          "authorizationCode": {
+            "authorizationUrl": "https://api.telnyx.com/v2/oauth/authorize",
+            "refreshUrl": "https://api.telnyx.com/v2/oauth/token",
+            "scopes": {
+              "admin": "Administrative access to Telnyx resources"
+            },
+            "tokenUrl": "https://api.telnyx.com/v2/oauth/token"
+          },
+          "clientCredentials": {
+            "scopes": {
+              "admin": "Administrative access to Telnyx resources"
+            },
+            "tokenUrl": "https://api.telnyx.com/v2/oauth/token"
+          }
+        },
+        "type": "oauth2"
+      },
+      "outbound-voice-profiles_bearerAuth": {
+        "bearerFormat": "JWT",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "pay-connectors_bearerAuth": {
+        "description": "Telnyx API key, not the processor bearer token.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "pronunciation-dicts_bearerAuth": {
+        "description": "Telnyx API v2 key. Obtain from https://portal.telnyx.com",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "rcs-registration_bearerAuth": {
+        "bearerFormat": "API key",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "stored-payment-transactions_bearerAuth": {
+        "bearerFormat": "JWT",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "telnyxApiKey": {
+        "description": "Management-only Telnyx account credential.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "transcriptions-search_bearerAuth": {
+        "description": "Telnyx API key. Results are automatically scoped to the authenticated user's organization.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "web-search_bearerAuth": {
+        "description": "Telnyx API key",
+        "scheme": "bearer",
+        "type": "http"
+      }
+    }
+  },
+  "info": {
+    "contact": {
+      "email": "support@telnyx.com"
+    },
+    "description": "SIP trunking, SMS, MMS, Call Control and Telephony Data Services.",
+    "title": "Telnyx API",
+    "version": "2.0.0",
+    "x-endpoint-cost": "light",
+    "x-latency-category": "responsive"
+  },
+  "openapi": "3.1.0",
+  "paths": {
+    "/traffic/policy/profiles": {
+      "get": {
+        "description": "Get all traffic policy profiles belonging to the user that match the given filters.",
+        "operationId": "GetTrafficPolicyProfiles",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/wireless_PageNumber"
+          },
+          {
+            "$ref": "#/components/parameters/wireless_PageSize"
+          },
+          {
+            "description": "Filter by traffic policy profile type.",
+            "example": "whitelist",
+            "in": "query",
+            "name": "filter[type]",
+            "required": false,
+            "schema": {
+              "enum": [
+                "whitelist",
+                "blacklist",
+                "throttling"
+              ],
+              "type": "string"
+            }
+          },
+          {
+            "description": "Filter by service ID.",
+            "example": "service_123",
+            "in": "query",
+            "name": "filter[service]",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Sorts traffic policy profiles by the given field. Defaults to ascending order unless field is prefixed with a minus sign.",
+            "in": "query",
+            "name": "sort",
+            "required": false,
+            "schema": {
+              "enum": [
+                "service",
+                "-service",
+                "type",
+                "-type"
+              ],
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "items": {
+                        "$ref": "#/components/schemas/TrafficPolicyProfile"
+                      },
+                      "type": "array"
+                    },
+                    "meta": {
+                      "$ref": "#/components/schemas/PaginationMeta"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "default": {
+            "$ref": "#/components/responses/sim-cards-configuration_wireless_GenericErrorResponse"
+          }
+        },
+        "summary": "Get all traffic policy profiles",
+        "tags": [
+          "Traffic Policy Profiles"
+        ],
+        "x-latency-category": "responsive"
+      },
+      "post": {
+        "description": "Create a new traffic policy profile. At least one of `services`, `ip_ranges`, or `domains` must be provided.",
+        "operationId": "CreateTrafficPolicyProfile",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "domains": {
+                    "description": "Array of domain names.",
+                    "example": [
+                      "www.hbomax.com",
+                      "netflix.com"
+                    ],
+                    "items": {
+                      "type": "string"
+                    },
+                    "type": "array"
+                  },
+                  "ip_ranges": {
+                    "description": "Array of IP ranges in CIDR notation.",
+                    "example": [
+                      "10.64.0.0/24",
+                      "10.64.0.0/25"
+                    ],
+                    "items": {
+                      "type": "string"
+                    },
+                    "type": "array"
+                  },
+                  "limit_bw_kbps": {
+                    "description": "Bandwidth limit in kbps. Must be 512 or 1024.",
+                    "enum": [
+                      512,
+                      1024
+                    ],
+                    "example": 512,
+                    "type": "integer"
+                  },
+                  "services": {
+                    "description": "Array of PCEF service IDs to include in the profile.",
+                    "example": [
+                      "service_123",
+                      "service_456"
+                    ],
+                    "items": {
+                      "type": "string"
+                    },
+                    "type": "array"
+                  },
+                  "type": {
+                    "description": "The type of the traffic policy profile.",
+                    "enum": [
+                      "whitelist",
+                      "blacklist"
+                    ],
+                    "example": "whitelist",
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "type"
+                ],
+                "type": "object"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/TrafficPolicyProfile"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "$ref": "#/components/responses/sim-cards-configuration_wireless_UnprocessableEntity"
+          },
+          "default": {
+            "$ref": "#/components/responses/sim-cards-configuration_wireless_GenericErrorResponse"
+          }
+        },
+        "summary": "Create a traffic policy profile",
+        "tags": [
+          "Traffic Policy Profiles"
+        ],
+        "x-latency-category": "responsive"
+      }
+    },
+    "/traffic/policy/profiles/services": {
+      "get": {
+        "description": "Get all available PCEF services that can be used in traffic policy profiles.",
+        "operationId": "GetTrafficPolicyProfileServices",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/wireless_PageNumber"
+          },
+          {
+            "$ref": "#/components/parameters/wireless_PageSize"
+          },
+          {
+            "description": "Filter services by group.",
+            "example": "Social Media",
+            "in": "query",
+            "name": "filter[group]",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Filter services by name.",
+            "example": "Netflix",
+            "in": "query",
+            "name": "filter[name]",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "items": {
+                        "$ref": "#/components/schemas/WirelessPcrfService"
+                      },
+                      "type": "array"
+                    },
+                    "meta": {
+                      "$ref": "#/components/schemas/PaginationMeta"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "default": {
+            "$ref": "#/components/responses/sim-cards-configuration_wireless_GenericErrorResponse"
+          }
+        },
+        "summary": "Get all available traffic policy profile services",
+        "tags": [
+          "Traffic Policy Profiles"
+        ],
+        "x-latency-category": "responsive"
+      }
+    },
+    "/traffic/policy/profiles/{id}": {
+      "delete": {
+        "description": "Permanently deletes the specified traffic policy profile from your account.",
+        "operationId": "DeleteTrafficPolicyProfile",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/TrafficPolicyProfileId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "properties": {
+                        "id": {
+                          "description": "Identifies the resource.",
+                          "example": "6a09cdc3-8948-47f0-aa62-74ac943d6c58",
+                          "format": "uuid",
+                          "type": "string"
+                        }
+                      },
+                      "type": "object"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "404": {
+            "$ref": "#/components/responses/wireless_ResourceNotFound"
+          },
+          "default": {
+            "$ref": "#/components/responses/sim-cards-configuration_wireless_GenericErrorResponse"
+          }
+        },
+        "summary": "Delete a traffic policy profile",
+        "tags": [
+          "Traffic Policy Profiles"
+        ],
+        "x-latency-category": "responsive"
+      },
+      "get": {
+        "description": "Returns the details regarding a specific traffic policy profile.",
+        "operationId": "GetTrafficPolicyProfile",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/TrafficPolicyProfileId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/TrafficPolicyProfile"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "404": {
+            "$ref": "#/components/responses/wireless_ResourceNotFound"
+          },
+          "default": {
+            "$ref": "#/components/responses/sim-cards-configuration_wireless_GenericErrorResponse"
+          }
+        },
+        "summary": "Get a traffic policy profile",
+        "tags": [
+          "Traffic Policy Profiles"
+        ],
+        "x-latency-category": "responsive"
+      },
+      "patch": {
+        "description": "Updates the specified traffic policy profile and returns the updated profile.",
+        "operationId": "UpdateTrafficPolicyProfile",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/TrafficPolicyProfileId"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "domains": {
+                    "description": "Array of domain names.",
+                    "example": [
+                      "netflix.com"
+                    ],
+                    "items": {
+                      "type": "string"
+                    },
+                    "type": "array"
+                  },
+                  "ip_ranges": {
+                    "description": "Array of IP ranges in CIDR notation.",
+                    "example": [
+                      "10.64.0.0/24"
+                    ],
+                    "items": {
+                      "type": "string"
+                    },
+                    "type": "array"
+                  },
+                  "limit_bw_kbps": {
+                    "description": "Bandwidth limit in kbps. Must be 512 or 1024, or null to remove.",
+                    "enum": [
+                      512,
+                      1024,
+                      null
+                    ],
+                    "example": 1024,
+                    "type": [
+                      "integer",
+                      "null"
+                    ]
+                  },
+                  "services": {
+                    "description": "Array of PCEF service IDs to include in the profile.",
+                    "example": [
+                      "service_123"
+                    ],
+                    "items": {
+                      "type": "string"
+                    },
+                    "type": "array"
+                  },
+                  "type": {
+                    "description": "The type of the traffic policy profile.",
+                    "enum": [
+                      "whitelist",
+                      "blacklist",
+                      "throttling"
+                    ],
+                    "example": "whitelist",
+                    "type": "string"
+                  }
+                },
+                "type": "object"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/TrafficPolicyProfile"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "404": {
+            "$ref": "#/components/responses/wireless_ResourceNotFound"
+          },
+          "422": {
+            "$ref": "#/components/responses/sim-cards-configuration_wireless_UnprocessableEntity"
+          },
+          "default": {
+            "$ref": "#/components/responses/sim-cards-configuration_wireless_GenericErrorResponse"
+          }
+        },
+        "summary": "Update a traffic policy profile",
+        "tags": [
+          "Traffic Policy Profiles"
+        ],
+        "x-latency-category": "responsive"
+      }
+    },
+    "/traffic_policy_profiles": {
+      "get": {
+        "description": "Get all traffic policy profiles belonging to the user that match the given filters.",
+        "operationId": "GetTrafficPolicyProfiles",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/wireless_PageNumber_c5290d5308"
+          },
+          {
+            "$ref": "#/components/parameters/wireless_PageSize_c5290d5308"
+          },
+          {
+            "description": "Filter by traffic policy profile type.",
+            "example": "whitelist",
+            "in": "query",
+            "name": "filter[type]",
+            "required": false,
+            "schema": {
+              "enum": [
+                "whitelist",
+                "blacklist",
+                "throttling"
+              ],
+              "type": "string"
+            }
+          },
+          {
+            "description": "Filter by service ID.",
+            "example": "service_123",
+            "in": "query",
+            "name": "filter[service]",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Sorts traffic policy profiles by the given field. Defaults to ascending order unless field is prefixed with a minus sign.",
+            "in": "query",
+            "name": "sort",
+            "required": false,
+            "schema": {
+              "enum": [
+                "service",
+                "-service",
+                "type",
+                "-type"
+              ],
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "items": {
+                        "$ref": "#/components/schemas/TrafficPolicyProfile"
+                      },
+                      "type": "array"
+                    },
+                    "meta": {
+                      "$ref": "#/components/schemas/PaginationMeta"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "default": {
+            "$ref": "#/components/responses/wireless_GenericErrorResponse_c5290d5308"
+          }
+        },
+        "summary": "Get all traffic policy profiles",
+        "tags": [
+          "Traffic Policy Profiles"
+        ]
+      },
+      "post": {
+        "description": "Create a new traffic policy profile. At least one of `services`, `ip_ranges`, or `domains` must be provided.",
+        "operationId": "CreateTrafficPolicyProfile",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "domains": {
+                    "description": "Array of domain names.",
+                    "example": [
+                      "www.hbomax.com",
+                      "netflix.com"
+                    ],
+                    "items": {
+                      "type": "string"
+                    },
+                    "type": "array"
+                  },
+                  "ip_ranges": {
+                    "description": "Array of IP ranges in CIDR notation.",
+                    "example": [
+                      "10.64.0.0/24",
+                      "10.64.0.0/25"
+                    ],
+                    "items": {
+                      "type": "string"
+                    },
+                    "type": "array"
+                  },
+                  "limit_bw_kbps": {
+                    "description": "Bandwidth limit in kbps. Must be 512 or 1024.",
+                    "enum": [
+                      512,
+                      1024
+                    ],
+                    "example": 512,
+                    "type": "integer"
+                  },
+                  "services": {
+                    "description": "Array of PCEF service IDs to include in the profile.",
+                    "example": [
+                      "service_123",
+                      "service_456"
+                    ],
+                    "items": {
+                      "type": "string"
+                    },
+                    "type": "array"
+                  },
+                  "type": {
+                    "description": "The type of the traffic policy profile.",
+                    "enum": [
+                      "whitelist",
+                      "blacklist"
+                    ],
+                    "example": "whitelist",
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "type"
+                ],
+                "type": "object"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/TrafficPolicyProfile"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "$ref": "#/components/responses/wireless_UnprocessableEntity_c5290d5308"
+          },
+          "default": {
+            "$ref": "#/components/responses/wireless_GenericErrorResponse_c5290d5308"
+          }
+        },
+        "summary": "Create a traffic policy profile",
+        "tags": [
+          "Traffic Policy Profiles"
+        ]
+      }
+    },
+    "/traffic_policy_profiles/services": {
+      "get": {
+        "description": "Get all available PCEF services that can be used in traffic policy profiles.",
+        "operationId": "GetTrafficPolicyProfileServices",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/wireless_PageNumber_c5290d5308"
+          },
+          {
+            "$ref": "#/components/parameters/wireless_PageSize_c5290d5308"
+          },
+          {
+            "description": "Filter services by group.",
+            "example": "Social Media",
+            "in": "query",
+            "name": "filter[group]",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Filter services by name.",
+            "example": "Netflix",
+            "in": "query",
+            "name": "filter[name]",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "items": {
+                        "$ref": "#/components/schemas/WirelessPcrfService"
+                      },
+                      "type": "array"
+                    },
+                    "meta": {
+                      "$ref": "#/components/schemas/PaginationMeta"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "default": {
+            "$ref": "#/components/responses/wireless_GenericErrorResponse_c5290d5308"
+          }
+        },
+        "summary": "Get all available traffic policy profile services",
+        "tags": [
+          "Traffic Policy Profiles"
+        ]
+      }
+    },
+    "/traffic_policy_profiles/{id}": {
+      "delete": {
+        "description": "Permanently deletes the specified traffic policy profile from your account.",
+        "operationId": "DeleteTrafficPolicyProfile",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/TrafficPolicyProfileId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "properties": {
+                        "id": {
+                          "description": "Identifies the resource.",
+                          "example": "6a09cdc3-8948-47f0-aa62-74ac943d6c58",
+                          "format": "uuid",
+                          "type": "string"
+                        }
+                      },
+                      "type": "object"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "404": {
+            "$ref": "#/components/responses/ResourceNotFound"
+          },
+          "default": {
+            "$ref": "#/components/responses/wireless_GenericErrorResponse_c5290d5308"
+          }
+        },
+        "summary": "Delete a traffic policy profile",
+        "tags": [
+          "Traffic Policy Profiles"
+        ]
+      },
+      "get": {
+        "description": "Returns the details regarding a specific traffic policy profile.",
+        "operationId": "GetTrafficPolicyProfile",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/TrafficPolicyProfileId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/TrafficPolicyProfile"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "404": {
+            "$ref": "#/components/responses/ResourceNotFound"
+          },
+          "default": {
+            "$ref": "#/components/responses/wireless_GenericErrorResponse_c5290d5308"
+          }
+        },
+        "summary": "Get a traffic policy profile",
+        "tags": [
+          "Traffic Policy Profiles"
+        ]
+      },
+      "patch": {
+        "description": "Updates the specified traffic policy profile and returns the updated profile.",
+        "operationId": "UpdateTrafficPolicyProfile",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/TrafficPolicyProfileId"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "domains": {
+                    "description": "Array of domain names.",
+                    "example": [
+                      "netflix.com"
+                    ],
+                    "items": {
+                      "type": "string"
+                    },
+                    "type": "array"
+                  },
+                  "ip_ranges": {
+                    "description": "Array of IP ranges in CIDR notation.",
+                    "example": [
+                      "10.64.0.0/24"
+                    ],
+                    "items": {
+                      "type": "string"
+                    },
+                    "type": "array"
+                  },
+                  "limit_bw_kbps": {
+                    "description": "Bandwidth limit in kbps. Must be 512 or 1024, or null to remove.",
+                    "enum": [
+                      512,
+                      1024,
+                      null
+                    ],
+                    "example": 1024,
+                    "type": [
+                      "integer",
+                      "null"
+                    ]
+                  },
+                  "services": {
+                    "description": "Array of PCEF service IDs to include in the profile.",
+                    "example": [
+                      "service_123"
+                    ],
+                    "items": {
+                      "type": "string"
+                    },
+                    "type": "array"
+                  },
+                  "type": {
+                    "description": "The type of the traffic policy profile.",
+                    "enum": [
+                      "whitelist",
+                      "blacklist",
+                      "throttling"
+                    ],
+                    "example": "whitelist",
+                    "type": "string"
+                  }
+                },
+                "type": "object"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/TrafficPolicyProfile"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "404": {
+            "$ref": "#/components/responses/ResourceNotFound"
+          },
+          "422": {
+            "$ref": "#/components/responses/wireless_UnprocessableEntity_c5290d5308"
+          },
+          "default": {
+            "$ref": "#/components/responses/wireless_GenericErrorResponse_c5290d5308"
+          }
+        },
+        "summary": "Update a traffic policy profile",
+        "tags": [
+          "Traffic Policy Profiles"
+        ]
+      }
+    }
+  },
+  "security": [
+    {
+      "bearerAuth": []
+    }
+  ],
+  "servers": [
+    {
+      "description": "Version 2.0.0 of the Telnyx API",
+      "url": "https://api.telnyx.com/v2"
+    }
+  ]
+}

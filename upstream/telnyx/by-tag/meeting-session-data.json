@@ -1,0 +1,804 @@
+{
+  "components": {
+    "parameters": {
+      "After": {
+        "description": "Return results with a cursor position after this value.",
+        "in": "query",
+        "name": "after",
+        "required": false,
+        "schema": {
+          "default": 0,
+          "minimum": 0,
+          "type": "integer"
+        }
+      },
+      "Limit": {
+        "description": "Maximum number of results to return per page.",
+        "in": "query",
+        "name": "limit",
+        "required": false,
+        "schema": {
+          "default": 100,
+          "maximum": 1000,
+          "minimum": 1,
+          "type": "integer"
+        }
+      },
+      "MeetingSessionId": {
+        "description": "Unique identifier for the meeting session.",
+        "in": "path",
+        "name": "id",
+        "required": true,
+        "schema": {
+          "examples": [
+            "mtgsess_a1b2c3d4-e5f6-7890-abcd-ef1234567890"
+          ],
+          "type": "string"
+        }
+      },
+      "WaitSeconds": {
+        "description": "Long-poll duration in seconds. The server holds the connection open for up to this many seconds, waiting for new or updated results before returning an empty response. Set to 0 for an immediate response.",
+        "in": "query",
+        "name": "wait_seconds",
+        "required": false,
+        "schema": {
+          "default": 0,
+          "maximum": 25,
+          "minimum": 0,
+          "type": "integer"
+        }
+      }
+    },
+    "responses": {
+      "Forbidden": {
+        "content": {
+          "application/json": {
+            "example": {
+              "error": {
+                "code": "forbidden",
+                "message": "credential is not permitted"
+              }
+            },
+            "schema": {
+              "$ref": "#/components/schemas/meeting-sessions_ErrorResponse"
+            }
+          }
+        },
+        "description": "The authenticated credential is not permitted to perform this operation."
+      },
+      "MeetingReadAuthUnavailable": {
+        "content": {
+          "application/json": {
+            "example": {
+              "error": {
+                "code": "auth_unavailable",
+                "message": "authentication service unavailable"
+              }
+            },
+            "schema": {
+              "$ref": "#/components/schemas/meeting-sessions_ErrorResponse"
+            }
+          }
+        },
+        "description": "Authentication is temporarily unavailable."
+      },
+      "RecordingMediaAuthenticationUnavailable": {
+        "content": {
+          "application/json": {
+            "example": {
+              "error": {
+                "code": "auth_unavailable",
+                "message": "authentication service is unavailable"
+              }
+            },
+            "schema": {
+              "$ref": "#/components/schemas/meeting-sessions_ErrorResponse"
+            }
+          }
+        },
+        "description": "The authentication service is unavailable."
+      },
+      "RecordingMediaInvalidState": {
+        "content": {
+          "application/json": {
+            "example": {
+              "error": {
+                "code": "invalid_state",
+                "message": "provider recording media cannot be deleted while the meeting is in progress"
+              }
+            },
+            "schema": {
+              "$ref": "#/components/schemas/meeting-sessions_ErrorResponse"
+            }
+          }
+        },
+        "description": "Recording media cannot be deleted while the meeting is in progress."
+      },
+      "RecordingMediaProviderError": {
+        "content": {
+          "application/json": {
+            "example": {
+              "error": {
+                "code": "provider_error",
+                "message": "recording-media deletion outcome is unknown"
+              }
+            },
+            "schema": {
+              "$ref": "#/components/schemas/meeting-sessions_ErrorResponse"
+            }
+          }
+        },
+        "description": "The deletion request failed and the recording-media deletion outcome is unknown."
+      },
+      "RecordingMediaResourceNotFound": {
+        "content": {
+          "application/json": {
+            "example": {
+              "error": {
+                "code": "not_found",
+                "message": "meeting session not found"
+              }
+            },
+            "schema": {
+              "$ref": "#/components/schemas/meeting-sessions_ErrorResponse"
+            }
+          }
+        },
+        "description": "The meeting session does not exist or belongs to another account."
+      },
+      "RecordingMediaUnsupportedCapability": {
+        "content": {
+          "application/json": {
+            "example": {
+              "error": {
+                "code": "unsupported_capability",
+                "message": "provider recording-media deletion is not supported"
+              }
+            },
+            "schema": {
+              "$ref": "#/components/schemas/meeting-sessions_ErrorResponse"
+            }
+          }
+        },
+        "description": "Recording-media deletion is not supported for this session."
+      },
+      "TooManyRequests": {
+        "content": {
+          "application/json": {
+            "example": {
+              "error": {
+                "code": "auth_overloaded",
+                "message": "authentication temporarily overloaded"
+              }
+            },
+            "schema": {
+              "$ref": "#/components/schemas/meeting-sessions_ErrorResponse"
+            }
+          }
+        },
+        "description": "Authentication is temporarily overloaded. Retry after the number of seconds in `Retry-After`.",
+        "headers": {
+          "Retry-After": {
+            "description": "Seconds to wait before retrying.",
+            "required": true,
+            "schema": {
+              "maximum": 5,
+              "minimum": 1,
+              "type": "integer"
+            }
+          }
+        }
+      },
+      "meeting-sessions_BadRequest": {
+        "content": {
+          "application/json": {
+            "example": {
+              "error": {
+                "code": "invalid_request",
+                "message": "request is invalid"
+              }
+            },
+            "schema": {
+              "$ref": "#/components/schemas/meeting-sessions_ErrorResponse"
+            }
+          }
+        },
+        "description": "Bad Request"
+      },
+      "meeting-sessions_InternalServerError": {
+        "content": {
+          "application/json": {
+            "example": {
+              "error": {
+                "code": "internal_error",
+                "message": "internal server error"
+              }
+            },
+            "schema": {
+              "$ref": "#/components/schemas/meeting-sessions_ErrorResponse"
+            }
+          }
+        },
+        "description": "Internal Server Error"
+      },
+      "meeting-sessions_NotFound": {
+        "content": {
+          "application/json": {
+            "example": {
+              "error": {
+                "code": "not_found",
+                "message": "meeting session not found"
+              }
+            },
+            "schema": {
+              "$ref": "#/components/schemas/meeting-sessions_ErrorResponse"
+            }
+          }
+        },
+        "description": "Not Found"
+      },
+      "meeting-sessions_Unauthorized": {
+        "content": {
+          "application/json": {
+            "example": {
+              "error": {
+                "code": "unauthorized",
+                "message": "invalid or missing credentials"
+              }
+            },
+            "schema": {
+              "$ref": "#/components/schemas/meeting-sessions_ErrorResponse"
+            }
+          }
+        },
+        "description": "Unauthorized. On api.telnyx.com, authentication is enforced by the API gateway before the request reaches the Meeting service, so a missing or invalid API key returns the standard Telnyx error envelope (`{\"errors\": [{\"code\": \"10009\", ...}]}`) rather than the single-`error` shape below."
+      }
+    },
+    "schemas": {
+      "MeetingSessionEvent": {
+        "additionalProperties": false,
+        "properties": {
+          "occurred_at": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "payload": {
+            "additionalProperties": true,
+            "type": "object"
+          },
+          "seq": {
+            "type": "integer"
+          },
+          "type": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "seq",
+          "type",
+          "payload",
+          "occurred_at"
+        ],
+        "type": "object"
+      },
+      "MeetingSessionEventListResponse": {
+        "additionalProperties": false,
+        "properties": {
+          "data": {
+            "items": {
+              "$ref": "#/components/schemas/MeetingSessionEvent"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "data"
+        ],
+        "type": "object"
+      },
+      "MeetingSessionRecordingMediaDeletionResponse": {
+        "additionalProperties": false,
+        "example": {
+          "data": {
+            "deletion_status": "requested",
+            "meeting_session_id": "mtgsess_a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+            "provider": "telnyx",
+            "scope": "provider_recording_media"
+          }
+        },
+        "properties": {
+          "data": {
+            "additionalProperties": false,
+            "properties": {
+              "deletion_status": {
+                "enum": [
+                  "requested",
+                  "already_in_progress"
+                ],
+                "type": "string"
+              },
+              "meeting_session_id": {
+                "description": "The account-scoped Meeting Session identifier.",
+                "type": "string"
+              },
+              "provider": {
+                "const": "telnyx",
+                "type": "string"
+              },
+              "scope": {
+                "const": "provider_recording_media",
+                "type": "string"
+              }
+            },
+            "required": [
+              "meeting_session_id",
+              "provider",
+              "scope",
+              "deletion_status"
+            ],
+            "type": "object"
+          }
+        },
+        "required": [
+          "data"
+        ],
+        "type": "object"
+      },
+      "TranscriptSegment": {
+        "additionalProperties": false,
+        "example": {
+          "confidence": 0.98,
+          "occurred_at": "2025-01-15T10:00:12Z",
+          "relative_ts": 12.5,
+          "seq": 1,
+          "speaker_label": "Speaker 1",
+          "text": "Welcome to the project kickoff."
+        },
+        "properties": {
+          "confidence": {
+            "maximum": 1,
+            "minimum": 0,
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "occurred_at": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "relative_ts": {
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "seq": {
+            "type": "integer"
+          },
+          "speaker_label": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "text": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "seq",
+          "text",
+          "confidence",
+          "speaker_label",
+          "relative_ts",
+          "occurred_at"
+        ],
+        "type": "object"
+      },
+      "TranscriptSegmentListResponse": {
+        "additionalProperties": false,
+        "example": {
+          "data": [
+            {
+              "confidence": 0.94,
+              "occurred_at": "2026-06-16T09:00:42Z",
+              "relative_ts": 1240.5,
+              "seq": 41,
+              "speaker_label": "Ada L.",
+              "text": "let's ship it"
+            }
+          ],
+          "meta": {
+            "next_after": 41
+          }
+        },
+        "properties": {
+          "data": {
+            "items": {
+              "$ref": "#/components/schemas/TranscriptSegment"
+            },
+            "type": "array"
+          },
+          "meta": {
+            "additionalProperties": false,
+            "properties": {
+              "next_after": {
+                "description": "Cursor to pass as `after` on the next request, or null when the response contains no segments.",
+                "type": [
+                  "integer",
+                  "null"
+                ]
+              }
+            },
+            "required": [
+              "next_after"
+            ],
+            "type": "object"
+          }
+        },
+        "required": [
+          "data",
+          "meta"
+        ],
+        "type": "object"
+      },
+      "meeting-sessions_ErrorResponse": {
+        "additionalProperties": false,
+        "examples": [
+          {
+            "error": {
+              "code": "invalid_request",
+              "message": "webhook_url is disabled"
+            }
+          },
+          {
+            "error": {
+              "code": "not_found",
+              "message": "meeting session not found"
+            }
+          },
+          {
+            "error": {
+              "code": "unsupported_capability",
+              "message": "avatar video is not supported on platform 'unknown'"
+            }
+          },
+          {
+            "error": {
+              "code": "internal_error",
+              "message": "internal server error"
+            }
+          }
+        ],
+        "properties": {
+          "error": {
+            "additionalProperties": false,
+            "properties": {
+              "code": {
+                "type": "string"
+              },
+              "message": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "code",
+              "message"
+            ],
+            "type": "object"
+          }
+        },
+        "required": [
+          "error"
+        ],
+        "type": "object"
+      }
+    },
+    "securitySchemes": {
+      "BearerAuth": {
+        "bearerFormat": "API key",
+        "description": "Telnyx API key supplied as `Authorization: Bearer \u003ctoken\u003e`. In production, auth may be validated by the API gateway and forwarded via Telnyx auth headers.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "Payment": {
+        "description": "Machine Payment Protocol credential used on paid retries, sent as `Authorization: Payment ...`. Obtained by paying a challenge returned in the `WWW-Authenticate` header of a 402 response. This is not a Telnyx API key; initial challenge requests use standard bearer authentication instead.",
+        "in": "header",
+        "name": "Authorization",
+        "type": "apiKey"
+      },
+      "agent-memory_bearerAuth": {
+        "description": "Telnyx API key",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "bearerAuth": {
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "branded-calling_bearerAuth": {
+        "description": "Telnyx API key. Generate one at https://portal.telnyx.com/#/app/api-keys.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "collections_bearerAuth": {
+        "description": "Telnyx API key. Collections and results are automatically scoped to the authenticated user's organization.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "number-reputation_bearerAuth": {
+        "description": "Telnyx API key. Generate one at https://portal.telnyx.com/#/app/api-keys.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "oauthClientAuth": {
+        "description": "OAuth 2.0 authentication for Telnyx API and MCP integrations",
+        "flows": {
+          "authorizationCode": {
+            "authorizationUrl": "https://api.telnyx.com/v2/oauth/authorize",
+            "refreshUrl": "https://api.telnyx.com/v2/oauth/token",
+            "scopes": {
+              "admin": "Administrative access to Telnyx resources"
+            },
+            "tokenUrl": "https://api.telnyx.com/v2/oauth/token"
+          },
+          "clientCredentials": {
+            "scopes": {
+              "admin": "Administrative access to Telnyx resources"
+            },
+            "tokenUrl": "https://api.telnyx.com/v2/oauth/token"
+          }
+        },
+        "type": "oauth2"
+      },
+      "outbound-voice-profiles_bearerAuth": {
+        "bearerFormat": "JWT",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "pay-connectors_bearerAuth": {
+        "description": "Telnyx API key, not the processor bearer token.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "pronunciation-dicts_bearerAuth": {
+        "description": "Telnyx API v2 key. Obtain from https://portal.telnyx.com",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "rcs-registration_bearerAuth": {
+        "bearerFormat": "API key",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "stored-payment-transactions_bearerAuth": {
+        "bearerFormat": "JWT",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "telnyxApiKey": {
+        "description": "Management-only Telnyx account credential.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "transcriptions-search_bearerAuth": {
+        "description": "Telnyx API key. Results are automatically scoped to the authenticated user's organization.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "web-search_bearerAuth": {
+        "description": "Telnyx API key",
+        "scheme": "bearer",
+        "type": "http"
+      }
+    }
+  },
+  "info": {
+    "contact": {
+      "email": "support@telnyx.com"
+    },
+    "description": "SIP trunking, SMS, MMS, Call Control and Telephony Data Services.",
+    "title": "Telnyx API",
+    "version": "2.0.0",
+    "x-endpoint-cost": "light",
+    "x-latency-category": "responsive"
+  },
+  "openapi": "3.1.0",
+  "paths": {
+    "/meeting_sessions/{id}/events": {
+      "get": {
+        "description": "Returns stored events ordered by ascending `seq`. To continue, pass the last returned item's `seq` as `after`. An empty page means no later stored events existed at read time; this operation returns no separate next-page cursor. Default `limit` is 100 and maximum is 1,000.",
+        "operationId": "listMeetingSessionEvents",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/MeetingSessionId"
+          },
+          {
+            "$ref": "#/components/parameters/After"
+          },
+          {
+            "$ref": "#/components/parameters/Limit"
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "data": [
+                    {
+                      "occurred_at": "2026-06-16T09:00:05Z",
+                      "payload": {
+                        "previous_status": "waiting_for_admission",
+                        "status": "active"
+                      },
+                      "seq": 12,
+                      "type": "session.status_changed"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/MeetingSessionEventListResponse"
+                }
+              }
+            },
+            "description": "Successful response with a list of meeting session events."
+          },
+          "400": {
+            "$ref": "#/components/responses/meeting-sessions_BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/meeting-sessions_Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/meeting-sessions_NotFound"
+          },
+          "429": {
+            "$ref": "#/components/responses/TooManyRequests"
+          },
+          "500": {
+            "$ref": "#/components/responses/meeting-sessions_InternalServerError"
+          },
+          "503": {
+            "$ref": "#/components/responses/MeetingReadAuthUnavailable"
+          }
+        },
+        "summary": "List meeting session events",
+        "tags": [
+          "Meeting Session Data"
+        ]
+      }
+    },
+    "/meeting_sessions/{id}/recording_media": {
+      "delete": {
+        "description": "Irreversibly requests deletion of the aggregate recording media for the session. The operation retains the Telnyx-local Meeting session, transcript segments, events, artifacts, and usage records. It is separate from `DELETE /meeting_sessions/{id}`, which stops or cancels participation without deleting the persisted session. A missing/foreign session returns 404; a deletion request whose outcome is unknown returns 502.",
+        "operationId": "deleteMeetingSessionRecordingMedia",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/MeetingSessionId"
+          }
+        ],
+        "responses": {
+          "202": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MeetingSessionRecordingMediaDeletionResponse"
+                }
+              }
+            },
+            "description": "The irreversible recording-media deletion request was accepted, or a deletion is already in progress."
+          },
+          "401": {
+            "$ref": "#/components/responses/meeting-sessions_Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/RecordingMediaResourceNotFound"
+          },
+          "409": {
+            "$ref": "#/components/responses/RecordingMediaInvalidState"
+          },
+          "422": {
+            "$ref": "#/components/responses/RecordingMediaUnsupportedCapability"
+          },
+          "429": {
+            "$ref": "#/components/responses/TooManyRequests"
+          },
+          "500": {
+            "$ref": "#/components/responses/meeting-sessions_InternalServerError"
+          },
+          "502": {
+            "$ref": "#/components/responses/RecordingMediaProviderError"
+          },
+          "503": {
+            "$ref": "#/components/responses/RecordingMediaAuthenticationUnavailable"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Delete meeting session recording media",
+        "tags": [
+          "Meeting Session Data"
+        ]
+      }
+    },
+    "/meeting_sessions/{id}/transcript": {
+      "get": {
+        "description": "Returns transcript segments ordered by ascending `seq`. Default `limit` is 100 and maximum is 1,000. Continue with `after=meta.next_after`. A long-poll timeout returns 200 with empty `data` and `meta.next_after: null`; retain the cursor supplied to that request because null is not a replacement cursor.",
+        "operationId": "listMeetingSessionTranscript",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/MeetingSessionId"
+          },
+          {
+            "$ref": "#/components/parameters/After"
+          },
+          {
+            "$ref": "#/components/parameters/Limit"
+          },
+          {
+            "$ref": "#/components/parameters/WaitSeconds"
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TranscriptSegmentListResponse"
+                }
+              }
+            },
+            "description": "Successful response with transcript segments (may be empty on wait timeout)."
+          },
+          "400": {
+            "$ref": "#/components/responses/meeting-sessions_BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/meeting-sessions_Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/meeting-sessions_NotFound"
+          },
+          "429": {
+            "$ref": "#/components/responses/TooManyRequests"
+          },
+          "500": {
+            "$ref": "#/components/responses/meeting-sessions_InternalServerError"
+          },
+          "503": {
+            "$ref": "#/components/responses/MeetingReadAuthUnavailable"
+          }
+        },
+        "summary": "List meeting session transcript",
+        "tags": [
+          "Meeting Session Data"
+        ]
+      }
+    }
+  },
+  "security": [
+    {
+      "bearerAuth": []
+    }
+  ],
+  "servers": [
+    {
+      "description": "Version 2.0.0 of the Telnyx API",
+      "url": "https://api.telnyx.com/v2"
+    }
+  ]
+}

@@ -1,0 +1,638 @@
+{
+  "components": {
+    "parameters": {
+      "emergency_PageConsolidated": {
+        "description": "Consolidated page parameter (deepObject style). Originally: page[size], page[number]",
+        "explode": true,
+        "in": "query",
+        "name": "page",
+        "schema": {
+          "properties": {
+            "number": {
+              "default": 1,
+              "description": "The page number to load",
+              "minimum": 1,
+              "type": "integer"
+            },
+            "size": {
+              "default": 20,
+              "description": "The size of the page",
+              "maximum": 250,
+              "minimum": 1,
+              "type": "integer"
+            }
+          },
+          "type": "object"
+        },
+        "style": "deepObject"
+      }
+    },
+    "responses": {
+      "emergency_BadRequestResponse": {
+        "content": {
+          "application/json": {
+            "example": {
+              "errors": [
+                {
+                  "code": "10015",
+                  "detail": "The request failed because it was not well-formed.",
+                  "title": "Bad Request"
+                }
+              ]
+            },
+            "schema": {
+              "$ref": "#/components/schemas/Errors"
+            }
+          }
+        },
+        "description": "Bad request, the request was unacceptable, often due to missing a required parameter."
+      },
+      "emergency_GenericErrorResponse": {
+        "content": {
+          "application/json": {
+            "example": {
+              "errors": [
+                {
+                  "code": "10007",
+                  "detail": "An unexpected error occured.",
+                  "title": "Unexpected error"
+                }
+              ]
+            },
+            "schema": {
+              "$ref": "#/components/schemas/Errors"
+            }
+          }
+        },
+        "description": "Unexpected error"
+      },
+      "emergency_NotFoundResponse": {
+        "content": {
+          "application/json": {
+            "example": {
+              "errors": [
+                {
+                  "code": "10005",
+                  "detail": "The requested resource or URL could not be found.",
+                  "title": "Resource not found"
+                }
+              ]
+            },
+            "schema": {
+              "$ref": "#/components/schemas/Errors"
+            }
+          }
+        },
+        "description": "The requested resource doesn't exist."
+      },
+      "emergency_UnauthorizedResponse": {
+        "content": {
+          "application/json": {
+            "example": {
+              "errors": [
+                {
+                  "code": "10009",
+                  "detail": "The required authentication headers were either invalid or not included in the request.",
+                  "title": "Authentication failed"
+                }
+              ]
+            },
+            "schema": {
+              "$ref": "#/components/schemas/Errors"
+            }
+          }
+        },
+        "description": "Unauthorized"
+      },
+      "emergency_UnprocessableEntity": {
+        "content": {
+          "application/json": {
+            "example": {
+              "errors": [
+                {
+                  "code": "10027",
+                  "detail": "The server understood the syntax of the request but was unable to process the instructions.",
+                  "title": "Unprocessable Entity"
+                }
+              ]
+            },
+            "schema": {
+              "$ref": "#/components/schemas/Errors"
+            }
+          }
+        },
+        "description": "Unprocessable entity. Check the 'detail' field in response for details."
+      }
+    },
+    "schemas": {
+      "DynamicEmergencyEndpoint": {
+        "properties": {
+          "callback_number": {
+            "example": "+13125550000",
+            "type": "string"
+          },
+          "caller_name": {
+            "example": "Jane Doe Desk Phone",
+            "type": "string"
+          },
+          "created_at": {
+            "description": "ISO 8601 formatted date of when the resource was created",
+            "example": "2018-02-02T22:25:27.521Z",
+            "readOnly": true,
+            "type": "string"
+          },
+          "dynamic_emergency_address_id": {
+            "description": "An id of a currently active dynamic emergency location.",
+            "example": "0ccc7b54-4df3-4bca-a65a-3da1ecc777f0",
+            "type": "string"
+          },
+          "id": {
+            "example": "0ccc7b54-4df3-4bca-a65a-3da1ecc777f0",
+            "readOnly": true,
+            "type": "string"
+          },
+          "record_type": {
+            "description": "Identifies the type of the resource.",
+            "example": "dynamic_emergency_endpoint",
+            "readOnly": true,
+            "type": "string"
+          },
+          "sip_from_id": {
+            "example": "FXDFWEDF",
+            "readOnly": true,
+            "type": "string"
+          },
+          "status": {
+            "description": "Status of dynamic emergency address",
+            "enum": [
+              "pending",
+              "activated",
+              "rejected"
+            ],
+            "example": "pending",
+            "readOnly": true,
+            "type": "string"
+          },
+          "updated_at": {
+            "description": "ISO 8601 formatted date of when the resource was last updated",
+            "example": "2018-02-02T22:25:27.521Z",
+            "readOnly": true,
+            "type": "string"
+          }
+        },
+        "required": [
+          "dynamic_emergency_address_id",
+          "callback_number",
+          "caller_name"
+        ],
+        "type": "object"
+      },
+      "Error": {
+        "example": {
+          "code": "20207",
+          "description": "The street address provided is invalid.",
+          "source": {
+            "pointer": "/street_address"
+          },
+          "title": "Invalid street address"
+        },
+        "properties": {
+          "code": {
+            "type": "string",
+            "x-format": "int64"
+          },
+          "description": {
+            "type": "string"
+          },
+          "detail": {
+            "description": "A human-readable explanation of the error.",
+            "type": "string"
+          },
+          "meta": {
+            "additionalProperties": true,
+            "type": "object"
+          },
+          "source": {
+            "properties": {
+              "parameter": {
+                "description": "Indicates which query parameter caused the error.",
+                "type": "string"
+              },
+              "pointer": {
+                "description": "JSON pointer (RFC6901) to the offending entity.",
+                "format": "json-pointer",
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
+          "title": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "title"
+        ],
+        "type": "object"
+      },
+      "Errors": {
+        "properties": {
+          "errors": {
+            "items": {
+              "$ref": "#/components/schemas/Error"
+            },
+            "type": "array"
+          }
+        },
+        "type": "object"
+      },
+      "Metadata": {
+        "properties": {
+          "page_number": {
+            "description": "Current Page based on pagination settings (included when defaults are used.)",
+            "example": 3,
+            "format": "integer",
+            "type": "number"
+          },
+          "page_size": {
+            "description": "Number of results to return per page based on pagination settings (included when defaults are used.)",
+            "example": 1,
+            "format": "integer",
+            "type": "number"
+          },
+          "total_pages": {
+            "description": "Total number of pages based on pagination settings",
+            "example": 13,
+            "format": "integer",
+            "type": "number"
+          },
+          "total_results": {
+            "description": "Total number of results",
+            "example": 13,
+            "format": "integer",
+            "type": "number"
+          }
+        },
+        "title": "Metadata",
+        "type": "object"
+      }
+    },
+    "securitySchemes": {
+      "BearerAuth": {
+        "bearerFormat": "API key",
+        "description": "Telnyx API key supplied as `Authorization: Bearer \u003ctoken\u003e`. In production, auth may be validated by the API gateway and forwarded via Telnyx auth headers.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "Payment": {
+        "description": "Machine Payment Protocol credential used on paid retries, sent as `Authorization: Payment ...`. Obtained by paying a challenge returned in the `WWW-Authenticate` header of a 402 response. This is not a Telnyx API key; initial challenge requests use standard bearer authentication instead.",
+        "in": "header",
+        "name": "Authorization",
+        "type": "apiKey"
+      },
+      "agent-memory_bearerAuth": {
+        "description": "Telnyx API key",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "bearerAuth": {
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "branded-calling_bearerAuth": {
+        "description": "Telnyx API key. Generate one at https://portal.telnyx.com/#/app/api-keys.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "collections_bearerAuth": {
+        "description": "Telnyx API key. Collections and results are automatically scoped to the authenticated user's organization.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "number-reputation_bearerAuth": {
+        "description": "Telnyx API key. Generate one at https://portal.telnyx.com/#/app/api-keys.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "oauthClientAuth": {
+        "description": "OAuth 2.0 authentication for Telnyx API and MCP integrations",
+        "flows": {
+          "authorizationCode": {
+            "authorizationUrl": "https://api.telnyx.com/v2/oauth/authorize",
+            "refreshUrl": "https://api.telnyx.com/v2/oauth/token",
+            "scopes": {
+              "admin": "Administrative access to Telnyx resources"
+            },
+            "tokenUrl": "https://api.telnyx.com/v2/oauth/token"
+          },
+          "clientCredentials": {
+            "scopes": {
+              "admin": "Administrative access to Telnyx resources"
+            },
+            "tokenUrl": "https://api.telnyx.com/v2/oauth/token"
+          }
+        },
+        "type": "oauth2"
+      },
+      "outbound-voice-profiles_bearerAuth": {
+        "bearerFormat": "JWT",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "pay-connectors_bearerAuth": {
+        "description": "Telnyx API key, not the processor bearer token.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "pronunciation-dicts_bearerAuth": {
+        "description": "Telnyx API v2 key. Obtain from https://portal.telnyx.com",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "rcs-registration_bearerAuth": {
+        "bearerFormat": "API key",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "stored-payment-transactions_bearerAuth": {
+        "bearerFormat": "JWT",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "telnyxApiKey": {
+        "description": "Management-only Telnyx account credential.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "transcriptions-search_bearerAuth": {
+        "description": "Telnyx API key. Results are automatically scoped to the authenticated user's organization.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "web-search_bearerAuth": {
+        "description": "Telnyx API key",
+        "scheme": "bearer",
+        "type": "http"
+      }
+    }
+  },
+  "info": {
+    "contact": {
+      "email": "support@telnyx.com"
+    },
+    "description": "SIP trunking, SMS, MMS, Call Control and Telephony Data Services.",
+    "title": "Telnyx API",
+    "version": "2.0.0",
+    "x-endpoint-cost": "light",
+    "x-latency-category": "responsive"
+  },
+  "openapi": "3.1.0",
+  "paths": {
+    "/dynamic_emergency_endpoints": {
+      "get": {
+        "description": "Returns the dynamic emergency endpoints according to filters",
+        "operationId": "ListDynamicEmergencyEndpoints",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/emergency_PageConsolidated"
+          },
+          {
+            "description": "Consolidated filter parameter (deepObject style). Originally: filter[status], filter[country_code]",
+            "explode": true,
+            "in": "query",
+            "name": "filter",
+            "schema": {
+              "properties": {
+                "country_code": {
+                  "description": "Filter by country code.",
+                  "type": "string"
+                },
+                "status": {
+                  "description": "Filter by status.",
+                  "enum": [
+                    "pending",
+                    "activated",
+                    "rejected"
+                  ],
+                  "type": "string"
+                }
+              },
+              "type": "object"
+            },
+            "style": "deepObject"
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "items": {
+                        "$ref": "#/components/schemas/DynamicEmergencyEndpoint"
+                      },
+                      "type": "array"
+                    },
+                    "meta": {
+                      "$ref": "#/components/schemas/Metadata"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Dynamic Emergency Endpoints Responses"
+          },
+          "400": {
+            "$ref": "#/components/responses/emergency_BadRequestResponse"
+          },
+          "401": {
+            "$ref": "#/components/responses/emergency_UnauthorizedResponse"
+          },
+          "404": {
+            "$ref": "#/components/responses/emergency_NotFoundResponse"
+          },
+          "422": {
+            "$ref": "#/components/responses/emergency_UnprocessableEntity"
+          },
+          "500": {
+            "$ref": "#/components/responses/emergency_GenericErrorResponse"
+          }
+        },
+        "summary": "List dynamic emergency endpoints",
+        "tags": [
+          "Dynamic Emergency Endpoints"
+        ]
+      },
+      "post": {
+        "description": "Creates a dynamic emergency endpoint, associating a callback number and location with a device for emergency calling.",
+        "operationId": "CreateDynamicEmergencyEndpoint",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DynamicEmergencyEndpoint"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/DynamicEmergencyEndpoint"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Dynamic Emergency Endpoint Response"
+          },
+          "400": {
+            "$ref": "#/components/responses/emergency_BadRequestResponse"
+          },
+          "401": {
+            "$ref": "#/components/responses/emergency_UnauthorizedResponse"
+          },
+          "404": {
+            "$ref": "#/components/responses/emergency_NotFoundResponse"
+          },
+          "422": {
+            "$ref": "#/components/responses/emergency_UnprocessableEntity"
+          },
+          "500": {
+            "$ref": "#/components/responses/emergency_GenericErrorResponse"
+          }
+        },
+        "summary": "Create a dynamic emergency endpoint.",
+        "tags": [
+          "Dynamic Emergency Endpoints"
+        ]
+      }
+    },
+    "/dynamic_emergency_endpoints/{id}": {
+      "delete": {
+        "description": "Deletes the dynamic emergency endpoint based on the ID provided",
+        "operationId": "DeleteDynamicEmergencyEndpoint",
+        "parameters": [
+          {
+            "description": "Dynamic Emergency Endpoint id",
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/DynamicEmergencyEndpoint"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Dynamic Emergency Endpoint Response"
+          },
+          "400": {
+            "$ref": "#/components/responses/emergency_BadRequestResponse"
+          },
+          "401": {
+            "$ref": "#/components/responses/emergency_UnauthorizedResponse"
+          },
+          "404": {
+            "$ref": "#/components/responses/emergency_NotFoundResponse"
+          },
+          "422": {
+            "$ref": "#/components/responses/emergency_UnprocessableEntity"
+          },
+          "500": {
+            "$ref": "#/components/responses/emergency_GenericErrorResponse"
+          }
+        },
+        "summary": "Delete a dynamic emergency endpoint",
+        "tags": [
+          "Dynamic Emergency Endpoints"
+        ]
+      },
+      "get": {
+        "description": "Returns the dynamic emergency endpoint based on the ID provided",
+        "operationId": "GetDynamicEmergencyEndpoint",
+        "parameters": [
+          {
+            "description": "Dynamic Emergency Endpoint id",
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/DynamicEmergencyEndpoint"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Dynamic Emergency Endpoint Response"
+          },
+          "400": {
+            "$ref": "#/components/responses/emergency_BadRequestResponse"
+          },
+          "401": {
+            "$ref": "#/components/responses/emergency_UnauthorizedResponse"
+          },
+          "404": {
+            "$ref": "#/components/responses/emergency_NotFoundResponse"
+          },
+          "422": {
+            "$ref": "#/components/responses/emergency_UnprocessableEntity"
+          },
+          "500": {
+            "$ref": "#/components/responses/emergency_GenericErrorResponse"
+          }
+        },
+        "summary": "Get a dynamic emergency endpoint",
+        "tags": [
+          "Dynamic Emergency Endpoints"
+        ]
+      }
+    }
+  },
+  "security": [
+    {
+      "bearerAuth": []
+    }
+  ],
+  "servers": [
+    {
+      "description": "Version 2.0.0 of the Telnyx API",
+      "url": "https://api.telnyx.com/v2"
+    }
+  ]
+}

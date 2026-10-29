@@ -1,0 +1,606 @@
+{
+  "components": {
+    "parameters": {
+      "10dlc_FilterConsolidated": {
+        "description": "Consolidated filter parameter (deepObject style). Originally: filter[telnyx_campaign_id], filter[telnyx_brand_id], filter[tcr_campaign_id], filter[tcr_brand_id]",
+        "explode": true,
+        "in": "query",
+        "name": "filter",
+        "schema": {
+          "properties": {
+            "tcr_brand_id": {
+              "description": "Filter results by the TCR Brand id",
+              "example": "BRANDID",
+              "type": "string"
+            },
+            "tcr_campaign_id": {
+              "description": "Filter results by the TCR Campaign id",
+              "example": "CAMPID3",
+              "type": "string"
+            },
+            "telnyx_brand_id": {
+              "description": "Filter results by the Telnyx Brand id",
+              "example": "f3575e15-32ce-400e-a4c0-dd78800c20b0",
+              "format": "uuid",
+              "type": "string"
+            },
+            "telnyx_campaign_id": {
+              "description": "Filter results by the Telnyx Campaign id",
+              "example": "f3575e15-32ce-400e-a4c0-dd78800c20b0",
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          "type": "object"
+        },
+        "style": "deepObject"
+      }
+    },
+    "responses": {
+      "10dlc_GenericErrorResponse_ca4eb0ad6f": {
+        "content": {
+          "application/json": {
+            "example": {
+              "errors": [
+                {
+                  "code": "string",
+                  "detail": "string",
+                  "source": {
+                    "parameter": "string",
+                    "pointer": "string"
+                  },
+                  "title": "string"
+                }
+              ]
+            },
+            "schema": {
+              "$ref": "#/components/schemas/Errors"
+            }
+          }
+        },
+        "description": "Generic response error"
+      }
+    },
+    "schemas": {
+      "Error": {
+        "example": {
+          "code": "20207",
+          "description": "The street address provided is invalid.",
+          "source": {
+            "pointer": "/street_address"
+          },
+          "title": "Invalid street address"
+        },
+        "properties": {
+          "code": {
+            "type": "string",
+            "x-format": "int64"
+          },
+          "description": {
+            "type": "string"
+          },
+          "detail": {
+            "description": "A human-readable explanation of the error.",
+            "type": "string"
+          },
+          "meta": {
+            "additionalProperties": true,
+            "type": "object"
+          },
+          "source": {
+            "properties": {
+              "parameter": {
+                "description": "Indicates which query parameter caused the error.",
+                "type": "string"
+              },
+              "pointer": {
+                "description": "JSON pointer (RFC6901) to the offending entity.",
+                "format": "json-pointer",
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
+          "title": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "title"
+        ],
+        "type": "object"
+      },
+      "Errors": {
+        "properties": {
+          "errors": {
+            "items": {
+              "$ref": "#/components/schemas/Error"
+            },
+            "type": "array"
+          }
+        },
+        "type": "object"
+      },
+      "PhoneNumberCampaign": {
+        "properties": {
+          "assignmentStatus": {
+            "description": "The assignment status of the number.",
+            "enum": [
+              "FAILED_ASSIGNMENT",
+              "PENDING_ASSIGNMENT",
+              "ASSIGNED",
+              "PENDING_UNASSIGNMENT",
+              "FAILED_UNASSIGNMENT"
+            ],
+            "example": "ASSIGNED",
+            "title": "AssignmentStatus",
+            "type": "string"
+          },
+          "brandId": {
+            "description": "Brand ID. Empty if the number is associated to a shared campaign.",
+            "example": "7ba705b7-22af-493f-addc-ac04b7ca071c",
+            "title": "BrandId",
+            "type": "string"
+          },
+          "campaignId": {
+            "description": "For shared campaigns, this is the TCR campaign ID, otherwise it is the campaign ID ",
+            "title": "Campaignid",
+            "type": "string"
+          },
+          "createdAt": {
+            "example": "2021-03-08T17:57:48.801186",
+            "title": "Createdat",
+            "type": "string"
+          },
+          "failureReasons": {
+            "description": "Extra info about a failure to assign/unassign a number. Relevant only if the assignmentStatus is either FAILED_ASSIGNMENT or FAILED_UNASSIGNMENT",
+            "type": "string"
+          },
+          "nonTmobileNumberMappingStatus": {
+            "description": "The assignment status of the number towards other carriers.",
+            "example": "ADDED",
+            "title": "NonTMobileNumberMappingStatus",
+            "type": "string"
+          },
+          "phoneNumber": {
+            "example": "+18005550199",
+            "title": "Phonenumber",
+            "type": "string"
+          },
+          "tcrBrandId": {
+            "description": "TCR's alphanumeric ID for the brand.",
+            "example": "BBRAND1",
+            "title": "TcrBrandId",
+            "type": "string"
+          },
+          "tcrCampaignId": {
+            "description": "TCR's alphanumeric ID for the campaign.",
+            "example": "CCAMPA1",
+            "title": "TcrCampaignid",
+            "type": "string"
+          },
+          "telnyxCampaignId": {
+            "description": "Campaign ID. Empty if the number is associated to a shared campaign.",
+            "example": "3008dd9f-66d7-40e0-bf23-bf2d8d1a96ba",
+            "title": "Telnyxcampaignid",
+            "type": "string"
+          },
+          "tmobileNumberMappingStatus": {
+            "description": "The T-Mobile assignment status of the number.",
+            "example": "ADDED",
+            "title": "TMobileNumberMappingStatus",
+            "type": "string"
+          },
+          "updatedAt": {
+            "example": "2021-03-08T17:57:48.801186",
+            "title": "Updatedat",
+            "type": "string"
+          }
+        },
+        "required": [
+          "phoneNumber",
+          "campaignId",
+          "createdAt",
+          "updatedAt"
+        ],
+        "title": "PhoneNumberCampaign",
+        "type": "object"
+      },
+      "PhoneNumberCampaignCreate": {
+        "properties": {
+          "campaignId": {
+            "description": "The ID of the campaign you want to link to the specified phone number.",
+            "example": "4b300178-131c-d902-d54e-72d90ba1620j",
+            "title": "Campaignid",
+            "type": "string"
+          },
+          "phoneNumber": {
+            "description": "The phone number you want to link to a specified campaign.",
+            "example": "+18005550199",
+            "title": "Phonenumber",
+            "type": "string"
+          }
+        },
+        "required": [
+          "phoneNumber",
+          "campaignId"
+        ],
+        "title": "PhoneNumberCampaignCreate",
+        "type": "object"
+      },
+      "PhoneNumberCampaignPaginated": {
+        "properties": {
+          "page": {
+            "title": "Page",
+            "type": "integer"
+          },
+          "records": {
+            "items": {
+              "$ref": "#/components/schemas/PhoneNumberCampaign"
+            },
+            "title": "Records",
+            "type": "array"
+          },
+          "totalRecords": {
+            "title": "Totalrecords",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "records",
+          "page",
+          "totalRecords"
+        ],
+        "title": "PhoneNumberCampaignPaginated",
+        "type": "object"
+      }
+    },
+    "securitySchemes": {
+      "BearerAuth": {
+        "bearerFormat": "API key",
+        "description": "Telnyx API key supplied as `Authorization: Bearer \u003ctoken\u003e`. In production, auth may be validated by the API gateway and forwarded via Telnyx auth headers.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "Payment": {
+        "description": "Machine Payment Protocol credential used on paid retries, sent as `Authorization: Payment ...`. Obtained by paying a challenge returned in the `WWW-Authenticate` header of a 402 response. This is not a Telnyx API key; initial challenge requests use standard bearer authentication instead.",
+        "in": "header",
+        "name": "Authorization",
+        "type": "apiKey"
+      },
+      "agent-memory_bearerAuth": {
+        "description": "Telnyx API key",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "bearerAuth": {
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "branded-calling_bearerAuth": {
+        "description": "Telnyx API key. Generate one at https://portal.telnyx.com/#/app/api-keys.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "collections_bearerAuth": {
+        "description": "Telnyx API key. Collections and results are automatically scoped to the authenticated user's organization.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "number-reputation_bearerAuth": {
+        "description": "Telnyx API key. Generate one at https://portal.telnyx.com/#/app/api-keys.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "oauthClientAuth": {
+        "description": "OAuth 2.0 authentication for Telnyx API and MCP integrations",
+        "flows": {
+          "authorizationCode": {
+            "authorizationUrl": "https://api.telnyx.com/v2/oauth/authorize",
+            "refreshUrl": "https://api.telnyx.com/v2/oauth/token",
+            "scopes": {
+              "admin": "Administrative access to Telnyx resources"
+            },
+            "tokenUrl": "https://api.telnyx.com/v2/oauth/token"
+          },
+          "clientCredentials": {
+            "scopes": {
+              "admin": "Administrative access to Telnyx resources"
+            },
+            "tokenUrl": "https://api.telnyx.com/v2/oauth/token"
+          }
+        },
+        "type": "oauth2"
+      },
+      "outbound-voice-profiles_bearerAuth": {
+        "bearerFormat": "JWT",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "pay-connectors_bearerAuth": {
+        "description": "Telnyx API key, not the processor bearer token.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "pronunciation-dicts_bearerAuth": {
+        "description": "Telnyx API v2 key. Obtain from https://portal.telnyx.com",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "rcs-registration_bearerAuth": {
+        "bearerFormat": "API key",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "stored-payment-transactions_bearerAuth": {
+        "bearerFormat": "JWT",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "telnyxApiKey": {
+        "description": "Management-only Telnyx account credential.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "transcriptions-search_bearerAuth": {
+        "description": "Telnyx API key. Results are automatically scoped to the authenticated user's organization.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "web-search_bearerAuth": {
+        "description": "Telnyx API key",
+        "scheme": "bearer",
+        "type": "http"
+      }
+    }
+  },
+  "info": {
+    "contact": {
+      "email": "support@telnyx.com"
+    },
+    "description": "SIP trunking, SMS, MMS, Call Control and Telephony Data Services.",
+    "title": "Telnyx API",
+    "version": "2.0.0",
+    "x-endpoint-cost": "light",
+    "x-latency-category": "responsive"
+  },
+  "openapi": "3.1.0",
+  "paths": {
+    "/10dlc/phone_number_campaigns": {
+      "get": {
+        "description": "Returns phone-number-to-campaign assignments for the authenticated account. Apply the documented filters and pagination parameters to narrow the result set.",
+        "operationId": "GetAllPhoneNumberCampaigns",
+        "parameters": [
+          {
+            "description": "Number of records to return per page.",
+            "in": "query",
+            "name": "recordsPerPage",
+            "required": false,
+            "schema": {
+              "default": 20,
+              "title": "Recordsperpage",
+              "type": "integer"
+            }
+          },
+          {
+            "description": "Page number to retrieve (1-based).",
+            "in": "query",
+            "name": "page",
+            "required": false,
+            "schema": {
+              "default": 1,
+              "title": "Page",
+              "type": "integer"
+            }
+          },
+          {
+            "$ref": "#/components/parameters/10dlc_FilterConsolidated"
+          },
+          {
+            "description": "Specifies the sort order for results. If not given, results are sorted by createdAt in descending order.",
+            "example": "-phoneNumber",
+            "in": "query",
+            "name": "sort",
+            "required": false,
+            "schema": {
+              "default": "-createdAt",
+              "description": "Specifies the sort order for results. If not given, results are sorted by created_at in descending order.",
+              "enum": [
+                "assignmentStatus",
+                "-assignmentStatus",
+                "createdAt",
+                "-createdAt",
+                "phoneNumber",
+                "-phoneNumber"
+              ],
+              "title": "Sort",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PhoneNumberCampaignPaginated"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "4XX": {
+            "$ref": "#/components/responses/10dlc_GenericErrorResponse_ca4eb0ad6f"
+          }
+        },
+        "summary": "List phone number campaigns",
+        "tags": [
+          "Phone Number Campaigns"
+        ]
+      },
+      "post": {
+        "description": "Assigns a phone number to a 10DLC campaign. The assignment controls which registered campaign is used for traffic from that number.",
+        "operationId": "CreatePhoneNumberCampaign",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PhoneNumberCampaignCreate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PhoneNumberCampaign"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "4XX": {
+            "$ref": "#/components/responses/10dlc_GenericErrorResponse_ca4eb0ad6f"
+          }
+        },
+        "summary": "Create New Phone Number Campaign",
+        "tags": [
+          "Phone Number Campaigns"
+        ]
+      }
+    },
+    "/10dlc/phone_number_campaigns/{phoneNumber}": {
+      "delete": {
+        "description": "This endpoint allows you to remove a campaign assignment from the supplied `phoneNumber`.",
+        "operationId": "DeletePhoneNumberCampaign",
+        "parameters": [
+          {
+            "description": "Unique identifier of the phone number.",
+            "in": "path",
+            "name": "phoneNumber",
+            "required": true,
+            "schema": {
+              "title": "Phonenumber",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PhoneNumberCampaign"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "4XX": {
+            "$ref": "#/components/responses/10dlc_GenericErrorResponse_ca4eb0ad6f"
+          }
+        },
+        "summary": "Delete Phone Number Campaign",
+        "tags": [
+          "Phone Number Campaigns"
+        ]
+      },
+      "get": {
+        "description": "Retrieve an individual phone number/campaign assignment by `phoneNumber`.",
+        "operationId": "GetSinglePhoneNumberCampaign",
+        "parameters": [
+          {
+            "description": "Unique identifier of the phone number.",
+            "in": "path",
+            "name": "phoneNumber",
+            "required": true,
+            "schema": {
+              "title": "Phonenumber",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PhoneNumberCampaign"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "4XX": {
+            "$ref": "#/components/responses/10dlc_GenericErrorResponse_ca4eb0ad6f"
+          }
+        },
+        "summary": "Get Single Phone Number Campaign",
+        "tags": [
+          "Phone Number Campaigns"
+        ]
+      },
+      "put": {
+        "description": "Replaces the 10DLC campaign assignment for the specified phone number.",
+        "operationId": "PutPhoneNumberCampaign",
+        "parameters": [
+          {
+            "description": "Unique identifier of the phone number.",
+            "in": "path",
+            "name": "phoneNumber",
+            "required": true,
+            "schema": {
+              "title": "Phonenumber",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PhoneNumberCampaignCreate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PhoneNumberCampaign"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "4XX": {
+            "$ref": "#/components/responses/10dlc_GenericErrorResponse_ca4eb0ad6f"
+          }
+        },
+        "summary": "Update Phone Number Campaign",
+        "tags": [
+          "Phone Number Campaigns"
+        ]
+      }
+    }
+  },
+  "security": [
+    {
+      "bearerAuth": []
+    }
+  ],
+  "servers": [
+    {
+      "description": "Version 2.0.0 of the Telnyx API",
+      "url": "https://api.telnyx.com/v2"
+    }
+  ]
+}

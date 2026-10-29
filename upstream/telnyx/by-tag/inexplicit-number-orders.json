@@ -1,0 +1,800 @@
+{
+  "components": {
+    "responses": {
+      "GenericErrorResponse": {
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Errors"
+            }
+          }
+        },
+        "description": "Unexpected error"
+      },
+      "numbers_BadRequestResponse_73c9788e53": {
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Errors"
+            }
+          }
+        },
+        "description": "Bad request, the request was unacceptable, often due to missing a required parameter."
+      },
+      "numbers_NotFoundResponse_73c9788e53": {
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Errors"
+            }
+          }
+        },
+        "description": "The requested resource doesn't exist."
+      },
+      "numbers_UnauthorizedResponse_73c9788e53": {
+        "content": {
+          "application/json": {
+            "examples": {
+              "Authentication Failed": {
+                "value": {
+                  "errors": [
+                    {
+                      "code": "10009",
+                      "detail": "Could not understand the provided credentials.",
+                      "meta": {
+                        "url": "https://developers.telnyx.com/docs/overview/errors/10009"
+                      },
+                      "title": "Authentication failed"
+                    }
+                  ]
+                }
+              }
+            },
+            "schema": {
+              "$ref": "#/components/schemas/Errors"
+            }
+          }
+        },
+        "description": "Unauthorized"
+      },
+      "numbers_UnprocessableEntity_73c9788e53": {
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Errors"
+            }
+          }
+        },
+        "description": "Unprocessable entity. Check the 'detail' field in response for details."
+      }
+    },
+    "schemas": {
+      "Error": {
+        "example": {
+          "code": "20207",
+          "description": "The street address provided is invalid.",
+          "source": {
+            "pointer": "/street_address"
+          },
+          "title": "Invalid street address"
+        },
+        "properties": {
+          "code": {
+            "type": "string",
+            "x-format": "int64"
+          },
+          "description": {
+            "type": "string"
+          },
+          "detail": {
+            "description": "A human-readable explanation of the error.",
+            "type": "string"
+          },
+          "meta": {
+            "additionalProperties": true,
+            "type": "object"
+          },
+          "source": {
+            "properties": {
+              "parameter": {
+                "description": "Indicates which query parameter caused the error.",
+                "type": "string"
+              },
+              "pointer": {
+                "description": "JSON pointer (RFC6901) to the offending entity.",
+                "format": "json-pointer",
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
+          "title": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "title"
+        ],
+        "type": "object"
+      },
+      "Errors": {
+        "properties": {
+          "errors": {
+            "items": {
+              "$ref": "#/components/schemas/Error"
+            },
+            "type": "array"
+          }
+        },
+        "type": "object"
+      },
+      "InexplicitNumberOrderRequest": {
+        "properties": {
+          "billing_group_id": {
+            "description": "Billing group id to apply to phone numbers that are purchased",
+            "type": "string"
+          },
+          "connection_id": {
+            "description": "Connection id to apply to phone numbers that are purchased",
+            "type": "string"
+          },
+          "customer_reference": {
+            "description": "Reference label for the customer",
+            "type": "string"
+          },
+          "messaging_profile_id": {
+            "description": "Messaging profile id to apply to phone numbers that are purchased",
+            "type": "string"
+          },
+          "ordering_groups": {
+            "description": "Group(s) of numbers to order. You can have multiple ordering_groups objects added to a single request.",
+            "items": {
+              "properties": {
+                "administrative_area": {
+                  "description": "Filter for phone numbers in a given state / province",
+                  "type": "string"
+                },
+                "count_requested": {
+                  "description": "Quantity of phone numbers to order",
+                  "type": "string"
+                },
+                "country_iso": {
+                  "description": "Country where you would like to purchase phone numbers. Allowable values: US, CA",
+                  "enum": [
+                    "US",
+                    "CA"
+                  ],
+                  "type": "string"
+                },
+                "exclude_held_numbers": {
+                  "description": "Filter to exclude phone numbers that are currently on hold/reserved for your account.",
+                  "type": "boolean"
+                },
+                "features": {
+                  "description": "Filter for phone numbers that have the features to satisfy your use case (e.g., [\"voice\"])",
+                  "items": {
+                    "type": "string"
+                  },
+                  "type": "array"
+                },
+                "locality": {
+                  "description": "Filter for phone numbers in a given city / region / rate center",
+                  "type": "string"
+                },
+                "national_destination_code": {
+                  "description": "Filter by area code",
+                  "type": "string"
+                },
+                "phone_number": {
+                  "description": "Phone number search criteria",
+                  "properties": {
+                    "contains": {
+                      "description": "Filter for phone numbers that contain the digits specified",
+                      "type": "string"
+                    },
+                    "ends_with": {
+                      "description": "Filter by the ending digits of the phone number",
+                      "type": "string"
+                    },
+                    "starts_with": {
+                      "description": "Filter by the starting digits of the phone number",
+                      "type": "string"
+                    }
+                  },
+                  "type": "object"
+                },
+                "phone_number_type": {
+                  "description": "Number type (local, toll-free, etc.)",
+                  "type": "string"
+                },
+                "quickship": {
+                  "description": "Filter to exclude phone numbers that need additional time after to purchase to activate. Only applicable for +1 toll_free numbers.",
+                  "type": "boolean"
+                },
+                "strategy": {
+                  "default": "always",
+                  "description": "Ordering strategy. Define what action should be taken if we don't have enough phone numbers to fulfill your request. Allowable values are: always = proceed with ordering phone numbers, regardless of current inventory levels; never = do not place any orders unless there are enough phone numbers to satisfy the request. If not specified, the always strategy will be enforced.",
+                  "enum": [
+                    "always",
+                    "never"
+                  ],
+                  "type": "string"
+                }
+              },
+              "required": [
+                "country_iso",
+                "count_requested",
+                "phone_number_type"
+              ],
+              "type": "object"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "ordering_groups"
+        ],
+        "type": "object"
+      },
+      "InexplicitNumberOrderResponse": {
+        "properties": {
+          "billing_group_id": {
+            "description": "Billing group id to apply to phone numbers that are purchased",
+            "type": "string"
+          },
+          "connection_id": {
+            "description": "Connection id to apply to phone numbers that are purchased",
+            "type": "string"
+          },
+          "created_at": {
+            "description": "ISO 8601 formatted date indicating when the resource was created",
+            "format": "date-time",
+            "type": "string"
+          },
+          "customer_reference": {
+            "description": "Reference label for the customer",
+            "type": "string"
+          },
+          "id": {
+            "description": "Unique identifier for the inexplicit number order",
+            "type": "string"
+          },
+          "messaging_profile_id": {
+            "description": "Messaging profile id to apply to phone numbers that are purchased",
+            "type": "string"
+          },
+          "ordering_groups": {
+            "items": {
+              "properties": {
+                "administrative_area": {
+                  "description": "Filter for phone numbers in a given state / province",
+                  "type": "string"
+                },
+                "count_allocated": {
+                  "description": "Quantity of phone numbers allocated",
+                  "type": "integer"
+                },
+                "count_requested": {
+                  "description": "Quantity of phone numbers requested",
+                  "type": "integer"
+                },
+                "country_iso": {
+                  "description": "Country where you would like to purchase phone numbers",
+                  "type": "string"
+                },
+                "created_at": {
+                  "description": "ISO 8601 formatted date indicating when the ordering group was created",
+                  "format": "date-time",
+                  "type": "string"
+                },
+                "error_reason": {
+                  "description": "Error reason if applicable",
+                  "type": "string"
+                },
+                "exclude_held_numbers": {
+                  "description": "Filter to exclude phone numbers that are currently on hold/reserved for your account.",
+                  "type": "boolean"
+                },
+                "national_destination_code": {
+                  "description": "Filter by area code",
+                  "type": "string"
+                },
+                "orders": {
+                  "description": "Array of orders created to fulfill the inexplicit order",
+                  "items": {
+                    "properties": {
+                      "number_order_id": {
+                        "description": "ID of the main number order",
+                        "format": "uuid",
+                        "type": "string"
+                      },
+                      "sub_number_order_ids": {
+                        "description": "Array of sub number order IDs",
+                        "items": {
+                          "format": "uuid",
+                          "type": "string"
+                        },
+                        "type": "array"
+                      }
+                    },
+                    "required": [
+                      "number_order_id",
+                      "sub_number_order_ids"
+                    ],
+                    "type": "object"
+                  },
+                  "type": "array"
+                },
+                "phone_number[contains]": {
+                  "description": "Filter for phone numbers that contain the digits specified",
+                  "type": "string"
+                },
+                "phone_number[ends_with]": {
+                  "description": "Filter by the ending digits of the phone number",
+                  "type": "string"
+                },
+                "phone_number[starts_with]": {
+                  "description": "Filter by the starting digits of the phone number",
+                  "type": "string"
+                },
+                "phone_number_type": {
+                  "description": "Number type",
+                  "type": "string"
+                },
+                "quickship": {
+                  "description": "Filter to exclude phone numbers that need additional time after to purchase to activate. Only applicable for +1 toll_free numbers.",
+                  "type": "boolean"
+                },
+                "status": {
+                  "description": "Status of the ordering group",
+                  "enum": [
+                    "pending",
+                    "processing",
+                    "failed",
+                    "success",
+                    "partial_success"
+                  ],
+                  "type": "string"
+                },
+                "strategy": {
+                  "description": "Ordering strategy used",
+                  "enum": [
+                    "always",
+                    "never"
+                  ],
+                  "type": "string"
+                },
+                "updated_at": {
+                  "description": "ISO 8601 formatted date indicating when the ordering group was updated",
+                  "format": "date-time",
+                  "type": "string"
+                }
+              },
+              "type": "object"
+            },
+            "type": "array"
+          },
+          "updated_at": {
+            "description": "ISO 8601 formatted date indicating when the resource was updated",
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "PaginationMeta": {
+        "properties": {
+          "page_number": {
+            "example": 2,
+            "type": "integer"
+          },
+          "page_size": {
+            "example": 25,
+            "type": "integer"
+          },
+          "total_pages": {
+            "example": 3,
+            "type": "integer"
+          },
+          "total_results": {
+            "example": 55,
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      }
+    },
+    "securitySchemes": {
+      "BearerAuth": {
+        "bearerFormat": "API key",
+        "description": "Telnyx API key supplied as `Authorization: Bearer \u003ctoken\u003e`. In production, auth may be validated by the API gateway and forwarded via Telnyx auth headers.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "Payment": {
+        "description": "Machine Payment Protocol credential used on paid retries, sent as `Authorization: Payment ...`. Obtained by paying a challenge returned in the `WWW-Authenticate` header of a 402 response. This is not a Telnyx API key; initial challenge requests use standard bearer authentication instead.",
+        "in": "header",
+        "name": "Authorization",
+        "type": "apiKey"
+      },
+      "agent-memory_bearerAuth": {
+        "description": "Telnyx API key",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "bearerAuth": {
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "branded-calling_bearerAuth": {
+        "description": "Telnyx API key. Generate one at https://portal.telnyx.com/#/app/api-keys.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "collections_bearerAuth": {
+        "description": "Telnyx API key. Collections and results are automatically scoped to the authenticated user's organization.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "number-reputation_bearerAuth": {
+        "description": "Telnyx API key. Generate one at https://portal.telnyx.com/#/app/api-keys.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "oauthClientAuth": {
+        "description": "OAuth 2.0 authentication for Telnyx API and MCP integrations",
+        "flows": {
+          "authorizationCode": {
+            "authorizationUrl": "https://api.telnyx.com/v2/oauth/authorize",
+            "refreshUrl": "https://api.telnyx.com/v2/oauth/token",
+            "scopes": {
+              "admin": "Administrative access to Telnyx resources"
+            },
+            "tokenUrl": "https://api.telnyx.com/v2/oauth/token"
+          },
+          "clientCredentials": {
+            "scopes": {
+              "admin": "Administrative access to Telnyx resources"
+            },
+            "tokenUrl": "https://api.telnyx.com/v2/oauth/token"
+          }
+        },
+        "type": "oauth2"
+      },
+      "outbound-voice-profiles_bearerAuth": {
+        "bearerFormat": "JWT",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "pay-connectors_bearerAuth": {
+        "description": "Telnyx API key, not the processor bearer token.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "pronunciation-dicts_bearerAuth": {
+        "description": "Telnyx API v2 key. Obtain from https://portal.telnyx.com",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "rcs-registration_bearerAuth": {
+        "bearerFormat": "API key",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "stored-payment-transactions_bearerAuth": {
+        "bearerFormat": "JWT",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "telnyxApiKey": {
+        "description": "Management-only Telnyx account credential.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "transcriptions-search_bearerAuth": {
+        "description": "Telnyx API key. Results are automatically scoped to the authenticated user's organization.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "web-search_bearerAuth": {
+        "description": "Telnyx API key",
+        "scheme": "bearer",
+        "type": "http"
+      }
+    }
+  },
+  "info": {
+    "contact": {
+      "email": "support@telnyx.com"
+    },
+    "description": "SIP trunking, SMS, MMS, Call Control and Telephony Data Services.",
+    "title": "Telnyx API",
+    "version": "2.0.0",
+    "x-endpoint-cost": "light",
+    "x-latency-category": "responsive"
+  },
+  "openapi": "3.1.0",
+  "paths": {
+    "/inexplicit_number_orders": {
+      "get": {
+        "description": "Get a paginated list of inexplicit number orders.",
+        "operationId": "ListInexplicitNumberOrders",
+        "parameters": [
+          {
+            "description": "The page number to load",
+            "in": "query",
+            "name": "page_number",
+            "schema": {
+              "default": 1,
+              "minimum": 1,
+              "type": "integer"
+            }
+          },
+          {
+            "description": "The size of the page",
+            "in": "query",
+            "name": "page_size",
+            "schema": {
+              "default": 20,
+              "maximum": 250,
+              "minimum": 1,
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "items": {
+                        "$ref": "#/components/schemas/InexplicitNumberOrderResponse"
+                      },
+                      "type": "array"
+                    },
+                    "meta": {
+                      "$ref": "#/components/schemas/PaginationMeta"
+                    }
+                  },
+                  "title": "List Inexplicit Number Orders Response",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful response with a list of inexplicit number orders."
+          },
+          "400": {
+            "$ref": "#/components/responses/numbers_BadRequestResponse_73c9788e53"
+          },
+          "401": {
+            "$ref": "#/components/responses/numbers_UnauthorizedResponse_73c9788e53"
+          },
+          "404": {
+            "$ref": "#/components/responses/numbers_NotFoundResponse_73c9788e53"
+          },
+          "422": {
+            "$ref": "#/components/responses/numbers_UnprocessableEntity_73c9788e53"
+          },
+          "500": {
+            "$ref": "#/components/responses/GenericErrorResponse"
+          }
+        },
+        "summary": "List inexplicit number orders",
+        "tags": [
+          "Inexplicit Number Orders"
+        ]
+      },
+      "post": {
+        "description": "Create an inexplicit number order to programmatically purchase phone numbers without specifying exact numbers.",
+        "operationId": "CreateInexplicitNumberOrder",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "example": {
+                "ordering_groups": [
+                  {
+                    "administrative_area": "CA",
+                    "count_requested": "5",
+                    "country_iso": "US",
+                    "features": [
+                      "voice"
+                    ],
+                    "phone_number_type": "local"
+                  }
+                ]
+              },
+              "schema": {
+                "$ref": "#/components/schemas/InexplicitNumberOrderRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "data": {
+                    "billing_group_id": "string",
+                    "connection_id": "string",
+                    "created_at": "2024-01-23T18:10:02.574Z",
+                    "customer_reference": "string",
+                    "id": "string",
+                    "messaging_profile_id": "string",
+                    "ordering_groups": [
+                      {
+                        "administrative_area": "string",
+                        "count_allocated": 0,
+                        "count_requested": 0,
+                        "country_iso": "string",
+                        "created_at": "2024-01-23T18:10:02.574Z",
+                        "error_reason": "string",
+                        "exclude_held_numbers": false,
+                        "national_destination_code": "string",
+                        "orders": [
+                          {
+                            "number_order_id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+                            "sub_number_order_ids": [
+                              "3fa85f64-5717-4562-b3fc-2c963f66afa6"
+                            ]
+                          }
+                        ],
+                        "phone_number[contains]": "string",
+                        "phone_number[ends_with]": "string",
+                        "phone_number[starts_with]": "string",
+                        "phone_number_type": "string",
+                        "quickship": false,
+                        "status": "pending",
+                        "strategy": "always",
+                        "updated_at": "2024-01-23T18:10:02.574Z"
+                      }
+                    ],
+                    "updated_at": "2024-01-23T18:10:02.574Z"
+                  }
+                },
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/InexplicitNumberOrderResponse"
+                    }
+                  },
+                  "title": "Inexplicit Number Order Response",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful response with details about an inexplicit number order."
+          },
+          "400": {
+            "$ref": "#/components/responses/numbers_BadRequestResponse_73c9788e53"
+          },
+          "401": {
+            "$ref": "#/components/responses/numbers_UnauthorizedResponse_73c9788e53"
+          },
+          "404": {
+            "$ref": "#/components/responses/numbers_NotFoundResponse_73c9788e53"
+          },
+          "422": {
+            "$ref": "#/components/responses/numbers_UnprocessableEntity_73c9788e53"
+          },
+          "500": {
+            "$ref": "#/components/responses/GenericErrorResponse"
+          }
+        },
+        "summary": "Create an inexplicit number order",
+        "tags": [
+          "Inexplicit Number Orders"
+        ]
+      }
+    },
+    "/inexplicit_number_orders/{id}": {
+      "get": {
+        "description": "Get an existing inexplicit number order by ID.",
+        "operationId": "RetrieveInexplicitNumberOrder",
+        "parameters": [
+          {
+            "description": "Identifies the inexplicit number order",
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "data": {
+                    "billing_group_id": "string",
+                    "connection_id": "string",
+                    "created_at": "2024-01-23T18:10:02.574Z",
+                    "customer_reference": "string",
+                    "id": "string",
+                    "messaging_profile_id": "string",
+                    "ordering_groups": [
+                      {
+                        "administrative_area": "string",
+                        "count_allocated": 0,
+                        "count_requested": 0,
+                        "country_iso": "string",
+                        "created_at": "2024-01-23T18:10:02.574Z",
+                        "error_reason": "string",
+                        "exclude_held_numbers": false,
+                        "national_destination_code": "string",
+                        "orders": [
+                          {
+                            "number_order_id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+                            "sub_number_order_ids": [
+                              "3fa85f64-5717-4562-b3fc-2c963f66afa6"
+                            ]
+                          }
+                        ],
+                        "phone_number[contains]": "string",
+                        "phone_number[ends_with]": "string",
+                        "phone_number[starts_with]": "string",
+                        "phone_number_type": "string",
+                        "quickship": false,
+                        "status": "pending",
+                        "strategy": "always",
+                        "updated_at": "2024-01-23T18:10:02.574Z"
+                      }
+                    ],
+                    "updated_at": "2024-01-23T18:10:02.574Z"
+                  }
+                },
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/InexplicitNumberOrderResponse"
+                    }
+                  },
+                  "title": "Inexplicit Number Order Response",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful response with details about an inexplicit number order."
+          },
+          "400": {
+            "$ref": "#/components/responses/numbers_BadRequestResponse_73c9788e53"
+          },
+          "401": {
+            "$ref": "#/components/responses/numbers_UnauthorizedResponse_73c9788e53"
+          },
+          "404": {
+            "$ref": "#/components/responses/numbers_NotFoundResponse_73c9788e53"
+          },
+          "422": {
+            "$ref": "#/components/responses/numbers_UnprocessableEntity_73c9788e53"
+          },
+          "500": {
+            "$ref": "#/components/responses/GenericErrorResponse"
+          }
+        },
+        "summary": "Retrieve an inexplicit number order",
+        "tags": [
+          "Inexplicit Number Orders"
+        ]
+      }
+    }
+  },
+  "security": [
+    {
+      "bearerAuth": []
+    }
+  ],
+  "servers": [
+    {
+      "description": "Version 2.0.0 of the Telnyx API",
+      "url": "https://api.telnyx.com/v2"
+    }
+  ]
+}

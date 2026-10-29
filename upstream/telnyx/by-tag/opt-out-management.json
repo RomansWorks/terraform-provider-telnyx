@@ -1,0 +1,912 @@
+{
+  "components": {
+    "parameters": {
+      "PageConsolidated": {
+        "description": "Consolidated page parameter (deepObject style). Originally: page[number], page[size]",
+        "explode": true,
+        "in": "query",
+        "name": "page",
+        "schema": {
+          "properties": {
+            "number": {
+              "default": 1,
+              "description": "The page number to load",
+              "minimum": 1,
+              "type": "integer"
+            },
+            "size": {
+              "default": 20,
+              "description": "The size of the page",
+              "maximum": 250,
+              "minimum": 1,
+              "type": "integer"
+            }
+          },
+          "type": "object"
+        },
+        "style": "deepObject"
+      }
+    },
+    "responses": {
+      "messaging_GenericErrorResponse_0b38e7044b": {
+        "content": {
+          "application/json": {
+            "example": {
+              "errors": [
+                {
+                  "code": "string",
+                  "detail": "string",
+                  "source": {
+                    "parameter": "string",
+                    "pointer": "/data/attributes/phone_number"
+                  },
+                  "title": "string"
+                }
+              ]
+            },
+            "schema": {
+              "$ref": "#/components/schemas/messaging_Errors_0b38e7044b"
+            }
+          }
+        },
+        "description": "Unexpected error"
+      }
+    },
+    "schemas": {
+      "AutoRespConfigCreateSchema": {
+        "properties": {
+          "country_code": {
+            "example": "US",
+            "title": "Country Code",
+            "type": "string"
+          },
+          "keywords": {
+            "example": [
+              "keyword1",
+              "keyword2"
+            ],
+            "items": {
+              "type": "string"
+            },
+            "title": "Keywords",
+            "type": "array"
+          },
+          "op": {
+            "enum": [
+              "start",
+              "stop",
+              "info"
+            ],
+            "title": "Op",
+            "type": "string"
+          },
+          "resp_text": {
+            "example": "Thank you for your message",
+            "title": "Resp Text",
+            "type": "string"
+          }
+        },
+        "required": [
+          "op",
+          "keywords",
+          "country_code"
+        ],
+        "title": "AutoRespConfigCreateSchema",
+        "type": "object"
+      },
+      "AutorespConfigResponseSchema": {
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/AutorespConfigSchema"
+          }
+        },
+        "required": [
+          "data"
+        ],
+        "title": "AutorespConfigResponseSchema",
+        "type": "object"
+      },
+      "AutorespConfigSchema": {
+        "properties": {
+          "country_code": {
+            "example": "*",
+            "title": "Country Code",
+            "type": "string"
+          },
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "id": {
+            "example": "b8f9c1c0-5b5a-4b1e-8c1c-0b5a4b1e8c1c",
+            "title": "Id",
+            "type": "string"
+          },
+          "keywords": {
+            "example": [
+              "START",
+              "BEGIN"
+            ],
+            "items": {
+              "type": "string"
+            },
+            "title": "Keywords",
+            "type": "array"
+          },
+          "op": {
+            "enum": [
+              "start",
+              "stop",
+              "info"
+            ],
+            "example": "start",
+            "title": "Op",
+            "type": "string"
+          },
+          "resp_text": {
+            "example": "Thank you for subscribing to our service.",
+            "title": "Resp Text",
+            "type": "string"
+          },
+          "updated_at": {
+            "format": "date-time",
+            "title": "Updated At",
+            "type": "string"
+          }
+        },
+        "required": [
+          "op",
+          "keywords",
+          "country_code",
+          "id",
+          "created_at",
+          "updated_at"
+        ],
+        "title": "AutorespConfigSchema",
+        "type": "object"
+      },
+      "OptOutItem": {
+        "properties": {
+          "created_at": {
+            "description": "The timestamp when the opt-out was created",
+            "example": "2025-04-28 12:00:38.631252+00:00",
+            "format": "date-time",
+            "type": "string"
+          },
+          "from": {
+            "description": "Sending address (+E.164 formatted phone number, alphanumeric sender ID, or short code).",
+            "type": "string",
+            "x-format": "address"
+          },
+          "keyword": {
+            "description": "The keyword that triggered the opt-out.",
+            "example": "STOP",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "messaging_profile_id": {
+            "description": "Unique identifier for a messaging profile.",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "to": {
+            "$ref": "#/components/schemas/ToNumber"
+          }
+        },
+        "type": "object"
+      },
+      "OptOutListResponse": {
+        "properties": {
+          "data": {
+            "items": {
+              "$ref": "#/components/schemas/OptOutItem"
+            },
+            "type": "array"
+          },
+          "meta": {
+            "$ref": "#/components/schemas/messaging_PaginationMeta_0b38e7044b"
+          }
+        },
+        "type": "object"
+      },
+      "ToNumber": {
+        "description": "Receiving address (+E.164 formatted phone number or short code).",
+        "example": "+E.164",
+        "type": "string",
+        "x-format": "address"
+      },
+      "messaging_AutorespConfigsResponseSchema": {
+        "description": "List of Auto-Response Settings",
+        "properties": {
+          "data": {
+            "items": {
+              "$ref": "#/components/schemas/AutorespConfigSchema"
+            },
+            "title": "Data",
+            "type": "array"
+          },
+          "meta": {
+            "$ref": "#/components/schemas/messaging_PaginationMeta_0b38e7044b"
+          }
+        },
+        "required": [
+          "data",
+          "meta"
+        ],
+        "title": "AutorespConfigsResponseSchema",
+        "type": "object"
+      },
+      "messaging_Error_0b38e7044b": {
+        "properties": {
+          "code": {
+            "type": "string",
+            "x-format": "integer"
+          },
+          "detail": {
+            "type": "string"
+          },
+          "meta": {
+            "type": "object"
+          },
+          "source": {
+            "properties": {
+              "parameter": {
+                "description": "Indicates which query parameter caused the error.",
+                "type": "string"
+              },
+              "pointer": {
+                "description": "JSON pointer (RFC6901) to the offending entity.",
+                "format": "json-pointer",
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
+          "title": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "title"
+        ]
+      },
+      "messaging_Errors_0b38e7044b": {
+        "properties": {
+          "errors": {
+            "items": {
+              "$ref": "#/components/schemas/messaging_Error_0b38e7044b"
+            },
+            "type": "array"
+          }
+        }
+      },
+      "messaging_PaginationMeta_0b38e7044b": {
+        "properties": {
+          "page_number": {
+            "example": 2,
+            "type": "integer"
+          },
+          "page_size": {
+            "example": 25,
+            "type": "integer"
+          },
+          "total_pages": {
+            "example": 3,
+            "type": "integer"
+          },
+          "total_results": {
+            "example": 55,
+            "type": "integer"
+          }
+        },
+        "required": [
+          "total_pages",
+          "total_results",
+          "page_size",
+          "page_number"
+        ],
+        "type": "object"
+      }
+    },
+    "securitySchemes": {
+      "BearerAuth": {
+        "bearerFormat": "API key",
+        "description": "Telnyx API key supplied as `Authorization: Bearer \u003ctoken\u003e`. In production, auth may be validated by the API gateway and forwarded via Telnyx auth headers.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "Payment": {
+        "description": "Machine Payment Protocol credential used on paid retries, sent as `Authorization: Payment ...`. Obtained by paying a challenge returned in the `WWW-Authenticate` header of a 402 response. This is not a Telnyx API key; initial challenge requests use standard bearer authentication instead.",
+        "in": "header",
+        "name": "Authorization",
+        "type": "apiKey"
+      },
+      "agent-memory_bearerAuth": {
+        "description": "Telnyx API key",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "bearerAuth": {
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "branded-calling_bearerAuth": {
+        "description": "Telnyx API key. Generate one at https://portal.telnyx.com/#/app/api-keys.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "collections_bearerAuth": {
+        "description": "Telnyx API key. Collections and results are automatically scoped to the authenticated user's organization.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "number-reputation_bearerAuth": {
+        "description": "Telnyx API key. Generate one at https://portal.telnyx.com/#/app/api-keys.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "oauthClientAuth": {
+        "description": "OAuth 2.0 authentication for Telnyx API and MCP integrations",
+        "flows": {
+          "authorizationCode": {
+            "authorizationUrl": "https://api.telnyx.com/v2/oauth/authorize",
+            "refreshUrl": "https://api.telnyx.com/v2/oauth/token",
+            "scopes": {
+              "admin": "Administrative access to Telnyx resources"
+            },
+            "tokenUrl": "https://api.telnyx.com/v2/oauth/token"
+          },
+          "clientCredentials": {
+            "scopes": {
+              "admin": "Administrative access to Telnyx resources"
+            },
+            "tokenUrl": "https://api.telnyx.com/v2/oauth/token"
+          }
+        },
+        "type": "oauth2"
+      },
+      "outbound-voice-profiles_bearerAuth": {
+        "bearerFormat": "JWT",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "pay-connectors_bearerAuth": {
+        "description": "Telnyx API key, not the processor bearer token.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "pronunciation-dicts_bearerAuth": {
+        "description": "Telnyx API v2 key. Obtain from https://portal.telnyx.com",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "rcs-registration_bearerAuth": {
+        "bearerFormat": "API key",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "stored-payment-transactions_bearerAuth": {
+        "bearerFormat": "JWT",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "telnyxApiKey": {
+        "description": "Management-only Telnyx account credential.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "transcriptions-search_bearerAuth": {
+        "description": "Telnyx API key. Results are automatically scoped to the authenticated user's organization.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "web-search_bearerAuth": {
+        "description": "Telnyx API key",
+        "scheme": "bearer",
+        "type": "http"
+      }
+    }
+  },
+  "info": {
+    "contact": {
+      "email": "support@telnyx.com"
+    },
+    "description": "SIP trunking, SMS, MMS, Call Control and Telephony Data Services.",
+    "title": "Telnyx API",
+    "version": "2.0.0",
+    "x-endpoint-cost": "light",
+    "x-latency-category": "responsive"
+  },
+  "openapi": "3.1.0",
+  "paths": {
+    "/messaging_optouts": {
+      "get": {
+        "description": "Returns a paginated list of opt-out blocks created when message recipients opt out. Supports filtering and optional redaction of recipient numbers.",
+        "operationId": "ListOptOuts",
+        "parameters": [
+          {
+            "description": "If receiving address (+E.164 formatted phone number) should be redacted",
+            "example": "+447766****",
+            "in": "query",
+            "name": "redaction_enabled",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "x-format": "boolean"
+            }
+          },
+          {
+            "description": "Consolidated filter parameter (deepObject style). Originally: filter[messaging_profile_id], filter[from]",
+            "explode": true,
+            "in": "query",
+            "name": "filter",
+            "schema": {
+              "properties": {
+                "from": {
+                  "description": "The sending address (+E.164 formatted phone number, alphanumeric sender ID, or short code) to retrieve opt-outs for",
+                  "type": "string"
+                },
+                "messaging_profile_id": {
+                  "description": "The ID of the messaging profile to retrieve opt-outs for",
+                  "type": "string"
+                }
+              },
+              "type": "object"
+            },
+            "style": "deepObject"
+          },
+          {
+            "$ref": "#/components/parameters/PageConsolidated"
+          },
+          {
+            "description": "Consolidated created_at parameter (deepObject style). Originally: created_at[gte], created_at[lte]",
+            "explode": true,
+            "in": "query",
+            "name": "created_at",
+            "schema": {
+              "properties": {
+                "gte": {
+                  "description": "Filter opt-outs created after this date (ISO-8601 format)",
+                  "format": "date-time",
+                  "type": "string"
+                },
+                "lte": {
+                  "description": "Filter opt-outs created before this date (ISO-8601 format)",
+                  "format": "date-time",
+                  "type": "string"
+                }
+              },
+              "type": "object"
+            },
+            "style": "deepObject"
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OptOutListResponse"
+                }
+              }
+            },
+            "description": "Successful response with opt-out list data"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/messaging_Error_0b38e7044b"
+                }
+              }
+            },
+            "description": "Bad request"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/messaging_Error_0b38e7044b"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          }
+        },
+        "summary": "List opt-outs",
+        "tags": [
+          "Opt-Out Management"
+        ]
+      }
+    },
+    "/messaging_profiles/{profile_id}/autoresp_configs": {
+      "get": {
+        "description": "Returns the auto-response rules configured for the specified messaging profile.",
+        "operationId": "GetAutorespConfigs",
+        "parameters": [
+          {
+            "description": "Unique identifier of the profile.",
+            "in": "path",
+            "name": "profile_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Profile Id",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Filter results by country code.",
+            "in": "query",
+            "name": "country_code",
+            "required": false,
+            "schema": {
+              "title": "Country Code",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Consolidated created_at parameter (deepObject style). Originally: created_at[gte], created_at[lte]",
+            "explode": true,
+            "in": "query",
+            "name": "created_at",
+            "schema": {
+              "properties": {
+                "gte": {
+                  "title": "Created At[Gte]",
+                  "type": "string"
+                },
+                "lte": {
+                  "title": "Created At[Lte]",
+                  "type": "string"
+                }
+              },
+              "type": "object"
+            },
+            "style": "deepObject"
+          },
+          {
+            "description": "Consolidated updated_at parameter (deepObject style). Originally: updated_at[gte], updated_at[lte]",
+            "explode": true,
+            "in": "query",
+            "name": "updated_at",
+            "schema": {
+              "properties": {
+                "gte": {
+                  "title": "Updated At[Gte]",
+                  "type": "string"
+                },
+                "lte": {
+                  "title": "Updated At[Lte]",
+                  "type": "string"
+                }
+              },
+              "type": "object"
+            },
+            "style": "deepObject"
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "data": [
+                    {
+                      "country_code": "US",
+                      "created_at": "2023-03-21T23:37:45.858535+00:00",
+                      "id": "677ec1cb-949e-4aeb-a1c3-6d9ddffc1409",
+                      "keywords": [
+                        "START",
+                        "BEGIN"
+                      ],
+                      "op": "start",
+                      "resp_text": "Thank you for subscribing US customer.",
+                      "updated_at": "2023-03-21T23:37:45.858535+00:00"
+                    },
+                    {
+                      "country_code": "US",
+                      "created_at": "2023-03-10T21:54:46.293380+00:00",
+                      "id": "54b7e19f-98a8-416f-81d1-a2782eade48b",
+                      "keywords": [
+                        "END",
+                        "STOP"
+                      ],
+                      "op": "stop",
+                      "resp_text": "You have unsubscribed.",
+                      "updated_at": "2023-03-10T21:54:46.293380+00:00"
+                    },
+                    {
+                      "country_code": "*",
+                      "created_at": "2023-03-14T14:46:21.097735+00:00",
+                      "id": "cfe07be1-2369-433f-be00-eb176008e834",
+                      "keywords": [
+                        "START"
+                      ],
+                      "op": "start",
+                      "resp_text": "Thank you for subscribing.",
+                      "updated_at": "2023-03-14T14:46:21.097735+00:00"
+                    }
+                  ],
+                  "meta": {
+                    "page_number": 1,
+                    "page_size": 5,
+                    "total_pages": 1,
+                    "total_results": 3
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/messaging_AutorespConfigsResponseSchema"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "4XX": {
+            "$ref": "#/components/responses/messaging_GenericErrorResponse_0b38e7044b"
+          }
+        },
+        "summary": "List Auto-Response Settings",
+        "tags": [
+          "Opt-Out Management"
+        ]
+      },
+      "post": {
+        "description": "Creates an auto-response rule on the specified messaging profile. Matching inbound messages trigger the configured response.",
+        "operationId": "CreateAutorespConfig",
+        "parameters": [
+          {
+            "description": "Unique identifier of the profile.",
+            "in": "path",
+            "name": "profile_id",
+            "required": true,
+            "schema": {
+              "title": "Profile Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AutoRespConfigCreateSchema"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "data": {
+                    "country_code": "US",
+                    "created_at": "2023-03-22T00:06:49.068817+00:00",
+                    "id": "c2298f86-a4dc-4cac-b6b6-4a3d01c290fa",
+                    "keywords": [
+                      "START"
+                    ],
+                    "op": "start",
+                    "resp_text": "Hello there!",
+                    "updated_at": "2023-03-22T00:06:49.068817+00:00"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/AutorespConfigResponseSchema"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "4XX": {
+            "$ref": "#/components/responses/messaging_GenericErrorResponse_0b38e7044b"
+          }
+        },
+        "summary": "Create auto-response setting",
+        "tags": [
+          "Opt-Out Management"
+        ]
+      }
+    },
+    "/messaging_profiles/{profile_id}/autoresp_configs/{autoresp_cfg_id}": {
+      "delete": {
+        "description": "Deletes the specified auto-response rule from the messaging profile.",
+        "operationId": "DeleteAutorespConfig",
+        "parameters": [
+          {
+            "description": "Unique identifier of the profile.",
+            "in": "path",
+            "name": "profile_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Profile Id",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Unique identifier of the autoresp cfg.",
+            "in": "path",
+            "name": "autoresp_cfg_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Autoresp Cfg Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "example": "OK",
+                  "type": "string"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "4XX": {
+            "$ref": "#/components/responses/messaging_GenericErrorResponse_0b38e7044b"
+          }
+        },
+        "summary": "Delete Auto-Response Setting",
+        "tags": [
+          "Opt-Out Management"
+        ]
+      },
+      "get": {
+        "description": "Returns the matching criteria and response content for the specified auto-response rule.",
+        "operationId": "GetAutorespConfig",
+        "parameters": [
+          {
+            "description": "Unique identifier of the profile.",
+            "in": "path",
+            "name": "profile_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Profile Id",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Unique identifier of the autoresp cfg.",
+            "in": "path",
+            "name": "autoresp_cfg_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Autoresp Cfg Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "data": {
+                    "country_code": "US",
+                    "created_at": "2023-03-13T17:51:03.826453+00:00",
+                    "id": "adc37adf-d110-4355-9e9a-262847e68e89",
+                    "keywords": [
+                      "UNSTOP"
+                    ],
+                    "op": "start",
+                    "resp_text": "Hello there!",
+                    "updated_at": "2023-03-13T17:51:03.826453+00:00"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/AutorespConfigResponseSchema"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "4XX": {
+            "$ref": "#/components/responses/messaging_GenericErrorResponse_0b38e7044b"
+          }
+        },
+        "summary": "Get Auto-Response Setting",
+        "tags": [
+          "Opt-Out Management"
+        ]
+      },
+      "put": {
+        "description": "Replaces the configuration of the specified auto-response rule.",
+        "operationId": "UpdateAutoRespConfig",
+        "parameters": [
+          {
+            "description": "Unique identifier of the profile.",
+            "in": "path",
+            "name": "profile_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Profile Id",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Unique identifier of the autoresp cfg.",
+            "in": "path",
+            "name": "autoresp_cfg_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Autoresp Cfg Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AutoRespConfigCreateSchema"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "data": {
+                    "country_code": "*",
+                    "created_at": "2023-03-10T21:54:46.293380+00:00",
+                    "id": "54b7e19f-98a8-416f-81d1-a2782eade48b",
+                    "keywords": [
+                      "START",
+                      "BEGIN"
+                    ],
+                    "op": "start",
+                    "resp_text": "Hello there!",
+                    "updated_at": "2023-03-10T21:54:46.293380+00:00"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/AutorespConfigResponseSchema"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "4XX": {
+            "$ref": "#/components/responses/messaging_GenericErrorResponse_0b38e7044b"
+          }
+        },
+        "summary": "Update Auto-Response Setting",
+        "tags": [
+          "Opt-Out Management"
+        ]
+      }
+    }
+  },
+  "security": [
+    {
+      "bearerAuth": []
+    }
+  ],
+  "servers": [
+    {
+      "description": "Version 2.0.0 of the Telnyx API",
+      "url": "https://api.telnyx.com/v2"
+    }
+  ]
+}

@@ -9,20 +9,21 @@ A one-off script applied the rules from the `api-sync` delta to every entry. It 
 - Resources the path heuristics missed.
 - A few forced entries.
 
-The script is not kept. `coverage.yaml` and its notes are the record, and later syncs classify new operations by the same rules.
+The script is not kept. `coverage.yaml` and its notes are the record. `make catalog` still suggests buckets and names for new operations from path shapes, so its names can differ from the ones here (for example `telnyx_dir`). The review in each sync change applies the rules and the names in this file.
 
 Each note says why the entry got its bucket:
 
 | Note | Meaning |
 |---|---|
-| `create of telnyx_x (catalog collection)` | Lifecycle operation of a resource that `make catalog` detected |
+| `create of telnyx_x (catalog collection)`; `update (webhook) of …` names a second update endpoint | Lifecycle operation of a resource that `make catalog` detected |
 | `create of telnyx_x (triage)` | Lifecycle operation of a resource added in this review |
 | `list of telnyx_x` | Plural data source for the resource |
 | `alias of METHOD /path` | Duplicate path; the canonical one carries the entry |
 | `alternative update; …` | The resource uses the other update method |
 | `runtime: …`, `reporting` | Out of scope, with the reason |
 | `secret value: never stored in state` | Ephemeral |
-| `lookup`, `reference data` | Data source |
+| `read-only`, `reference data` | Data source |
+| `duplicate API of telnyx_x` | A second API for the same object, under a different operationId |
 | `one-shot operation` | Action |
 
 ## Naming
@@ -53,6 +54,20 @@ All names are provisional until their wave ships them.
   - the creates for custom storage credentials, Dialogflow connections, 10DLC campaigns (`POST /10dlc/campaignBuilder`) and display identity records
   - network default gateways, number reservations, voicemail, user addresses, enterprise reputation, verify message templates
   - the advanced, inexplicit, number block and SIM card orders, and storage migrations (like `telnyx_number_order`: created once, never deleted)
+- **Folded into resources, not actions:**
+  - the SIM card group's private wireless gateway and blocklist
+  - the managed account's global channel limit
+  - the enterprise reputation frequency and webhook
+
+  These are hooks on the resource's update.
+- **Settings-style:** `telnyx_email_inbox_sender_filters` manages the whole filter list with `PUT`. The incremental `POST` and `DELETE` are out of scope.
+- **Duplicate APIs:** `/messaging/rcs/agents` duplicates `/rcs/agents` under another operationId. It is out of scope, and `telnyx_rcs_agent` manages the agent.
+- **Jobs kept as resources:** storage migrations and number reservations are created once and read back, like `telnyx_number_order`. A migration copies data into storage the configuration owns, and a reservation holds numbers for a later order. Room compositions, clusters and fine-tuning jobs produce runtime output and are out of scope.
+- **Left as actions:**
+  - user bundles: the API only creates them in bulk
+  - external connection location updates: they edit locations Telnyx creates from uploads
+
+  A wave may revisit either.
 - **Ephemeral:**
   - `POST /telephony_credentials/{id}/token`
   - `GET /sim_cards/{id}/activation_code`
@@ -65,13 +80,14 @@ These belong to step 2 of the plan, and each gets its own change before the wave
 
 | Feature | Needed by |
 |---|---|
-| Plural (list) data sources with filters and pagination | 299 data source entries, about 120 of them lists |
-| Read from the list operation when there is no item `GET` | 14 resources (integration secrets, spend limits, voice clones, porting order children, …) |
+| Plural (list) data sources with filters and pagination | 297 data source entries, 130 of them lists |
+| Read from the list operation when there is no item `GET` | 15 resources (integration secrets, spend limits, voice clones, porting order children, …) |
 | Read from the parent object | 4 attachment resources (assistant tags, tool attachments, IP pool IPs, insight group assignments) |
-| Terraform actions | 133 action entries; needs Terraform 1.14 or later |
+| Terraform actions | 121 action entries; needs Terraform 1.14 or later |
 | Ephemeral resources | 3 entries |
 | Write-only secret attributes (`_wo`) | Integration secrets, telephony and push credentials, OAuth clients, storage credentials |
-| Adopting an object the API cannot create | 24 resources (phone numbers, SIM cards, hosted numbers, settings objects) |
+| Adopting an object the API cannot create | 20 resources (phone numbers, SIM cards, hosted numbers, settings objects) |
+| Several update endpoints for one resource | 3 resources (SIM card group, managed account, enterprise reputation) |
 | No delete in the API: destroy removes from state and warns | 33 resources (already supported) |
 
 ## Waves
@@ -80,19 +96,19 @@ Each wave is one OpenSpec change and one PR, built in this order. A wave also sh
 
 ### Wave 1: Voice and numbers
 
-47 resources, 70 data sources, 28 actions, 1 ephemeral resource.
+47 resources, 70 data sources, 29 actions, 1 ephemeral resource.
 
-`telnyx_address`, `telnyx_advanced_number_order`, `telnyx_billing_group`, `telnyx_call_control_application`, `telnyx_credential_connection`, `telnyx_custom_storage_credential`, `telnyx_dialogflow_connection`, `telnyx_document`, `telnyx_dynamic_emergency_address`, `telnyx_dynamic_emergency_endpoint`, `telnyx_external_connection`, `telnyx_external_connection_phone_number_settings`, `telnyx_fax_application`, `telnyx_fqdn_connection`, `telnyx_fqdn_connection_authentication`, `telnyx_inbound_voice_channels`, `telnyx_inexplicit_number_order`, `telnyx_ip_connection`, `telnyx_mobile_push_credential`, `telnyx_mobile_voice_connection`, `telnyx_number_block_order`, ~~`telnyx_number_order`~~, `telnyx_number_reservation`, ~~`telnyx_outbound_voice_profile`~~, `telnyx_pay_connector`, `telnyx_phone_number`, `telnyx_phone_number_messaging_settings`, ~~`telnyx_phone_number_voice_settings`~~, `telnyx_phone_number_voicemail`, `telnyx_porting_loa_configuration`, `telnyx_porting_order`, `telnyx_porting_order_additional_document`, `telnyx_porting_order_associated_phone_number`, `telnyx_porting_order_phone_number_block`, `telnyx_porting_order_phone_number_extension`, `telnyx_queue`, `telnyx_requirement_group`, `telnyx_siprec_connector`, `telnyx_telephony_credential`, `telnyx_texml_application`, `telnyx_texml_queue`, `telnyx_uac_connection`, `telnyx_user_address`, `telnyx_verified_number`, `telnyx_verify_profile`, `telnyx_verify_profile_message_template`, `telnyx_voice_channel_zone`
+`telnyx_address`, `telnyx_advanced_number_order`, `telnyx_billing_group`, `telnyx_call_control_application`, `telnyx_credential_connection`, `telnyx_custom_storage_credential`, `telnyx_dialogflow_connection`, `telnyx_document`, `telnyx_dynamic_emergency_address`, `telnyx_dynamic_emergency_endpoint`, `telnyx_external_connection`, `telnyx_external_connection_phone_number_settings`, `telnyx_fax_application`, `telnyx_fqdn_connection`, `telnyx_fqdn_connection_authentication`, `telnyx_inbound_voice_channel_settings`, `telnyx_inexplicit_number_order`, `telnyx_ip_connection`, `telnyx_mobile_push_credential`, `telnyx_mobile_voice_connection`, `telnyx_number_block_order`, ~~`telnyx_number_order`~~, `telnyx_number_reservation`, ~~`telnyx_outbound_voice_profile`~~, `telnyx_pay_connector`, `telnyx_phone_number`, `telnyx_phone_number_messaging_settings`, ~~`telnyx_phone_number_voice_settings`~~, `telnyx_phone_number_voicemail`, `telnyx_porting_loa_configuration`, `telnyx_porting_order`, `telnyx_porting_order_additional_document`, `telnyx_porting_order_associated_phone_number`, `telnyx_porting_order_phone_number_block`, `telnyx_porting_order_phone_number_extension`, `telnyx_queue`, `telnyx_requirement_group`, `telnyx_siprec_connector`, `telnyx_telephony_credential`, `telnyx_texml_application`, `telnyx_texml_queue`, `telnyx_uac_connection`, `telnyx_user_address`, `telnyx_verified_number`, `telnyx_verify_profile`, `telnyx_verify_profile_message_template`, `telnyx_voice_channel_zone`
 
 ### Wave 2: Messaging
 
-26 resources, 52 data sources, 25 actions, 0 ephemeral resources.
+26 resources, 50 data sources, 23 actions, 0 ephemeral resources.
 
-`telnyx_10dlc_brand`, `telnyx_10dlc_campaign`, `telnyx_10dlc_phone_number_campaign`, `telnyx_10dlc_shared_campaign`, `telnyx_alphanumeric_sender_id`, `telnyx_messaging_hosted_number`, `telnyx_messaging_hosted_number_order`, `telnyx_messaging_profile`, `telnyx_messaging_profile_auto_response`, `telnyx_messaging_rcs_agent`, `telnyx_messaging_tollfree_verification_request`, `telnyx_mobile_phone_number_settings`, `telnyx_notification_channel`, `telnyx_notification_profile`, `telnyx_notification_setting`, `telnyx_rcs_agent`, `telnyx_rcs_agent_test_device`, `telnyx_rcs_brand`, `telnyx_short_code_settings`, `telnyx_whatsapp_business_account_settings`, `telnyx_whatsapp_message_template`, `telnyx_whatsapp_phone_number_calling_routing`, `telnyx_whatsapp_phone_number_calling_settings`, `telnyx_whatsapp_phone_number_conversational_components`, `telnyx_whatsapp_phone_number_profile`, `telnyx_whatsapp_user_data`
+`telnyx_10dlc_brand`, `telnyx_10dlc_campaign`, `telnyx_10dlc_phone_number_campaign`, `telnyx_10dlc_shared_campaign`, `telnyx_alphanumeric_sender_id`, `telnyx_messaging_hosted_number`, `telnyx_messaging_hosted_number_order`, `telnyx_messaging_profile`, `telnyx_messaging_profile_auto_response`, `telnyx_messaging_tollfree_verification_request`, `telnyx_mobile_phone_number`, `telnyx_notification_channel`, `telnyx_notification_profile`, `telnyx_notification_setting`, `telnyx_rcs_agent`, `telnyx_rcs_agent_test_device`, `telnyx_rcs_brand`, `telnyx_short_code_settings`, `telnyx_whatsapp_business_account_settings`, `telnyx_whatsapp_message_template`, `telnyx_whatsapp_phone_number`, `telnyx_whatsapp_phone_number_calling_routing`, `telnyx_whatsapp_phone_number_calling_settings`, `telnyx_whatsapp_phone_number_conversational_components`, `telnyx_whatsapp_phone_number_profile`, `telnyx_whatsapp_user_data`
 
 ### Wave 3: Networking and wireless
 
-23 resources, 35 data sources, 15 actions, 2 ephemeral resources.
+23 resources, 35 data sources, 12 actions, 2 ephemeral resources.
 
 `telnyx_access_ip_address`, `telnyx_access_ip_range`, `telnyx_fqdn`, `telnyx_global_ip`, `telnyx_global_ip_assignment`, `telnyx_global_ip_health_check`, `telnyx_ip`, `telnyx_network`, `telnyx_network_default_gateway`, `telnyx_network_route`, `telnyx_private_wireless_gateway`, `telnyx_public_internet_gateway`, `telnyx_sim_card`, `telnyx_sim_card_data_usage_notification`, `telnyx_sim_card_group`, `telnyx_sim_card_order`, `telnyx_tailscale_subnet_router`, `telnyx_traffic_policy_profile`, `telnyx_tunnel`, `telnyx_virtual_cross_connect`, `telnyx_wireguard_interface`, `telnyx_wireguard_peer`, `telnyx_wireless_blocklist`
 
@@ -100,19 +116,19 @@ Each wave is one OpenSpec change and one PR, built in this order. A wave also sh
 
 11 resources, 12 data sources, 7 actions, 0 ephemeral resources.
 
-`telnyx_email_dedicated_ip`, `telnyx_email_domain`, `telnyx_email_domain_webhook`, `telnyx_email_inbox`, `telnyx_email_inbox_filter`, `telnyx_email_ip_pool`, `telnyx_email_ip_pool_ip`, `telnyx_email_suppression`, `telnyx_email_template`, `telnyx_email_unsubscribe_group`, `telnyx_email_unsubscribe_group_suppression`
+`telnyx_email_dedicated_ip`, `telnyx_email_domain`, `telnyx_email_domain_webhook`, `telnyx_email_inbox`, `telnyx_email_inbox_sender_filters`, `telnyx_email_ip_pool`, `telnyx_email_ip_pool_ip`, `telnyx_email_suppression`, `telnyx_email_template`, `telnyx_email_unsubscribe_group`, `telnyx_email_unsubscribe_group_suppression`
 
 ### Wave 5: AI, storage and compute
 
-40 resources, 49 data sources, 15 actions, 0 ephemeral resources.
+40 resources, 51 data sources, 14 actions, 0 ephemeral resources.
 
 ~~`telnyx_ai_assistant`~~, `telnyx_ai_assistant_canary_deploy`, `telnyx_ai_assistant_tag`, `telnyx_ai_assistant_test`, `telnyx_ai_assistant_tool_attachment`, ~~`telnyx_ai_avatar`~~, `telnyx_ai_collection`, `telnyx_ai_collection_settings`, `telnyx_ai_collection_source`, `telnyx_ai_conversation_insight`, `telnyx_ai_conversation_insight_group`, `telnyx_ai_conversation_insight_group_assignment`, `telnyx_ai_gateway_token_group`, `telnyx_ai_gateway_token_key`, ~~`telnyx_ai_mcp_server`~~, `telnyx_ai_memory_namespace`, `telnyx_ai_memory_namespace_settings`, `telnyx_ai_mission`, `telnyx_ai_mission_knowledge_base`, `telnyx_ai_mission_mcp_server`, `telnyx_ai_mission_tool`, `telnyx_ai_test_agent`, `telnyx_ai_test_metric`, `telnyx_ai_test_scenario`, `telnyx_ai_test_schedule`, ~~`telnyx_ai_tool`~~, `telnyx_compute_function_log_export`, `telnyx_integration_secret`, `telnyx_media`, `telnyx_pronunciation_dictionary`, `telnyx_room`, `telnyx_storage_bucket_ssl_certificate`, `telnyx_storage_cloudfs_filesystem`, `telnyx_storage_kv_key`, `telnyx_storage_kv_namespace`, `telnyx_storage_migration`, `telnyx_storage_migration_source`, `telnyx_storage_sql_database`, `telnyx_voice_clone`, `telnyx_voice_design`
 
 ### Wave 6: Account and identity
 
-9 resources, 81 data sources, 43 actions, 0 ephemeral resources.
+10 resources, 79 data sources, 36 actions, 0 ephemeral resources.
 
-`telnyx_authentication_provider`, `telnyx_auto_recharge_preferences`, `telnyx_display_identity_record`, `telnyx_enterprise`, `telnyx_managed_account`, `telnyx_oauth_client`, `telnyx_reputation_enterprise`, `telnyx_reputation_number`, `telnyx_spend_limit`
+`telnyx_authentication_provider`, `telnyx_auto_recharge_preferences`, `telnyx_display_identity_record`, `telnyx_display_identity_record_phone_number`, `telnyx_enterprise`, `telnyx_enterprise_reputation`, `telnyx_enterprise_reputation_number`, `telnyx_managed_account`, `telnyx_oauth_client`, `telnyx_spend_limit`
 
 ## Open questions and decisions
 

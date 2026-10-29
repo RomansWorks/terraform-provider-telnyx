@@ -126,6 +126,17 @@ func TestCoverageSyncAndCheck(t *testing.T) {
 	}
 	clone.Terraform = "telnyx_ai_assistant_clone"
 	cov["POST /ai/assistants/{assistant_id}/clone"] = clone
+	if rep = cov.Check(s); len(rep.Invalid) != 0 {
+		t.Errorf("check = %+v; want a named reviewed action to be valid", rep)
+	}
+	answer := cov["POST /calls/{call_control_id}/actions/answer"]
+	answer.Terraform = "telnyx_call_answer"
+	cov["POST /calls/{call_control_id}/actions/answer"] = answer
+	if rep = cov.Check(s); len(rep.Invalid) != 1 {
+		t.Errorf("check = %+v; want an out_of_scope entry with a name to be invalid", rep)
+	}
+	answer.Terraform = ""
+	cov["POST /calls/{call_control_id}/actions/answer"] = answer
 
 	delete(cov, "GET /ai/assistants")
 	cov["GET /extra"] = CoverageEntry{Bucket: "bogus"}

@@ -5,8 +5,9 @@ provider for the [Telnyx](https://telnyx.com) API: numbers, voice, messaging,
 wireless, networking, storage, and AI assistants, avatars and missions. It is not
 an official Telnyx product.
 
-> **Status:** foundations only. The provider configures and authenticates, but no
-> resources are available yet. See [the roadmap](#roadmap).
+> **Status:** early. Seven pilot resources are available: AI assistants, avatars,
+> tools and MCP servers, outbound voice profiles, phone number voice settings and
+> number orders. See [the docs](docs/) and [the roadmap](#roadmap).
 
 ## Usage
 
@@ -50,7 +51,7 @@ the OpenSpec CLI (`npm install -g @fission-ai/openspec`).
 ```sh
 make check      # build, unit tests, API coverage, OpenSpec validation
 make testacc    # acceptance tests; needs TELNYX_API_KEY and creates real objects
-make generate   # provider docs
+make generate   # resource descriptors from the spec and overrides, then docs
 ```
 
 To try a local build, add a [dev override](https://developer.hashicorp.com/terraform/cli/config/config-file#development-overrides-for-provider-developers)
@@ -58,9 +59,9 @@ for `romansworks/telnyx` pointing at `$(go env GOPATH)/bin` and run `make instal
 
 ## Roadmap
 
-1. Foundations: provider core, pinned spec, coverage and sync loop (this release).
+1. Foundations: provider core, pinned spec, coverage and sync loop.
 2. Resource generator and a pilot set: AI assistant, AI avatar, AI tool, MCP server,
-   outbound voice profile, phone number settings, number order.
+   outbound voice profile, phone number voice settings, number order (this release).
 3. Coverage rollout by product area.
 4. Hardening, nightly acceptance runs, and 1.0 on the Terraform and OpenTofu registries.
 

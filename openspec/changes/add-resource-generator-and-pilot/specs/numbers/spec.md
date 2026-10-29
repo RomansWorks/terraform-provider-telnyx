@@ -7,7 +7,7 @@ Manages buying phone numbers and the settings of numbers already on the account.
 ## ADDED Requirements
 
 ### Requirement: Number order
-The provider SHALL manage `telnyx_number_order` with `POST /number_orders` and `GET /number_orders/{number_order_id}`. After create it SHALL wait until `status` is `success`, failing on `failure` or when `timeouts.create` (default 10 minutes) passes. Changes other than `customer_reference` SHALL force replacement; `customer_reference` SHALL update with `PATCH`.
+The provider SHALL manage `telnyx_number_order` with `POST /number_orders` and `GET /number_orders/{number_order_id}`. After create it SHALL wait until `status` is `success`, failing on `failure` or when `timeouts.create` (default 10 minutes) passes. Changes other than `customer_reference` and `regulatory_requirements` SHALL force replacement; those two SHALL update with `PATCH /number_orders/{number_order_id}`.
 
 #### Scenario: Order completes
 - **WHEN** a user orders a number and the order moves from `pending` to `success`

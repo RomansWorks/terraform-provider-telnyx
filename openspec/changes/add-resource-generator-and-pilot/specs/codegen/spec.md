@@ -24,19 +24,27 @@ Attributes SHALL be Required when required by the create request, Optional and C
 - **WHEN** a user omits an optional attribute and the API returns a default value
 - **THEN** the plan after apply is empty
 
+#### Scenario: Update-only field
+- **WHEN** a user sets an attribute that only the update operation accepts
+- **THEN** the provider sends it in an update straight after create
+
 #### Scenario: Immutable field
 - **WHEN** a user changes an attribute that no update operation accepts
 - **THEN** the plan replaces the resource
 
 ### Requirement: Polymorphic and free-form values
-Discriminated `oneOf` values SHALL become one optional nested attribute per variant, with exactly one allowed. Free-form objects and undiscriminated unions SHALL become strings holding JSON, compared after normalisation.
+Unions whose object variants each fix `type` to one value SHALL become one nested object with the union of the variants' fields, where `type` selects the variant. Free-form objects and other unions SHALL become strings holding JSON, compared after normalisation. A JSON attribute SHALL keep its configured value when the API returns the same document with extra keys.
 
-#### Scenario: Two variants set
-- **WHEN** a configuration sets two variants of the same attribute
-- **THEN** validation fails before any API call
+#### Scenario: Tagged union
+- **WHEN** an assistant configures `tools = [{ type = "hangup", hangup = {} }]`
+- **THEN** the request carries `{"type": "hangup", "hangup": {}}`
 
 #### Scenario: JSON formatting
 - **WHEN** a JSON attribute differs from the API value only in key order or whitespace
+- **THEN** the plan shows no change
+
+#### Scenario: Server defaults in JSON
+- **WHEN** the API returns a JSON attribute with keys the user did not set, and the keys the user set are unchanged
 - **THEN** the plan shows no change
 
 ### Requirement: Response envelopes

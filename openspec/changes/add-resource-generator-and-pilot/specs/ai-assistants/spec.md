@@ -22,7 +22,7 @@ The provider SHALL manage `telnyx_ai_assistant` with `POST /ai/assistants`, `GET
 - **THEN** it is deleted, or read into state with an empty follow-up plan
 
 ### Requirement: AI tool
-The provider SHALL manage `telnyx_ai_tool` with `POST /ai/tools`, `GET`, `PATCH` and `DELETE /ai/tools/{tool_id}`. Exactly one tool variant attribute (`webhook`, `handoff`, `retrieval`, `function`, `invite`, `pay`, `client_side_tool`, `update_dynamic_variables`, `vision`) SHALL be set, and it SHALL match `type`. Read SHALL map `tool_definition` back onto the variant so that drift is detected. Changing `type` SHALL force replacement.
+The provider SHALL manage `telnyx_ai_tool` with `POST /ai/tools`, `GET`, `PATCH` and `DELETE /ai/tools/{tool_id}`. Exactly one tool variant attribute (`webhook`, `handoff`, `retrieval`, `function`, `invite`, `pay`, `client_side_tool`, `update_dynamic_variables`, `vision`) SHALL be set, and it SHALL match `type`; variants without settings are set to `{}`. Read SHALL map `tool_definition` back onto the variant so that drift is detected. Changing `type` SHALL force replacement.
 
 #### Scenario: Webhook URL changed in the portal
 - **WHEN** the webhook URL is changed outside Terraform
@@ -34,7 +34,11 @@ The provider SHALL manage `telnyx_ai_tool` with `POST /ai/tools`, `GET`, `PATCH`
 
 #### Scenario: Lifecycle
 - **WHEN** a tool is created, updated, destroyed and imported
-- **THEN** each step uses the matching operation and import yields an empty plan
+- **THEN** each step uses the matching operation, and import reads the variant's settings from `tool_definition`
+
+#### Scenario: Type change
+- **WHEN** `type` changes
+- **THEN** the plan replaces the tool
 
 ### Requirement: AI MCP server
 The provider SHALL manage `telnyx_ai_mcp_server` with `POST /ai/mcp_servers`, `GET`, `PUT` and `DELETE /ai/mcp_servers/{mcp_server_id}`. Updates SHALL send the full object. `allowed_tools` SHALL be a set.

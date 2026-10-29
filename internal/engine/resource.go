@@ -78,7 +78,7 @@ func (r *frameworkResource) ConfigValidators(context.Context) []resource.ConfigV
 func (r *frameworkResource) ModifyPlan(ctx context.Context, req resource.ModifyPlanRequest, resp *resource.ModifyPlanResponse) {
 	if req.Plan.Raw.IsNull() {
 		if r.d.Delete == nil && !req.State.Raw.IsNull() {
-			resp.Diagnostics.AddWarning("Object stays in Telnyx", r.deleteWarning())
+			resp.Diagnostics.AddWarning("Object stays in Telnyx", r.deleteWarning(fields(req.State.Raw)))
 		}
 		return
 	}
@@ -146,7 +146,8 @@ func (r *frameworkResource) Create(ctx context.Context, req resource.CreateReque
 	}
 
 	// Attributes only an update accepts are applied straight after create.
-	if d.Update != nil {
+	// A PUT replaces the whole object, so it cannot carry them alone.
+	if d.Update != nil && d.Update.Method != http.MethodPut {
 		late := func(a *Attr) bool {
 			v := plan[a.Name]
 			return a.InUpdate && !a.InCreate && !a.Local && v.IsKnown() && !v.IsNull()
@@ -238,10 +239,14 @@ func (r *frameworkResource) Update(ctx context.Context, req resource.UpdateReque
 			}
 		}
 	}
-	obj, err := r.sendBody(ctx, d.Update, plan, "update", include, pathVals, clearRemoved)
-	if err != nil {
-		resp.Diagnostics.AddError("Unable to update "+d.TypeName, err.Error())
-		return
+	var obj Object
+	var err error
+	if d.Update.Method == http.MethodPut || r.changed(plan, state) {
+		obj, err = r.sendBody(ctx, d.Update, plan, "update", include, pathVals, clearRemoved)
+		if err != nil {
+			resp.Diagnostics.AddError("Unable to update "+d.TypeName, err.Error())
+			return
+		}
 	}
 	if d.Read != nil {
 		if obj, err = r.get(ctx, pathVals); err != nil {
@@ -264,7 +269,7 @@ func (r *frameworkResource) Update(ctx context.Context, req resource.UpdateReque
 func (r *frameworkResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
 	d := r.d
 	if d.Delete == nil {
-		resp.Diagnostics.AddWarning("Object stays in Telnyx", r.deleteWarning())
+		resp.Diagnostics.AddWarning("Object stays in Telnyx", r.deleteWarning(fields(req.State.Raw)))
 		return
 	}
 	state := fields(req.State.Raw)
@@ -293,11 +298,26 @@ func (r *frameworkResource) ImportState(ctx context.Context, req resource.Import
 	}
 }
 
-func (r *frameworkResource) deleteWarning() string {
+func (r *frameworkResource) deleteWarning(state Values) string {
+	if r.d.Hooks.DeleteWarning != nil {
+		return r.d.Hooks.DeleteWarning(state)
+	}
 	if r.d.DeleteWarning != "" {
 		return r.d.DeleteWarning
 	}
 	return "The Telnyx API cannot delete this " + r.d.TypeName + ". It was removed from Terraform state but still exists in your Telnyx account."
+}
+
+// changed reports whether any attribute the update operation accepts
+// differs between plan and state. When only local attributes changed, no
+// request is needed.
+func (r *frameworkResource) changed(plan, state Values) bool {
+	for _, a := range r.d.Attrs {
+		if a.InUpdate && !a.Local && !plan[a.Name].Equal(state[a.Name]) {
+			return true
+		}
+	}
+	return false
 }
 
 // send builds a request body from the selected attributes and sends op.

@@ -40,6 +40,9 @@ var aiAvatarHooks = engine.Hooks{
 		var path string
 		_ = p.As(&path)
 		sum, err := fileSHA256(path)
+		if err == nil {
+			_, err = imageType(path)
+		}
 		if err != nil {
 			diags.AddAttributeError(pathRoot("image_path"), "Unable to read avatar image", err.Error())
 			return nil, diags
@@ -85,11 +88,19 @@ func fileSHA256(path string) (string, error) {
 
 var imageTypes = map[string]string{".jpg": "image/jpeg", ".jpeg": "image/jpeg", ".png": "image/png", ".webp": "image/webp"}
 
-// avatarForm builds the multipart body of an avatar upload.
-func avatarForm(name, path string) ([]byte, string, error) {
+func imageType(path string) (string, error) {
 	ct, ok := imageTypes[strings.ToLower(filepath.Ext(path))]
 	if !ok {
-		return nil, "", fmt.Errorf("%s: the image must be a .jpg, .jpeg, .png or .webp file", path)
+		return "", fmt.Errorf("%s: the image must be a .jpg, .jpeg, .png or .webp file", path)
+	}
+	return ct, nil
+}
+
+// avatarForm builds the multipart body of an avatar upload.
+func avatarForm(name, path string) ([]byte, string, error) {
+	ct, err := imageType(path)
+	if err != nil {
+		return nil, "", err
 	}
 	data, err := os.ReadFile(path)
 	if err != nil {

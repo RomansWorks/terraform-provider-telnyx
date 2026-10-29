@@ -18,7 +18,7 @@ func AIMCPServer() *engine.Resource {
 		Import:      []string{"id"},
 		DataSource:  true,
 		Attrs: []*engine.Attr{
-			{Name: "allowed_tools", JSON: "allowed_tools", Kind: engine.KindList, Optional: true, Computed: true, InCreate: true, InUpdate: true, InResponse: true, Elem: &engine.Attr{Kind: engine.KindString}},
+			{Name: "allowed_tools", JSON: "allowed_tools", Kind: engine.KindSet, Optional: true, Computed: true, InCreate: true, InUpdate: true, InResponse: true, Elem: &engine.Attr{Kind: engine.KindString}},
 			{Name: "api_key_ref", JSON: "api_key_ref", Kind: engine.KindString, Optional: true, Computed: true, InCreate: true, InUpdate: true, InResponse: true},
 			{Name: "created_at", JSON: "created_at", Kind: engine.KindString, Computed: true, InUpdate: true, InResponse: true},
 			{Name: "id", JSON: "id", Kind: engine.KindString, Computed: true, InResponse: true, PathParams: []string{"mcp_server_id"}, Description: "The object's id."},

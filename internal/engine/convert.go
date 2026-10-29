@@ -213,10 +213,14 @@ func fromJSON(a *Attr, raw any, prior tftypes.Value, m mode) (tftypes.Value, err
 		if err != nil {
 			return tftypes.Value{}, err
 		}
-		// Keep the user's formatting when the content is the same.
+		// Keep the user's value when the content is the same, or when the
+		// API only added keys the user did not set (server defaults). Drift
+		// in keys the user set is still detected.
 		var ps string
-		if prior.IsKnown() && !prior.IsNull() && prior.As(&ps) == nil && JSONEqual(ps, data) {
-			return prior, nil
+		if prior.IsKnown() && !prior.IsNull() && prior.As(&ps) == nil {
+			if JSONEqual(ps, data) || (m != modeData && jsonSubset(ps, data)) {
+				return prior, nil
+			}
 		}
 		return tftypes.NewValue(typ, data), nil
 	case KindInt, KindFloat:
@@ -340,8 +344,42 @@ func JSONEqual(a, b string) bool {
 	return reflect.DeepEqual(va, vb)
 }
 
-// decodeObject decodes a JSON response body, unwrapping a "data" envelope.
-func decodeObject(data []byte, envelope bool) (Object, error) {
+// jsonSubset reports whether every key of the JSON document sub is present
+// in doc with an equal value, comparing nested objects the same way. Arrays
+// and scalars must be equal.
+func jsonSubset(sub, doc string) bool {
+	var a, b any
+	da := json.NewDecoder(bytes.NewReader([]byte(sub)))
+	da.UseNumber()
+	db := json.NewDecoder(bytes.NewReader([]byte(doc)))
+	db.UseNumber()
+	if da.Decode(&a) != nil || db.Decode(&b) != nil {
+		return false
+	}
+	return subset(a, b)
+}
+
+func subset(a, b any) bool {
+	am, ok := a.(map[string]any)
+	if !ok {
+		return reflect.DeepEqual(a, b)
+	}
+	bm, ok := b.(map[string]any)
+	if !ok {
+		return false
+	}
+	for k, v := range am {
+		bv, ok := bm[k]
+		if !ok || !subset(v, bv) {
+			return false
+		}
+	}
+	return true
+}
+
+// Decode decodes a JSON response body, unwrapping a "data" envelope. Hooks
+// use it for responses they fetch themselves.
+func Decode(data []byte, envelope bool) (Object, error) {
 	if len(bytes.TrimSpace(data)) == 0 {
 		return Object{}, nil
 	}

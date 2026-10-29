@@ -97,7 +97,7 @@ func resourceAttr(a *Attr) schema.Attribute {
 		if a.ForceNew {
 			pm = append(pm, stringplanmodifier.RequiresReplace())
 		}
-		return schema.StringAttribute{Required: req, Optional: opt, Computed: comp, Sensitive: a.Sensitive,
+		return schema.StringAttribute{Required: req, Optional: opt, Computed: comp, Sensitive: a.Sensitive, DeprecationMessage: a.Deprecated,
 			MarkdownDescription: desc, Validators: stringValidators, PlanModifiers: pm}
 	case KindInt:
 		var pm []planModifierInt64
@@ -107,7 +107,7 @@ func resourceAttr(a *Attr) schema.Attribute {
 		if a.ForceNew {
 			pm = append(pm, int64planmodifier.RequiresReplace())
 		}
-		return schema.Int64Attribute{Required: req, Optional: opt, Computed: comp, Sensitive: a.Sensitive,
+		return schema.Int64Attribute{Required: req, Optional: opt, Computed: comp, Sensitive: a.Sensitive, DeprecationMessage: a.Deprecated,
 			MarkdownDescription: desc, PlanModifiers: pm}
 	case KindFloat:
 		var pm []planModifierFloat64
@@ -117,7 +117,7 @@ func resourceAttr(a *Attr) schema.Attribute {
 		if a.ForceNew {
 			pm = append(pm, float64planmodifier.RequiresReplace())
 		}
-		return schema.Float64Attribute{Required: req, Optional: opt, Computed: comp, Sensitive: a.Sensitive,
+		return schema.Float64Attribute{Required: req, Optional: opt, Computed: comp, Sensitive: a.Sensitive, DeprecationMessage: a.Deprecated,
 			MarkdownDescription: desc, PlanModifiers: pm}
 	case KindBool:
 		var pm []planModifierBool
@@ -127,7 +127,7 @@ func resourceAttr(a *Attr) schema.Attribute {
 		if a.ForceNew {
 			pm = append(pm, boolplanmodifier.RequiresReplace())
 		}
-		return schema.BoolAttribute{Required: req, Optional: opt, Computed: comp, Sensitive: a.Sensitive,
+		return schema.BoolAttribute{Required: req, Optional: opt, Computed: comp, Sensitive: a.Sensitive, DeprecationMessage: a.Deprecated,
 			MarkdownDescription: desc, PlanModifiers: pm}
 	case KindList:
 		var pm []planModifierList
@@ -139,10 +139,10 @@ func resourceAttr(a *Attr) schema.Attribute {
 		}
 		if a.Elem != nil {
 			return schema.ListAttribute{ElementType: attrType(a.Elem), Required: req, Optional: opt, Computed: comp,
-				Sensitive: a.Sensitive, MarkdownDescription: desc, PlanModifiers: pm}
+				Sensitive: a.Sensitive, DeprecationMessage: a.Deprecated, MarkdownDescription: desc, PlanModifiers: pm}
 		}
 		return schema.ListNestedAttribute{NestedObject: schema.NestedAttributeObject{Attributes: nested(a.Attrs)},
-			Required: req, Optional: opt, Computed: comp, Sensitive: a.Sensitive, MarkdownDescription: desc, PlanModifiers: pm}
+			Required: req, Optional: opt, Computed: comp, Sensitive: a.Sensitive, DeprecationMessage: a.Deprecated, MarkdownDescription: desc, PlanModifiers: pm}
 	case KindSet:
 		var pm []planModifierSet
 		if keep {
@@ -153,10 +153,10 @@ func resourceAttr(a *Attr) schema.Attribute {
 		}
 		if a.Elem != nil {
 			return schema.SetAttribute{ElementType: attrType(a.Elem), Required: req, Optional: opt, Computed: comp,
-				Sensitive: a.Sensitive, MarkdownDescription: desc, PlanModifiers: pm}
+				Sensitive: a.Sensitive, DeprecationMessage: a.Deprecated, MarkdownDescription: desc, PlanModifiers: pm}
 		}
 		return schema.SetNestedAttribute{NestedObject: schema.NestedAttributeObject{Attributes: nested(a.Attrs)},
-			Required: req, Optional: opt, Computed: comp, Sensitive: a.Sensitive, MarkdownDescription: desc, PlanModifiers: pm}
+			Required: req, Optional: opt, Computed: comp, Sensitive: a.Sensitive, DeprecationMessage: a.Deprecated, MarkdownDescription: desc, PlanModifiers: pm}
 	case KindObject:
 		var pm []planModifierObject
 		if keep {
@@ -166,7 +166,7 @@ func resourceAttr(a *Attr) schema.Attribute {
 			pm = append(pm, objectplanmodifier.RequiresReplace())
 		}
 		return schema.SingleNestedAttribute{Attributes: nested(a.Attrs), Required: req, Optional: opt, Computed: comp,
-			Sensitive: a.Sensitive, MarkdownDescription: desc, PlanModifiers: pm}
+			Sensitive: a.Sensitive, DeprecationMessage: a.Deprecated, MarkdownDescription: desc, PlanModifiers: pm}
 	}
 	panic(fmt.Sprintf("engine: unknown kind for %s", a.Name))
 }

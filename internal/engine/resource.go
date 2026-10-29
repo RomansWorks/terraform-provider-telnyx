@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"net/http"
 	"net/url"
+	"slices"
 	"strings"
 	"time"
 
@@ -141,6 +142,20 @@ func (r *frameworkResource) Create(ctx context.Context, req resource.CreateReque
 		if err != nil {
 			resp.Diagnostics.AddError(d.TypeName+" did not become ready", err.Error())
 			return
+		}
+	}
+
+	// Attributes only an update accepts are applied straight after create.
+	if d.Update != nil {
+		late := func(a *Attr) bool {
+			v := plan[a.Name]
+			return a.InUpdate && !a.InCreate && !a.Local && v.IsKnown() && !v.IsNull()
+		}
+		if body, err := objectToJSON(d.Attrs, plan, late); err == nil && len(body) > 0 {
+			if _, err := r.send(ctx, d.Update, plan, "update", late, vals); err != nil {
+				resp.Diagnostics.AddError("Unable to update "+d.TypeName+" after create", err.Error())
+				return
+			}
 		}
 	}
 
@@ -316,7 +331,7 @@ func (r *frameworkResource) sendBody(ctx context.Context, op *Op, plan Values, n
 	if err != nil {
 		return nil, err
 	}
-	return decodeObject(out, op.Envelope)
+	return Decode(out, op.Envelope)
 }
 
 // get reads the object with the read operation.
@@ -335,7 +350,7 @@ func Get(ctx context.Context, c *client.Client, d *Resource, vals Values) (Objec
 	if err != nil {
 		return nil, err
 	}
-	return decodeObject(out, d.Read.Envelope)
+	return Decode(out, d.Read.Envelope)
 }
 
 func (r *frameworkResource) afterRead(ctx context.Context, obj Object) (Object, error) {
@@ -382,7 +397,7 @@ func fillPath(d *Resource, p string, vals Values) (string, error) {
 		param := p[i+1 : i+j]
 		var attr *Attr
 		for _, a := range d.Attrs {
-			if a.PathParam == param {
+			if slices.Contains(a.PathParams, param) {
 				attr = a
 			}
 		}

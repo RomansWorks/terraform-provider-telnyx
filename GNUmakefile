@@ -18,8 +18,10 @@ lint:
 fmt:
 	gofmt -s -w -e .
 
-# Provider documentation and example formatting.
+# Resource descriptors from the spec and generator/overrides, then provider
+# documentation and example formatting.
 generate:
+	go run ./cmd/codegen
 	cd tools; go generate ./...
 
 test:

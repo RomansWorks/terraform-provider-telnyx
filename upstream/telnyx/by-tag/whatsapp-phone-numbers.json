@@ -1,0 +1,2296 @@
+{
+  "components": {
+    "parameters": {
+      "PageConsolidated": {
+        "description": "Consolidated page parameter (deepObject style). Originally: page[number], page[size]",
+        "explode": true,
+        "in": "query",
+        "name": "page",
+        "schema": {
+          "properties": {
+            "number": {
+              "default": 1,
+              "description": "The page number to load",
+              "minimum": 1,
+              "type": "integer"
+            },
+            "size": {
+              "default": 20,
+              "description": "The size of the page",
+              "maximum": 250,
+              "minimum": 1,
+              "type": "integer"
+            }
+          },
+          "type": "object"
+        },
+        "style": "deepObject"
+      },
+      "WabaId": {
+        "description": "Whatsapp Business Account ID",
+        "in": "path",
+        "name": "id",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      },
+      "WhatsappCallingRoutingNumber": {
+        "description": "The BYON phone number in E.164 format. The leading `+` is optional.",
+        "example": "+13125550100",
+        "in": "path",
+        "name": "id",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      },
+      "WhatsappPhoneNumber": {
+        "description": "Phone number (E.164 format)",
+        "in": "path",
+        "name": "phone_number",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      }
+    },
+    "responses": {
+      "WhatsappCallingSettingsResponse": {
+        "content": {
+          "application/json": {
+            "schema": {
+              "properties": {
+                "data": {
+                  "$ref": "#/components/schemas/WhatsappCallingSettingsData"
+                }
+              },
+              "type": "object"
+            }
+          }
+        },
+        "description": "Successful response with Whatsapp calling settings"
+      },
+      "WhatsappConversationWindowResponse": {
+        "content": {
+          "application/json": {
+            "schema": {
+              "properties": {
+                "data": {
+                  "$ref": "#/components/schemas/WhatsappConversationWindowData"
+                }
+              },
+              "type": "object"
+            }
+          }
+        },
+        "description": "Successful response with Whatsapp conversation window status"
+      },
+      "WhatsappConversationalComponentSingleResponse": {
+        "content": {
+          "application/json": {
+            "schema": {
+              "properties": {
+                "data": {
+                  "$ref": "#/components/schemas/WhatsappConversationalComponent"
+                }
+              },
+              "type": "object"
+            }
+          }
+        },
+        "description": "Successful response with Whatsapp conversational components"
+      },
+      "WhatsappPhoneSingleResponse": {
+        "content": {
+          "application/json": {
+            "schema": {
+              "properties": {
+                "data": {
+                  "$ref": "#/components/schemas/WhatsappPhoneResponse"
+                }
+              },
+              "required": [
+                "data"
+              ],
+              "type": "object"
+            }
+          }
+        },
+        "description": "Successful response with one WhatsApp phone number"
+      },
+      "WhatsappPhonesListResponse": {
+        "content": {
+          "application/json": {
+            "schema": {
+              "properties": {
+                "data": {
+                  "items": {
+                    "$ref": "#/components/schemas/WhatsappPhoneResponse"
+                  },
+                  "type": "array"
+                },
+                "meta": {
+                  "$ref": "#/components/schemas/messaging_PaginationMeta"
+                }
+              },
+              "type": "object"
+            }
+          }
+        },
+        "description": "Successful response with Whatsapp phone numbers"
+      },
+      "WhatsappProfileSingleResponse": {
+        "content": {
+          "application/json": {
+            "schema": {
+              "properties": {
+                "data": {
+                  "$ref": "#/components/schemas/WhatsappProfileData"
+                }
+              },
+              "type": "object"
+            }
+          }
+        },
+        "description": "Successful response with Whatsapp profile"
+      },
+      "management_messaging_GenericErrorResponse": {
+        "content": {
+          "application/json": {
+            "example": {
+              "errors": [
+                {
+                  "code": "string",
+                  "detail": "string",
+                  "source": {
+                    "parameter": "string",
+                    "pointer": "/data/attributes/phone_number"
+                  },
+                  "title": "string"
+                }
+              ]
+            },
+            "schema": {
+              "$ref": "#/components/schemas/messaging_Errors"
+            }
+          }
+        },
+        "description": "Unexpected error"
+      },
+      "messaging_GenericErrorResponse_0b38e7044b": {
+        "content": {
+          "application/json": {
+            "example": {
+              "errors": [
+                {
+                  "code": "string",
+                  "detail": "string",
+                  "source": {
+                    "parameter": "string",
+                    "pointer": "/data/attributes/phone_number"
+                  },
+                  "title": "string"
+                }
+              ]
+            },
+            "schema": {
+              "$ref": "#/components/schemas/messaging_Errors_0b38e7044b"
+            }
+          }
+        },
+        "description": "Unexpected error"
+      },
+      "messaging_WhatsappPhonesListResponse": {
+        "content": {
+          "application/json": {
+            "schema": {
+              "properties": {
+                "data": {
+                  "items": {
+                    "$ref": "#/components/schemas/WhatsappPhoneResponse"
+                  },
+                  "type": "array"
+                },
+                "meta": {
+                  "$ref": "#/components/schemas/messaging_PaginationMeta_0b38e7044b"
+                }
+              },
+              "type": "object"
+            }
+          }
+        },
+        "description": "Successful response with Whatsapp phone numbers"
+      }
+    },
+    "schemas": {
+      "WhatsappCallingRoutingData": {
+        "properties": {
+          "connection_id": {
+            "description": "ID of the routing connection, or `null` when none is set.",
+            "example": "1234567890",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "phone_number": {
+            "description": "Phone number in E.164 format, with a leading `+`.",
+            "example": "+13125550100",
+            "type": "string"
+          },
+          "record_type": {
+            "description": "Identifies the type of the resource.",
+            "enum": [
+              "whatsapp_calling_routing"
+            ],
+            "example": "whatsapp_calling_routing",
+            "type": "string"
+          }
+        },
+        "required": [
+          "record_type",
+          "phone_number",
+          "connection_id"
+        ],
+        "type": "object"
+      },
+      "WhatsappCallingRoutingFieldErrors": {
+        "properties": {
+          "errors": {
+            "additionalProperties": {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            "description": "Error messages keyed by the field or step that failed.",
+            "type": "object"
+          }
+        },
+        "required": [
+          "errors"
+        ],
+        "type": "object"
+      },
+      "WhatsappCallingSettingsData": {
+        "properties": {
+          "enabled": {
+            "description": "True if calling is enabled on the phone",
+            "type": "boolean"
+          },
+          "phone_number": {
+            "description": "Phone number in E164 format",
+            "type": "string"
+          },
+          "record_type": {
+            "example": "whatsapp_calling_settings",
+            "type": "string"
+          },
+          "updated_at": {
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "WhatsappConversationWindowData": {
+        "properties": {
+          "last_user_message_at": {
+            "description": "Timestamp of the last inbound message that opened the window",
+            "example": "2026-06-29T15:53:00Z",
+            "format": "date-time",
+            "type": "string"
+          },
+          "window_active": {
+            "description": "Whether the 24-hour conversation window is currently open",
+            "example": true,
+            "type": "boolean"
+          },
+          "window_expires_at": {
+            "description": "When the window closes. Null if no active window.",
+            "example": "2026-06-30T16:00:00Z",
+            "format": "date-time",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "window_type": {
+            "description": "Window type. Currently always 24h when present.",
+            "example": "24h",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "WhatsappConversationalComponent": {
+        "properties": {
+          "commands": {
+            "description": "List of commands",
+            "items": {
+              "properties": {
+                "command": {
+                  "type": "string"
+                },
+                "description": {
+                  "type": "string"
+                }
+              },
+              "type": "object"
+            },
+            "type": "array"
+          },
+          "ice_breakers": {
+            "description": "List of ice breakers",
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "phone_number": {
+            "description": "Phone number in E164 format",
+            "type": "string"
+          },
+          "record_type": {
+            "example": "whatsapp_conversational_component",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "WhatsappPatchCallingRoutingRequest": {
+        "properties": {
+          "connection_id": {
+            "description": "ID of the connection to deliver inbound WhatsApp calls to: a positive integer up to 9223372036854775807, sent as a decimal string or an integer. Send a string to keep large IDs exact. Non-null values are returned as strings. `null` clears the routing.",
+            "example": "1234567890",
+            "type": [
+              "string",
+              "integer",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "connection_id"
+        ],
+        "type": "object"
+      },
+      "WhatsappPatchCallingSettingsRequest": {
+        "properties": {
+          "enabled": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "enabled"
+        ],
+        "type": "object"
+      },
+      "WhatsappPhoneNumberVerificationRequest": {
+        "properties": {
+          "display_name": {
+            "type": "string"
+          },
+          "language": {
+            "default": "en_US",
+            "type": "string"
+          },
+          "phone_number": {
+            "type": "string"
+          },
+          "verification_method": {
+            "default": "sms",
+            "enum": [
+              "sms",
+              "voice"
+            ],
+            "type": "string"
+          }
+        },
+        "required": [
+          "phone_number",
+          "display_name"
+        ],
+        "type": "object"
+      },
+      "WhatsappPhoneResponse": {
+        "properties": {
+          "calling_enabled": {
+            "type": "boolean"
+          },
+          "coexistence_state": {
+            "description": "Current lifecycle state for a coexistence number. This is null for a standard Cloud API number.",
+            "enum": [
+              "pending_onboarding",
+              "sync_pending",
+              "syncing",
+              "sync_complete",
+              "active",
+              "history_declined",
+              "sync_deadline_expired",
+              "offboarded",
+              "disconnected",
+              null
+            ],
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "created_at": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "display_name": {
+            "type": "string"
+          },
+          "enabled": {
+            "type": "boolean"
+          },
+          "is_on_biz_app": {
+            "description": "Indicates whether the number is connected to both the WhatsApp Business app and Cloud API through WhatsApp Coexistence.",
+            "type": "boolean"
+          },
+          "phone_number": {
+            "description": "Phone number in E164 format",
+            "type": "string"
+          },
+          "phone_number_id": {
+            "description": "Whatsapp phone number ID",
+            "type": "string"
+          },
+          "quality_rating": {
+            "description": "Whatsapp quality rating",
+            "type": "string"
+          },
+          "record_type": {
+            "example": "whatsapp_business_phone_number",
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "sync_deadline": {
+            "description": "Deadline for initiating the current coexistence synchronization cycle. This is null when no deadline applies.",
+            "format": "date-time",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "sync_progress": {
+            "description": "Synchronization progress. This object is returned only while a coexistence number is synchronizing.",
+            "properties": {
+              "contacts_status": {
+                "type": "string"
+              },
+              "history_chunk_order": {
+                "type": [
+                  "integer",
+                  "null"
+                ]
+              },
+              "history_phase": {
+                "type": [
+                  "integer",
+                  "null"
+                ]
+              },
+              "history_progress": {
+                "maximum": 100,
+                "minimum": 0,
+                "type": [
+                  "integer",
+                  "null"
+                ]
+              },
+              "history_status": {
+                "type": "string"
+              }
+            },
+            "type": [
+              "object",
+              "null"
+            ]
+          },
+          "user_id": {
+            "description": "User ID",
+            "type": "string"
+          },
+          "waba_id": {
+            "description": "WABA ID of Whatsapp business account",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "WhatsappProfileData": {
+        "properties": {
+          "about": {
+            "maxLength": 139,
+            "type": "string"
+          },
+          "address": {
+            "type": "string"
+          },
+          "category": {
+            "type": "string"
+          },
+          "created_at": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "description": {
+            "maxLength": 512,
+            "type": "string"
+          },
+          "display_name": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string"
+          },
+          "id": {
+            "type": "string"
+          },
+          "phone_number_id": {
+            "description": "Whatsapp phone number ID",
+            "type": "string"
+          },
+          "profile_id": {
+            "type": "string"
+          },
+          "profile_photo_url": {
+            "type": "string"
+          },
+          "record_type": {
+            "example": "whatsapp_phone_number_profiles",
+            "type": "string"
+          },
+          "updated_at": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "website": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "WhatsappProfilePhotoData": {
+        "properties": {
+          "phone_number_id": {
+            "description": "Meta phone number ID",
+            "type": "string"
+          },
+          "profile_photo_url": {
+            "description": "URL of the business profile photo (served by Meta's CDN). May be empty if no photo is set.",
+            "type": "string"
+          },
+          "record_type": {
+            "example": "whatsapp_phone_number_profile_photos",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "WhatsappProfilePhotoResponse": {
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/WhatsappProfilePhotoData"
+          }
+        },
+        "type": "object"
+      },
+      "WhatsappResendVerificationRequest": {
+        "properties": {
+          "verification_method": {
+            "default": "sms",
+            "enum": [
+              "sms",
+              "voice"
+            ],
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "WhatsappUpdateConversationalComponentRequest": {
+        "properties": {
+          "commands": {
+            "description": "List of commands",
+            "items": {
+              "properties": {
+                "command": {
+                  "type": "string"
+                },
+                "description": {
+                  "type": "string"
+                }
+              },
+              "type": "object"
+            },
+            "type": "array"
+          },
+          "ice_breakers": {
+            "description": "List of ice breakers",
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          }
+        },
+        "type": "object"
+      },
+      "WhatsappUpdateProfileRequest": {
+        "properties": {
+          "about": {
+            "maxLength": 139,
+            "type": "string"
+          },
+          "address": {
+            "type": "string"
+          },
+          "category": {
+            "type": "string"
+          },
+          "description": {
+            "maxLength": 512,
+            "type": "string"
+          },
+          "display_name": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string"
+          },
+          "profile_id": {
+            "description": "Messaging profile ID for inbound messages",
+            "format": "uuid",
+            "type": "string"
+          },
+          "website": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "WhatsappVerifyCodeRequest": {
+        "properties": {
+          "code": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "code"
+        ],
+        "type": "object"
+      },
+      "messaging_Error": {
+        "properties": {
+          "code": {
+            "type": "string",
+            "x-format": "integer"
+          },
+          "detail": {
+            "type": "string"
+          },
+          "meta": {
+            "type": "object"
+          },
+          "source": {
+            "properties": {
+              "parameter": {
+                "description": "Indicates which query parameter caused the error.",
+                "type": "string"
+              },
+              "pointer": {
+                "description": "JSON pointer (RFC6901) to the offending entity.",
+                "format": "json-pointer",
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
+          "title": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "title"
+        ]
+      },
+      "messaging_Error_0b38e7044b": {
+        "properties": {
+          "code": {
+            "type": "string",
+            "x-format": "integer"
+          },
+          "detail": {
+            "type": "string"
+          },
+          "meta": {
+            "type": "object"
+          },
+          "source": {
+            "properties": {
+              "parameter": {
+                "description": "Indicates which query parameter caused the error.",
+                "type": "string"
+              },
+              "pointer": {
+                "description": "JSON pointer (RFC6901) to the offending entity.",
+                "format": "json-pointer",
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
+          "title": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "title"
+        ]
+      },
+      "messaging_Errors": {
+        "properties": {
+          "errors": {
+            "items": {
+              "$ref": "#/components/schemas/messaging_Error"
+            },
+            "type": "array"
+          }
+        }
+      },
+      "messaging_Errors_0b38e7044b": {
+        "properties": {
+          "errors": {
+            "items": {
+              "$ref": "#/components/schemas/messaging_Error_0b38e7044b"
+            },
+            "type": "array"
+          }
+        }
+      },
+      "messaging_PaginationMeta": {
+        "properties": {
+          "page_number": {
+            "example": 2,
+            "type": "integer"
+          },
+          "page_size": {
+            "example": 25,
+            "type": "integer"
+          },
+          "total_pages": {
+            "example": 3,
+            "type": "integer"
+          },
+          "total_results": {
+            "example": 55,
+            "type": "integer"
+          }
+        },
+        "required": [
+          "total_pages",
+          "total_results",
+          "page_size",
+          "page_number"
+        ],
+        "type": "object"
+      },
+      "messaging_PaginationMeta_0b38e7044b": {
+        "properties": {
+          "page_number": {
+            "example": 2,
+            "type": "integer"
+          },
+          "page_size": {
+            "example": 25,
+            "type": "integer"
+          },
+          "total_pages": {
+            "example": 3,
+            "type": "integer"
+          },
+          "total_results": {
+            "example": 55,
+            "type": "integer"
+          }
+        },
+        "required": [
+          "total_pages",
+          "total_results",
+          "page_size",
+          "page_number"
+        ],
+        "type": "object"
+      }
+    },
+    "securitySchemes": {
+      "BearerAuth": {
+        "bearerFormat": "API key",
+        "description": "Telnyx API key supplied as `Authorization: Bearer \u003ctoken\u003e`. In production, auth may be validated by the API gateway and forwarded via Telnyx auth headers.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "Payment": {
+        "description": "Machine Payment Protocol credential used on paid retries, sent as `Authorization: Payment ...`. Obtained by paying a challenge returned in the `WWW-Authenticate` header of a 402 response. This is not a Telnyx API key; initial challenge requests use standard bearer authentication instead.",
+        "in": "header",
+        "name": "Authorization",
+        "type": "apiKey"
+      },
+      "agent-memory_bearerAuth": {
+        "description": "Telnyx API key",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "bearerAuth": {
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "branded-calling_bearerAuth": {
+        "description": "Telnyx API key. Generate one at https://portal.telnyx.com/#/app/api-keys.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "collections_bearerAuth": {
+        "description": "Telnyx API key. Collections and results are automatically scoped to the authenticated user's organization.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "number-reputation_bearerAuth": {
+        "description": "Telnyx API key. Generate one at https://portal.telnyx.com/#/app/api-keys.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "oauthClientAuth": {
+        "description": "OAuth 2.0 authentication for Telnyx API and MCP integrations",
+        "flows": {
+          "authorizationCode": {
+            "authorizationUrl": "https://api.telnyx.com/v2/oauth/authorize",
+            "refreshUrl": "https://api.telnyx.com/v2/oauth/token",
+            "scopes": {
+              "admin": "Administrative access to Telnyx resources"
+            },
+            "tokenUrl": "https://api.telnyx.com/v2/oauth/token"
+          },
+          "clientCredentials": {
+            "scopes": {
+              "admin": "Administrative access to Telnyx resources"
+            },
+            "tokenUrl": "https://api.telnyx.com/v2/oauth/token"
+          }
+        },
+        "type": "oauth2"
+      },
+      "outbound-voice-profiles_bearerAuth": {
+        "bearerFormat": "JWT",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "pay-connectors_bearerAuth": {
+        "description": "Telnyx API key, not the processor bearer token.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "pronunciation-dicts_bearerAuth": {
+        "description": "Telnyx API v2 key. Obtain from https://portal.telnyx.com",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "rcs-registration_bearerAuth": {
+        "bearerFormat": "API key",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "stored-payment-transactions_bearerAuth": {
+        "bearerFormat": "JWT",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "telnyxApiKey": {
+        "description": "Management-only Telnyx account credential.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "transcriptions-search_bearerAuth": {
+        "description": "Telnyx API key. Results are automatically scoped to the authenticated user's organization.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "web-search_bearerAuth": {
+        "description": "Telnyx API key",
+        "scheme": "bearer",
+        "type": "http"
+      }
+    }
+  },
+  "info": {
+    "contact": {
+      "email": "support@telnyx.com"
+    },
+    "description": "SIP trunking, SMS, MMS, Call Control and Telephony Data Services.",
+    "title": "Telnyx API",
+    "version": "2.0.0",
+    "x-endpoint-cost": "light",
+    "x-latency-category": "responsive"
+  },
+  "openapi": "3.1.0",
+  "paths": {
+    "/v2/whatsapp/business_accounts/{id}/phone_numbers": {
+      "post": {
+        "description": "Starts verification of a phone number for the specified WhatsApp Business Account using the requested verification method.",
+        "operationId": "InitializeWhatsappVerification",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/WabaId"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "example": {
+                "display_name": "string",
+                "language": "en_US",
+                "phone_number": "string",
+                "verification_method": "sms"
+              },
+              "schema": {
+                "$ref": "#/components/schemas/WhatsappPhoneNumberVerificationRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "204": {
+            "description": "Verification initiated"
+          },
+          "4XX": {
+            "$ref": "#/components/responses/messaging_GenericErrorResponse_0b38e7044b"
+          }
+        },
+        "summary": "Initialize Whatsapp phone number verification",
+        "tags": [
+          "Whatsapp Phone Numbers"
+        ]
+      }
+    },
+    "/v2/whatsapp/phone_numbers": {
+      "get": {
+        "description": "Returns WhatsApp phone numbers linked to the authenticated Telnyx account.",
+        "operationId": "ListPhoneNumbers",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/PageConsolidated"
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/messaging_WhatsappPhonesListResponse",
+            "description": "Phone numbers"
+          },
+          "4XX": {
+            "$ref": "#/components/responses/messaging_GenericErrorResponse_0b38e7044b"
+          }
+        },
+        "summary": "List Whatsapp phone numbers",
+        "tags": [
+          "Whatsapp Phone Numbers"
+        ]
+      }
+    },
+    "/v2/whatsapp/phone_numbers/{phone_number}": {
+      "delete": {
+        "description": "Removes the specified phone number from Telnyx WhatsApp management.",
+        "operationId": "DeleteWhatsappPhoneNumber",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/WhatsappPhoneNumber"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Phone number was successfully deleted"
+          },
+          "4XX": {
+            "$ref": "#/components/responses/messaging_GenericErrorResponse_0b38e7044b"
+          }
+        },
+        "summary": "Delete a Whatsapp phone number",
+        "tags": [
+          "Whatsapp Phone Numbers"
+        ]
+      },
+      "get": {
+        "description": "Returns one WhatsApp phone number linked to the authenticated Telnyx account. For a coexistence number in the `syncing` state, the response includes `sync_progress`.",
+        "operationId": "GetWhatsappPhoneNumber",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/WhatsappPhoneNumber"
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/WhatsappPhoneSingleResponse"
+          },
+          "4XX": {
+            "$ref": "#/components/responses/messaging_GenericErrorResponse_0b38e7044b"
+          }
+        },
+        "summary": "Retrieve a WhatsApp phone number",
+        "tags": [
+          "Whatsapp Phone Numbers"
+        ],
+        "x-hidden": true
+      }
+    },
+    "/v2/whatsapp/phone_numbers/{phone_number}/calling_settings": {
+      "get": {
+        "description": "Returns the WhatsApp calling configuration for the specified phone number.",
+        "operationId": "GetWhatsappCallingSettings",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/WhatsappPhoneNumber"
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/WhatsappCallingSettingsResponse",
+            "description": "Calling settings"
+          },
+          "4XX": {
+            "$ref": "#/components/responses/messaging_GenericErrorResponse_0b38e7044b"
+          }
+        },
+        "summary": "Get calling settings for a phone number",
+        "tags": [
+          "Whatsapp Phone Numbers"
+        ]
+      },
+      "patch": {
+        "description": "Enables or disables WhatsApp calling for the specified phone number.",
+        "operationId": "PatchWhatsappCallingSettings",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/WhatsappPhoneNumber"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "example": {
+                "enabled": false
+              },
+              "schema": {
+                "$ref": "#/components/schemas/WhatsappPatchCallingSettingsRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/WhatsappCallingSettingsResponse",
+            "description": "Updated calling settings"
+          },
+          "4XX": {
+            "$ref": "#/components/responses/messaging_GenericErrorResponse_0b38e7044b"
+          }
+        },
+        "summary": "Enable or disable Whatsapp calling for a phone number",
+        "tags": [
+          "Whatsapp Phone Numbers"
+        ]
+      }
+    },
+    "/v2/whatsapp/phone_numbers/{phone_number}/conversation_window": {
+      "get": {
+        "description": "Returns whether the 24-hour conversation window is currently open for a given source/destination pair. If window_active is false, only template messages may be sent.",
+        "operationId": "GetWhatsappConversationWindow",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/WhatsappPhoneNumber"
+          },
+          {
+            "description": "Destination phone number in E.164 format",
+            "in": "query",
+            "name": "destination_number",
+            "required": true,
+            "schema": {
+              "example": "+353894650851",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/WhatsappConversationWindowResponse"
+          },
+          "4XX": {
+            "$ref": "#/components/responses/messaging_GenericErrorResponse_0b38e7044b"
+          }
+        },
+        "summary": "Get conversation window status for a phone number",
+        "tags": [
+          "Whatsapp Phone Numbers"
+        ]
+      }
+    },
+    "/v2/whatsapp/phone_numbers/{phone_number}/conversational_components": {
+      "get": {
+        "description": "Returns the conversational components configured for the specified WhatsApp phone number.",
+        "operationId": "GetWhatsappConversationalComponents",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/WhatsappPhoneNumber"
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/WhatsappConversationalComponentSingleResponse",
+            "description": "Conversational Components"
+          },
+          "4XX": {
+            "$ref": "#/components/responses/messaging_GenericErrorResponse_0b38e7044b"
+          }
+        },
+        "summary": "Get phone number conversational components",
+        "tags": [
+          "Whatsapp Phone Numbers"
+        ]
+      },
+      "patch": {
+        "description": "Updates the conversational components configured for the specified WhatsApp phone number.",
+        "operationId": "PatchWhatsappConversationalComponents",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/WhatsappPhoneNumber"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "example": {
+                "commands": [
+                  {
+                    "command": "string",
+                    "description": "string"
+                  }
+                ],
+                "ice_breakers": [
+                  "string"
+                ]
+              },
+              "schema": {
+                "$ref": "#/components/schemas/WhatsappUpdateConversationalComponentRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/WhatsappConversationalComponentSingleResponse",
+            "description": "Updated profile"
+          },
+          "4XX": {
+            "$ref": "#/components/responses/messaging_GenericErrorResponse_0b38e7044b"
+          }
+        },
+        "summary": "Update phone number conversational components",
+        "tags": [
+          "Whatsapp Phone Numbers"
+        ]
+      }
+    },
+    "/v2/whatsapp/phone_numbers/{phone_number}/profile": {
+      "get": {
+        "description": "Returns the business profile displayed for the specified WhatsApp phone number.",
+        "operationId": "GetWhatsappProfile",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/WhatsappPhoneNumber"
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/WhatsappProfileSingleResponse",
+            "description": "Profile"
+          },
+          "4XX": {
+            "$ref": "#/components/responses/messaging_GenericErrorResponse_0b38e7044b"
+          }
+        },
+        "summary": "Get phone number business profile",
+        "tags": [
+          "Whatsapp Phone Numbers"
+        ]
+      },
+      "patch": {
+        "description": "Updates the supplied business-profile fields for the specified WhatsApp phone number.",
+        "operationId": "PatchWhatsappProfile",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/WhatsappPhoneNumber"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "example": {
+                "about": "string",
+                "address": "string",
+                "category": "string",
+                "description": "string",
+                "display_name": "string",
+                "email": "string",
+                "profile_id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+                "website": "string"
+              },
+              "schema": {
+                "$ref": "#/components/schemas/WhatsappUpdateProfileRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/WhatsappProfileSingleResponse",
+            "description": "Updated profile"
+          },
+          "4XX": {
+            "$ref": "#/components/responses/messaging_GenericErrorResponse_0b38e7044b"
+          }
+        },
+        "summary": "Update phone number business profile",
+        "tags": [
+          "Whatsapp Phone Numbers"
+        ]
+      }
+    },
+    "/v2/whatsapp/phone_numbers/{phone_number}/profile/photo": {
+      "delete": {
+        "description": "Removes the business-profile photo from the specified WhatsApp phone number.",
+        "operationId": "DeleteWhatsappProfilePhoto",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/WhatsappPhoneNumber"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Photo deleted"
+          },
+          "4XX": {
+            "$ref": "#/components/responses/messaging_GenericErrorResponse_0b38e7044b"
+          }
+        },
+        "summary": "Delete Whatsapp profile photo",
+        "tags": [
+          "Whatsapp Phone Numbers"
+        ]
+      },
+      "get": {
+        "description": "Returns the current business-profile photo for the specified WhatsApp phone number.",
+        "operationId": "GetWhatsappProfilePhoto",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/WhatsappPhoneNumber"
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WhatsappProfilePhotoResponse"
+                }
+              }
+            },
+            "description": "Profile photo"
+          },
+          "4XX": {
+            "$ref": "#/components/responses/messaging_GenericErrorResponse_0b38e7044b"
+          }
+        },
+        "summary": "Get Whatsapp profile photo",
+        "tags": [
+          "Whatsapp Phone Numbers"
+        ]
+      },
+      "post": {
+        "description": "Uploads and assigns a business-profile photo to the specified WhatsApp phone number.",
+        "operationId": "PostWhatsappProfilePhoto",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/WhatsappPhoneNumber"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "example": {
+                "file": "string"
+              },
+              "schema": {
+                "properties": {
+                  "file": {
+                    "description": "Image file (JPEG recommended, max 10 MB)",
+                    "format": "binary",
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "file"
+                ],
+                "type": "object"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/WhatsappProfileSingleResponse",
+            "description": "Profile with updated photo"
+          },
+          "4XX": {
+            "$ref": "#/components/responses/messaging_GenericErrorResponse_0b38e7044b"
+          }
+        },
+        "summary": "Upload Whatsapp profile photo",
+        "tags": [
+          "Whatsapp Phone Numbers"
+        ]
+      }
+    },
+    "/v2/whatsapp/phone_numbers/{phone_number}/resend_verification": {
+      "post": {
+        "description": "Requests a new verification code for the specified WhatsApp phone number.",
+        "operationId": "ResendWhatsappVerification",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/WhatsappPhoneNumber"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "example": {
+                "verification_method": "sms"
+              },
+              "schema": {
+                "$ref": "#/components/schemas/WhatsappResendVerificationRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "204": {
+            "description": "Code resent"
+          },
+          "4XX": {
+            "$ref": "#/components/responses/messaging_GenericErrorResponse_0b38e7044b"
+          }
+        },
+        "summary": "Resend verification code",
+        "tags": [
+          "Whatsapp Phone Numbers"
+        ]
+      }
+    },
+    "/v2/whatsapp/phone_numbers/{phone_number}/verify": {
+      "post": {
+        "description": "Submits the verification code received for the specified WhatsApp phone number.",
+        "operationId": "VerifyWhatsappPhoneNumber",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/WhatsappPhoneNumber"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "example": {
+                "code": "string"
+              },
+              "schema": {
+                "$ref": "#/components/schemas/WhatsappVerifyCodeRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "204": {
+            "description": "Verified successfully"
+          },
+          "4XX": {
+            "$ref": "#/components/responses/messaging_GenericErrorResponse_0b38e7044b"
+          }
+        },
+        "summary": "Submit verification code for a phone number",
+        "tags": [
+          "Whatsapp Phone Numbers"
+        ]
+      }
+    },
+    "/whatsapp/business_accounts/{id}/phone_numbers": {
+      "post": {
+        "description": "Start the verification process to register a phone number with a WhatsApp Business Account.",
+        "operationId": "InitializeWhatsappVerification",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/WabaId"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "example": {
+                "display_name": "string",
+                "language": "en_US",
+                "phone_number": "string",
+                "verification_method": "sms"
+              },
+              "schema": {
+                "$ref": "#/components/schemas/WhatsappPhoneNumberVerificationRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "204": {
+            "description": "Verification initiated"
+          },
+          "4XX": {
+            "$ref": "#/components/responses/management_messaging_GenericErrorResponse"
+          }
+        },
+        "summary": "Initialize Whatsapp phone number verification",
+        "tags": [
+          "Whatsapp Phone Numbers"
+        ],
+        "x-latency-category": "responsive"
+      }
+    },
+    "/whatsapp/phone_numbers": {
+      "get": {
+        "description": "Retrieve a list of the phone numbers registered for WhatsApp on your account.",
+        "operationId": "ListPhoneNumbers",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/PageConsolidated"
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/WhatsappPhonesListResponse",
+            "description": "Phone numbers"
+          },
+          "4XX": {
+            "$ref": "#/components/responses/management_messaging_GenericErrorResponse"
+          }
+        },
+        "summary": "List Whatsapp phone numbers",
+        "tags": [
+          "Whatsapp Phone Numbers"
+        ],
+        "x-latency-category": "responsive"
+      }
+    },
+    "/whatsapp/phone_numbers/{id}/calling_routing": {
+      "get": {
+        "description": "Retrieve the connection ID currently stored for a WhatsApp Calling BYON (Bring Your Own Number) phone number: the connection that inbound WhatsApp calls to the number are delivered to.\n\nUse it to check the result of `PATCH /whatsapp/phone_numbers/{id}/calling_routing`. A read made immediately after an update can still return the previous value.\n\nSub-users need read permission on connections.",
+        "operationId": "getWhatsappCallingRouting",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/WhatsappCallingRoutingNumber"
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "not_routed": {
+                    "summary": "No routing connection",
+                    "value": {
+                      "data": {
+                        "connection_id": null,
+                        "phone_number": "+13125550100",
+                        "record_type": "whatsapp_calling_routing"
+                      }
+                    }
+                  },
+                  "routed": {
+                    "summary": "Number routed to a connection",
+                    "value": {
+                      "data": {
+                        "connection_id": "1234567890",
+                        "phone_number": "+13125550100",
+                        "record_type": "whatsapp_calling_routing"
+                      }
+                    }
+                  }
+                },
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/WhatsappCallingRoutingData"
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "The stored routing connection. `connection_id` is `null` when no connection is routed, and also when the stored target is not a connection in the account, including a connection too new to have propagated yet."
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "errors": [
+                    {
+                      "code": "10010",
+                      "detail": "You do not have permission to perform the requested action on the specified resource or resources.",
+                      "title": "Authorization failed"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/messaging_Errors"
+                }
+              }
+            },
+            "description": "The caller is not permitted to perform this action. Sub-users need read permission on connections."
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "errors": [
+                    {
+                      "code": "10003",
+                      "detail": "The requested resource or URL could not be found.",
+                      "title": "Resource not found"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/messaging_Errors"
+                }
+              }
+            },
+            "description": "The account has no WhatsApp Calling number with this phone number, or the requesting account could not be found. A number just enabled for WhatsApp Calling returns 404 until it is provisioned, so retry."
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "invalid_phone_number": {
+                    "summary": "Phone number is not valid E.164",
+                    "value": {
+                      "errors": {
+                        "phone_number": [
+                          "is not a valid E.164 phone number"
+                        ]
+                      }
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/WhatsappCallingRoutingFieldErrors"
+                }
+              }
+            },
+            "description": "The phone number is not valid. Errors are keyed by field."
+          },
+          "4XX": {
+            "$ref": "#/components/responses/management_messaging_GenericErrorResponse"
+          }
+        },
+        "summary": "Get Connection ID for a WhatsApp Calling BYON number",
+        "tags": [
+          "Whatsapp Phone Numbers"
+        ],
+        "x-latency-category": "responsive"
+      },
+      "patch": {
+        "description": "Set or clear the connection ID for a WhatsApp Calling BYON (Bring Your Own Number) phone number: the connection that inbound WhatsApp calls to the number are delivered to.\n\nThe update is processed asynchronously. A `202` response means the request was accepted, not that the routing changed. Check the result with `GET /whatsapp/phone_numbers/{id}/calling_routing`, which can return the previous value immediately after an update. An update for a number that is not a WhatsApp Calling number in the account returns 404.\n\nThe connection must belong to the same account and must not be a WhatsApp connection. Send `connection_id: null` to clear the routing; omitting `connection_id` is rejected. Numbers active on Telnyx are rejected, because they route through their own connection assignment.\n\nSub-users need update permission on connections, and read permission to check the result with `GET`.",
+        "operationId": "updateWhatsappCallingRouting",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/WhatsappCallingRoutingNumber"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "examples": {
+                "clear": {
+                  "summary": "Clear the routing",
+                  "value": {
+                    "connection_id": null
+                  }
+                },
+                "set": {
+                  "summary": "Route the number to a connection",
+                  "value": {
+                    "connection_id": "1234567890"
+                  }
+                }
+              },
+              "schema": {
+                "$ref": "#/components/schemas/WhatsappPatchCallingRoutingRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "202": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "clear": {
+                    "summary": "Routing clear accepted",
+                    "value": {
+                      "data": {
+                        "connection_id": null,
+                        "phone_number": "+13125550100",
+                        "record_type": "whatsapp_calling_routing"
+                      }
+                    }
+                  },
+                  "set": {
+                    "summary": "Routing update accepted",
+                    "value": {
+                      "data": {
+                        "connection_id": "1234567890",
+                        "phone_number": "+13125550100",
+                        "record_type": "whatsapp_calling_routing"
+                      }
+                    }
+                  }
+                },
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/WhatsappCallingRoutingData"
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Update accepted for processing. The body echoes the requested routing; it does not confirm that the routing was applied."
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "errors": [
+                    {
+                      "code": "10010",
+                      "detail": "You do not have permission to perform the requested action on the specified resource or resources.",
+                      "title": "Authorization failed"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/messaging_Errors"
+                }
+              }
+            },
+            "description": "The caller is not permitted to perform this action. Sub-users need update permission on connections."
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "errors": [
+                    {
+                      "code": "10003",
+                      "detail": "The requested resource or URL could not be found.",
+                      "title": "Resource not found"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/messaging_Errors"
+                }
+              }
+            },
+            "description": "The account has no WhatsApp Calling number with this phone number, or the requesting account could not be found. A number just enabled for WhatsApp Calling returns 404 until it is provisioned, so retry."
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "invalid_connection_id": {
+                    "summary": "connection_id is malformed or not a connection in the account",
+                    "value": {
+                      "errors": {
+                        "connection_id": [
+                          "is invalid"
+                        ]
+                      }
+                    }
+                  },
+                  "invalid_phone_number": {
+                    "summary": "Phone number is not valid E.164",
+                    "value": {
+                      "errors": {
+                        "phone_number": [
+                          "is not a valid E.164 phone number"
+                        ]
+                      }
+                    }
+                  },
+                  "missing_connection_id": {
+                    "summary": "connection_id omitted from the body",
+                    "value": {
+                      "errors": {
+                        "connection_id": [
+                          "is required"
+                        ]
+                      }
+                    }
+                  },
+                  "telnyx_number": {
+                    "summary": "Phone number is active on Telnyx",
+                    "value": {
+                      "errors": {
+                        "phone_number": [
+                          "is a Telnyx number and routes via its own assignment"
+                        ]
+                      }
+                    }
+                  },
+                  "whatsapp_connection": {
+                    "summary": "connection_id is a WhatsApp connection",
+                    "value": {
+                      "errors": {
+                        "connection_id": [
+                          "cannot be a WhatsApp connection"
+                        ]
+                      }
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/WhatsappCallingRoutingFieldErrors"
+                }
+              }
+            },
+            "description": "Validation failed. Errors are keyed by field: `phone_number` when the number is not valid E.164 or is active on Telnyx, and `connection_id` when it is missing, is not a positive integer ID, is not a connection in the account, or is a WhatsApp connection."
+          },
+          "4XX": {
+            "$ref": "#/components/responses/management_messaging_GenericErrorResponse"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "errors": {
+                    "event": [
+                      "could not be published"
+                    ]
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/WhatsappCallingRoutingFieldErrors"
+                }
+              }
+            },
+            "description": "The update could not be confirmed as queued for processing, so it may or may not be applied. The request can be retried."
+          }
+        },
+        "summary": "Update Connection ID for a WhatsApp Calling BYON number",
+        "tags": [
+          "Whatsapp Phone Numbers"
+        ],
+        "x-latency-category": "responsive"
+      }
+    },
+    "/whatsapp/phone_numbers/{phone_number}": {
+      "delete": {
+        "description": "Delete a phone number's WhatsApp registration from your account.",
+        "operationId": "DeleteWhatsappPhoneNumber",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/WhatsappPhoneNumber"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Phone number was successfully deleted"
+          },
+          "4XX": {
+            "$ref": "#/components/responses/management_messaging_GenericErrorResponse"
+          }
+        },
+        "summary": "Delete a Whatsapp phone number",
+        "tags": [
+          "Whatsapp Phone Numbers"
+        ],
+        "x-latency-category": "responsive"
+      },
+      "get": {
+        "description": "Returns one WhatsApp phone number linked to the authenticated Telnyx account. For a coexistence number in the `syncing` state, the response includes `sync_progress`.",
+        "operationId": "GetWhatsappPhoneNumber",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/WhatsappPhoneNumber"
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/WhatsappPhoneSingleResponse"
+          },
+          "4XX": {
+            "$ref": "#/components/responses/management_messaging_GenericErrorResponse"
+          }
+        },
+        "summary": "Retrieve a WhatsApp phone number",
+        "tags": [
+          "Whatsapp Phone Numbers"
+        ],
+        "x-latency-category": "responsive"
+      }
+    },
+    "/whatsapp/phone_numbers/{phone_number}/calling_settings": {
+      "get": {
+        "description": "Retrieve the WhatsApp calling settings for a phone number.",
+        "operationId": "GetWhatsappCallingSettings",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/WhatsappPhoneNumber"
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/WhatsappCallingSettingsResponse",
+            "description": "Calling settings"
+          },
+          "4XX": {
+            "$ref": "#/components/responses/management_messaging_GenericErrorResponse"
+          }
+        },
+        "summary": "Get calling settings for a phone number",
+        "tags": [
+          "Whatsapp Phone Numbers"
+        ],
+        "x-latency-category": "responsive"
+      },
+      "patch": {
+        "description": "Enable or disable WhatsApp calling for a phone number and manage its calling configuration.",
+        "operationId": "PatchWhatsappCallingSettings",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/WhatsappPhoneNumber"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "example": {
+                "enabled": false
+              },
+              "schema": {
+                "$ref": "#/components/schemas/WhatsappPatchCallingSettingsRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/WhatsappCallingSettingsResponse",
+            "description": "Updated calling settings"
+          },
+          "4XX": {
+            "$ref": "#/components/responses/management_messaging_GenericErrorResponse"
+          }
+        },
+        "summary": "Enable or disable Whatsapp calling for a phone number",
+        "tags": [
+          "Whatsapp Phone Numbers"
+        ],
+        "x-latency-category": "responsive"
+      }
+    },
+    "/whatsapp/phone_numbers/{phone_number}/conversation_window": {
+      "get": {
+        "description": "Returns whether the 24-hour conversation window is currently open for a given source/destination pair. If window_active is false, only template messages may be sent.",
+        "operationId": "GetWhatsappConversationWindow",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/WhatsappPhoneNumber"
+          },
+          {
+            "description": "Destination phone number in E.164 format",
+            "in": "query",
+            "name": "destination_number",
+            "required": true,
+            "schema": {
+              "example": "+353894650851",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/WhatsappConversationWindowResponse"
+          },
+          "4XX": {
+            "$ref": "#/components/responses/management_messaging_GenericErrorResponse"
+          }
+        },
+        "summary": "Get conversation window status for a phone number",
+        "tags": [
+          "Whatsapp Phone Numbers"
+        ],
+        "x-latency-category": "responsive"
+      }
+    },
+    "/whatsapp/phone_numbers/{phone_number}/conversational_components": {
+      "get": {
+        "description": "Retrieve the conversational components configuration for a WhatsApp phone number.",
+        "operationId": "GetWhatsappConversationalComponents",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/WhatsappPhoneNumber"
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/WhatsappConversationalComponentSingleResponse",
+            "description": "Conversational Components"
+          },
+          "4XX": {
+            "$ref": "#/components/responses/management_messaging_GenericErrorResponse"
+          }
+        },
+        "summary": "Get phone number conversational components",
+        "tags": [
+          "Whatsapp Phone Numbers"
+        ],
+        "x-latency-category": "responsive"
+      },
+      "patch": {
+        "description": "Update the conversational components configuration, such as welcome messages and commands, for a WhatsApp phone number.",
+        "operationId": "PatchWhatsappConversationalComponents",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/WhatsappPhoneNumber"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "example": {
+                "commands": [
+                  {
+                    "command": "string",
+                    "description": "string"
+                  }
+                ],
+                "ice_breakers": [
+                  "string"
+                ]
+              },
+              "schema": {
+                "$ref": "#/components/schemas/WhatsappUpdateConversationalComponentRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/WhatsappConversationalComponentSingleResponse",
+            "description": "Updated profile"
+          },
+          "4XX": {
+            "$ref": "#/components/responses/management_messaging_GenericErrorResponse"
+          }
+        },
+        "summary": "Update phone number conversational components",
+        "tags": [
+          "Whatsapp Phone Numbers"
+        ],
+        "x-latency-category": "responsive"
+      }
+    },
+    "/whatsapp/phone_numbers/{phone_number}/profile": {
+      "get": {
+        "description": "Retrieve the WhatsApp business profile associated with a phone number.",
+        "operationId": "GetWhatsappProfile",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/WhatsappPhoneNumber"
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/WhatsappProfileSingleResponse",
+            "description": "Profile"
+          },
+          "4XX": {
+            "$ref": "#/components/responses/management_messaging_GenericErrorResponse"
+          }
+        },
+        "summary": "Get phone number business profile",
+        "tags": [
+          "Whatsapp Phone Numbers"
+        ],
+        "x-latency-category": "responsive"
+      },
+      "patch": {
+        "description": "Update the WhatsApp business profile associated with a phone number.",
+        "operationId": "PatchWhatsappProfile",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/WhatsappPhoneNumber"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "example": {
+                "about": "string",
+                "address": "string",
+                "category": "string",
+                "description": "string",
+                "display_name": "string",
+                "email": "string",
+                "profile_id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+                "website": "string"
+              },
+              "schema": {
+                "$ref": "#/components/schemas/WhatsappUpdateProfileRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/WhatsappProfileSingleResponse",
+            "description": "Updated profile"
+          },
+          "4XX": {
+            "$ref": "#/components/responses/management_messaging_GenericErrorResponse"
+          }
+        },
+        "summary": "Update phone number business profile",
+        "tags": [
+          "Whatsapp Phone Numbers"
+        ],
+        "x-latency-category": "responsive"
+      }
+    },
+    "/whatsapp/phone_numbers/{phone_number}/profile/photo": {
+      "delete": {
+        "description": "Delete the profile photo of a WhatsApp phone number.",
+        "operationId": "DeleteWhatsappProfilePhoto",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/WhatsappPhoneNumber"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Photo deleted"
+          },
+          "4XX": {
+            "$ref": "#/components/responses/management_messaging_GenericErrorResponse"
+          }
+        },
+        "summary": "Delete Whatsapp profile photo",
+        "tags": [
+          "Whatsapp Phone Numbers"
+        ],
+        "x-latency-category": "responsive"
+      },
+      "get": {
+        "description": "Retrieve the profile photo of a WhatsApp phone number.",
+        "operationId": "GetWhatsappProfilePhoto",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/WhatsappPhoneNumber"
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WhatsappProfilePhotoResponse"
+                }
+              }
+            },
+            "description": "Profile photo"
+          },
+          "4XX": {
+            "$ref": "#/components/responses/management_messaging_GenericErrorResponse"
+          }
+        },
+        "summary": "Get Whatsapp profile photo",
+        "tags": [
+          "Whatsapp Phone Numbers"
+        ],
+        "x-latency-category": "responsive"
+      },
+      "post": {
+        "description": "Upload a new profile photo for a WhatsApp phone number.",
+        "operationId": "PostWhatsappProfilePhoto",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/WhatsappPhoneNumber"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "example": {
+                "file": "string"
+              },
+              "schema": {
+                "properties": {
+                  "file": {
+                    "description": "Image file (JPEG recommended, max 10 MB)",
+                    "format": "binary",
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "file"
+                ],
+                "type": "object"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/WhatsappProfileSingleResponse",
+            "description": "Profile with updated photo"
+          },
+          "4XX": {
+            "$ref": "#/components/responses/management_messaging_GenericErrorResponse"
+          }
+        },
+        "summary": "Upload Whatsapp profile photo",
+        "tags": [
+          "Whatsapp Phone Numbers"
+        ],
+        "x-latency-category": "responsive"
+      }
+    },
+    "/whatsapp/phone_numbers/{phone_number}/resend_verification": {
+      "post": {
+        "description": "Resend the verification code for a phone number that is being registered with WhatsApp.",
+        "operationId": "ResendWhatsappVerification",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/WhatsappPhoneNumber"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "example": {
+                "verification_method": "sms"
+              },
+              "schema": {
+                "$ref": "#/components/schemas/WhatsappResendVerificationRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "204": {
+            "description": "Code resent"
+          },
+          "4XX": {
+            "$ref": "#/components/responses/management_messaging_GenericErrorResponse"
+          }
+        },
+        "summary": "Resend verification code",
+        "tags": [
+          "Whatsapp Phone Numbers"
+        ],
+        "x-latency-category": "responsive"
+      }
+    },
+    "/whatsapp/phone_numbers/{phone_number}/verify": {
+      "post": {
+        "description": "Submit the verification code to complete WhatsApp registration of a phone number.",
+        "operationId": "VerifyWhatsappPhoneNumber",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/WhatsappPhoneNumber"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "example": {
+                "code": "string"
+              },
+              "schema": {
+                "$ref": "#/components/schemas/WhatsappVerifyCodeRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "204": {
+            "description": "Verified successfully"
+          },
+          "4XX": {
+            "$ref": "#/components/responses/management_messaging_GenericErrorResponse"
+          }
+        },
+        "summary": "Submit verification code for a phone number",
+        "tags": [
+          "Whatsapp Phone Numbers"
+        ],
+        "x-latency-category": "responsive"
+      }
+    }
+  },
+  "security": [
+    {
+      "bearerAuth": []
+    }
+  ],
+  "servers": [
+    {
+      "description": "Version 2.0.0 of the Telnyx API",
+      "url": "https://api.telnyx.com/v2"
+    }
+  ]
+}

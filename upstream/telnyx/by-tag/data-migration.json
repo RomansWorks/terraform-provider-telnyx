@@ -1,0 +1,744 @@
+{
+  "components": {
+    "schemas": {
+      "MigrationParams": {
+        "properties": {
+          "bytes_migrated": {
+            "description": "Total amount of data that has been succesfully migrated.",
+            "readOnly": true,
+            "type": "integer"
+          },
+          "bytes_to_migrate": {
+            "description": "Total amount of data found in source bucket to migrate.",
+            "readOnly": true,
+            "type": "integer"
+          },
+          "created_at": {
+            "description": "Time when data migration was created",
+            "example": "2020-01-01T00:00:00Z",
+            "format": "date-time",
+            "readOnly": true,
+            "type": "string"
+          },
+          "eta": {
+            "description": "Estimated time the migration will complete.",
+            "example": "2020-01-01T00:00:00Z",
+            "format": "date-time",
+            "readOnly": true,
+            "type": "string"
+          },
+          "id": {
+            "description": "Unique identifier for the data migration.",
+            "readOnly": true,
+            "type": "string"
+          },
+          "last_copy": {
+            "description": "Time when data migration was last copied from the source.",
+            "example": "2020-01-01T00:00:00Z",
+            "format": "date-time",
+            "readOnly": true,
+            "type": "string"
+          },
+          "refresh": {
+            "description": "If true, will continue to poll the source bucket to ensure new data is continually migrated over.",
+            "type": "boolean"
+          },
+          "source_id": {
+            "description": "ID of the Migration Source from which to migrate data.",
+            "type": "string"
+          },
+          "speed": {
+            "description": "Current speed of the migration.",
+            "readOnly": true,
+            "type": "integer"
+          },
+          "status": {
+            "description": "Status of the migration.",
+            "enum": [
+              "pending",
+              "checking",
+              "migrating",
+              "complete",
+              "error",
+              "stopped"
+            ],
+            "readOnly": true,
+            "type": "string"
+          },
+          "target_bucket_name": {
+            "description": "Bucket name to migrate the data into. Will default to the same name as the `source_bucket_name`.",
+            "type": "string"
+          },
+          "target_region": {
+            "description": "Telnyx Cloud Storage region to migrate the data to.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "source_id",
+          "target_bucket_name",
+          "target_region"
+        ],
+        "type": "object"
+      },
+      "MigrationSourceCoverageParams": {
+        "properties": {
+          "provider": {
+            "description": "Cloud provider from which to migrate data.",
+            "enum": [
+              "aws"
+            ],
+            "type": "string"
+          },
+          "source_region": {
+            "description": "Provider region from which to migrate data.",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "MigrationSourceParams": {
+        "properties": {
+          "bucket_name": {
+            "description": "Bucket name to migrate the data from.",
+            "type": "string"
+          },
+          "id": {
+            "description": "Unique identifier for the data migration source.",
+            "readOnly": true,
+            "type": "string"
+          },
+          "provider": {
+            "description": "Cloud provider from which to migrate data. Use 'telnyx' if you want to migrate data from one Telnyx bucket to another.",
+            "enum": [
+              "aws",
+              "telnyx"
+            ],
+            "type": "string"
+          },
+          "provider_auth": {
+            "properties": {
+              "access_key": {
+                "description": "AWS Access Key. For Telnyx-to-Telnyx migrations, use your Telnyx API key here.",
+                "type": "string"
+              },
+              "secret_access_key": {
+                "description": "AWS Secret Access Key. For Telnyx-to-Telnyx migrations, use your Telnyx API key here as well.",
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
+          "source_region": {
+            "description": "For intra-Telnyx buckets migration, specify the source bucket region in this field.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "provider",
+          "provider_auth",
+          "bucket_name"
+        ],
+        "type": "object"
+      },
+      "PaginationMetaSimple": {
+        "properties": {
+          "page_number": {
+            "example": 2,
+            "type": "integer"
+          },
+          "page_size": {
+            "example": 25,
+            "type": "integer"
+          },
+          "total_pages": {
+            "example": 3,
+            "type": "integer"
+          },
+          "total_results": {
+            "example": 55,
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      }
+    },
+    "securitySchemes": {
+      "BearerAuth": {
+        "bearerFormat": "API key",
+        "description": "Telnyx API key supplied as `Authorization: Bearer \u003ctoken\u003e`. In production, auth may be validated by the API gateway and forwarded via Telnyx auth headers.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "Payment": {
+        "description": "Machine Payment Protocol credential used on paid retries, sent as `Authorization: Payment ...`. Obtained by paying a challenge returned in the `WWW-Authenticate` header of a 402 response. This is not a Telnyx API key; initial challenge requests use standard bearer authentication instead.",
+        "in": "header",
+        "name": "Authorization",
+        "type": "apiKey"
+      },
+      "agent-memory_bearerAuth": {
+        "description": "Telnyx API key",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "bearerAuth": {
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "branded-calling_bearerAuth": {
+        "description": "Telnyx API key. Generate one at https://portal.telnyx.com/#/app/api-keys.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "collections_bearerAuth": {
+        "description": "Telnyx API key. Collections and results are automatically scoped to the authenticated user's organization.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "number-reputation_bearerAuth": {
+        "description": "Telnyx API key. Generate one at https://portal.telnyx.com/#/app/api-keys.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "oauthClientAuth": {
+        "description": "OAuth 2.0 authentication for Telnyx API and MCP integrations",
+        "flows": {
+          "authorizationCode": {
+            "authorizationUrl": "https://api.telnyx.com/v2/oauth/authorize",
+            "refreshUrl": "https://api.telnyx.com/v2/oauth/token",
+            "scopes": {
+              "admin": "Administrative access to Telnyx resources"
+            },
+            "tokenUrl": "https://api.telnyx.com/v2/oauth/token"
+          },
+          "clientCredentials": {
+            "scopes": {
+              "admin": "Administrative access to Telnyx resources"
+            },
+            "tokenUrl": "https://api.telnyx.com/v2/oauth/token"
+          }
+        },
+        "type": "oauth2"
+      },
+      "outbound-voice-profiles_bearerAuth": {
+        "bearerFormat": "JWT",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "pay-connectors_bearerAuth": {
+        "description": "Telnyx API key, not the processor bearer token.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "pronunciation-dicts_bearerAuth": {
+        "description": "Telnyx API v2 key. Obtain from https://portal.telnyx.com",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "rcs-registration_bearerAuth": {
+        "bearerFormat": "API key",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "stored-payment-transactions_bearerAuth": {
+        "bearerFormat": "JWT",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "telnyxApiKey": {
+        "description": "Management-only Telnyx account credential.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "transcriptions-search_bearerAuth": {
+        "description": "Telnyx API key. Results are automatically scoped to the authenticated user's organization.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "web-search_bearerAuth": {
+        "description": "Telnyx API key",
+        "scheme": "bearer",
+        "type": "http"
+      }
+    }
+  },
+  "info": {
+    "contact": {
+      "email": "support@telnyx.com"
+    },
+    "description": "SIP trunking, SMS, MMS, Call Control and Telephony Data Services.",
+    "title": "Telnyx API",
+    "version": "2.0.0",
+    "x-endpoint-cost": "light",
+    "x-latency-category": "responsive"
+  },
+  "openapi": "3.1.0",
+  "paths": {
+    "/storage/migration_source_coverage": {
+      "get": {
+        "deprecated": false,
+        "description": "List the external storage providers and regions supported as migration sources.",
+        "operationId": "ListMigrationSourceCoverage",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "items": {
+                        "$ref": "#/components/schemas/MigrationSourceCoverageParams"
+                      },
+                      "type": "array"
+                    },
+                    "meta": {
+                      "$ref": "#/components/schemas/PaginationMetaSimple"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "List Migrations Source Coverage Response",
+            "headers": {}
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "422": {
+            "description": "Unprocessable Entity"
+          }
+        },
+        "summary": "List Migration Source coverage",
+        "tags": [
+          "Data Migration"
+        ]
+      }
+    },
+    "/storage/migration_sources": {
+      "get": {
+        "deprecated": false,
+        "description": "List the migration sources configured on your account. A migration source is an external storage bucket from which data can be migrated into Telnyx Cloud Storage.",
+        "operationId": "ListMigrationSources",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "items": {
+                        "$ref": "#/components/schemas/MigrationSourceParams"
+                      },
+                      "type": "array"
+                    },
+                    "meta": {
+                      "$ref": "#/components/schemas/PaginationMetaSimple"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "List Migration Sources Response",
+            "headers": {}
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "422": {
+            "description": "Unprocessable Entity"
+          }
+        },
+        "summary": "List all Migration Sources",
+        "tags": [
+          "Data Migration"
+        ]
+      },
+      "post": {
+        "deprecated": false,
+        "description": "Create a source from which data can be migrated from.",
+        "operationId": "CreateMigrationSource",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "example": {
+                "bucket_name": "string",
+                "provider": "aws",
+                "provider_auth": {
+                  "access_key": "string",
+                  "secret_access_key": "string"
+                },
+                "source_region": "string"
+              },
+              "schema": {
+                "$ref": "#/components/schemas/MigrationSourceParams"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "data": {
+                    "bucket_name": "string",
+                    "id": "string",
+                    "provider": "aws",
+                    "provider_auth": {
+                      "access_key": "string",
+                      "secret_access_key": "string"
+                    },
+                    "source_region": "string"
+                  }
+                },
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/MigrationSourceParams"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Create Migration Source Response",
+            "headers": {}
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "422": {
+            "description": "Unprocessable Entity"
+          }
+        },
+        "summary": "Create a Migration Source",
+        "tags": [
+          "Data Migration"
+        ]
+      }
+    },
+    "/storage/migration_sources/{id}": {
+      "delete": {
+        "deprecated": false,
+        "description": "Delete a migration source configuration.",
+        "operationId": "DeleteMigrationSource",
+        "parameters": [
+          {
+            "description": "Unique identifier for the data migration source.",
+            "example": "",
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "data": {
+                    "bucket_name": "string",
+                    "id": "string",
+                    "provider": "aws",
+                    "provider_auth": {
+                      "access_key": "string",
+                      "secret_access_key": "string"
+                    },
+                    "source_region": "string"
+                  }
+                },
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/MigrationSourceParams"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Create Migration Source Response",
+            "headers": {}
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Migration source not found"
+          },
+          "422": {
+            "description": "Unprocessable Entity"
+          }
+        },
+        "summary": "Delete a Migration Source",
+        "tags": [
+          "Data Migration"
+        ]
+      },
+      "get": {
+        "deprecated": false,
+        "description": "Retrieve the details of a specific migration source.",
+        "operationId": "GetMigrationSource",
+        "parameters": [
+          {
+            "description": "Unique identifier for the data migration source.",
+            "example": "",
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "data": {
+                    "bucket_name": "string",
+                    "id": "string",
+                    "provider": "aws",
+                    "provider_auth": {
+                      "access_key": "string",
+                      "secret_access_key": "string"
+                    },
+                    "source_region": "string"
+                  }
+                },
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/MigrationSourceParams"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Create Migration Source Response",
+            "headers": {}
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Migration source not found"
+          },
+          "422": {
+            "description": "Unprocessable Entity"
+          }
+        },
+        "summary": "Get a Migration Source",
+        "tags": [
+          "Data Migration"
+        ]
+      }
+    },
+    "/storage/migrations": {
+      "get": {
+        "deprecated": false,
+        "description": "Retrieve a list of the storage migrations on your account.",
+        "operationId": "ListMigrations",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "items": {
+                        "$ref": "#/components/schemas/MigrationParams"
+                      },
+                      "type": "array"
+                    },
+                    "meta": {
+                      "$ref": "#/components/schemas/PaginationMetaSimple"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "List Migrations Response",
+            "headers": {}
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "422": {
+            "description": "Unprocessable Entity"
+          }
+        },
+        "summary": "List all Migrations",
+        "tags": [
+          "Data Migration"
+        ]
+      },
+      "post": {
+        "deprecated": false,
+        "description": "Initiate a migration of data from an external provider into Telnyx Cloud Storage. Currently, only S3 is supported.",
+        "operationId": "CreateMigration",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MigrationParams"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/MigrationParams"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Create Migration Response",
+            "headers": {}
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "422": {
+            "description": "Unprocessable Entity"
+          }
+        },
+        "summary": "Create a Migration",
+        "tags": [
+          "Data Migration"
+        ]
+      }
+    },
+    "/storage/migrations/{id}": {
+      "get": {
+        "deprecated": false,
+        "description": "Retrieve the details and status of a specific storage migration.",
+        "operationId": "GetMigration",
+        "parameters": [
+          {
+            "description": "Unique identifier for the data migration.",
+            "example": "",
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/MigrationParams"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Create Migration Response",
+            "headers": {}
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Migration not found"
+          },
+          "422": {
+            "description": "Unprocessable Entity"
+          }
+        },
+        "summary": "Get a Migration",
+        "tags": [
+          "Data Migration"
+        ]
+      }
+    },
+    "/storage/migrations/{id}/actions/stop": {
+      "post": {
+        "deprecated": false,
+        "description": "Stops the specified in-progress storage migration and returns the updated migration.",
+        "operationId": "StopMigration",
+        "parameters": [
+          {
+            "description": "Unique identifier for the data migration.",
+            "example": "",
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/MigrationParams"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Create Migration Response",
+            "headers": {}
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Migration not found"
+          },
+          "422": {
+            "description": "Unprocessable Entity"
+          }
+        },
+        "summary": "Stop a Migration",
+        "tags": [
+          "Data Migration"
+        ]
+      }
+    }
+  },
+  "security": [
+    {
+      "bearerAuth": []
+    }
+  ],
+  "servers": [
+    {
+      "description": "Version 2.0.0 of the Telnyx API",
+      "url": "https://api.telnyx.com/v2"
+    }
+  ]
+}

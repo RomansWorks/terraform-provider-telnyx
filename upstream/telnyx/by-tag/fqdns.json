@@ -1,0 +1,822 @@
+{
+  "components": {
+    "parameters": {
+      "FqdnId": {
+        "description": "Identifies the resource.",
+        "in": "path",
+        "name": "id",
+        "required": true,
+        "schema": {
+          "example": "1517907029795014409",
+          "type": "string",
+          "x-format": "int64"
+        }
+      },
+      "connections_PageConsolidated": {
+        "description": "Consolidated page parameter (deepObject style). Originally: page[size], page[number]",
+        "explode": true,
+        "in": "query",
+        "name": "page",
+        "schema": {
+          "properties": {
+            "number": {
+              "default": 1,
+              "description": "The page number to load",
+              "minimum": 1,
+              "type": "integer"
+            },
+            "size": {
+              "default": 250,
+              "description": "The size of the page",
+              "maximum": 250,
+              "minimum": 1,
+              "type": "integer"
+            }
+          },
+          "type": "object"
+        },
+        "style": "deepObject"
+      }
+    },
+    "responses": {
+      "UnauthenticatedResponse": {
+        "content": {
+          "application/json": {
+            "examples": {
+              "Authentication Failed": {
+                "value": {
+                  "errors": [
+                    {
+                      "code": "10009",
+                      "detail": "Could not understand the provided credentials.",
+                      "meta": {
+                        "url": "https://developers.telnyx.com/docs/overview/errors/10009"
+                      },
+                      "title": "Authentication failed"
+                    }
+                  ]
+                }
+              }
+            },
+            "schema": {
+              "$ref": "#/components/schemas/call-scripting_ErrorResponse"
+            }
+          }
+        },
+        "description": "Unauthorized"
+      },
+      "connections_BadRequestResponse": {
+        "content": {
+          "application/json": {
+            "examples": {
+              "missingParameter": {
+                "value": {
+                  "errors": [
+                    {
+                      "code": "10015",
+                      "detail": "The request failed because it was not well-formed.",
+                      "meta": {
+                        "url": "https://developers.telnyx.com/docs/overview/errors/10015"
+                      },
+                      "source": {
+                        "pointer": "/"
+                      },
+                      "title": "Bad Request"
+                    }
+                  ]
+                }
+              }
+            },
+            "schema": {
+              "$ref": "#/components/schemas/connections_ErrorResponse"
+            }
+          }
+        },
+        "description": "Bad request, the request was unacceptable, often due to missing a required parameter."
+      },
+      "connections_NotFoundResponse": {
+        "content": {
+          "application/json": {
+            "examples": {
+              "notFound": {
+                "value": {
+                  "errors": [
+                    {
+                      "code": "10005",
+                      "detail": "The requested resource or URL could not be found.",
+                      "meta": {
+                        "url": "https://developers.telnyx.com/docs/overview/errors/10005"
+                      },
+                      "source": {
+                        "pointer": "/"
+                      },
+                      "title": "Resource not found"
+                    }
+                  ]
+                }
+              }
+            },
+            "schema": {
+              "$ref": "#/components/schemas/connections_ErrorResponse"
+            }
+          }
+        },
+        "description": "The requested resource doesn't exist."
+      },
+      "connections_UnauthorizedResponse": {
+        "content": {
+          "application/json": {
+            "examples": {
+              "notAuthorized": {
+                "value": {
+                  "errors": [
+                    {
+                      "code": "10010",
+                      "detail": "You are not authorized to access the requested resource.",
+                      "meta": {
+                        "url": "https://developers.telnyx.com/docs/overview/errors/10010"
+                      },
+                      "source": {
+                        "pointer": "/"
+                      },
+                      "title": "Not authorized"
+                    }
+                  ]
+                }
+              }
+            },
+            "schema": {
+              "$ref": "#/components/schemas/connections_ErrorResponse"
+            }
+          }
+        },
+        "description": "The user doesn't have the required permissions to perform the requested action."
+      },
+      "connections_UnprocessableEntityResponse": {
+        "content": {
+          "application/json": {
+            "examples": {
+              "unprocessableEntity": {
+                "value": {
+                  "errors": [
+                    {
+                      "code": "10015",
+                      "detail": "Invalid dnis_format: test, was provided. Acceptable formats are +e164, e164, national, sip_username",
+                      "meta": {
+                        "url": "https://developers.telnyx.com/docs/overview/errors/10015"
+                      },
+                      "source": {
+                        "pointer": "/inbound/dnis_number_format"
+                      },
+                      "title": "Bad Request"
+                    }
+                  ]
+                }
+              }
+            },
+            "schema": {
+              "$ref": "#/components/schemas/connections_ErrorResponse"
+            }
+          }
+        },
+        "description": "The request was well-formed but was unable to be followed due to semantic errors."
+      }
+    },
+    "schemas": {
+      "CreateFqdnRequest": {
+        "example": {
+          "connection_id": "1516447646313612565",
+          "dns_record_type": "a",
+          "fqdn": "example.com",
+          "port": 8080
+        },
+        "properties": {
+          "connection_id": {
+            "description": "ID of the FQDN connection to which this IP should be attached.",
+            "type": "string"
+          },
+          "dns_record_type": {
+            "description": "The DNS record type for the FQDN. For cases where a port is not set, the DNS record type must be 'srv'. For cases where a port is set, the DNS record type must be 'a'. If the DNS record type is 'a' and a port is not specified, 5060 will be used.",
+            "example": "a",
+            "type": "string"
+          },
+          "fqdn": {
+            "description": "FQDN represented by this resource.",
+            "example": "example.com",
+            "type": "string"
+          },
+          "port": {
+            "default": 5060,
+            "description": "Port to use when connecting to this FQDN.",
+            "example": 5060,
+            "type": [
+              "integer",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "fqdn",
+          "dns_record_type",
+          "connection_id"
+        ],
+        "title": "Create Fqdn Request",
+        "type": "object"
+      },
+      "Fqdn": {
+        "example": {
+          "connection_id": "1516447646313612565",
+          "created_at": "2018-02-02T22:25:27.521Z",
+          "dns_record_type": "a",
+          "fqdn": "example.com",
+          "id": "1293384261075731499",
+          "port": 5060,
+          "record_type": "fqdn",
+          "updated_at": "2018-02-02T22:25:27.521Z"
+        },
+        "properties": {
+          "connection_id": {
+            "description": "ID of the FQDN connection to which this FQDN is attached.",
+            "type": "string"
+          },
+          "created_at": {
+            "description": "ISO 8601 formatted date indicating when the resource was created.",
+            "example": "2018-02-02T22:25:27.521Z",
+            "type": "string"
+          },
+          "dns_record_type": {
+            "description": "The DNS record type for the FQDN. For cases where a port is not set, the DNS record type must be 'srv'. For cases where a port is set, the DNS record type must be 'a'. If the DNS record type is 'a' and a port is not specified, 5060 will be used.",
+            "example": "a",
+            "type": "string"
+          },
+          "fqdn": {
+            "description": "FQDN represented by this resource.",
+            "example": "example.com",
+            "type": "string"
+          },
+          "id": {
+            "description": "Identifies the resource.",
+            "example": "1293384261075731499",
+            "type": "string",
+            "x-format": "int64"
+          },
+          "port": {
+            "default": 5060,
+            "description": "Port to use when connecting to this FQDN.",
+            "example": 5060,
+            "type": "integer"
+          },
+          "record_type": {
+            "description": "Identifies the type of the resource.",
+            "example": "fqdn",
+            "type": "string"
+          },
+          "updated_at": {
+            "description": "ISO 8601 formatted date indicating when the resource was updated.",
+            "example": "2018-02-02T22:25:27.521Z",
+            "type": "string"
+          }
+        },
+        "title": "Fqdn",
+        "type": "object"
+      },
+      "UpdateFqdnRequest": {
+        "example": {
+          "connection_id": "1516447646313612565",
+          "dns_record_type": "a",
+          "fqdn": "example.com",
+          "port": 8080
+        },
+        "properties": {
+          "connection_id": {
+            "description": "ID of the FQDN connection to which this IP should be attached.",
+            "type": "string"
+          },
+          "dns_record_type": {
+            "description": "The DNS record type for the FQDN. For cases where a port is not set, the DNS record type must be 'srv'. For cases where a port is set, the DNS record type must be 'a'. If the DNS record type is 'a' and a port is not specified, 5060 will be used.",
+            "example": "a",
+            "type": "string"
+          },
+          "fqdn": {
+            "description": "FQDN represented by this resource.",
+            "example": "example.com",
+            "type": "string"
+          },
+          "port": {
+            "default": 5060,
+            "description": "Port to use when connecting to this FQDN.",
+            "example": 5060,
+            "type": [
+              "integer",
+              "null"
+            ]
+          }
+        },
+        "title": "Update FQDN Request",
+        "type": "object"
+      },
+      "call-scripting_ErrorResponse": {
+        "properties": {
+          "errors": {
+            "items": {
+              "properties": {
+                "code": {
+                  "type": "string"
+                },
+                "detail": {
+                  "type": "string"
+                },
+                "meta": {
+                  "properties": {
+                    "url": {
+                      "format": "uri",
+                      "type": "string"
+                    }
+                  },
+                  "type": "object"
+                },
+                "source": {
+                  "properties": {
+                    "pointer": {
+                      "type": "string"
+                    }
+                  },
+                  "type": "object"
+                },
+                "title": {
+                  "type": "string"
+                }
+              },
+              "type": "object"
+            },
+            "type": "array"
+          }
+        },
+        "type": "object"
+      },
+      "connections_ErrorResponse": {
+        "properties": {
+          "errors": {
+            "items": {
+              "properties": {
+                "code": {
+                  "type": "string"
+                },
+                "detail": {
+                  "type": "string"
+                },
+                "meta": {
+                  "properties": {
+                    "url": {
+                      "format": "uri",
+                      "type": "string"
+                    }
+                  },
+                  "type": "object"
+                },
+                "source": {
+                  "properties": {
+                    "pointer": {
+                      "type": "string"
+                    }
+                  },
+                  "type": "object"
+                },
+                "title": {
+                  "type": "string"
+                }
+              },
+              "type": "object"
+            },
+            "type": "array"
+          }
+        },
+        "type": "object"
+      },
+      "connections_PaginationMeta": {
+        "properties": {
+          "page_number": {
+            "example": 2,
+            "type": "integer"
+          },
+          "page_size": {
+            "example": 25,
+            "type": "integer"
+          },
+          "total_pages": {
+            "example": 3,
+            "type": "integer"
+          },
+          "total_results": {
+            "example": 55,
+            "type": "integer"
+          }
+        },
+        "title": "Pagination Meta",
+        "type": "object"
+      }
+    },
+    "securitySchemes": {
+      "BearerAuth": {
+        "bearerFormat": "API key",
+        "description": "Telnyx API key supplied as `Authorization: Bearer \u003ctoken\u003e`. In production, auth may be validated by the API gateway and forwarded via Telnyx auth headers.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "Payment": {
+        "description": "Machine Payment Protocol credential used on paid retries, sent as `Authorization: Payment ...`. Obtained by paying a challenge returned in the `WWW-Authenticate` header of a 402 response. This is not a Telnyx API key; initial challenge requests use standard bearer authentication instead.",
+        "in": "header",
+        "name": "Authorization",
+        "type": "apiKey"
+      },
+      "agent-memory_bearerAuth": {
+        "description": "Telnyx API key",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "bearerAuth": {
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "branded-calling_bearerAuth": {
+        "description": "Telnyx API key. Generate one at https://portal.telnyx.com/#/app/api-keys.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "collections_bearerAuth": {
+        "description": "Telnyx API key. Collections and results are automatically scoped to the authenticated user's organization.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "number-reputation_bearerAuth": {
+        "description": "Telnyx API key. Generate one at https://portal.telnyx.com/#/app/api-keys.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "oauthClientAuth": {
+        "description": "OAuth 2.0 authentication for Telnyx API and MCP integrations",
+        "flows": {
+          "authorizationCode": {
+            "authorizationUrl": "https://api.telnyx.com/v2/oauth/authorize",
+            "refreshUrl": "https://api.telnyx.com/v2/oauth/token",
+            "scopes": {
+              "admin": "Administrative access to Telnyx resources"
+            },
+            "tokenUrl": "https://api.telnyx.com/v2/oauth/token"
+          },
+          "clientCredentials": {
+            "scopes": {
+              "admin": "Administrative access to Telnyx resources"
+            },
+            "tokenUrl": "https://api.telnyx.com/v2/oauth/token"
+          }
+        },
+        "type": "oauth2"
+      },
+      "outbound-voice-profiles_bearerAuth": {
+        "bearerFormat": "JWT",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "pay-connectors_bearerAuth": {
+        "description": "Telnyx API key, not the processor bearer token.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "pronunciation-dicts_bearerAuth": {
+        "description": "Telnyx API v2 key. Obtain from https://portal.telnyx.com",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "rcs-registration_bearerAuth": {
+        "bearerFormat": "API key",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "stored-payment-transactions_bearerAuth": {
+        "bearerFormat": "JWT",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "telnyxApiKey": {
+        "description": "Management-only Telnyx account credential.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "transcriptions-search_bearerAuth": {
+        "description": "Telnyx API key. Results are automatically scoped to the authenticated user's organization.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "web-search_bearerAuth": {
+        "description": "Telnyx API key",
+        "scheme": "bearer",
+        "type": "http"
+      }
+    }
+  },
+  "info": {
+    "contact": {
+      "email": "support@telnyx.com"
+    },
+    "description": "SIP trunking, SMS, MMS, Call Control and Telephony Data Services.",
+    "title": "Telnyx API",
+    "version": "2.0.0",
+    "x-endpoint-cost": "light",
+    "x-latency-category": "responsive"
+  },
+  "openapi": "3.1.0",
+  "paths": {
+    "/fqdns": {
+      "get": {
+        "description": "Get all FQDNs belonging to the user that match the given filters.",
+        "operationId": "ListFqdns",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/connections_PageConsolidated"
+          },
+          {
+            "description": "Consolidated filter parameter (deepObject style). Originally: filter[connection_id], filter[fqdn], filter[port], filter[dns_record_type]",
+            "explode": true,
+            "in": "query",
+            "name": "filter",
+            "schema": {
+              "properties": {
+                "connection_id": {
+                  "description": "ID of the FQDN connection to which the FQDN belongs.",
+                  "type": "string"
+                },
+                "dns_record_type": {
+                  "description": "DNS record type used by the FQDN.",
+                  "example": "a",
+                  "type": "string"
+                },
+                "fqdn": {
+                  "description": "FQDN represented by the resource.",
+                  "example": "example.com",
+                  "type": "string"
+                },
+                "port": {
+                  "description": "Port to use when connecting to the FQDN.",
+                  "example": 5060,
+                  "type": "integer"
+                }
+              },
+              "type": "object"
+            },
+            "style": "deepObject"
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "items": {
+                        "$ref": "#/components/schemas/Fqdn"
+                      },
+                      "type": "array"
+                    },
+                    "meta": {
+                      "$ref": "#/components/schemas/connections_PaginationMeta"
+                    }
+                  },
+                  "title": "List FQDNs Response",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful response with a list of FQDN connections."
+          },
+          "400": {
+            "$ref": "#/components/responses/connections_BadRequestResponse"
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthenticatedResponse"
+          }
+        },
+        "summary": "List FQDNs",
+        "tags": [
+          "FQDNs"
+        ],
+        "x-endpoint-cost": "medium",
+        "x-group-parameters": "true"
+      },
+      "post": {
+        "description": "Creates a new FQDN record and attaches it to the specified connection.",
+        "operationId": "CreateFqdn",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateFqdnRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/Fqdn"
+                    }
+                  },
+                  "title": "FQDN Response",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful response with details about an FQDN connection."
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthenticatedResponse"
+          },
+          "403": {
+            "$ref": "#/components/responses/connections_UnauthorizedResponse"
+          },
+          "422": {
+            "$ref": "#/components/responses/connections_UnprocessableEntityResponse"
+          }
+        },
+        "summary": "Create an FQDN",
+        "tags": [
+          "FQDNs"
+        ],
+        "x-endpoint-cost": "medium"
+      }
+    },
+    "/fqdns/{id}": {
+      "delete": {
+        "description": "Permanently deletes the specified FQDN record from its connection.",
+        "operationId": "DeleteFqdn",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/FqdnId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/Fqdn"
+                    }
+                  },
+                  "title": "FQDN Response",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful response with details about an FQDN connection."
+          },
+          "400": {
+            "$ref": "#/components/responses/connections_BadRequestResponse"
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthenticatedResponse"
+          },
+          "403": {
+            "$ref": "#/components/responses/connections_UnauthorizedResponse"
+          },
+          "404": {
+            "$ref": "#/components/responses/connections_NotFoundResponse"
+          }
+        },
+        "summary": "Delete an FQDN",
+        "tags": [
+          "FQDNs"
+        ]
+      },
+      "get": {
+        "description": "Return the details regarding a specific FQDN.",
+        "operationId": "RetrieveFqdn",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/FqdnId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/Fqdn"
+                    }
+                  },
+                  "title": "FQDN Response",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful response with details about an FQDN connection."
+          },
+          "400": {
+            "$ref": "#/components/responses/connections_BadRequestResponse"
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthenticatedResponse"
+          },
+          "403": {
+            "$ref": "#/components/responses/connections_UnauthorizedResponse"
+          },
+          "404": {
+            "$ref": "#/components/responses/connections_NotFoundResponse"
+          }
+        },
+        "summary": "Retrieve an FQDN",
+        "tags": [
+          "FQDNs"
+        ]
+      },
+      "patch": {
+        "description": "Updates the details of the specified FQDN record and returns the updated FQDN.",
+        "operationId": "UpdateFqdn",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/FqdnId"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateFqdnRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/Fqdn"
+                    }
+                  },
+                  "title": "FQDN Response",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful response with details about an FQDN connection."
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthenticatedResponse"
+          },
+          "403": {
+            "$ref": "#/components/responses/connections_UnauthorizedResponse"
+          },
+          "404": {
+            "$ref": "#/components/responses/connections_NotFoundResponse"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "errors": [
+                    {
+                      "detail": "A previous update to this connection is still in progress. Please try again later."
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/connections_ErrorResponse"
+                }
+              }
+            },
+            "description": "Conflict. Another update to this connection is still in progress. Wait and retry the request later."
+          },
+          "422": {
+            "$ref": "#/components/responses/connections_UnprocessableEntityResponse"
+          }
+        },
+        "summary": "Update an FQDN",
+        "tags": [
+          "FQDNs"
+        ]
+      }
+    }
+  },
+  "security": [
+    {
+      "bearerAuth": []
+    }
+  ],
+  "servers": [
+    {
+      "description": "Version 2.0.0 of the Telnyx API",
+      "url": "https://api.telnyx.com/v2"
+    }
+  ]
+}

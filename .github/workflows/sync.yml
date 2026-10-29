@@ -1,0 +1,65 @@
+# Checks the upstream Telnyx OpenAPI spec daily. When Telnyx has published a
+# new commit, opens (or refreshes) one pull request with the new pin, the
+# regenerated catalog and the API diff report. A coding agent then turns that
+# pull request into an OpenSpec sync change (see AGENTS.md).
+name: Telnyx API sync
+
+on:
+  schedule:
+    - cron: '0 6 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+concurrency:
+  group: telnyx-api-sync
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
+        with:
+          go-version-file: 'go.mod'
+          cache: true
+      - name: Fetch upstream spec
+        id: fetch
+        run: make upstream-fetch
+      - name: Rebuild catalog and diff report
+        if: steps.fetch.outputs.changed == 'true'
+        run: |
+          make catalog
+          make api-diff BASE=HEAD
+          {
+            echo "Telnyx published a new API spec: \`${OLD:0:7}\` → \`${NEW:0:7}\`."
+            echo
+            echo "Next step: ask the coding agent to **run the Telnyx sync** on this branch."
+            echo "It creates an OpenSpec change from this report and implements it."
+            echo
+            # GitHub limits a pull request body to 65,536 characters.
+            head -c 60000 build/api-diff.md
+          } > build/pr-body.md
+        env:
+          OLD: ${{ steps.fetch.outputs.old_commit }}
+          NEW: ${{ steps.fetch.outputs.new_commit }}
+      - name: Open or update pull request
+        if: steps.fetch.outputs.changed == 'true'
+        uses: peter-evans/create-pull-request@5f6978faf089d4d20b00c7766989d076bb2fc7f1 # v8.1.1
+        with:
+          # A token other than GITHUB_TOKEN is needed for the pull request to
+          # trigger the Tests workflow. Falls back to GITHUB_TOKEN if unset.
+          token: ${{ secrets.SYNC_TOKEN || secrets.GITHUB_TOKEN }}
+          branch: sync/telnyx-api
+          delete-branch: true
+          commit-message: 'sync: pin Telnyx API spec to ${{ steps.fetch.outputs.new_commit }}'
+          title: 'Sync Telnyx API spec to ${{ steps.fetch.outputs.new_commit }}'
+          body-path: build/pr-body.md
+          labels: api-sync
+          add-paths: |
+            upstream/**
+            catalog/**

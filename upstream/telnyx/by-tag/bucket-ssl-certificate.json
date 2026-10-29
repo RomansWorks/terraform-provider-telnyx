@@ -1,0 +1,362 @@
+{
+  "components": {
+    "schemas": {
+      "SSLCertificate": {
+        "properties": {
+          "created_at": {
+            "description": "Time when SSL certificate was uploaded",
+            "example": "2020-01-01T00:00:00Z",
+            "format": "date-time",
+            "type": "string"
+          },
+          "id": {
+            "description": "Unique identifier for the SSL certificate",
+            "type": "string"
+          },
+          "issued_by": {
+            "properties": {
+              "common_name": {
+                "description": "The common name of the entity the certificate was issued by",
+                "type": "string"
+              },
+              "organization": {
+                "description": "The organization the certificate was issued by",
+                "type": "string"
+              },
+              "organization_unit": {
+                "description": "The organizational unit the certificate was issued by",
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
+          "issued_to": {
+            "properties": {
+              "common_name": {
+                "description": "The common name of the entity the certificate was issued to",
+                "type": "string"
+              },
+              "organization": {
+                "description": "The organization the certificate was issued to",
+                "type": "string"
+              },
+              "organization_unit": {
+                "description": "The organizational unit the certificate was issued to",
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
+          "valid_from": {
+            "description": "The time the certificate is valid from",
+            "example": "2020-01-01T00:00:00Z",
+            "format": "date-time",
+            "type": "string"
+          },
+          "valid_to": {
+            "description": "The time the certificate is valid to",
+            "example": "2020-01-01T00:00:00Z",
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      }
+    },
+    "securitySchemes": {
+      "BearerAuth": {
+        "bearerFormat": "API key",
+        "description": "Telnyx API key supplied as `Authorization: Bearer \u003ctoken\u003e`. In production, auth may be validated by the API gateway and forwarded via Telnyx auth headers.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "Payment": {
+        "description": "Machine Payment Protocol credential used on paid retries, sent as `Authorization: Payment ...`. Obtained by paying a challenge returned in the `WWW-Authenticate` header of a 402 response. This is not a Telnyx API key; initial challenge requests use standard bearer authentication instead.",
+        "in": "header",
+        "name": "Authorization",
+        "type": "apiKey"
+      },
+      "agent-memory_bearerAuth": {
+        "description": "Telnyx API key",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "bearerAuth": {
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "branded-calling_bearerAuth": {
+        "description": "Telnyx API key. Generate one at https://portal.telnyx.com/#/app/api-keys.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "collections_bearerAuth": {
+        "description": "Telnyx API key. Collections and results are automatically scoped to the authenticated user's organization.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "number-reputation_bearerAuth": {
+        "description": "Telnyx API key. Generate one at https://portal.telnyx.com/#/app/api-keys.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "oauthClientAuth": {
+        "description": "OAuth 2.0 authentication for Telnyx API and MCP integrations",
+        "flows": {
+          "authorizationCode": {
+            "authorizationUrl": "https://api.telnyx.com/v2/oauth/authorize",
+            "refreshUrl": "https://api.telnyx.com/v2/oauth/token",
+            "scopes": {
+              "admin": "Administrative access to Telnyx resources"
+            },
+            "tokenUrl": "https://api.telnyx.com/v2/oauth/token"
+          },
+          "clientCredentials": {
+            "scopes": {
+              "admin": "Administrative access to Telnyx resources"
+            },
+            "tokenUrl": "https://api.telnyx.com/v2/oauth/token"
+          }
+        },
+        "type": "oauth2"
+      },
+      "outbound-voice-profiles_bearerAuth": {
+        "bearerFormat": "JWT",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "pay-connectors_bearerAuth": {
+        "description": "Telnyx API key, not the processor bearer token.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "pronunciation-dicts_bearerAuth": {
+        "description": "Telnyx API v2 key. Obtain from https://portal.telnyx.com",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "rcs-registration_bearerAuth": {
+        "bearerFormat": "API key",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "stored-payment-transactions_bearerAuth": {
+        "bearerFormat": "JWT",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "telnyxApiKey": {
+        "description": "Management-only Telnyx account credential.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "transcriptions-search_bearerAuth": {
+        "description": "Telnyx API key. Results are automatically scoped to the authenticated user's organization.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "web-search_bearerAuth": {
+        "description": "Telnyx API key",
+        "scheme": "bearer",
+        "type": "http"
+      }
+    }
+  },
+  "info": {
+    "contact": {
+      "email": "support@telnyx.com"
+    },
+    "description": "SIP trunking, SMS, MMS, Call Control and Telephony Data Services.",
+    "title": "Telnyx API",
+    "version": "2.0.0",
+    "x-endpoint-cost": "light",
+    "x-latency-category": "responsive"
+  },
+  "openapi": "3.1.0",
+  "paths": {
+    "/storage/buckets/{bucketName}/ssl_certificate": {
+      "delete": {
+        "deprecated": false,
+        "description": "Deletes an SSL certificate and its matching secret.",
+        "operationId": "RemoveStorageSSLCertificate",
+        "parameters": [
+          {
+            "description": "Bucket Name",
+            "example": "",
+            "in": "path",
+            "name": "bucketName",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/SSLCertificate"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "SSL Certificate Response",
+            "headers": {}
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Bucket or SSL certificate not found"
+          },
+          "422": {
+            "description": "Unprocessable Entity"
+          }
+        },
+        "summary": "Remove SSL Certificate",
+        "tags": [
+          "Bucket SSL Certificate"
+        ]
+      },
+      "get": {
+        "deprecated": false,
+        "description": "Returns the stored certificate detail of a bucket, if applicable.",
+        "operationId": "GetStorageSSLCertificates",
+        "parameters": [
+          {
+            "description": "The name of the bucket",
+            "example": "",
+            "in": "path",
+            "name": "bucketName",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/SSLCertificate"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "SSL Certificate Response",
+            "headers": {}
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Bucket or SSL certificate not found"
+          },
+          "422": {
+            "description": "Unprocessable Entity"
+          }
+        },
+        "summary": "Get Bucket SSL Certificate",
+        "tags": [
+          "Bucket SSL Certificate"
+        ]
+      },
+      "put": {
+        "deprecated": false,
+        "description": "Uploads an SSL certificate and its matching secret so that you can use Telnyx's storage as your CDN.",
+        "operationId": "AddStorageSSLCertificate",
+        "parameters": [
+          {
+            "description": "The name of the bucket",
+            "example": "",
+            "in": "path",
+            "name": "bucketName",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "example": {
+                "certificate": "certificate.pem",
+                "private_key": "private_key.pem"
+              },
+              "schema": {
+                "properties": {
+                  "certificate": {
+                    "description": "The SSL certificate file",
+                    "example": "",
+                    "format": "binary",
+                    "type": "string"
+                  },
+                  "private_key": {
+                    "description": "The private key file",
+                    "example": "",
+                    "format": "binary",
+                    "type": "string"
+                  }
+                },
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/SSLCertificate"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "SSL Certificate Response",
+            "headers": {}
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Bucket not found"
+          },
+          "422": {
+            "description": "Unprocessable Entity"
+          }
+        },
+        "summary": "Add SSL Certificate",
+        "tags": [
+          "Bucket SSL Certificate"
+        ]
+      }
+    }
+  },
+  "security": [
+    {
+      "bearerAuth": []
+    }
+  ],
+  "servers": [
+    {
+      "description": "Version 2.0.0 of the Telnyx API",
+      "url": "https://api.telnyx.com/v2"
+    }
+  ]
+}

@@ -1,0 +1,1086 @@
+{
+  "components": {
+    "parameters": {
+      "video_PageConsolidated": {
+        "description": "Consolidated page parameter (deepObject style). Originally: page[size], page[number]",
+        "explode": true,
+        "in": "query",
+        "name": "page",
+        "schema": {
+          "properties": {
+            "number": {
+              "default": 1,
+              "description": "The page number to load.",
+              "minimum": 1,
+              "type": "integer"
+            },
+            "size": {
+              "default": 20,
+              "description": "The size of the page.",
+              "maximum": 250,
+              "minimum": 1,
+              "type": "integer"
+            }
+          },
+          "type": "object"
+        },
+        "style": "deepObject"
+      }
+    },
+    "responses": {
+      "video_GenericErrorResponse": {
+        "content": {
+          "application/json": {
+            "schema": {
+              "properties": {
+                "message": {
+                  "example": "Error",
+                  "type": "string"
+                },
+                "success": {
+                  "example": false,
+                  "type": "boolean"
+                }
+              },
+              "type": "object"
+            }
+          }
+        },
+        "description": "Unexpected error"
+      },
+      "video_ResourceNotFound": {
+        "content": {
+          "application/json": {
+            "example": {
+              "code": "string",
+              "detail": "string",
+              "source": {
+                "parameter": "string",
+                "pointer": "string"
+              },
+              "title": "string"
+            },
+            "schema": {
+              "$ref": "#/components/schemas/video_Error"
+            }
+          }
+        },
+        "description": "Resource not found"
+      },
+      "video_UnauthorizedResponse": {
+        "description": "Unauthorized"
+      },
+      "video_UnprocessableEntity": {
+        "content": {
+          "application/json": {
+            "example": {
+              "errors": [
+                {
+                  "code": "10027",
+                  "detail": "The server understood the syntax of the request but was unable to process the instructions.",
+                  "title": "Unprocessable Entity"
+                }
+              ]
+            },
+            "schema": {
+              "$ref": "#/components/schemas/Errors"
+            }
+          }
+        },
+        "description": "Unprocessable entity. Check the 'detail' field in response for details."
+      }
+    },
+    "schemas": {
+      "CreateRoomRequest": {
+        "properties": {
+          "enable_recording": {
+            "default": false,
+            "description": "Enable or disable recording for that room.",
+            "example": true,
+            "type": "boolean"
+          },
+          "max_participants": {
+            "default": 10,
+            "description": "The maximum amount of participants allowed in a room. If new participants try to join after that limit is reached, their request will be rejected.",
+            "example": 10,
+            "maximum": 50,
+            "minimum": 2,
+            "type": "integer"
+          },
+          "unique_name": {
+            "description": "The unique (within the Telnyx account scope) name of the room.",
+            "example": "My room",
+            "type": "string"
+          },
+          "webhook_event_failover_url": {
+            "default": "",
+            "description": "The failover URL where webhooks related to this room will be sent if sending to the primary URL fails. Must include a scheme, such as 'https'.",
+            "example": "https://failover.example.com",
+            "format": "uri",
+            "type": "string"
+          },
+          "webhook_event_url": {
+            "description": "The URL where webhooks related to this room will be sent. Must include a scheme, such as 'https'.",
+            "example": "https://example.com",
+            "format": "uri",
+            "type": "string"
+          },
+          "webhook_timeout_secs": {
+            "default": null,
+            "description": "Specifies how many seconds to wait before timing out a webhook.",
+            "example": 25,
+            "maximum": 30,
+            "minimum": 0,
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "Error": {
+        "example": {
+          "code": "20207",
+          "description": "The street address provided is invalid.",
+          "source": {
+            "pointer": "/street_address"
+          },
+          "title": "Invalid street address"
+        },
+        "properties": {
+          "code": {
+            "type": "string",
+            "x-format": "int64"
+          },
+          "description": {
+            "type": "string"
+          },
+          "detail": {
+            "description": "A human-readable explanation of the error.",
+            "type": "string"
+          },
+          "meta": {
+            "additionalProperties": true,
+            "type": "object"
+          },
+          "source": {
+            "properties": {
+              "parameter": {
+                "description": "Indicates which query parameter caused the error.",
+                "type": "string"
+              },
+              "pointer": {
+                "description": "JSON pointer (RFC6901) to the offending entity.",
+                "format": "json-pointer",
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
+          "title": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "title"
+        ],
+        "type": "object"
+      },
+      "Errors": {
+        "properties": {
+          "errors": {
+            "items": {
+              "$ref": "#/components/schemas/Error"
+            },
+            "type": "array"
+          }
+        },
+        "type": "object"
+      },
+      "PaginationMeta": {
+        "properties": {
+          "page_number": {
+            "example": 2,
+            "type": "integer"
+          },
+          "page_size": {
+            "example": 25,
+            "type": "integer"
+          },
+          "total_pages": {
+            "example": 3,
+            "type": "integer"
+          },
+          "total_results": {
+            "example": 55,
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "PatchRoomRequest": {
+        "properties": {
+          "enable_recording": {
+            "default": false,
+            "description": "Enable or disable recording for that room.",
+            "example": true,
+            "type": "boolean"
+          },
+          "max_participants": {
+            "default": 10,
+            "description": "The maximum amount of participants allowed in a room. If new participants try to join after that limit is reached, their request will be rejected.",
+            "example": 10,
+            "maximum": 50,
+            "minimum": 2,
+            "type": "integer"
+          },
+          "unique_name": {
+            "description": "The unique (within the Telnyx account scope) name of the room.",
+            "example": "My room",
+            "type": "string"
+          },
+          "webhook_event_failover_url": {
+            "default": "",
+            "description": "The failover URL where webhooks related to this room will be sent if sending to the primary URL fails. Must include a scheme, such as 'https'.",
+            "example": "https://failover.example.com",
+            "format": "uri",
+            "type": "string"
+          },
+          "webhook_event_url": {
+            "description": "The URL where webhooks related to this room will be sent. Must include a scheme, such as 'https'.",
+            "example": "https://example.com",
+            "format": "uri",
+            "type": "string"
+          },
+          "webhook_timeout_secs": {
+            "default": null,
+            "description": "Specifies how many seconds to wait before timing out a webhook.",
+            "example": 25,
+            "maximum": 30,
+            "minimum": 0,
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "Room": {
+        "example": {
+          "active_session_id": "7b61621f-62e0-4aad-ab11-9fd19e272e74",
+          "created_at": "2021-04-16T09:46:20.954863Z",
+          "enable_recording": true,
+          "id": "7b61621f-62e0-4aad-ab11-9fd19e272e73",
+          "max_participants": 50,
+          "record_type": "room",
+          "sessions": [
+            {
+              "active": true,
+              "created_at": "2021-04-16T09:46:20.954863Z",
+              "id": "7b61621f-62e0-4aad-ab11-9fd19e272e74",
+              "participants": [],
+              "record_type": "room_session",
+              "room_id": "7b61621f-62e0-4aad-ab11-9fd19e272e73",
+              "updated_at": "2021-04-16T10:24:55.962200Z"
+            }
+          ],
+          "unique_name": "My Room",
+          "updated_at": "2021-04-16T10:24:55.962200Z",
+          "webhook_event_failover_url": "https://failover.example.com",
+          "webhook_event_url": "https://www.example.com",
+          "webhook_timeout_secs": 25
+        },
+        "properties": {
+          "active_session_id": {
+            "description": "The identifier of the active room session if any.",
+            "example": "0ccc7b54-4df3-4bca-a65a-3da1ecc777f0",
+            "format": "uuid",
+            "type": "string"
+          },
+          "created_at": {
+            "description": "ISO 8601 timestamp when the room was created.",
+            "example": "2021-03-26T17:51:59.588408Z",
+            "format": "date-time",
+            "type": "string"
+          },
+          "enable_recording": {
+            "default": false,
+            "description": "Enable or disable recording for that room.",
+            "example": true,
+            "type": "boolean"
+          },
+          "id": {
+            "description": "A unique identifier for the room.",
+            "example": "0ccc7b54-4df3-4bca-a65a-3da1ecc777f0",
+            "format": "uuid",
+            "type": "string"
+          },
+          "max_participants": {
+            "description": "Maximum participants allowed in the room.",
+            "example": 50,
+            "type": "integer"
+          },
+          "record_type": {
+            "example": "room",
+            "readOnly": true,
+            "type": "string"
+          },
+          "sessions": {
+            "items": {
+              "$ref": "#/components/schemas/RoomSession"
+            },
+            "type": "array"
+          },
+          "unique_name": {
+            "description": "The unique (within the Telnyx account scope) name of the room.",
+            "example": "My room",
+            "type": "string"
+          },
+          "updated_at": {
+            "description": "ISO 8601 timestamp when the room was updated.",
+            "example": "2021-03-26T17:51:59.588408Z",
+            "format": "date-time",
+            "type": "string"
+          },
+          "webhook_event_failover_url": {
+            "default": "",
+            "description": "The failover URL where webhooks related to this room will be sent if sending to the primary URL fails. Must include a scheme, such as 'https'.",
+            "example": "https://failover.example.com",
+            "format": "uri",
+            "type": "string"
+          },
+          "webhook_event_url": {
+            "description": "The URL where webhooks related to this room will be sent. Must include a scheme, such as 'https'.",
+            "example": "https://example.com",
+            "format": "uri",
+            "type": "string"
+          },
+          "webhook_timeout_secs": {
+            "default": null,
+            "description": "Specifies how many seconds to wait before timing out a webhook.",
+            "example": 25,
+            "maximum": 30,
+            "minimum": 0,
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "RoomParticipant": {
+        "example": {
+          "context": "Alice",
+          "id": "7b61621f-62e0-4aad-ab11-9fd19e272e73",
+          "joined_at": "2021-04-16T09:46:20.954863Z",
+          "left_at": "2021-04-16T10:24:55.962200Z",
+          "record_type": "room_participant",
+          "session_id": "7b61621f-5fe4-4aad-ab11-9fd19e272e73",
+          "updated_at": "2021-04-16T10:24:55.962200Z"
+        },
+        "properties": {
+          "context": {
+            "description": "Context provided to the given participant through the client SDK",
+            "example": "Alice",
+            "type": "string"
+          },
+          "id": {
+            "description": "A unique identifier for the room participant.",
+            "example": "0ccc7b54-4df3-4bca-a65a-3da1ecc777f0",
+            "format": "uuid",
+            "type": "string"
+          },
+          "joined_at": {
+            "description": "ISO 8601 timestamp when the participant joined the session.",
+            "example": "2021-03-26T17:51:59.588408Z",
+            "format": "date-time",
+            "type": "string"
+          },
+          "left_at": {
+            "description": "ISO 8601 timestamp when the participant left the session.",
+            "example": "2021-03-26T17:51:59.588408Z",
+            "format": "date-time",
+            "type": "string"
+          },
+          "record_type": {
+            "example": "room_participant",
+            "readOnly": true,
+            "type": "string"
+          },
+          "session_id": {
+            "description": "Identify the room session that participant is part of.",
+            "example": "0ccc7b54-4df3-4bca-a65a-3da1ecc777b0",
+            "format": "uuid",
+            "type": "string"
+          },
+          "updated_at": {
+            "description": "ISO 8601 timestamp when the participant was updated.",
+            "example": "2021-03-26T17:51:59.588408Z",
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "RoomSession": {
+        "example": {
+          "active": false,
+          "created_at": "2021-04-16T09:46:20.954863Z",
+          "ended_at": "2021-04-16T10:24:55.962200Z",
+          "id": "7b61621f-62e0-4aad-ab11-9fd19e272e73",
+          "participants": [],
+          "record_type": "room_session",
+          "room_id": "7b61621f-5fe4-4aad-ab11-9fd19e272e73",
+          "updated_at": "2021-04-16T10:24:55.962200Z"
+        },
+        "properties": {
+          "active": {
+            "description": "Shows if the room session is active or not.",
+            "example": false,
+            "type": "boolean"
+          },
+          "created_at": {
+            "description": "ISO 8601 timestamp when the room session was created.",
+            "example": "2021-03-26T17:51:59.588408Z",
+            "format": "date-time",
+            "type": "string"
+          },
+          "ended_at": {
+            "description": "ISO 8601 timestamp when the room session has ended.",
+            "example": "2021-03-26T17:51:59.588408Z",
+            "format": "date-time",
+            "type": "string"
+          },
+          "id": {
+            "description": "A unique identifier for the room session.",
+            "example": "0ccc7b54-4df3-4bca-a65a-3da1ecc777f0",
+            "format": "uuid",
+            "type": "string"
+          },
+          "participants": {
+            "items": {
+              "$ref": "#/components/schemas/RoomParticipant"
+            },
+            "type": "array"
+          },
+          "record_type": {
+            "example": "room_session",
+            "readOnly": true,
+            "type": "string"
+          },
+          "room_id": {
+            "description": "Identify the room hosting that room session.",
+            "example": "0ccc7b54-4df3-4bca-a65a-3da1ecc777b0",
+            "format": "uuid",
+            "type": "string"
+          },
+          "updated_at": {
+            "description": "ISO 8601 timestamp when the room session was updated.",
+            "example": "2021-03-26T17:51:59.588408Z",
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "video_Error": {
+        "properties": {
+          "code": {
+            "type": "string"
+          },
+          "detail": {
+            "type": "string"
+          },
+          "meta": {
+            "additionalProperties": true,
+            "type": "object"
+          },
+          "source": {
+            "properties": {
+              "parameter": {
+                "description": "Indicates which query parameter caused the error.",
+                "type": "string"
+              },
+              "pointer": {
+                "description": "JSON pointer (RFC6901) to the offending entity.",
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
+          "title": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "title"
+        ],
+        "type": "object"
+      }
+    },
+    "securitySchemes": {
+      "BearerAuth": {
+        "bearerFormat": "API key",
+        "description": "Telnyx API key supplied as `Authorization: Bearer \u003ctoken\u003e`. In production, auth may be validated by the API gateway and forwarded via Telnyx auth headers.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "Payment": {
+        "description": "Machine Payment Protocol credential used on paid retries, sent as `Authorization: Payment ...`. Obtained by paying a challenge returned in the `WWW-Authenticate` header of a 402 response. This is not a Telnyx API key; initial challenge requests use standard bearer authentication instead.",
+        "in": "header",
+        "name": "Authorization",
+        "type": "apiKey"
+      },
+      "agent-memory_bearerAuth": {
+        "description": "Telnyx API key",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "bearerAuth": {
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "branded-calling_bearerAuth": {
+        "description": "Telnyx API key. Generate one at https://portal.telnyx.com/#/app/api-keys.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "collections_bearerAuth": {
+        "description": "Telnyx API key. Collections and results are automatically scoped to the authenticated user's organization.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "number-reputation_bearerAuth": {
+        "description": "Telnyx API key. Generate one at https://portal.telnyx.com/#/app/api-keys.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "oauthClientAuth": {
+        "description": "OAuth 2.0 authentication for Telnyx API and MCP integrations",
+        "flows": {
+          "authorizationCode": {
+            "authorizationUrl": "https://api.telnyx.com/v2/oauth/authorize",
+            "refreshUrl": "https://api.telnyx.com/v2/oauth/token",
+            "scopes": {
+              "admin": "Administrative access to Telnyx resources"
+            },
+            "tokenUrl": "https://api.telnyx.com/v2/oauth/token"
+          },
+          "clientCredentials": {
+            "scopes": {
+              "admin": "Administrative access to Telnyx resources"
+            },
+            "tokenUrl": "https://api.telnyx.com/v2/oauth/token"
+          }
+        },
+        "type": "oauth2"
+      },
+      "outbound-voice-profiles_bearerAuth": {
+        "bearerFormat": "JWT",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "pay-connectors_bearerAuth": {
+        "description": "Telnyx API key, not the processor bearer token.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "pronunciation-dicts_bearerAuth": {
+        "description": "Telnyx API v2 key. Obtain from https://portal.telnyx.com",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "rcs-registration_bearerAuth": {
+        "bearerFormat": "API key",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "stored-payment-transactions_bearerAuth": {
+        "bearerFormat": "JWT",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "telnyxApiKey": {
+        "description": "Management-only Telnyx account credential.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "transcriptions-search_bearerAuth": {
+        "description": "Telnyx API key. Results are automatically scoped to the authenticated user's organization.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "web-search_bearerAuth": {
+        "description": "Telnyx API key",
+        "scheme": "bearer",
+        "type": "http"
+      }
+    }
+  },
+  "info": {
+    "contact": {
+      "email": "support@telnyx.com"
+    },
+    "description": "SIP trunking, SMS, MMS, Call Control and Telephony Data Services.",
+    "title": "Telnyx API",
+    "version": "2.0.0",
+    "x-endpoint-cost": "light",
+    "x-latency-category": "responsive"
+  },
+  "openapi": "3.1.0",
+  "paths": {
+    "/rooms": {
+      "get": {
+        "description": "Returns a paginated list of rooms. Filter the results by creation or update date and unique name, and use `include_sessions` to include each room’s sessions.",
+        "operationId": "ListRooms",
+        "parameters": [
+          {
+            "description": "To decide if room sessions should be included in the response.",
+            "in": "query",
+            "name": "include_sessions",
+            "schema": {
+              "example": true,
+              "type": "boolean"
+            }
+          },
+          {
+            "description": "Consolidated filter parameter (deepObject style). Originally: filter[date_created_at][eq], filter[date_created_at][gte], filter[date_created_at][lte], filter[date_updated_at][eq], filter[date_updated_at][gte], filter[date_updated_at][lte], filter[unique_name]",
+            "explode": true,
+            "in": "query",
+            "name": "filter",
+            "required": false,
+            "schema": {
+              "properties": {
+                "date_created_at": {
+                  "properties": {
+                    "eq": {
+                      "description": "ISO 8601 date for filtering rooms created on that date.",
+                      "example": "2021-04-25",
+                      "format": "date",
+                      "type": "string"
+                    },
+                    "gte": {
+                      "description": "ISO 8601 date for filtering rooms created on or after that date.",
+                      "example": "2021-04-25",
+                      "format": "date",
+                      "type": "string"
+                    },
+                    "lte": {
+                      "description": "ISO 8601 date for filtering rooms created on or before that date.",
+                      "example": "2021-04-25",
+                      "format": "date",
+                      "type": "string"
+                    }
+                  },
+                  "type": "object"
+                },
+                "date_updated_at": {
+                  "properties": {
+                    "eq": {
+                      "description": "ISO 8601 date for filtering rooms updated on that date.",
+                      "example": "2021-04-25",
+                      "format": "date",
+                      "type": "string"
+                    },
+                    "gte": {
+                      "description": "ISO 8601 date for filtering rooms updated on or after that date.",
+                      "example": "2021-04-25",
+                      "format": "date",
+                      "type": "string"
+                    },
+                    "lte": {
+                      "description": "ISO 8601 date for filtering rooms updated on or before that date.",
+                      "example": "2021-04-25",
+                      "format": "date",
+                      "type": "string"
+                    }
+                  },
+                  "type": "object"
+                },
+                "unique_name": {
+                  "description": "Unique_name for filtering rooms.",
+                  "example": "my_video_room",
+                  "type": "string"
+                }
+              },
+              "type": "object"
+            },
+            "style": "deepObject"
+          },
+          {
+            "$ref": "#/components/parameters/video_PageConsolidated"
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "items": {
+                        "$ref": "#/components/schemas/Room"
+                      },
+                      "type": "array"
+                    },
+                    "meta": {
+                      "$ref": "#/components/schemas/PaginationMeta"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "List rooms response."
+          },
+          "4XX": {
+            "$ref": "#/components/responses/video_GenericErrorResponse"
+          }
+        },
+        "summary": "View a list of rooms.",
+        "tags": [
+          "Rooms"
+        ],
+        "x-endpoint-cost": "medium"
+      },
+      "post": {
+        "description": "Synchronously creates a new video room with the provided configuration and returns the created room.",
+        "operationId": "CreateRoom",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateRoomRequest"
+              }
+            }
+          },
+          "description": "Parameters that can be defined during room creation.",
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/Room"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Create room response."
+          },
+          "422": {
+            "$ref": "#/components/responses/video_UnprocessableEntity"
+          }
+        },
+        "summary": "Create a room.",
+        "tags": [
+          "Rooms"
+        ],
+        "x-endpoint-cost": "medium"
+      }
+    },
+    "/rooms/{room_id}": {
+      "delete": {
+        "description": "Synchronously delete a Room. Participants from that room will be kicked out, they won't be able to join that room anymore, and you won't be charged anymore for that room.",
+        "operationId": "DeleteRoom",
+        "parameters": [
+          {
+            "description": "The unique identifier of a room.",
+            "in": "path",
+            "name": "room_id",
+            "required": true,
+            "schema": {
+              "example": "0ccc7b54-4df3-4bca-a65a-3da1ecc777f0",
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "The resource was deleted successfully."
+          },
+          "404": {
+            "$ref": "#/components/responses/video_ResourceNotFound"
+          }
+        },
+        "summary": "Delete a room.",
+        "tags": [
+          "Rooms"
+        ],
+        "x-endpoint-cost": "medium"
+      },
+      "get": {
+        "description": "Returns the room identified by `room_id`, including its participant limit, recording and webhook configuration, and active session identifier. Use `include_sessions` to include its sessions.",
+        "operationId": "ViewRoom",
+        "parameters": [
+          {
+            "description": "The unique identifier of a room.",
+            "in": "path",
+            "name": "room_id",
+            "required": true,
+            "schema": {
+              "example": "0ccc7b54-4df3-4bca-a65a-3da1ecc777f0",
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "description": "To decide if room sessions should be included in the response.",
+            "in": "query",
+            "name": "include_sessions",
+            "schema": {
+              "example": true,
+              "type": "boolean"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/Room"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Get room response."
+          },
+          "404": {
+            "$ref": "#/components/responses/video_ResourceNotFound"
+          }
+        },
+        "summary": "View a room.",
+        "tags": [
+          "Rooms"
+        ],
+        "x-endpoint-cost": "light"
+      },
+      "patch": {
+        "description": "Synchronously updates the specified video room's configuration and returns the updated room.",
+        "operationId": "UpdateRoom",
+        "parameters": [
+          {
+            "description": "The unique identifier of a room.",
+            "in": "path",
+            "name": "room_id",
+            "required": true,
+            "schema": {
+              "example": "0ccc7b54-4df3-4bca-a65a-3da1ecc777f0",
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PatchRoomRequest"
+              }
+            }
+          },
+          "description": "Parameters that can be defined during room update.",
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/Room"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Update room response."
+          },
+          "401": {
+            "$ref": "#/components/responses/video_UnauthorizedResponse"
+          },
+          "404": {
+            "$ref": "#/components/responses/video_ResourceNotFound"
+          },
+          "422": {
+            "description": "Bad request"
+          }
+        },
+        "summary": "Update a room.",
+        "tags": [
+          "Rooms"
+        ],
+        "x-endpoint-cost": "medium"
+      }
+    },
+    "/rooms/{room_id}/sessions": {
+      "get": {
+        "description": "Returns a paginated list of sessions for the specified room. Filter sessions by creation, update, or end date and active status, and use `include_participants` to include participant records.",
+        "operationId": "RetrieveListRoomSessions",
+        "parameters": [
+          {
+            "description": "The unique identifier of a room.",
+            "in": "path",
+            "name": "room_id",
+            "required": true,
+            "schema": {
+              "example": "0ccc7b54-4df3-4bca-a65a-3da1ecc777f0",
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "description": "To decide if room participants should be included in the response.",
+            "in": "query",
+            "name": "include_participants",
+            "schema": {
+              "example": true,
+              "type": "boolean"
+            }
+          },
+          {
+            "description": "Consolidated filter parameter (deepObject style). Originally: filter[date_created_at][eq], filter[date_created_at][gte], filter[date_created_at][lte], filter[date_updated_at][eq], filter[date_updated_at][gte], filter[date_updated_at][lte], filter[date_ended_at][eq], filter[date_ended_at][gte], filter[date_ended_at][lte], filter[active]",
+            "explode": true,
+            "in": "query",
+            "name": "filter",
+            "required": false,
+            "schema": {
+              "properties": {
+                "active": {
+                  "description": "Filter active or inactive room sessions.",
+                  "example": true,
+                  "type": "boolean"
+                },
+                "date_created_at": {
+                  "properties": {
+                    "eq": {
+                      "description": "ISO 8601 date for filtering room sessions created on that date.",
+                      "example": "2021-04-25",
+                      "format": "date",
+                      "type": "string"
+                    },
+                    "gte": {
+                      "description": "ISO 8601 date for filtering room sessions created on or after that date.",
+                      "example": "2021-04-25",
+                      "format": "date",
+                      "type": "string"
+                    },
+                    "lte": {
+                      "description": "ISO 8601 date for filtering room sessions created on or before that date.",
+                      "example": "2021-04-25",
+                      "format": "date",
+                      "type": "string"
+                    }
+                  },
+                  "type": "object"
+                },
+                "date_ended_at": {
+                  "properties": {
+                    "eq": {
+                      "description": "ISO 8601 date for filtering room sessions ended on that date.",
+                      "example": "2021-04-25",
+                      "format": "date",
+                      "type": "string"
+                    },
+                    "gte": {
+                      "description": "ISO 8601 date for filtering room sessions ended on or after that date.",
+                      "example": "2021-04-25",
+                      "format": "date",
+                      "type": "string"
+                    },
+                    "lte": {
+                      "description": "ISO 8601 date for filtering room sessions ended on or before that date.",
+                      "example": "2021-04-25",
+                      "format": "date",
+                      "type": "string"
+                    }
+                  },
+                  "type": "object"
+                },
+                "date_updated_at": {
+                  "properties": {
+                    "eq": {
+                      "description": "ISO 8601 date for filtering room sessions updated on that date.",
+                      "example": "2021-04-25",
+                      "format": "date",
+                      "type": "string"
+                    },
+                    "gte": {
+                      "description": "ISO 8601 date for filtering room sessions updated on or after that date.",
+                      "example": "2021-04-25",
+                      "format": "date",
+                      "type": "string"
+                    },
+                    "lte": {
+                      "description": "ISO 8601 date for filtering room sessions updated on or before that date.",
+                      "example": "2021-04-25",
+                      "format": "date",
+                      "type": "string"
+                    }
+                  },
+                  "type": "object"
+                }
+              },
+              "type": "object"
+            },
+            "style": "deepObject"
+          },
+          {
+            "$ref": "#/components/parameters/video_PageConsolidated"
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "items": {
+                        "$ref": "#/components/schemas/RoomSession"
+                      },
+                      "type": "array"
+                    },
+                    "meta": {
+                      "$ref": "#/components/schemas/PaginationMeta"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "List room sessions response."
+          },
+          "4XX": {
+            "$ref": "#/components/responses/video_GenericErrorResponse"
+          }
+        },
+        "summary": "View a list of room sessions.",
+        "tags": [
+          "Rooms"
+        ],
+        "x-endpoint-cost": "medium"
+      }
+    }
+  },
+  "security": [
+    {
+      "bearerAuth": []
+    }
+  ],
+  "servers": [
+    {
+      "description": "Version 2.0.0 of the Telnyx API",
+      "url": "https://api.telnyx.com/v2"
+    }
+  ]
+}

@@ -1,0 +1,1305 @@
+{
+  "components": {
+    "parameters": {
+      "BcPageNumber": {
+        "description": "1-based page number. Out-of-range values return an empty page with correct meta.",
+        "in": "query",
+        "name": "page[number]",
+        "required": false,
+        "schema": {
+          "default": 1,
+          "example": 1,
+          "minimum": 1,
+          "type": "integer"
+        }
+      },
+      "EnterpriseId": {
+        "description": "The enterprise id. Lowercase UUID.",
+        "in": "path",
+        "name": "enterprise_id",
+        "required": true,
+        "schema": {
+          "example": "4a6192a4-573d-446d-b3ce-aff9117272a6",
+          "format": "uuid",
+          "type": "string"
+        }
+      }
+    },
+    "responses": {
+      "branded-calling_GenericErrorResponse": {
+        "content": {
+          "application/json": {
+            "examples": {
+              "bad_request": {
+                "description": "Returned when the request itself is well-formed but the resource is in a state that disallows this action (e.g. updating a DIR while it is being vetted, or deleting an enterprise that still has DIRs in vetting).",
+                "summary": "400 - request rejected by a state guard",
+                "value": {
+                  "errors": [
+                    {
+                      "code": "10015",
+                      "detail": "Cannot update DIR in 'verified' status",
+                      "meta": {
+                        "url": "https://developers.telnyx.com/docs/overview/errors/10015"
+                      },
+                      "title": "Bad Request"
+                    }
+                  ]
+                }
+              },
+              "conflict": {
+                "summary": "409 - request conflicts with current resource state",
+                "value": {
+                  "errors": [
+                    {
+                      "code": "10021",
+                      "detail": "DIR has 1 active infringement claim(s). Resolve the claim before making this change.",
+                      "meta": {
+                        "url": "https://developers.telnyx.com/docs/overview/errors/10021"
+                      },
+                      "title": "Resource in use"
+                    }
+                  ]
+                }
+              },
+              "not_found": {
+                "summary": "404 - resource does not exist or is not yours",
+                "value": {
+                  "errors": [
+                    {
+                      "code": "10009",
+                      "detail": "Enterprise not found.",
+                      "meta": {
+                        "url": "https://developers.telnyx.com/docs/overview/errors/10009"
+                      },
+                      "title": "Resource not found"
+                    }
+                  ]
+                }
+              },
+              "validation_error": {
+                "summary": "422 - request body failed validation",
+                "value": {
+                  "errors": [
+                    {
+                      "code": "10005",
+                      "detail": "field required",
+                      "meta": {
+                        "url": "https://developers.telnyx.com/docs/overview/errors/10005"
+                      },
+                      "source": {
+                        "pointer": "/body/legal_name"
+                      },
+                      "title": "Invalid parameters"
+                    }
+                  ]
+                }
+              }
+            },
+            "schema": {
+              "$ref": "#/components/schemas/branded-calling_Errors"
+            }
+          }
+        },
+        "description": "An error occurred. The response carries the standard Telnyx error envelope."
+      }
+    },
+    "schemas": {
+      "BillingAddress": {
+        "$ref": "#/components/schemas/PhysicalAddress"
+      },
+      "BillingContact": {
+        "properties": {
+          "email": {
+            "description": "The email address of the person Telnyx should contact about billing for this account.",
+            "example": "billing@acmeplumbing.example.com",
+            "format": "email",
+            "type": "string"
+          },
+          "first_name": {
+            "description": "The first name of the person Telnyx should contact about billing for this account.",
+            "example": "Alex",
+            "maxLength": 255,
+            "type": "string"
+          },
+          "last_name": {
+            "description": "The last name of the person Telnyx should contact about billing for this account.",
+            "example": "Bill",
+            "maxLength": 255,
+            "type": "string"
+          },
+          "phone_number": {
+            "description": "The phone number of the billing contact, in E.164 format, for example +12125551234.",
+            "example": "+13125550001",
+            "type": "string"
+          }
+        },
+        "required": [
+          "first_name",
+          "last_name",
+          "email",
+          "phone_number"
+        ],
+        "type": "object"
+      },
+      "EnterpriseCreate": {
+        "properties": {
+          "billing_address": {
+            "$ref": "#/components/schemas/BillingAddress"
+          },
+          "billing_contact": {
+            "$ref": "#/components/schemas/BillingContact"
+          },
+          "corporate_registration_number": {
+            "description": "The official number your company received when it was legally registered or incorporated (for example from your state or national business registry). It is on your certificate of incorporation.",
+            "nullable": true,
+            "type": "string"
+          },
+          "country_code": {
+            "description": "ISO 3166-1 alpha-2 country code. Currently `US` and `CA` are supported.",
+            "example": "US",
+            "type": "string"
+          },
+          "customer_reference": {
+            "description": "Your own label for this account. Enter any reference that helps you find it in your records. Telnyx does not use it during vetting.",
+            "example": "internal-id-12345",
+            "maxLength": 255,
+            "type": "string"
+          },
+          "doing_business_as": {
+            "description": "The trade name your business operates under if it is different from your legal name, also called a Doing Business As (DBA) name. Leave blank if you only use your legal name.",
+            "example": "Acme Plumbing",
+            "maxLength": 255,
+            "type": "string"
+          },
+          "dun_bradstreet_number": {
+            "description": "Your optional 9-digit D-U-N-S Number issued by Dun \u0026 Bradstreet, a unique identifier for your business. Leave blank if you do not have one.",
+            "nullable": true,
+            "type": "string"
+          },
+          "fein": {
+            "description": "US Federal Employer Identification Number (`NN-NNNNNNN`) or Canadian equivalent.",
+            "example": "12-3456789",
+            "type": "string"
+          },
+          "industry": {
+            "description": "The industry your business operates in. Choose the closest match from the list; if your value is not accepted, pick the nearest category.",
+            "enum": [
+              "accounting",
+              "finance",
+              "billing",
+              "collections",
+              "business",
+              "charity",
+              "nonprofit",
+              "communications",
+              "telecom",
+              "customer service",
+              "support",
+              "delivery",
+              "shipping",
+              "logistics",
+              "education",
+              "financial",
+              "banking",
+              "government",
+              "public",
+              "healthcare",
+              "health",
+              "pharmacy",
+              "medical",
+              "insurance",
+              "legal",
+              "law",
+              "notifications",
+              "scheduling",
+              "real estate",
+              "property",
+              "retail",
+              "ecommerce",
+              "sales",
+              "marketing",
+              "software",
+              "technology",
+              "tech",
+              "media",
+              "surveys",
+              "market research",
+              "travel",
+              "hospitality",
+              "hotel"
+            ],
+            "example": "technology",
+            "type": "string"
+          },
+          "jurisdiction_of_incorporation": {
+            "description": "The state, province, or country where your business was legally incorporated, for example Delaware.",
+            "example": "Delaware",
+            "maxLength": 255,
+            "type": "string"
+          },
+          "legal_name": {
+            "description": "Your business's full registered legal name, exactly as it appears on your incorporation or tax documents, 3 to 64 characters.",
+            "example": "Acme Plumbing LLC",
+            "maxLength": 64,
+            "minLength": 3,
+            "type": "string"
+          },
+          "number_of_employees": {
+            "description": "Approximate headcount range. Used for vetting heuristics; pick the bucket that contains your current employee count.",
+            "enum": [
+              "1-10",
+              "11-50",
+              "51-200",
+              "201-500",
+              "501-2000",
+              "2001-10000",
+              "10001+"
+            ],
+            "example": "51-200",
+            "type": "string"
+          },
+          "organization_contact": {
+            "$ref": "#/components/schemas/OrganizationContact"
+          },
+          "organization_legal_type": {
+            "description": "Legal-entity form. Pick the form that matches your incorporation documents:\n- `corporation` - C-corp or S-corp.\n- `llc` - limited liability company.\n- `partnership` - general/limited partnership.\n- `nonprofit` - non-profit corporation, charitable trust, or 501(c)(3)/equivalent.\n- `other` - anything else (sole proprietorships, government bodies, DBAs, etc.). You may be asked for additional documents during vetting.",
+            "enum": [
+              "corporation",
+              "llc",
+              "partnership",
+              "nonprofit",
+              "other"
+            ],
+            "example": "llc",
+            "type": "string"
+          },
+          "organization_physical_address": {
+            "$ref": "#/components/schemas/PhysicalAddress"
+          },
+          "organization_type": {
+            "description": "Organization category for vetting purposes:\n- `commercial` - for-profit business entities (LLC, corp, partnership, sole proprietorship). Most callers fall here.\n- `government` - federal/state/local government bodies.\n- `non_profit` - registered 501(c)(3)/equivalent (incl. educational institutions, charities, religious organisations).",
+            "enum": [
+              "commercial",
+              "government",
+              "non_profit"
+            ],
+            "example": "commercial",
+            "type": "string"
+          },
+          "primary_business_domain_sic_code": {
+            "description": "The 4-digit Standard Industrial Classification code for your main line of business, which tells us what industry you operate in. Look it up in the SIC code directory if you are unsure.",
+            "nullable": true,
+            "type": "string"
+          },
+          "professional_license_number": {
+            "description": "If your business operates under a professional license (for example legal, medical, or financial services), enter the license number issued by the licensing authority. Leave blank if it does not apply.",
+            "nullable": true,
+            "type": "string"
+          },
+          "role_type": {
+            "default": "enterprise",
+            "description": "`enterprise` for an organization registering its own DIRs (the default, and the right choice when the calls display your own brand). `bpo` for a Business Process Outsourcer: a call center that places calls on behalf of other enterprises and displays their brand. A `bpo` enterprise describes the call center itself and cannot own a DIR. Each client the call center calls for gets its own `enterprise` in the same account, with the client's DIR under it; that DIR is then linked to the `bpo` enterprise through `bpo_authorizations`. Fixed at creation.",
+            "enum": [
+              "enterprise",
+              "bpo"
+            ],
+            "example": "enterprise",
+            "type": "string"
+          },
+          "website": {
+            "description": "Your business's public website address, including https://. Leave blank if your business has no website.",
+            "example": "https://acmeplumbing.example.com",
+            "format": "uri",
+            "maxLength": 255,
+            "type": "string"
+          }
+        },
+        "required": [
+          "legal_name",
+          "organization_type",
+          "country_code",
+          "website",
+          "fein",
+          "industry",
+          "number_of_employees",
+          "organization_legal_type",
+          "doing_business_as",
+          "jurisdiction_of_incorporation",
+          "organization_contact",
+          "billing_contact",
+          "organization_physical_address",
+          "billing_address"
+        ],
+        "type": "object"
+      },
+      "EnterpriseListPublic": {
+        "properties": {
+          "data": {
+            "items": {
+              "$ref": "#/components/schemas/EnterprisePublic"
+            },
+            "type": "array"
+          },
+          "meta": {
+            "$ref": "#/components/schemas/branded-calling_PaginationMeta"
+          }
+        },
+        "required": [
+          "data",
+          "meta"
+        ],
+        "type": "object"
+      },
+      "EnterprisePublic": {
+        "properties": {
+          "billing_address": {
+            "$ref": "#/components/schemas/BillingAddress"
+          },
+          "billing_contact": {
+            "$ref": "#/components/schemas/BillingContact"
+          },
+          "bpo_verification_rejection_reason": {
+            "description": "Reason Telnyx rejected the BPO (Business Process Outsourcer) verification, when `bpo_verification_status` is `rejected`; `null` otherwise.",
+            "example": "Business registration document could not be verified.",
+            "nullable": true,
+            "type": "string"
+          },
+          "bpo_verification_status": {
+            "description": "Whether Telnyx has approved this BPO (Business Process Outsourcer) account. Only set for accounts created with `role_type` `bpo`; `null` for normal enterprises. A BPO enterprise must be `approved` before a DIR can be linked to it through `bpo_authorizations`.",
+            "enum": [
+              "pending",
+              "approved",
+              "rejected"
+            ],
+            "example": "approved",
+            "nullable": true,
+            "type": "string"
+          },
+          "branded_calling_enabled": {
+            "description": "True once Branded Calling has been activated on this enterprise (see `POST /enterprises/{id}/branded_calling`).",
+            "type": "boolean"
+          },
+          "corporate_registration_number": {
+            "description": "The official number your company received when it was legally registered or incorporated (for example from your state or national business registry). It is on your certificate of incorporation.",
+            "example": null,
+            "nullable": true,
+            "type": "string"
+          },
+          "country_code": {
+            "example": "US",
+            "type": "string"
+          },
+          "created_at": {
+            "example": "2026-04-26T18:06:51.940749Z",
+            "format": "date-time",
+            "readOnly": true,
+            "type": "string"
+          },
+          "customer_reference": {
+            "description": "Your own label for this account. Enter any reference that helps you find it in your records. Telnyx does not use it during vetting.",
+            "example": "internal-id-12345",
+            "type": "string"
+          },
+          "doing_business_as": {
+            "description": "The trade name your business operates under if it is different from your legal name, also called a Doing Business As (DBA) name. Leave blank if you only use your legal name.",
+            "example": "Acme Plumbing",
+            "type": "string"
+          },
+          "dun_bradstreet_number": {
+            "description": "Your optional 9-digit D-U-N-S Number issued by Dun \u0026 Bradstreet, a unique identifier for your business. Leave blank if you do not have one.",
+            "example": null,
+            "nullable": true,
+            "type": "string"
+          },
+          "fein": {
+            "description": "US Federal Employer Identification Number (`NN-NNNNNNN`) or Canadian equivalent.",
+            "example": "12-3456789",
+            "type": "string"
+          },
+          "id": {
+            "example": "4a6192a4-573d-446d-b3ce-aff9117272a6",
+            "format": "uuid",
+            "readOnly": true,
+            "type": "string"
+          },
+          "industry": {
+            "description": "The industry your business operates in. Choose the closest match from the list; if your value is not accepted, pick the nearest category.",
+            "example": "technology",
+            "type": "string"
+          },
+          "jurisdiction_of_incorporation": {
+            "description": "The state, province, or country where your business was legally incorporated, for example Delaware.",
+            "example": "Delaware",
+            "type": "string"
+          },
+          "legal_name": {
+            "description": "Your business's full registered legal name, exactly as it appears on your incorporation or tax documents, 3 to 64 characters.",
+            "example": "Acme Plumbing LLC",
+            "type": "string"
+          },
+          "number_of_employees": {
+            "description": "Approximate headcount range. Used for vetting heuristics; pick the bucket that contains your current employee count.",
+            "example": "51-200",
+            "type": "string"
+          },
+          "number_reputation_enabled": {
+            "description": "True once Phone Number Reputation has been enabled on this enterprise (see `POST /enterprises/{id}/reputation`).",
+            "type": "boolean"
+          },
+          "organization_contact": {
+            "$ref": "#/components/schemas/OrganizationContact"
+          },
+          "organization_legal_type": {
+            "description": "Legal-entity form. Pick the form that matches your incorporation documents:\n- `corporation` - C-corp or S-corp.\n- `llc` - limited liability company.\n- `partnership` - general/limited partnership.\n- `nonprofit` - non-profit corporation, charitable trust, or 501(c)(3)/equivalent.\n- `other` - anything else (sole proprietorships, government bodies, DBAs, etc.). You may be asked for additional documents during vetting.",
+            "example": "llc",
+            "type": "string"
+          },
+          "organization_physical_address": {
+            "$ref": "#/components/schemas/PhysicalAddress"
+          },
+          "organization_type": {
+            "example": "commercial",
+            "type": "string"
+          },
+          "primary_business_domain_sic_code": {
+            "description": "The 4-digit Standard Industrial Classification code for your main line of business, which tells us what industry you operate in. Look it up in the SIC code directory if you are unsure.",
+            "example": null,
+            "nullable": true,
+            "type": "string"
+          },
+          "professional_license_number": {
+            "description": "If your business operates under a professional license (for example legal, medical, or financial services), enter the license number issued by the licensing authority. Leave blank if it does not apply.",
+            "example": null,
+            "nullable": true,
+            "type": "string"
+          },
+          "role_type": {
+            "enum": [
+              "enterprise",
+              "bpo"
+            ],
+            "example": "enterprise",
+            "type": "string"
+          },
+          "updated_at": {
+            "example": "2026-04-26T18:09:24.785211Z",
+            "format": "date-time",
+            "readOnly": true,
+            "type": "string"
+          },
+          "website": {
+            "description": "Your business's public website address, including https://. Leave blank if your business has no website.",
+            "example": "https://acmeplumbing.example.com",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "EnterprisePublicWrapped": {
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/EnterprisePublic"
+          }
+        },
+        "required": [
+          "data"
+        ],
+        "type": "object"
+      },
+      "EnterpriseUpdate": {
+        "description": "All fields are optional; only the ones supplied are updated. The same field-level rules from `EnterpriseCreateRequest` apply.",
+        "properties": {
+          "billing_address": {
+            "$ref": "#/components/schemas/BillingAddress"
+          },
+          "billing_contact": {
+            "$ref": "#/components/schemas/BillingContact"
+          },
+          "corporate_registration_number": {
+            "description": "The official number your company received when it was legally registered or incorporated (for example from your state or national business registry). It is on your certificate of incorporation.",
+            "nullable": true,
+            "type": "string"
+          },
+          "customer_reference": {
+            "description": "Your own label for this account. Enter any reference that helps you find it in your records. Telnyx does not use it during vetting.",
+            "maxLength": 255,
+            "type": "string"
+          },
+          "doing_business_as": {
+            "description": "The trade name your business operates under if it is different from your legal name, also called a Doing Business As (DBA) name. Leave blank if you only use your legal name.",
+            "maxLength": 255,
+            "type": "string"
+          },
+          "dun_bradstreet_number": {
+            "description": "Your optional 9-digit D-U-N-S Number issued by Dun \u0026 Bradstreet, a unique identifier for your business. Leave blank if you do not have one.",
+            "nullable": true,
+            "type": "string"
+          },
+          "fein": {
+            "description": "US Federal Employer Identification Number (`NN-NNNNNNN`) or Canadian equivalent.",
+            "type": "string"
+          },
+          "industry": {
+            "description": "The industry your business operates in. Choose the closest match from the list; if your value is not accepted, pick the nearest category.",
+            "enum": [
+              "accounting",
+              "finance",
+              "billing",
+              "collections",
+              "business",
+              "charity",
+              "nonprofit",
+              "communications",
+              "telecom",
+              "customer service",
+              "support",
+              "delivery",
+              "shipping",
+              "logistics",
+              "education",
+              "financial",
+              "banking",
+              "government",
+              "public",
+              "healthcare",
+              "health",
+              "pharmacy",
+              "medical",
+              "insurance",
+              "legal",
+              "law",
+              "notifications",
+              "scheduling",
+              "real estate",
+              "property",
+              "retail",
+              "ecommerce",
+              "sales",
+              "marketing",
+              "software",
+              "technology",
+              "tech",
+              "media",
+              "surveys",
+              "market research",
+              "travel",
+              "hospitality",
+              "hotel"
+            ],
+            "type": "string"
+          },
+          "jurisdiction_of_incorporation": {
+            "description": "The state, province, or country where your business was legally incorporated, for example Delaware.",
+            "example": "Delaware",
+            "maxLength": 255,
+            "type": "string"
+          },
+          "legal_name": {
+            "description": "Your business's full registered legal name, exactly as it appears on your incorporation or tax documents, 3 to 64 characters.",
+            "maxLength": 64,
+            "minLength": 3,
+            "type": "string"
+          },
+          "number_of_employees": {
+            "description": "Approximate headcount range. Used for vetting heuristics; pick the bucket that contains your current employee count.",
+            "type": "string"
+          },
+          "organization_contact": {
+            "$ref": "#/components/schemas/OrganizationContact"
+          },
+          "organization_legal_type": {
+            "description": "Legal-entity form. Pick the form that matches your incorporation documents:\n- `corporation` - C-corp or S-corp.\n- `llc` - limited liability company.\n- `partnership` - general/limited partnership.\n- `nonprofit` - non-profit corporation, charitable trust, or 501(c)(3)/equivalent.\n- `other` - anything else (sole proprietorships, government bodies, DBAs, etc.). You may be asked for additional documents during vetting.",
+            "type": "string"
+          },
+          "organization_physical_address": {
+            "$ref": "#/components/schemas/PhysicalAddress"
+          },
+          "primary_business_domain_sic_code": {
+            "description": "The 4-digit Standard Industrial Classification code for your main line of business, which tells us what industry you operate in. Look it up in the SIC code directory if you are unsure.",
+            "nullable": true,
+            "type": "string"
+          },
+          "professional_license_number": {
+            "description": "If your business operates under a professional license (for example legal, medical, or financial services), enter the license number issued by the licensing authority. Leave blank if it does not apply.",
+            "nullable": true,
+            "type": "string"
+          },
+          "website": {
+            "description": "Your business's public website address, including https://. Leave blank if your business has no website.",
+            "format": "uri",
+            "maxLength": 255,
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "OrganizationContact": {
+        "properties": {
+          "email": {
+            "description": "The email address of the main person Telnyx should contact about this account. For a call center (BPO) account this is the email you will verify later, so use a mailbox you can access.",
+            "example": "sam@acmeplumbing.example.com",
+            "format": "email",
+            "type": "string"
+          },
+          "first_name": {
+            "description": "The first name of the main person Telnyx should contact about this account.",
+            "example": "Sam",
+            "maxLength": 255,
+            "type": "string"
+          },
+          "job_title": {
+            "description": "The job title of the main person Telnyx should contact about this account.",
+            "example": "Compliance Lead",
+            "maxLength": 255,
+            "type": "string"
+          },
+          "last_name": {
+            "description": "The last name of the main person Telnyx should contact about this account.",
+            "example": "Org",
+            "maxLength": 255,
+            "type": "string"
+          },
+          "phone_number": {
+            "description": "The phone number of the main contact, in E.164 format, for example +12125551234.",
+            "example": "+13125550000",
+            "type": "string"
+          }
+        },
+        "required": [
+          "first_name",
+          "last_name",
+          "email",
+          "job_title",
+          "phone_number"
+        ],
+        "type": "object"
+      },
+      "PhysicalAddress": {
+        "properties": {
+          "administrative_area": {
+            "description": "State or province code (e.g. `IL`, `ON`).",
+            "example": "IL",
+            "type": "string"
+          },
+          "city": {
+            "description": "The city of your registered business address.",
+            "example": "Chicago",
+            "maxLength": 100,
+            "type": "string"
+          },
+          "country": {
+            "description": "ISO 3166-1 alpha-2 code (currently `US` or `CA`).",
+            "example": "US",
+            "type": "string"
+          },
+          "extended_address": {
+            "description": "An optional second address line, such as a suite, unit, or floor. Leave blank if it does not apply.",
+            "example": "Suite 504",
+            "maxLength": 255,
+            "nullable": true,
+            "type": "string"
+          },
+          "postal_code": {
+            "description": "The postal or ZIP code of your registered business address.",
+            "example": "60601",
+            "maxLength": 20,
+            "type": "string"
+          },
+          "street_address": {
+            "description": "The street address of your registered business, including the building number and street name.",
+            "example": "100 Main St",
+            "maxLength": 255,
+            "type": "string"
+          }
+        },
+        "required": [
+          "country",
+          "administrative_area",
+          "city",
+          "postal_code",
+          "street_address"
+        ],
+        "type": "object"
+      },
+      "branded-calling_Error": {
+        "description": "A single entry in the canonical Telnyx error envelope. `code` is the stable Telnyx error catalog id; the human-readable explanation lives at `meta.url`. `detail` is a context-specific message; `source.pointer` (when present) names the offending field of the request.",
+        "properties": {
+          "code": {
+            "description": "Stable numeric Telnyx error catalog id. See `meta.url` for the full catalog entry.",
+            "example": "10005",
+            "type": "string"
+          },
+          "detail": {
+            "description": "Context-specific message describing what went wrong on this particular request. May embed offending values; do not rely on it for programmatic matching - branch on `code`.",
+            "example": "field required",
+            "type": "string"
+          },
+          "meta": {
+            "description": "Carries `url` linking to the Telnyx error catalog entry for this `code`. Useful for forwarding the user to documentation.",
+            "properties": {
+              "pending_check_codes": {
+                "description": "Codes of the pending vetting checks (e.g. `loa_signature_valid`).",
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              "pending_check_ids": {
+                "description": "Set on `422 vetting_checks_incomplete` responses from `/admin/dir/{id}/approve` and `/admin/phone-number-batches/approve`. Lists the still-pending vetting check ids.",
+                "items": {
+                  "format": "uuid",
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              "pending_check_labels": {
+                "description": "Human-readable labels of the pending vetting checks.",
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              "url": {
+                "example": "https://developers.telnyx.com/docs/overview/errors/10005",
+                "format": "uri",
+                "type": "string"
+              }
+            },
+            "required": [
+              "url"
+            ],
+            "type": "object"
+          },
+          "source": {
+            "description": "Optional pointer at the offending field of the request.",
+            "properties": {
+              "parameter": {
+                "example": "page[size]",
+                "type": "string"
+              },
+              "pointer": {
+                "example": "/body/legal_name",
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
+          "title": {
+            "description": "Short human-readable category, e.g. `Bad Request`, `Duplicate resource`, `Not Found`, `Forbidden`. Treat as advisory only - the stable identifier is `code`.",
+            "example": "Invalid parameters",
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "title",
+          "detail",
+          "meta"
+        ],
+        "type": "object"
+      },
+      "branded-calling_Errors": {
+        "description": "Canonical Telnyx error envelope. Returned on every 4xx and 5xx response from this service. `errors` is non-empty; multiple entries indicate multiple distinct problems with the same request (e.g. one entry per invalid phone number on a bulk operation).",
+        "properties": {
+          "errors": {
+            "description": "List of one or more error entries. Order is not significant.",
+            "items": {
+              "$ref": "#/components/schemas/branded-calling_Error"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "errors"
+        ],
+        "type": "object"
+      },
+      "branded-calling_PaginationMeta": {
+        "description": "JSON:API pagination metadata returned with every paginated list response. Page numbering is 1-based. `page_size` reports the number of items actually returned in `data` for this page; the requested size is taken from the `page[size]` query parameter.",
+        "properties": {
+          "page_number": {
+            "description": "1-based index of this page. Echoes the `page[number]` query parameter (default `1`).",
+            "example": 1,
+            "type": "integer"
+          },
+          "page_size": {
+            "description": "Number of items returned in this page's `data` array. Capped at 250.",
+            "example": 20,
+            "type": "integer"
+          },
+          "total_pages": {
+            "description": "Total number of pages available given the current `page_size`.",
+            "example": 3,
+            "type": "integer"
+          },
+          "total_results": {
+            "description": "Total number of items across all pages (excludes soft-deleted rows).",
+            "example": 42,
+            "type": "integer"
+          }
+        },
+        "required": [
+          "total_pages",
+          "total_results",
+          "page_number",
+          "page_size"
+        ],
+        "type": "object"
+      }
+    },
+    "securitySchemes": {
+      "BearerAuth": {
+        "bearerFormat": "API key",
+        "description": "Telnyx API key supplied as `Authorization: Bearer \u003ctoken\u003e`. In production, auth may be validated by the API gateway and forwarded via Telnyx auth headers.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "Payment": {
+        "description": "Machine Payment Protocol credential used on paid retries, sent as `Authorization: Payment ...`. Obtained by paying a challenge returned in the `WWW-Authenticate` header of a 402 response. This is not a Telnyx API key; initial challenge requests use standard bearer authentication instead.",
+        "in": "header",
+        "name": "Authorization",
+        "type": "apiKey"
+      },
+      "agent-memory_bearerAuth": {
+        "description": "Telnyx API key",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "bearerAuth": {
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "branded-calling_bearerAuth": {
+        "description": "Telnyx API key. Generate one at https://portal.telnyx.com/#/app/api-keys.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "collections_bearerAuth": {
+        "description": "Telnyx API key. Collections and results are automatically scoped to the authenticated user's organization.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "number-reputation_bearerAuth": {
+        "description": "Telnyx API key. Generate one at https://portal.telnyx.com/#/app/api-keys.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "oauthClientAuth": {
+        "description": "OAuth 2.0 authentication for Telnyx API and MCP integrations",
+        "flows": {
+          "authorizationCode": {
+            "authorizationUrl": "https://api.telnyx.com/v2/oauth/authorize",
+            "refreshUrl": "https://api.telnyx.com/v2/oauth/token",
+            "scopes": {
+              "admin": "Administrative access to Telnyx resources"
+            },
+            "tokenUrl": "https://api.telnyx.com/v2/oauth/token"
+          },
+          "clientCredentials": {
+            "scopes": {
+              "admin": "Administrative access to Telnyx resources"
+            },
+            "tokenUrl": "https://api.telnyx.com/v2/oauth/token"
+          }
+        },
+        "type": "oauth2"
+      },
+      "outbound-voice-profiles_bearerAuth": {
+        "bearerFormat": "JWT",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "pay-connectors_bearerAuth": {
+        "description": "Telnyx API key, not the processor bearer token.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "pronunciation-dicts_bearerAuth": {
+        "description": "Telnyx API v2 key. Obtain from https://portal.telnyx.com",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "rcs-registration_bearerAuth": {
+        "bearerFormat": "API key",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "stored-payment-transactions_bearerAuth": {
+        "bearerFormat": "JWT",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "telnyxApiKey": {
+        "description": "Management-only Telnyx account credential.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "transcriptions-search_bearerAuth": {
+        "description": "Telnyx API key. Results are automatically scoped to the authenticated user's organization.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "web-search_bearerAuth": {
+        "description": "Telnyx API key",
+        "scheme": "bearer",
+        "type": "http"
+      }
+    }
+  },
+  "info": {
+    "contact": {
+      "email": "support@telnyx.com"
+    },
+    "description": "SIP trunking, SMS, MMS, Call Control and Telephony Data Services.",
+    "title": "Telnyx API",
+    "version": "2.0.0",
+    "x-endpoint-cost": "light",
+    "x-latency-category": "responsive"
+  },
+  "openapi": "3.1.0",
+  "paths": {
+    "/enterprises": {
+      "get": {
+        "description": "Return the enterprises you own, paginated. The default page size is 20; the maximum is 250.",
+        "operationId": "listEnterprises",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/BcPageNumber"
+          },
+          {
+            "description": "Items per page. Default 10. Maximum 250; values above are clamped to 250.",
+            "in": "query",
+            "name": "page[size]",
+            "required": false,
+            "schema": {
+              "default": 10,
+              "example": 10,
+              "maximum": 250,
+              "minimum": 1,
+              "type": "integer"
+            }
+          },
+          {
+            "description": "Filter by legal name (partial match).",
+            "in": "query",
+            "name": "legal_name",
+            "required": false,
+            "schema": {
+              "example": "Acme",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Case-insensitive partial match on legal name.",
+            "in": "query",
+            "name": "filter[legal_name][contains]",
+            "required": false,
+            "schema": {
+              "example": "Acme",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Only return enterprises of this type: `bpo` for call-center (BPO) enterprises, `enterprise` for normal enterprises. Omit to return both.",
+            "in": "query",
+            "name": "filter[role_type]",
+            "required": false,
+            "schema": {
+              "enum": [
+                "enterprise",
+                "bpo"
+              ],
+              "example": "bpo",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EnterpriseListPublic"
+                }
+              }
+            },
+            "description": "Paginated list of enterprises."
+          },
+          "401": {
+            "$ref": "#/components/responses/branded-calling_GenericErrorResponse"
+          }
+        },
+        "summary": "List enterprises",
+        "tags": [
+          "Enterprises"
+        ],
+        "x-group-parameters": "true"
+      },
+      "post": {
+        "description": "Create the legal entity (enterprise) that represents your business on the Telnyx platform.\n\nThe response carries a server-assigned `id` you use for every subsequent call. An enterprise is created once and reused; the API collects all required fields up front.\n\nCommon failure modes:\n- `422` - a required field is missing or malformed (the response `errors[].source.pointer` names the field).\n- `409` - an enterprise with the same identifying details already exists under your account.",
+        "operationId": "createEnterprise",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "example": {
+                "billing_address": {
+                  "administrative_area": "IL",
+                  "city": "Chicago",
+                  "country": "US",
+                  "postal_code": "60601",
+                  "street_address": "100 Main St"
+                },
+                "billing_contact": {
+                  "email": "billing@run065.example.com",
+                  "first_name": "Alex",
+                  "last_name": "Bill",
+                  "phone_number": "+13125550001"
+                },
+                "country_code": "US",
+                "doing_business_as": "Run 065 Debug",
+                "fein": "12-3456789",
+                "industry": "technology",
+                "jurisdiction_of_incorporation": "Delaware",
+                "legal_name": "Run 065 Debug Co",
+                "number_of_employees": "51-200",
+                "organization_contact": {
+                  "email": "org@run065.example.com",
+                  "first_name": "Sam",
+                  "job_title": "Compliance Lead",
+                  "last_name": "Org",
+                  "phone_number": "+13125550000"
+                },
+                "organization_legal_type": "llc",
+                "organization_physical_address": {
+                  "administrative_area": "IL",
+                  "city": "Chicago",
+                  "country": "US",
+                  "postal_code": "60601",
+                  "street_address": "100 Main St"
+                },
+                "organization_type": "commercial",
+                "role_type": "enterprise",
+                "website": "https://run065.example.com"
+              },
+              "schema": {
+                "$ref": "#/components/schemas/EnterpriseCreate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EnterprisePublicWrapped"
+                }
+              }
+            },
+            "description": "Enterprise created."
+          },
+          "400": {
+            "$ref": "#/components/responses/branded-calling_GenericErrorResponse"
+          },
+          "401": {
+            "$ref": "#/components/responses/branded-calling_GenericErrorResponse"
+          },
+          "422": {
+            "$ref": "#/components/responses/branded-calling_GenericErrorResponse"
+          }
+        },
+        "summary": "Create an enterprise",
+        "tags": [
+          "Enterprises"
+        ]
+      }
+    },
+    "/enterprises/{enterprise_id}": {
+      "delete": {
+        "description": "Soft-delete an enterprise.\n\nFailure modes:\n- `400` - the enterprise still has dependent resources in a non-deletable state. Remove those first; the response `detail` identifies what is blocking the delete.\n- `409` - the enterprise has a dependent resource with an unresolved claim. Resolve it before deleting.\n- `404` - the enterprise does not exist or does not belong to your account.",
+        "operationId": "deleteEnterprise",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/EnterpriseId"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "204 (no body)"
+          },
+          "400": {
+            "$ref": "#/components/responses/branded-calling_GenericErrorResponse"
+          },
+          "401": {
+            "$ref": "#/components/responses/branded-calling_GenericErrorResponse"
+          },
+          "404": {
+            "$ref": "#/components/responses/branded-calling_GenericErrorResponse"
+          }
+        },
+        "summary": "Delete an enterprise",
+        "tags": [
+          "Enterprises"
+        ]
+      },
+      "get": {
+        "description": "Retrieve a single enterprise by id. Returns `404` if the id does not exist or does not belong to your account.",
+        "operationId": "getEnterprise",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/EnterpriseId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EnterprisePublicWrapped"
+                }
+              }
+            },
+            "description": "Enterprise."
+          },
+          "401": {
+            "$ref": "#/components/responses/branded-calling_GenericErrorResponse"
+          },
+          "404": {
+            "$ref": "#/components/responses/branded-calling_GenericErrorResponse"
+          }
+        },
+        "summary": "Get an enterprise",
+        "tags": [
+          "Enterprises"
+        ]
+      },
+      "put": {
+        "description": "Replace the enterprise's mutable fields. Only mutable fields may be sent. Server-assigned and immutable fields (`id`, `record_type`, `created_at`, `updated_at`, status fields, `organization_type`, `country_code`, `role_type`) cannot be changed: including any of them in the body is rejected with `400 Bad Request` (`Field 'X' is not allowed in this request`).\n\nFor an approved BPO enterprise (`role_type` `bpo`), changing any identity field (legal name, DBA, website, FEIN, industry, number of employees, physical address, organization contact, D-U-N-S number, legal type, SIC code, corporate registration number, professional license number, or jurisdiction of incorporation) resets `bpo_verification_status` to `pending` for re-approval and sets every DIR authorization for that BPO to `rejected`. After re-approval, link it again with a newly signed LOA (a new `loa_document_id`); resending the old one keeps the authorization `rejected`. Re-sending an unchanged value does not reset anything.\n\nIf Number Reputation is enabled on the enterprise, `legal_name`, `doing_business_as`, `website`, `fein`, `industry`, `number_of_employees`, `organization_physical_address`, `organization_contact`, and `dun_bradstreet_number` cannot be changed: the request is rejected with `400`.",
+        "operationId": "updateEnterprise",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/EnterpriseId"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "example": {
+                "billing_address": {
+                  "administrative_area": "IL",
+                  "city": "Chicago",
+                  "country": "US",
+                  "postal_code": "60601",
+                  "street_address": "100 Main St"
+                },
+                "billing_contact": {
+                  "email": "billing@acmeplumbing.example.com",
+                  "first_name": "Alex",
+                  "last_name": "Bill",
+                  "phone_number": "+13125550001"
+                },
+                "customer_reference": "internal-ref-2026Q2",
+                "doing_business_as": "Acme Plumbing",
+                "fein": "12-3456789",
+                "industry": "business",
+                "jurisdiction_of_incorporation": "Delaware",
+                "legal_name": "Acme Plumbing LLC",
+                "number_of_employees": "51-200",
+                "organization_contact": {
+                  "email": "sam@acmeplumbing.example.com",
+                  "first_name": "Sam",
+                  "job_title": "Compliance Lead",
+                  "last_name": "Owner",
+                  "phone_number": "+13125550000"
+                },
+                "organization_legal_type": "llc",
+                "organization_physical_address": {
+                  "administrative_area": "IL",
+                  "city": "Chicago",
+                  "country": "US",
+                  "postal_code": "60601",
+                  "street_address": "100 Main St"
+                },
+                "website": "https://acmeplumbing.example.com"
+              },
+              "schema": {
+                "$ref": "#/components/schemas/EnterpriseUpdate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EnterprisePublicWrapped"
+                }
+              }
+            },
+            "description": "Enterprise updated."
+          },
+          "400": {
+            "$ref": "#/components/responses/branded-calling_GenericErrorResponse"
+          },
+          "401": {
+            "$ref": "#/components/responses/branded-calling_GenericErrorResponse"
+          },
+          "404": {
+            "$ref": "#/components/responses/branded-calling_GenericErrorResponse"
+          }
+        },
+        "summary": "Replace an enterprise",
+        "tags": [
+          "Enterprises"
+        ]
+      }
+    },
+    "/enterprises/{enterprise_id}/branded_calling": {
+      "post": {
+        "description": "Branded Calling must be activated on each enterprise. Activation is idempotent:\n- First call: marks the enterprise as activated, effective immediately; you can create a DIR right away. The enterprise is registered with the Branded Calling platform later, after its first DIR is approved. Returns `200` with `branded_calling_enabled: true`.\n- Re-call after success: no-op, returns the same enterprise body.\n- Re-call after a failed registration: re-queues the registration, returns `200`.\n\nPrerequisite: the calling user must have agreed to the Branded Calling Terms of Service (`POST /terms_of_service/branded_calling/agree`). Without that, this endpoint returns `403 terms_of_service_not_accepted`.\n\nFailure modes:\n- `400` - the account has no available credit. Add funds and retry.\n- `400` - the enterprise is not in the United States. Branded Calling is currently available only to US enterprises.\n- `403` - Branded Calling Terms of Service not accepted.\n- `404` - enterprise does not exist or does not belong to your account.\n\n**Pricing:** Activation itself is free, but the account must have available credit. Branded Calling fees are charged per DIR and per branded call. See https://telnyx.com/pricing/branded-calling for current pricing.",
+        "operationId": "activateBrandedCalling",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/EnterpriseId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EnterprisePublicWrapped"
+                }
+              }
+            },
+            "description": "Branded Calling activated."
+          },
+          "4XX": {
+            "$ref": "#/components/responses/branded-calling_GenericErrorResponse"
+          },
+          "default": {
+            "$ref": "#/components/responses/branded-calling_GenericErrorResponse"
+          }
+        },
+        "summary": "Activate Branded Calling on an enterprise",
+        "tags": [
+          "Enterprises"
+        ]
+      }
+    }
+  },
+  "security": [
+    {
+      "bearerAuth": []
+    }
+  ],
+  "servers": [
+    {
+      "description": "Version 2.0.0 of the Telnyx API",
+      "url": "https://api.telnyx.com/v2"
+    }
+  ]
+}

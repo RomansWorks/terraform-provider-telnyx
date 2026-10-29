@@ -1,0 +1,1054 @@
+{
+  "components": {
+    "schemas": {
+      "CdrDeleteUsageReportResponse": {
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/CdrUsageReportResponseLegacy"
+          }
+        },
+        "type": "object"
+      },
+      "CdrGetSyncUsageReportResponse": {
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/CdrUsageReportResponse"
+          }
+        },
+        "type": "object"
+      },
+      "CdrGetUsageReportByIdResponse": {
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/CdrUsageReportResponseLegacy"
+          }
+        },
+        "type": "object"
+      },
+      "CdrGetUsageReportsResponse": {
+        "properties": {
+          "data": {
+            "items": {
+              "$ref": "#/components/schemas/CdrUsageReportResponseLegacy"
+            },
+            "type": "array"
+          },
+          "meta": {
+            "$ref": "#/components/schemas/standard_PaginationMeta"
+          }
+        },
+        "type": "object"
+      },
+      "CdrPostUsageReportResponse": {
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/CdrUsageReportResponseLegacy"
+          }
+        },
+        "type": "object"
+      },
+      "CdrUsageReportResponse": {
+        "properties": {
+          "aggregation_type": {
+            "enum": [
+              "NO_AGGREGATION",
+              "CONNECTION",
+              "TAG",
+              "BILLING_GROUP"
+            ],
+            "type": "string"
+          },
+          "connections": {
+            "example": [
+              1234567890,
+              9876543210
+            ],
+            "items": {
+              "format": "int64",
+              "type": "integer"
+            },
+            "type": "array"
+          },
+          "created_at": {
+            "example": "2018-02-02T22:25:27.521Z",
+            "format": "date-time",
+            "type": "string"
+          },
+          "end_time": {
+            "example": "2018-02-02T22:25:27.521Z",
+            "format": "date-time",
+            "type": "string"
+          },
+          "id": {
+            "description": "Identifies the resource",
+            "format": "uuid",
+            "type": "string"
+          },
+          "product_breakdown": {
+            "enum": [
+              "NO_BREAKDOWN",
+              "DID_VS_TOLL_FREE",
+              "COUNTRY",
+              "DID_VS_TOLL_FREE_PER_COUNTRY"
+            ],
+            "type": "string"
+          },
+          "record_type": {
+            "example": "cdr_usage_report",
+            "type": "string"
+          },
+          "report_url": {
+            "example": "http://portal.telnyx.com/downloads/report_name_8hvb45Gu.csv",
+            "type": "string"
+          },
+          "result": {
+            "additionalProperties": true,
+            "type": "object"
+          },
+          "start_time": {
+            "example": "2018-02-02T22:25:27.521Z",
+            "format": "date-time",
+            "type": "string"
+          },
+          "status": {
+            "enum": [
+              "PENDING",
+              "COMPLETE",
+              "FAILED",
+              "EXPIRED"
+            ],
+            "type": "string"
+          },
+          "updated_at": {
+            "example": "2018-02-02T22:25:27.521Z",
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "CdrUsageReportResponseLegacy": {
+        "description": "Legacy V2 CDR usage report response",
+        "properties": {
+          "aggregation_type": {
+            "description": "Aggregation type: All = 0, By Connections = 1, By Tags = 2, By Billing Group = 3",
+            "format": "int32",
+            "type": "integer"
+          },
+          "connections": {
+            "example": [
+              "1234567890",
+              "9876543210"
+            ],
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "uniqueItems": true
+          },
+          "created_at": {
+            "example": "2018-02-02T22:25:27.521Z",
+            "format": "date-time",
+            "type": "string"
+          },
+          "end_time": {
+            "example": "2018-02-02T22:25:27.521Z",
+            "format": "date-time",
+            "type": "string"
+          },
+          "id": {
+            "description": "Identifies the resource",
+            "format": "uuid",
+            "type": "string"
+          },
+          "product_breakdown": {
+            "description": "Product breakdown type: No breakdown = 0, DID vs Toll-free = 1, Country = 2, DID vs Toll-free per Country = 3",
+            "format": "int32",
+            "type": "integer"
+          },
+          "record_type": {
+            "example": "cdr_usage_report",
+            "type": "string"
+          },
+          "report_url": {
+            "example": "http://portal.telnyx.com/downloads/report_name_8hvb45Gu.csv",
+            "type": "string"
+          },
+          "result": {
+            "type": "object"
+          },
+          "start_time": {
+            "example": "2018-02-02T22:25:27.521Z",
+            "format": "date-time",
+            "type": "string"
+          },
+          "status": {
+            "description": "Status of the report: Pending = 1, Complete = 2, Failed = 3, Expired = 4",
+            "format": "int32",
+            "type": "integer"
+          },
+          "updated_at": {
+            "example": "2018-02-02T22:25:27.521Z",
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "UsageRequestLegacy": {
+        "description": "Request object for CDR usage report",
+        "properties": {
+          "aggregation_type": {
+            "description": "Aggregation type: All = 0, By Connections = 1, By Tags = 2, By Billing Group = 3",
+            "example": 0,
+            "format": "int32",
+            "type": "integer"
+          },
+          "connections": {
+            "description": "List of connections to filter by",
+            "example": [
+              123,
+              456
+            ],
+            "items": {
+              "description": "List of connections to filter by",
+              "format": "int64",
+              "type": "integer"
+            },
+            "type": "array"
+          },
+          "end_time": {
+            "description": "End time in ISO format",
+            "example": "2024-02-01T00:00:00Z",
+            "format": "date-time",
+            "type": "string"
+          },
+          "managed_accounts": {
+            "description": "List of managed accounts to include",
+            "example": [
+              "f47ac10b-58cc-4372-a567-0e02b2c3d479",
+              "6ba7b810-9dad-11d1-80b4-00c04fd430c8"
+            ],
+            "items": {
+              "format": "uuid",
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "product_breakdown": {
+            "description": "Product breakdown type: No breakdown = 0, DID vs Toll-free = 1, Country = 2, DID vs Toll-free per Country = 3",
+            "example": 0,
+            "format": "int32",
+            "type": "integer"
+          },
+          "select_all_managed_accounts": {
+            "description": "Whether to select all managed accounts",
+            "example": false,
+            "type": "boolean"
+          },
+          "start_time": {
+            "description": "Start time in ISO format",
+            "example": "2024-02-01T00:00:00Z",
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "required": [
+          "end_time",
+          "start_time"
+        ],
+        "type": "object"
+      },
+      "reporting_ErrorResponse_77109e5d17": {
+        "properties": {
+          "errors": {
+            "items": {
+              "$ref": "#/components/schemas/reporting_Error_77109e5d17"
+            },
+            "type": "array"
+          }
+        },
+        "type": "object"
+      },
+      "reporting_Error_77109e5d17": {
+        "properties": {
+          "code": {
+            "example": "10011",
+            "type": "string"
+          },
+          "detail": {
+            "example": "Invalid parameter value",
+            "type": "string"
+          },
+          "title": {
+            "example": "Bad Request",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "standard_CdrGetUsageReportsResponse": {
+        "properties": {
+          "data": {
+            "items": {
+              "$ref": "#/components/schemas/CdrUsageReportResponseLegacy"
+            },
+            "type": "array"
+          },
+          "meta": {
+            "$ref": "#/components/schemas/standard_PaginationMeta_ffba4faa88"
+          }
+        },
+        "type": "object"
+      },
+      "standard_Error": {
+        "properties": {
+          "code": {
+            "title": "Telnyx error code",
+            "type": "string"
+          },
+          "detail": {
+            "title": "Error details",
+            "type": "string"
+          },
+          "title": {
+            "title": "Error title",
+            "type": "string"
+          }
+        },
+        "required": [
+          "detail"
+        ],
+        "title": "Error",
+        "type": "object"
+      },
+      "standard_ErrorResponse": {
+        "properties": {
+          "errors": {
+            "items": {
+              "$ref": "#/components/schemas/standard_Error"
+            },
+            "title": "Errors",
+            "type": "array"
+          }
+        },
+        "title": "ErrorResponse",
+        "type": "object"
+      },
+      "standard_ErrorResponse_ffba4faa88": {
+        "properties": {
+          "errors": {
+            "items": {
+              "$ref": "#/components/schemas/standard_Error_ffba4faa88"
+            },
+            "title": "Errors",
+            "type": "array"
+          }
+        },
+        "title": "ErrorResponse",
+        "type": "object"
+      },
+      "standard_Error_ffba4faa88": {
+        "properties": {
+          "code": {
+            "title": "Telnyx error code",
+            "type": "string"
+          },
+          "detail": {
+            "title": "Error details",
+            "type": "string"
+          },
+          "title": {
+            "title": "Error title",
+            "type": "string"
+          }
+        },
+        "required": [
+          "detail"
+        ],
+        "title": "Error",
+        "type": "object"
+      },
+      "standard_PaginationMeta": {
+        "properties": {
+          "page_number": {
+            "example": 2,
+            "format": "int32",
+            "type": "integer"
+          },
+          "page_size": {
+            "example": 25,
+            "format": "int32",
+            "type": "integer"
+          },
+          "total_pages": {
+            "example": 3,
+            "format": "int32",
+            "type": "integer"
+          },
+          "total_results": {
+            "example": 55,
+            "format": "int32",
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "standard_PaginationMeta_ffba4faa88": {
+        "properties": {
+          "page_number": {
+            "example": 2,
+            "format": "int32",
+            "type": "integer"
+          },
+          "page_size": {
+            "example": 25,
+            "format": "int32",
+            "type": "integer"
+          },
+          "total_pages": {
+            "example": 3,
+            "format": "int32",
+            "type": "integer"
+          },
+          "total_results": {
+            "example": 55,
+            "format": "int32",
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      }
+    },
+    "securitySchemes": {
+      "BearerAuth": {
+        "bearerFormat": "API key",
+        "description": "Telnyx API key supplied as `Authorization: Bearer \u003ctoken\u003e`. In production, auth may be validated by the API gateway and forwarded via Telnyx auth headers.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "Payment": {
+        "description": "Machine Payment Protocol credential used on paid retries, sent as `Authorization: Payment ...`. Obtained by paying a challenge returned in the `WWW-Authenticate` header of a 402 response. This is not a Telnyx API key; initial challenge requests use standard bearer authentication instead.",
+        "in": "header",
+        "name": "Authorization",
+        "type": "apiKey"
+      },
+      "agent-memory_bearerAuth": {
+        "description": "Telnyx API key",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "bearerAuth": {
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "branded-calling_bearerAuth": {
+        "description": "Telnyx API key. Generate one at https://portal.telnyx.com/#/app/api-keys.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "collections_bearerAuth": {
+        "description": "Telnyx API key. Collections and results are automatically scoped to the authenticated user's organization.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "number-reputation_bearerAuth": {
+        "description": "Telnyx API key. Generate one at https://portal.telnyx.com/#/app/api-keys.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "oauthClientAuth": {
+        "description": "OAuth 2.0 authentication for Telnyx API and MCP integrations",
+        "flows": {
+          "authorizationCode": {
+            "authorizationUrl": "https://api.telnyx.com/v2/oauth/authorize",
+            "refreshUrl": "https://api.telnyx.com/v2/oauth/token",
+            "scopes": {
+              "admin": "Administrative access to Telnyx resources"
+            },
+            "tokenUrl": "https://api.telnyx.com/v2/oauth/token"
+          },
+          "clientCredentials": {
+            "scopes": {
+              "admin": "Administrative access to Telnyx resources"
+            },
+            "tokenUrl": "https://api.telnyx.com/v2/oauth/token"
+          }
+        },
+        "type": "oauth2"
+      },
+      "outbound-voice-profiles_bearerAuth": {
+        "bearerFormat": "JWT",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "pay-connectors_bearerAuth": {
+        "description": "Telnyx API key, not the processor bearer token.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "pronunciation-dicts_bearerAuth": {
+        "description": "Telnyx API v2 key. Obtain from https://portal.telnyx.com",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "rcs-registration_bearerAuth": {
+        "bearerFormat": "API key",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "stored-payment-transactions_bearerAuth": {
+        "bearerFormat": "JWT",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "telnyxApiKey": {
+        "description": "Management-only Telnyx account credential.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "transcriptions-search_bearerAuth": {
+        "description": "Telnyx API key. Results are automatically scoped to the authenticated user's organization.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "web-search_bearerAuth": {
+        "description": "Telnyx API key",
+        "scheme": "bearer",
+        "type": "http"
+      }
+    }
+  },
+  "info": {
+    "contact": {
+      "email": "support@telnyx.com"
+    },
+    "description": "SIP trunking, SMS, MMS, Call Control and Telephony Data Services.",
+    "title": "Telnyx API",
+    "version": "2.0.0",
+    "x-endpoint-cost": "light",
+    "x-latency-category": "responsive"
+  },
+  "openapi": "3.1.0",
+  "paths": {
+    "/legacy/reporting/usage_reports/voice": {
+      "get": {
+        "description": "Fetch all previous requests for cdr usage reports. ",
+        "operationId": "getCdrUsageReports",
+        "parameters": [
+          {
+            "description": "Page number",
+            "in": "query",
+            "name": "page",
+            "schema": {
+              "default": 1,
+              "format": "int32",
+              "minimum": 1,
+              "type": "integer"
+            }
+          },
+          {
+            "description": "Size of the page",
+            "in": "query",
+            "name": "per_page",
+            "schema": {
+              "default": 20,
+              "format": "int32",
+              "maximum": 250,
+              "minimum": 1,
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/standard_CdrGetUsageReportsResponse"
+                }
+              }
+            },
+            "description": "Successful"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "errors": [
+                    {
+                      "code": "10015",
+                      "detail": "The request failed because it was not well-formed.",
+                      "title": "Bad Request"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/standard_ErrorResponse_ffba4faa88"
+                }
+              }
+            },
+            "description": "Bad Request"
+          }
+        },
+        "summary": "List CDR usage reports",
+        "tags": [
+          "CDR Usage Reports"
+        ],
+        "x-latency-category": "responsive"
+      },
+      "post": {
+        "description": "Creates a new legacy usage V2 CDR report request with the specified filters",
+        "operationId": "submitCdrUsageReport",
+        "requestBody": {
+          "content": {
+            "*/*": {
+              "schema": {
+                "$ref": "#/components/schemas/UsageRequestLegacy"
+              }
+            }
+          },
+          "description": "Cdr detail request data",
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CdrPostUsageReportResponse"
+                }
+              }
+            },
+            "description": "V2 legacy CDR usage report request created successfully"
+          },
+          "400": {
+            "description": "Invalid request parameters"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        },
+        "summary": "Create a new legacy usage V2 CDR report request",
+        "tags": [
+          "CDR Usage Reports"
+        ],
+        "x-latency-category": "responsive"
+      }
+    },
+    "/legacy/reporting/usage_reports/voice/{id}": {
+      "delete": {
+        "description": "Deletes a specific V2 legacy usage CDR report request by ID",
+        "operationId": "deleteCdrUsageReport",
+        "parameters": [
+          {
+            "description": "Unique identifier of the resource.",
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CdrDeleteUsageReportResponse"
+                }
+              }
+            },
+            "description": "V2 legacy usage CDR report request deleted successfully"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Report not found"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        },
+        "summary": "Delete a V2 legacy usage CDR report request",
+        "tags": [
+          "CDR Usage Reports"
+        ],
+        "x-latency-category": "responsive"
+      },
+      "get": {
+        "description": "Returns a single CDR (Call Detail Record) usage report by its identifier, including its parameters and current status.",
+        "operationId": "getCdrUsageReport",
+        "parameters": [
+          {
+            "description": "Unique identifier of the resource.",
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CdrGetUsageReportByIdResponse"
+                }
+              }
+            },
+            "description": "Successful"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Report not found"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        },
+        "summary": "Get a CDR usage report",
+        "tags": [
+          "CDR Usage Reports"
+        ],
+        "x-latency-category": "responsive"
+      }
+    },
+    "/legacy_reporting/usage_reports/voice": {
+      "get": {
+        "description": "Fetch all previous requests for cdr usage reports. ",
+        "operationId": "getCdrUsageReports",
+        "parameters": [
+          {
+            "description": "Page number",
+            "in": "query",
+            "name": "page",
+            "schema": {
+              "default": 1,
+              "format": "int32",
+              "minimum": 1,
+              "type": "integer"
+            }
+          },
+          {
+            "description": "Size of the page",
+            "in": "query",
+            "name": "per_page",
+            "schema": {
+              "default": 20,
+              "format": "int32",
+              "maximum": 250,
+              "minimum": 1,
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CdrGetUsageReportsResponse"
+                }
+              }
+            },
+            "description": "Successful"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "errors": [
+                    {
+                      "code": "10015",
+                      "detail": "The request failed because it was not well-formed.",
+                      "title": "Bad Request"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/standard_ErrorResponse"
+                }
+              }
+            },
+            "description": "Bad Request"
+          }
+        },
+        "summary": "List CDR usage reports",
+        "tags": [
+          "CDR Usage Reports"
+        ],
+        "x-latency-category": "responsive"
+      },
+      "post": {
+        "description": "Creates a new legacy usage V2 CDR report request with the specified filters",
+        "operationId": "submitCdrUsageReport",
+        "requestBody": {
+          "content": {
+            "*/*": {
+              "schema": {
+                "$ref": "#/components/schemas/UsageRequestLegacy"
+              }
+            }
+          },
+          "description": "Cdr detail request data",
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CdrPostUsageReportResponse"
+                }
+              }
+            },
+            "description": "V2 legacy CDR usage report request created successfully"
+          },
+          "400": {
+            "description": "Invalid request parameters"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        },
+        "summary": "Create a new legacy usage V2 CDR report request",
+        "tags": [
+          "CDR Usage Reports"
+        ],
+        "x-latency-category": "responsive"
+      }
+    },
+    "/legacy_reporting/usage_reports/voice/{id}": {
+      "delete": {
+        "description": "Deletes a specific V2 legacy usage CDR report request by ID",
+        "operationId": "deleteCdrUsageReport",
+        "parameters": [
+          {
+            "description": "Unique identifier of the resource.",
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CdrDeleteUsageReportResponse"
+                }
+              }
+            },
+            "description": "V2 legacy usage CDR report request deleted successfully"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Report not found"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        },
+        "summary": "Delete a V2 legacy usage CDR report request",
+        "tags": [
+          "CDR Usage Reports"
+        ],
+        "x-latency-category": "responsive"
+      },
+      "get": {
+        "description": "Returns a single CDR (Call Detail Record) usage report by its identifier, including its parameters and current status.",
+        "operationId": "getCdrUsageReport",
+        "parameters": [
+          {
+            "description": "Unique identifier of the resource.",
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CdrGetUsageReportByIdResponse"
+                }
+              }
+            },
+            "description": "Successful"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Report not found"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        },
+        "summary": "Get a CDR usage report",
+        "tags": [
+          "CDR Usage Reports"
+        ],
+        "x-latency-category": "responsive"
+      }
+    },
+    "/reports/cdr_usage_reports/sync": {
+      "get": {
+        "description": "Generate and fetch voice usage report synchronously. This endpoint will both generate and fetch the voice report over a specified time period. No polling is necessary but the response may take up to a couple of minutes. ",
+        "operationId": "GetCDRUsageReportSync",
+        "parameters": [
+          {
+            "description": "Start of the date range filter (inclusive, ISO 8601).",
+            "in": "query",
+            "name": "start_date",
+            "schema": {
+              "example": "2020-07-01T00:00:00-06:00",
+              "format": "date-time",
+              "type": "string"
+            }
+          },
+          {
+            "description": "End of the date range filter (inclusive, ISO 8601).",
+            "in": "query",
+            "name": "end_date",
+            "schema": {
+              "example": "2020-07-01T00:00:00-06:00",
+              "format": "date-time",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Type of aggregation to apply to the results.",
+            "in": "query",
+            "name": "aggregation_type",
+            "required": true,
+            "schema": {
+              "enum": [
+                "NO_AGGREGATION",
+                "CONNECTION",
+                "TAG",
+                "BILLING_GROUP"
+              ],
+              "example": "NO_AGGREGATION",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Filter results by product breakdown.",
+            "in": "query",
+            "name": "product_breakdown",
+            "required": true,
+            "schema": {
+              "enum": [
+                "NO_BREAKDOWN",
+                "DID_VS_TOLL_FREE",
+                "COUNTRY",
+                "DID_VS_TOLL_FREE_PER_COUNTRY"
+              ],
+              "example": "NO_BREAKDOWN",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Filter results by connection.",
+            "in": "query",
+            "name": "connections",
+            "schema": {
+              "example": [
+                1234567890123
+              ],
+              "items": {
+                "example": 1234567890123,
+                "type": "number"
+              },
+              "type": "array"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CdrGetSyncUsageReportResponse"
+                }
+              }
+            },
+            "description": "Successful"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/reporting_ErrorResponse_77109e5d17"
+                }
+              }
+            },
+            "description": "Bad Request"
+          }
+        },
+        "summary": "Generates and fetches CDR Usage Reports",
+        "tags": [
+          "CDR Usage Reports"
+        ],
+        "x-latency-category": "background"
+      }
+    }
+  },
+  "security": [
+    {
+      "bearerAuth": []
+    }
+  ],
+  "servers": [
+    {
+      "description": "Version 2.0.0 of the Telnyx API",
+      "url": "https://api.telnyx.com/v2"
+    }
+  ]
+}

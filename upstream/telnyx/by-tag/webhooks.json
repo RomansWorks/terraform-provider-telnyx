@@ -1,0 +1,666 @@
+{
+  "components": {
+    "parameters": {
+      "PageConsolidated": {
+        "description": "Consolidated page parameter (deepObject style). Originally: page[number], page[size]",
+        "explode": true,
+        "in": "query",
+        "name": "page",
+        "schema": {
+          "properties": {
+            "number": {
+              "default": 1,
+              "description": "The page number to load",
+              "minimum": 1,
+              "type": "integer"
+            },
+            "size": {
+              "default": 20,
+              "description": "The size of the page",
+              "maximum": 250,
+              "minimum": 1,
+              "type": "integer"
+            }
+          },
+          "type": "object"
+        },
+        "style": "deepObject"
+      }
+    },
+    "schemas": {
+      "PaginationMetaSimple": {
+        "properties": {
+          "page_number": {
+            "example": 2,
+            "type": "integer"
+          },
+          "page_size": {
+            "example": 25,
+            "type": "integer"
+          },
+          "total_pages": {
+            "example": 3,
+            "type": "integer"
+          },
+          "total_results": {
+            "example": 55,
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "attempt": {
+        "description": "Webhook delivery attempt details.",
+        "example": [
+          {
+            "finished_at": "2020-08-10T14:00:05.595Z",
+            "http": {
+              "request": {
+                "headers": [
+                  [
+                    "Accept",
+                    "*/*"
+                  ]
+                ],
+                "url": "https://fallback.example.com/webhooks"
+              },
+              "response": {
+                "body": "All good.",
+                "headers": [
+                  [
+                    "Content-Type",
+                    "text/html"
+                  ]
+                ],
+                "status": 200
+              }
+            },
+            "started_at": "2020-08-10T14:00:05.364Z",
+            "status": "delivered"
+          },
+          {
+            "errors": [
+              75499
+            ],
+            "finished_at": "2020-08-10T14:00:05.360Z",
+            "http": {
+              "request": {
+                "headers": [
+                  [
+                    "Accept",
+                    "*/*"
+                  ]
+                ],
+                "url": "https://typo.example.com/webhooks"
+              },
+              "response": {
+                "body": "Oops. Not found.",
+                "headers": [
+                  [
+                    "Content-Type",
+                    "text/html"
+                  ],
+                  [
+                    "Pragma",
+                    "no-cache"
+                  ]
+                ],
+                "status": 404
+              }
+            },
+            "started_at": "2020-08-10T14:00:05.004Z",
+            "status": "failed"
+          },
+          {
+            "errors": [
+              {
+                "code": "75001",
+                "detail": "Unable to resolve the webhook URL domain name",
+                "title": "Could not resolve name"
+              }
+            ],
+            "finished_at": "2020-08-10T14:00:05.000Z",
+            "http": {
+              "reponse": null,
+              "request": {
+                "headers": [
+                  "Accept: */*"
+                ],
+                "url": "https://slow.example.com/webhooks"
+              }
+            },
+            "started_at": "2020-08-10T14:00:00.000Z",
+            "status": "failed"
+          }
+        ],
+        "properties": {
+          "errors": {
+            "description": "Webhook delivery error codes.",
+            "items": {
+              "type": "integer"
+            },
+            "type": "array"
+          },
+          "finished_at": {
+            "description": "ISO 8601 timestamp indicating when the attempt has finished.",
+            "format": "date-time",
+            "type": "string"
+          },
+          "http": {
+            "$ref": "#/components/schemas/http"
+          },
+          "started_at": {
+            "description": "ISO 8601 timestamp indicating when the attempt was initiated.",
+            "format": "date-time",
+            "type": "string"
+          },
+          "status": {
+            "enum": [
+              "delivered",
+              "failed"
+            ],
+            "type": "string"
+          }
+        }
+      },
+      "http": {
+        "description": "HTTP request and response information.",
+        "properties": {
+          "request": {
+            "description": "Request details.",
+            "properties": {
+              "headers": {
+                "$ref": "#/components/schemas/http_headers"
+              },
+              "url": {
+                "example": "https://example.com/webhooks",
+                "type": "string"
+              }
+            }
+          },
+          "response": {
+            "description": "Response details, optional.",
+            "properties": {
+              "body": {
+                "description": "Raw response body, limited to 10kB.",
+                "type": "string"
+              },
+              "headers": {
+                "$ref": "#/components/schemas/http_headers"
+              },
+              "status": {
+                "example": 200,
+                "type": "integer"
+              }
+            },
+            "type": "object"
+          }
+        }
+      },
+      "http_headers": {
+        "description": "List of headers, limited to 10kB.",
+        "example": [
+          [
+            "header_name",
+            "header_value"
+          ]
+        ],
+        "items": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "type": "array"
+      },
+      "webhook_delivery": {
+        "description": "Record of all attempts to deliver a webhook.",
+        "properties": {
+          "attempts": {
+            "description": "Detailed delivery attempts, ordered by most recent.",
+            "example": [
+              {
+                "finished_at": "2020-08-10T14:00:05.595Z",
+                "http": {
+                  "request": {
+                    "headers": [
+                      [
+                        "Accept",
+                        "*/*"
+                      ]
+                    ],
+                    "url": "https://fallback.example.com/webhooks"
+                  },
+                  "response": {
+                    "body": "All good.",
+                    "headers": [
+                      [
+                        "Content-Type",
+                        "text/html"
+                      ]
+                    ],
+                    "status": 200
+                  }
+                },
+                "started_at": "2020-08-10T14:00:05.364Z",
+                "status": "delivered"
+              },
+              {
+                "errors": [
+                  75499
+                ],
+                "finished_at": "2020-08-10T14:00:05.360Z",
+                "http": {
+                  "request": {
+                    "headers": [
+                      [
+                        "Accept",
+                        "*/*"
+                      ]
+                    ],
+                    "url": "https://typo.example.com/webhooks"
+                  },
+                  "response": {
+                    "body": "Oops. Not found.",
+                    "headers": [
+                      [
+                        "Content-Type",
+                        "text/html"
+                      ],
+                      [
+                        "Pragma",
+                        "no-cache"
+                      ]
+                    ],
+                    "status": 404
+                  }
+                },
+                "started_at": "2020-08-10T14:00:05.004Z",
+                "status": "failed"
+              }
+            ],
+            "items": {
+              "$ref": "#/components/schemas/attempt"
+            },
+            "type": "array"
+          },
+          "finished_at": {
+            "description": "ISO 8601 timestamp indicating when the last webhook response has been received.",
+            "example": "2020-08-10T14:00:05.595Z",
+            "format": "date-time",
+            "type": "string"
+          },
+          "id": {
+            "description": "Uniquely identifies the webhook_delivery record.",
+            "example": "f5586561-8ff0-4291-a0ac-84fe544797bd",
+            "format": "uuid",
+            "type": "string"
+          },
+          "record_type": {
+            "description": "Identifies the type of the resource.",
+            "example": "webhook_delivery",
+            "type": "string"
+          },
+          "started_at": {
+            "description": "ISO 8601 timestamp indicating when the first request attempt was initiated.",
+            "example": "2020-08-10T14:00:00.000Z",
+            "format": "date-time",
+            "type": "string"
+          },
+          "status": {
+            "description": "Delivery status: 'delivered' when successfuly delivered or 'failed' if all attempts have failed.",
+            "enum": [
+              "delivered",
+              "failed"
+            ],
+            "type": "string"
+          },
+          "user_id": {
+            "description": "Uniquely identifies the user that owns the webhook_delivery record.",
+            "example": "0ccc7b54-4df3-4bca-a65a-3da1ecc777f0",
+            "format": "uuid",
+            "type": "string"
+          },
+          "webhook": {
+            "description": "Original webhook JSON data. Payload fields vary according to event type.",
+            "example": {
+              "event_type": "call_initiated",
+              "id": "C9C0797E-901D-4349-A33C-C2C8F31A92C2",
+              "occurred_at": "2020-08-10T13:02:01.000Z",
+              "payload": {
+                "useful": "information"
+              },
+              "record_type": "event"
+            },
+            "properties": {
+              "event_type": {
+                "description": "The type of event being delivered.",
+                "example": "webhook.command",
+                "type": "string"
+              },
+              "id": {
+                "description": "Identifies the type of resource.",
+                "example": "0ccc7b54-4df3-4bca-a65a-3da1ecc777f0",
+                "format": "uuid",
+                "type": "string"
+              },
+              "occurred_at": {
+                "description": "ISO 8601 datetime of when the event occurred.",
+                "example": "2018-02-02T22:25:27.521992Z",
+                "format": "date-time",
+                "type": "string"
+              },
+              "payload": {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              "record_type": {
+                "description": "Identifies the type of the resource.",
+                "enum": [
+                  "event"
+                ],
+                "example": "event",
+                "type": "string"
+              }
+            },
+            "type": "object"
+          }
+        }
+      }
+    },
+    "securitySchemes": {
+      "BearerAuth": {
+        "bearerFormat": "API key",
+        "description": "Telnyx API key supplied as `Authorization: Bearer \u003ctoken\u003e`. In production, auth may be validated by the API gateway and forwarded via Telnyx auth headers.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "Payment": {
+        "description": "Machine Payment Protocol credential used on paid retries, sent as `Authorization: Payment ...`. Obtained by paying a challenge returned in the `WWW-Authenticate` header of a 402 response. This is not a Telnyx API key; initial challenge requests use standard bearer authentication instead.",
+        "in": "header",
+        "name": "Authorization",
+        "type": "apiKey"
+      },
+      "agent-memory_bearerAuth": {
+        "description": "Telnyx API key",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "bearerAuth": {
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "branded-calling_bearerAuth": {
+        "description": "Telnyx API key. Generate one at https://portal.telnyx.com/#/app/api-keys.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "collections_bearerAuth": {
+        "description": "Telnyx API key. Collections and results are automatically scoped to the authenticated user's organization.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "number-reputation_bearerAuth": {
+        "description": "Telnyx API key. Generate one at https://portal.telnyx.com/#/app/api-keys.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "oauthClientAuth": {
+        "description": "OAuth 2.0 authentication for Telnyx API and MCP integrations",
+        "flows": {
+          "authorizationCode": {
+            "authorizationUrl": "https://api.telnyx.com/v2/oauth/authorize",
+            "refreshUrl": "https://api.telnyx.com/v2/oauth/token",
+            "scopes": {
+              "admin": "Administrative access to Telnyx resources"
+            },
+            "tokenUrl": "https://api.telnyx.com/v2/oauth/token"
+          },
+          "clientCredentials": {
+            "scopes": {
+              "admin": "Administrative access to Telnyx resources"
+            },
+            "tokenUrl": "https://api.telnyx.com/v2/oauth/token"
+          }
+        },
+        "type": "oauth2"
+      },
+      "outbound-voice-profiles_bearerAuth": {
+        "bearerFormat": "JWT",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "pay-connectors_bearerAuth": {
+        "description": "Telnyx API key, not the processor bearer token.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "pronunciation-dicts_bearerAuth": {
+        "description": "Telnyx API v2 key. Obtain from https://portal.telnyx.com",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "rcs-registration_bearerAuth": {
+        "bearerFormat": "API key",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "stored-payment-transactions_bearerAuth": {
+        "bearerFormat": "JWT",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "telnyxApiKey": {
+        "description": "Management-only Telnyx account credential.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "transcriptions-search_bearerAuth": {
+        "description": "Telnyx API key. Results are automatically scoped to the authenticated user's organization.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "web-search_bearerAuth": {
+        "description": "Telnyx API key",
+        "scheme": "bearer",
+        "type": "http"
+      }
+    }
+  },
+  "info": {
+    "contact": {
+      "email": "support@telnyx.com"
+    },
+    "description": "SIP trunking, SMS, MMS, Call Control and Telephony Data Services.",
+    "title": "Telnyx API",
+    "version": "2.0.0",
+    "x-endpoint-cost": "light",
+    "x-latency-category": "responsive"
+  },
+  "openapi": "3.1.0",
+  "paths": {
+    "/webhook_deliveries": {
+      "get": {
+        "description": "Lists webhook_deliveries for the authenticated user",
+        "operationId": "GetWebhookDeliveries",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/PageConsolidated"
+          },
+          {
+            "description": "Consolidated filter parameter (deepObject style). Originally: filter[status][eq], filter[event_type], filter[webhook][contains], filter[attempts][contains], filter[started_at][gte], filter[started_at][lte], filter[finished_at][gte], filter[finished_at][lte]",
+            "explode": true,
+            "in": "query",
+            "name": "filter",
+            "required": false,
+            "schema": {
+              "properties": {
+                "attempts": {
+                  "properties": {
+                    "contains": {
+                      "description": "Return only webhook_deliveries whose `attempts` component contains the given text",
+                      "example": "https://fallback.example.com/webhooks",
+                      "type": "string"
+                    }
+                  },
+                  "type": "object"
+                },
+                "event_type": {
+                  "description": "Return only webhook_deliveries matching the given value of `event_type`. Accepts multiple values separated by a `,`.",
+                  "example": "call_initiated,call.initiated",
+                  "type": "string"
+                },
+                "finished_at": {
+                  "properties": {
+                    "gte": {
+                      "description": "Return only webhook_deliveries whose delivery finished later than or at given ISO 8601 datetime",
+                      "example": "2019-03-29T11:10:00Z",
+                      "type": "string"
+                    },
+                    "lte": {
+                      "description": "Return only webhook_deliveries whose delivery finished earlier than or at given ISO 8601 datetime",
+                      "example": "2019-03-29T11:10:00Z",
+                      "type": "string"
+                    }
+                  },
+                  "type": "object"
+                },
+                "started_at": {
+                  "properties": {
+                    "gte": {
+                      "description": "Return only webhook_deliveries whose delivery started later than or at given ISO 8601 datetime",
+                      "example": "2019-03-29T11:10:00Z",
+                      "type": "string"
+                    },
+                    "lte": {
+                      "description": "Return only webhook_deliveries whose delivery started earlier than or at given ISO 8601 datetime",
+                      "example": "2019-03-29T11:10:00Z",
+                      "type": "string"
+                    }
+                  },
+                  "type": "object"
+                },
+                "status": {
+                  "properties": {
+                    "eq": {
+                      "description": "Return only webhook_deliveries matching the given `status`",
+                      "enum": [
+                        "delivered",
+                        "failed"
+                      ],
+                      "example": "delivered",
+                      "type": "string"
+                    }
+                  },
+                  "type": "object"
+                },
+                "webhook": {
+                  "properties": {
+                    "contains": {
+                      "description": "Return only webhook deliveries whose `webhook` component contains the given text",
+                      "example": "call.initiated",
+                      "type": "string"
+                    }
+                  },
+                  "type": "object"
+                }
+              },
+              "type": "object"
+            },
+            "style": "deepObject"
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "items": {
+                        "$ref": "#/components/schemas/webhook_delivery"
+                      },
+                      "type": "array"
+                    },
+                    "meta": {
+                      "$ref": "#/components/schemas/PaginationMetaSimple"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "A paginated array of webhook_delivery attempts"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "422": {
+            "description": "Unprocessable entity"
+          }
+        },
+        "summary": "List webhook deliveries",
+        "tags": [
+          "Webhooks"
+        ]
+      }
+    },
+    "/webhook_deliveries/{id}": {
+      "get": {
+        "description": "Provides webhook_delivery debug data, such as timestamps, delivery status and attempts.",
+        "operationId": "GetWebhookDelivery",
+        "parameters": [
+          {
+            "description": "Uniquely identifies the webhook_delivery.",
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "example": "C9C0797E-901D-4349-A33C-C2C8F31A92C2",
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/webhook_delivery"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Webhook delivery record."
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "WebhookDelivery not found"
+          }
+        },
+        "summary": "Find webhook_delivery details by ID",
+        "tags": [
+          "Webhooks"
+        ]
+      }
+    }
+  },
+  "security": [
+    {
+      "bearerAuth": []
+    }
+  ],
+  "servers": [
+    {
+      "description": "Version 2.0.0 of the Telnyx API",
+      "url": "https://api.telnyx.com/v2"
+    }
+  ]
+}

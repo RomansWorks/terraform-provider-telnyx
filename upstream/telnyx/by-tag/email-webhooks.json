@@ -1,0 +1,697 @@
+{
+  "components": {
+    "parameters": {
+      "DomainsPageSize": {
+        "description": "Number of records per page",
+        "in": "query",
+        "name": "page[size]",
+        "required": false,
+        "schema": {
+          "default": 25,
+          "maximum": 100,
+          "minimum": 1,
+          "type": "integer"
+        }
+      },
+      "EmailDomainDomainId": {
+        "description": "Email domain UUID",
+        "in": "path",
+        "name": "domain_id",
+        "required": true,
+        "schema": {
+          "format": "uuid",
+          "type": "string"
+        }
+      },
+      "WebhookId": {
+        "description": "Email webhook UUID",
+        "in": "path",
+        "name": "id",
+        "required": true,
+        "schema": {
+          "format": "uuid",
+          "type": "string"
+        }
+      },
+      "email_PageNumber": {
+        "description": "Page number to return (offset pagination)",
+        "in": "query",
+        "name": "page[number]",
+        "required": false,
+        "schema": {
+          "default": 1,
+          "minimum": 1,
+          "type": "integer"
+        }
+      }
+    },
+    "responses": {
+      "InternalServerError": {
+        "content": {
+          "application/json": {
+            "example": {
+              "errors": [
+                {
+                  "code": "500",
+                  "detail": "An unexpected error occurred",
+                  "title": "Internal Server Error"
+                }
+              ]
+            },
+            "schema": {
+              "$ref": "#/components/schemas/DomainsErrorResponse"
+            }
+          }
+        },
+        "description": "Internal server error"
+      },
+      "ValidationFailed": {
+        "content": {
+          "application/json": {
+            "example": {
+              "errors": [
+                {
+                  "code": "10015",
+                  "detail": "domain is invalid",
+                  "source": {
+                    "pointer": "/data/attributes/domain"
+                  },
+                  "title": "Validation Failed"
+                }
+              ]
+            },
+            "schema": {
+              "$ref": "#/components/schemas/DomainsErrorResponse"
+            }
+          }
+        },
+        "description": "Validation failed"
+      },
+      "email_NotFound": {
+        "content": {
+          "application/json": {
+            "example": {
+              "errors": [
+                {
+                  "code": "10001",
+                  "detail": "The requested email domain was not found",
+                  "title": "Not Found"
+                }
+              ]
+            },
+            "schema": {
+              "$ref": "#/components/schemas/DomainsErrorResponse"
+            }
+          }
+        },
+        "description": "Resource not found"
+      }
+    },
+    "schemas": {
+      "CreateEmailWebhookRequest": {
+        "properties": {
+          "events": {
+            "description": "At least one event type is required.",
+            "items": {
+              "$ref": "#/components/schemas/EmailWebhookEvent"
+            },
+            "minItems": 1,
+            "type": "array"
+          },
+          "url": {
+            "description": "HTTPS endpoint to deliver subscribed events to.",
+            "format": "uri",
+            "type": "string"
+          }
+        },
+        "required": [
+          "url",
+          "events"
+        ],
+        "type": "object"
+      },
+      "DomainsErrorResponse": {
+        "properties": {
+          "errors": {
+            "items": {
+              "$ref": "#/components/schemas/email_Error"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "errors"
+        ],
+        "type": "object"
+      },
+      "EmailWebhook": {
+        "example": {
+          "created_at": "2026-06-18T12:00:00Z",
+          "domain_id": "123e4567-e89b-12d3-a456-426614174000",
+          "events": [
+            "email.sent",
+            "email.delivered",
+            "email.bounced"
+          ],
+          "id": "123e4567-e89b-12d3-a456-426614174003",
+          "record_type": "email_webhook",
+          "updated_at": "2026-06-18T12:00:00Z",
+          "url": "https://example.com/webhooks/email"
+        },
+        "properties": {
+          "created_at": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "domain_id": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "events": {
+            "description": "Allowlist of event types delivered to this webhook. At least one event is required — there is no default-to-all.\n",
+            "items": {
+              "$ref": "#/components/schemas/EmailWebhookEvent"
+            },
+            "minItems": 1,
+            "type": "array"
+          },
+          "id": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "record_type": {
+            "enum": [
+              "email_webhook"
+            ],
+            "type": "string"
+          },
+          "updated_at": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "url": {
+            "description": "HTTPS endpoint to deliver subscribed events to.",
+            "format": "uri",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "record_type",
+          "url",
+          "events",
+          "domain_id",
+          "created_at",
+          "updated_at"
+        ],
+        "type": "object"
+      },
+      "EmailWebhookEvent": {
+        "description": "Event types accepted by domain webhook subscriptions. Allowlists match the legacy event_type, not canonical_event_type. Of the 22 accepted types, email.sending is stored but intentionally not published. Cancellation, daily-limit failures, and system failures publish after commit when a matching domain webhook is configured.",
+        "enum": [
+          "email.scheduled",
+          "email.sandbox",
+          "email.queued",
+          "email.sending",
+          "email.sent",
+          "email.delivered",
+          "email.deferred",
+          "email.bounced",
+          "email.failed",
+          "email.complained",
+          "email.opened",
+          "email.clicked",
+          "email.unsubscribed",
+          "email.received",
+          "email.cancelled",
+          "email.daily_limit_exceeded",
+          "email_domain.created",
+          "email_domain.verified",
+          "email_domain.degraded",
+          "email_domain.suspended",
+          "email_domain.deleted",
+          "email_domain.dkim_rotated"
+        ],
+        "type": "string"
+      },
+      "EmailWebhookListResponse": {
+        "properties": {
+          "data": {
+            "items": {
+              "$ref": "#/components/schemas/EmailWebhook"
+            },
+            "type": "array"
+          },
+          "meta": {
+            "$ref": "#/components/schemas/OffsetPaginationMeta"
+          }
+        },
+        "required": [
+          "data",
+          "meta"
+        ],
+        "type": "object"
+      },
+      "EmailWebhookResponse": {
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/EmailWebhook"
+          }
+        },
+        "required": [
+          "data"
+        ],
+        "type": "object"
+      },
+      "OffsetPaginationMeta": {
+        "properties": {
+          "page_number": {
+            "minimum": 1,
+            "type": "integer"
+          },
+          "page_size": {
+            "minimum": 1,
+            "type": "integer"
+          },
+          "total_pages": {
+            "minimum": 0,
+            "type": "integer"
+          },
+          "total_results": {
+            "minimum": 0,
+            "type": "integer"
+          }
+        },
+        "required": [
+          "page_number",
+          "page_size",
+          "total_pages",
+          "total_results"
+        ],
+        "type": "object"
+      },
+      "UpdateEmailWebhookRequest": {
+        "properties": {
+          "events": {
+            "items": {
+              "$ref": "#/components/schemas/EmailWebhookEvent"
+            },
+            "minItems": 1,
+            "type": "array"
+          },
+          "url": {
+            "format": "uri",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "email_Error": {
+        "properties": {
+          "code": {
+            "enum": [
+              "10001",
+              "10015",
+              "500",
+              "10007",
+              "10008",
+              "10020",
+              "40901"
+            ],
+            "type": "string"
+          },
+          "detail": {
+            "type": "string"
+          },
+          "source": {
+            "properties": {
+              "pointer": {
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
+          "title": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "title",
+          "detail"
+        ],
+        "type": "object"
+      }
+    },
+    "securitySchemes": {
+      "BearerAuth": {
+        "bearerFormat": "API key",
+        "description": "Telnyx API key supplied as `Authorization: Bearer \u003ctoken\u003e`. In production, auth may be validated by the API gateway and forwarded via Telnyx auth headers.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "Payment": {
+        "description": "Machine Payment Protocol credential used on paid retries, sent as `Authorization: Payment ...`. Obtained by paying a challenge returned in the `WWW-Authenticate` header of a 402 response. This is not a Telnyx API key; initial challenge requests use standard bearer authentication instead.",
+        "in": "header",
+        "name": "Authorization",
+        "type": "apiKey"
+      },
+      "agent-memory_bearerAuth": {
+        "description": "Telnyx API key",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "bearerAuth": {
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "branded-calling_bearerAuth": {
+        "description": "Telnyx API key. Generate one at https://portal.telnyx.com/#/app/api-keys.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "collections_bearerAuth": {
+        "description": "Telnyx API key. Collections and results are automatically scoped to the authenticated user's organization.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "number-reputation_bearerAuth": {
+        "description": "Telnyx API key. Generate one at https://portal.telnyx.com/#/app/api-keys.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "oauthClientAuth": {
+        "description": "OAuth 2.0 authentication for Telnyx API and MCP integrations",
+        "flows": {
+          "authorizationCode": {
+            "authorizationUrl": "https://api.telnyx.com/v2/oauth/authorize",
+            "refreshUrl": "https://api.telnyx.com/v2/oauth/token",
+            "scopes": {
+              "admin": "Administrative access to Telnyx resources"
+            },
+            "tokenUrl": "https://api.telnyx.com/v2/oauth/token"
+          },
+          "clientCredentials": {
+            "scopes": {
+              "admin": "Administrative access to Telnyx resources"
+            },
+            "tokenUrl": "https://api.telnyx.com/v2/oauth/token"
+          }
+        },
+        "type": "oauth2"
+      },
+      "outbound-voice-profiles_bearerAuth": {
+        "bearerFormat": "JWT",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "pay-connectors_bearerAuth": {
+        "description": "Telnyx API key, not the processor bearer token.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "pronunciation-dicts_bearerAuth": {
+        "description": "Telnyx API v2 key. Obtain from https://portal.telnyx.com",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "rcs-registration_bearerAuth": {
+        "bearerFormat": "API key",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "stored-payment-transactions_bearerAuth": {
+        "bearerFormat": "JWT",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "telnyxApiKey": {
+        "description": "Management-only Telnyx account credential.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "transcriptions-search_bearerAuth": {
+        "description": "Telnyx API key. Results are automatically scoped to the authenticated user's organization.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "web-search_bearerAuth": {
+        "description": "Telnyx API key",
+        "scheme": "bearer",
+        "type": "http"
+      }
+    }
+  },
+  "info": {
+    "contact": {
+      "email": "support@telnyx.com"
+    },
+    "description": "SIP trunking, SMS, MMS, Call Control and Telephony Data Services.",
+    "title": "Telnyx API",
+    "version": "2.0.0",
+    "x-endpoint-cost": "light",
+    "x-latency-category": "responsive"
+  },
+  "openapi": "3.1.0",
+  "paths": {
+    "/email_domains/{domain_id}/webhooks": {
+      "get": {
+        "description": "Returns a paginated list of webhook subscriptions scoped to the email domain. Results can be sorted by creation time.",
+        "operationId": "listEmailDomainWebhooks",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/EmailDomainDomainId"
+          },
+          {
+            "$ref": "#/components/parameters/email_PageNumber"
+          },
+          {
+            "$ref": "#/components/parameters/DomainsPageSize"
+          },
+          {
+            "description": "Field to sort by. Prefix with `-` for descending order.",
+            "in": "query",
+            "name": "sort",
+            "required": false,
+            "schema": {
+              "enum": [
+                "created_at",
+                "-created_at"
+              ],
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EmailWebhookListResponse"
+                }
+              }
+            },
+            "description": "A paginated list of email webhooks"
+          },
+          "404": {
+            "$ref": "#/components/responses/email_NotFound"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        },
+        "summary": "List webhooks for an email domain",
+        "tags": [
+          "Email Webhooks"
+        ]
+      },
+      "post": {
+        "description": "Creates a webhook endpoint subscribed to a specific allowlist of event types. Both `email.*` events (published by email-api) and `email_domain.*` events (published by this service) flow through the same webhooks.\n",
+        "operationId": "createEmailDomainWebhook",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/EmailDomainDomainId"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "example": {
+                "events": [
+                  "email.sent",
+                  "email.delivered",
+                  "email.bounced"
+                ],
+                "url": "https://example.com/webhooks/email"
+              },
+              "schema": {
+                "$ref": "#/components/schemas/CreateEmailWebhookRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EmailWebhookResponse"
+                }
+              }
+            },
+            "description": "Email webhook created"
+          },
+          "404": {
+            "$ref": "#/components/responses/email_NotFound"
+          },
+          "422": {
+            "$ref": "#/components/responses/ValidationFailed"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        },
+        "summary": "Create a webhook for an email domain",
+        "tags": [
+          "Email Webhooks"
+        ]
+      }
+    },
+    "/email_domains/{domain_id}/webhooks/{id}": {
+      "delete": {
+        "description": "Deletes the webhook subscription identified by ID within the specified email domain and returns the deleted subscription.",
+        "operationId": "deleteEmailDomainWebhook",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/EmailDomainDomainId"
+          },
+          {
+            "$ref": "#/components/parameters/WebhookId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EmailWebhookResponse"
+                }
+              }
+            },
+            "description": "Email webhook deleted"
+          },
+          "404": {
+            "$ref": "#/components/responses/email_NotFound"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        },
+        "summary": "Delete a webhook",
+        "tags": [
+          "Email Webhooks"
+        ]
+      },
+      "get": {
+        "description": "Returns the webhook subscription identified by ID within the specified email domain.",
+        "operationId": "getEmailDomainWebhook",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/EmailDomainDomainId"
+          },
+          {
+            "$ref": "#/components/parameters/WebhookId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EmailWebhookResponse"
+                }
+              }
+            },
+            "description": "Email webhook details"
+          },
+          "404": {
+            "$ref": "#/components/responses/email_NotFound"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        },
+        "summary": "Retrieve a webhook",
+        "tags": [
+          "Email Webhooks"
+        ]
+      },
+      "patch": {
+        "description": "Update a webhook's URL and/or event subscription. A webhook is bound to its domain — `domain_id` is not mutable.\n",
+        "operationId": "updateEmailDomainWebhook",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/EmailDomainDomainId"
+          },
+          {
+            "$ref": "#/components/parameters/WebhookId"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "example": {
+                "events": [
+                  "email.sent",
+                  "email.delivered",
+                  "email.opened"
+                ]
+              },
+              "schema": {
+                "$ref": "#/components/schemas/UpdateEmailWebhookRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EmailWebhookResponse"
+                }
+              }
+            },
+            "description": "Email webhook updated"
+          },
+          "404": {
+            "$ref": "#/components/responses/email_NotFound"
+          },
+          "422": {
+            "$ref": "#/components/responses/ValidationFailed"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        },
+        "summary": "Update a webhook",
+        "tags": [
+          "Email Webhooks"
+        ]
+      }
+    }
+  },
+  "security": [
+    {
+      "bearerAuth": []
+    }
+  ],
+  "servers": [
+    {
+      "description": "Version 2.0.0 of the Telnyx API",
+      "url": "https://api.telnyx.com/v2"
+    }
+  ]
+}

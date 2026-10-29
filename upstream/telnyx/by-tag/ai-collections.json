@@ -1,0 +1,1530 @@
+{
+  "components": {
+    "parameters": {
+      "PageNumber": {
+        "description": "Page number to return (1-based). Defaults to 1.",
+        "in": "query",
+        "name": "page[number]",
+        "required": false,
+        "schema": {
+          "default": 1,
+          "example": 1,
+          "minimum": 1,
+          "type": "integer"
+        }
+      },
+      "Slug": {
+        "description": "The collection's slug (unique within your organization).",
+        "in": "path",
+        "name": "slug",
+        "required": true,
+        "schema": {
+          "example": "support-transcripts",
+          "type": "string"
+        }
+      },
+      "SourceId": {
+        "description": "The identifier of the source to remove.",
+        "in": "path",
+        "name": "sourceId",
+        "required": true,
+        "schema": {
+          "example": "42",
+          "type": "string"
+        }
+      },
+      "Uuid": {
+        "description": "The collection's unique identifier.",
+        "in": "path",
+        "name": "uuid",
+        "required": true,
+        "schema": {
+          "example": "6a09ccbd-8f9b-4c3a-9b0e-2f1d3c4b5a6e",
+          "format": "uuid",
+          "type": "string"
+        }
+      },
+      "collections_PageSize": {
+        "description": "Number of results per page. Defaults to 20.",
+        "in": "query",
+        "name": "page[size]",
+        "required": false,
+        "schema": {
+          "default": 20,
+          "example": 20,
+          "maximum": 100,
+          "minimum": 1,
+          "type": "integer"
+        }
+      }
+    },
+    "responses": {
+      "Conflict": {
+        "content": {
+          "application/json": {
+            "example": {
+              "errors": [
+                {
+                  "code": "collection_slug_taken",
+                  "detail": "A collection with slug 'support-transcripts' already exists for this account.",
+                  "meta": {
+                    "pointer": "/slug"
+                  },
+                  "title": "Collection slug already in use"
+                }
+              ]
+            },
+            "schema": {
+              "$ref": "#/components/schemas/Errors"
+            }
+          }
+        },
+        "description": "The request conflicts with existing state (e.g. duplicate slug or duplicate source)."
+      },
+      "collections_BadRequest": {
+        "content": {
+          "application/json": {
+            "example": {
+              "errors": [
+                {
+                  "code": "10015",
+                  "detail": "The request failed because it was not well-formed.",
+                  "meta": {
+                    "url": "https://developers.telnyx.com/docs/overview/errors/10015"
+                  },
+                  "title": "Bad Request"
+                }
+              ]
+            },
+            "schema": {
+              "$ref": "#/components/schemas/Errors"
+            }
+          }
+        },
+        "description": "The request was malformed or failed validation."
+      },
+      "collections_NotFound": {
+        "content": {
+          "application/json": {
+            "example": {
+              "errors": [
+                {
+                  "code": "collection_not_found",
+                  "detail": "No collection with uuid 'b3b1c8a2-9f4e-4d2a-9c1e-2f7a6d5b4c3a' exists for this account.",
+                  "title": "Collection not found"
+                }
+              ]
+            },
+            "schema": {
+              "$ref": "#/components/schemas/Errors"
+            }
+          }
+        },
+        "description": "The requested resource does not exist."
+      },
+      "collections_Unauthorized": {
+        "content": {
+          "application/json": {
+            "example": {
+              "errors": [
+                {
+                  "code": "10009",
+                  "detail": "The required authentication headers were either invalid or not included in the request.",
+                  "meta": {
+                    "url": "https://developers.telnyx.com/docs/overview/errors/10009"
+                  },
+                  "title": "Authentication failed"
+                }
+              ]
+            },
+            "schema": {
+              "$ref": "#/components/schemas/Errors"
+            }
+          }
+        },
+        "description": "Missing or invalid authentication."
+      }
+    },
+    "schemas": {
+      "Collection": {
+        "properties": {
+          "created_at": {
+            "example": "2026-08-04T12:00:00Z",
+            "format": "date-time",
+            "type": "string"
+          },
+          "description": {
+            "example": "All customer support voice transcripts.",
+            "type": "string"
+          },
+          "name": {
+            "example": "Support Transcripts",
+            "type": "string"
+          },
+          "record_type": {
+            "description": "Identifies the record type. Always `ai_collection`.",
+            "example": "ai_collection",
+            "type": "string"
+          },
+          "settings": {
+            "$ref": "#/components/schemas/RetrievalSettingsWrapper"
+          },
+          "slug": {
+            "example": "support-transcripts",
+            "type": "string"
+          },
+          "sources": {
+            "items": {
+              "$ref": "#/components/schemas/collections_Source"
+            },
+            "type": "array"
+          },
+          "status": {
+            "example": "ready",
+            "type": "string"
+          },
+          "updated_at": {
+            "example": "2026-08-04T12:00:00Z",
+            "format": "date-time",
+            "type": "string"
+          },
+          "uuid": {
+            "example": "6a09ccbd-8f9b-4c3a-9b0e-2f1d3c4b5a6e",
+            "format": "uuid",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "CollectionDocumentRecord": {
+        "properties": {
+          "chunk_index": {
+            "type": "integer"
+          },
+          "chunk_total": {
+            "type": "integer"
+          },
+          "id": {
+            "type": "string"
+          },
+          "ingested_at": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "metadata": {
+            "additionalProperties": true,
+            "type": "object"
+          },
+          "organization_id": {
+            "type": "string"
+          },
+          "record_created_at": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "record_id": {
+            "type": "string"
+          },
+          "record_type": {
+            "description": "The source record kind this chunk came from (e.g. `voice`, `meeting_bot`, `message`).",
+            "example": "voice",
+            "type": "string"
+          },
+          "region": {
+            "type": "string"
+          },
+          "score": {
+            "description": "Relevance score (higher = more relevant) for ranked search. `0.0` for plain catalog listings (when `query` is omitted).",
+            "format": "float",
+            "type": "number"
+          },
+          "text": {
+            "type": "string"
+          },
+          "user_id": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "CollectionEnvelope": {
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/Collection"
+          }
+        },
+        "type": "object"
+      },
+      "CollectionListEnvelope": {
+        "properties": {
+          "data": {
+            "items": {
+              "$ref": "#/components/schemas/Collection"
+            },
+            "type": "array"
+          },
+          "meta": {
+            "$ref": "#/components/schemas/ListMeta"
+          }
+        },
+        "type": "object"
+      },
+      "CollectionSearchMeta": {
+        "properties": {
+          "collection_slug": {
+            "example": "support-transcripts",
+            "type": "string"
+          },
+          "page_number": {
+            "example": 1,
+            "type": "integer"
+          },
+          "page_size": {
+            "example": 20,
+            "type": "integer"
+          },
+          "retrieval_type": {
+            "example": "vector",
+            "type": "string"
+          },
+          "searched_sources": {
+            "example": [
+              "voice",
+              "message"
+            ],
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "top_k": {
+            "example": 5,
+            "type": "integer"
+          },
+          "total_pages": {
+            "example": 3,
+            "type": "integer"
+          },
+          "total_results": {
+            "example": 42,
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "CollectionSearchResponse": {
+        "properties": {
+          "data": {
+            "items": {
+              "$ref": "#/components/schemas/CollectionDocumentRecord"
+            },
+            "type": "array"
+          },
+          "meta": {
+            "$ref": "#/components/schemas/CollectionSearchMeta"
+          }
+        },
+        "type": "object"
+      },
+      "CreateCollectionRequest": {
+        "properties": {
+          "description": {
+            "description": "Optional description.",
+            "example": "All customer support voice transcripts.",
+            "type": "string"
+          },
+          "name": {
+            "description": "Human-readable collection name.",
+            "example": "Support Transcripts",
+            "type": "string"
+          },
+          "settings": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/RetrievalSettingsWrapper"
+              }
+            ],
+            "description": "Optional retrieval settings."
+          },
+          "slug": {
+            "description": "Optional slug (unique per organization). Derived from `name` when omitted.",
+            "example": "support-transcripts",
+            "type": "string"
+          },
+          "sources": {
+            "description": "Optional sources to attach at creation time.",
+            "items": {
+              "$ref": "#/components/schemas/SourceRequest"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "name"
+        ],
+        "type": "object"
+      },
+      "Error": {
+        "example": {
+          "code": "20207",
+          "description": "The street address provided is invalid.",
+          "source": {
+            "pointer": "/street_address"
+          },
+          "title": "Invalid street address"
+        },
+        "properties": {
+          "code": {
+            "type": "string",
+            "x-format": "int64"
+          },
+          "description": {
+            "type": "string"
+          },
+          "detail": {
+            "description": "A human-readable explanation of the error.",
+            "type": "string"
+          },
+          "meta": {
+            "additionalProperties": true,
+            "type": "object"
+          },
+          "source": {
+            "properties": {
+              "parameter": {
+                "description": "Indicates which query parameter caused the error.",
+                "type": "string"
+              },
+              "pointer": {
+                "description": "JSON pointer (RFC6901) to the offending entity.",
+                "format": "json-pointer",
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
+          "title": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "title"
+        ],
+        "type": "object"
+      },
+      "Errors": {
+        "properties": {
+          "errors": {
+            "items": {
+              "$ref": "#/components/schemas/Error"
+            },
+            "type": "array"
+          }
+        },
+        "type": "object"
+      },
+      "ListMeta": {
+        "properties": {
+          "page_number": {
+            "example": 1,
+            "type": "integer"
+          },
+          "page_size": {
+            "example": 20,
+            "type": "integer"
+          },
+          "total_pages": {
+            "example": 3,
+            "type": "integer"
+          },
+          "total_results": {
+            "example": 42,
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "ReplaceSourcesRequest": {
+        "properties": {
+          "sources": {
+            "items": {
+              "$ref": "#/components/schemas/SourceRequest"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "sources"
+        ],
+        "type": "object"
+      },
+      "RetrievalSettings": {
+        "description": "How documents are retrieved when searching the collection.",
+        "properties": {
+          "retrieval_type": {
+            "default": "vector",
+            "description": "Retrieval strategy. `vector` runs semantic similarity search; `hybrid` combines vector similarity with keyword matching; `keyword` runs lexical (BM25) matching. `keyword` is not accepted yet: setting it returns 422 `unsupported_retrieval_type`. A collection set to `hybrid` is accepted here but cannot be searched until hybrid execution ships.",
+            "enum": [
+              "vector",
+              "hybrid"
+            ],
+            "example": "vector",
+            "type": "string"
+          },
+          "top_k": {
+            "default": 5,
+            "description": "Number of top results to retrieve (1–50).",
+            "example": 5,
+            "maximum": 50,
+            "minimum": 1,
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "RetrievalSettingsWrapper": {
+        "properties": {
+          "record_type": {
+            "description": "Identifies the record type. Always `ai_collection_settings`.",
+            "example": "ai_collection_settings",
+            "readOnly": true,
+            "type": "string"
+          },
+          "retrieval": {
+            "$ref": "#/components/schemas/RetrievalSettings"
+          }
+        },
+        "type": "object"
+      },
+      "SettingsEnvelope": {
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/RetrievalSettingsWrapper"
+          }
+        },
+        "type": "object"
+      },
+      "SettingsRequest": {
+        "properties": {
+          "retrieval": {
+            "$ref": "#/components/schemas/RetrievalSettings"
+          }
+        },
+        "type": "object"
+      },
+      "SourceEnvelope": {
+        "description": "Envelope containing a single collection source.",
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/collections_Source"
+          }
+        },
+        "type": "object"
+      },
+      "SourceListEnvelope": {
+        "properties": {
+          "data": {
+            "items": {
+              "$ref": "#/components/schemas/collections_Source"
+            },
+            "type": "array"
+          }
+        },
+        "type": "object"
+      },
+      "SourceReconcileEnvelope": {
+        "properties": {
+          "data": {
+            "items": {
+              "$ref": "#/components/schemas/collections_Source"
+            },
+            "type": "array"
+          },
+          "meta": {
+            "$ref": "#/components/schemas/SourceReconcileMeta"
+          }
+        },
+        "type": "object"
+      },
+      "SourceReconcileMeta": {
+        "description": "Reports which source IDs were added, retained, and removed by a replace operation.",
+        "properties": {
+          "added": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "removed": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "retained": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          }
+        },
+        "type": "object"
+      },
+      "SourceRequest": {
+        "allOf": [
+          {
+            "if": {
+              "properties": {
+                "source_type": {
+                  "const": "bucket"
+                }
+              },
+              "required": [
+                "source_type"
+              ]
+            },
+            "then": {
+              "properties": {
+                "bucket_id": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "bucket_id"
+              ]
+            }
+          }
+        ],
+        "properties": {
+          "bucket_id": {
+            "description": "The Telnyx Storage bucket name. Required when `source_type` is `bucket`; ignored otherwise.",
+            "example": "policy-docs",
+            "type": "string"
+          },
+          "source_type": {
+            "$ref": "#/components/schemas/SourceType"
+          }
+        },
+        "required": [
+          "source_type"
+        ],
+        "type": "object"
+      },
+      "SourceType": {
+        "description": "The type of Telnyx data attached as a source. `bucket` requires an additional `bucket_id`. Only `voice` is searchable today; `meeting_bot`, `message`, and `bucket` attach but are not yet searchable (Coming soon).",
+        "enum": [
+          "voice",
+          "meeting_bot",
+          "message",
+          "bucket"
+        ],
+        "example": "voice",
+        "type": "string"
+      },
+      "UpdateCollectionRequest": {
+        "description": "Metadata-only update. Provide either or both fields.",
+        "properties": {
+          "description": {
+            "example": "Updated description.",
+            "type": "string"
+          },
+          "name": {
+            "example": "Support Transcripts (2026)",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "collections_Source": {
+        "properties": {
+          "bucket_id": {
+            "description": "The Telnyx Storage bucket name. Present only for `bucket` sources.",
+            "example": "policy-docs",
+            "type": "string"
+          },
+          "collection_id": {
+            "example": "6a09ccbd-8f9b-4c3a-9b0e-2f1d3c4b5a6e",
+            "format": "uuid",
+            "type": "string"
+          },
+          "id": {
+            "example": "source_8vkvtcksnawvbnxq48yv2l06wx",
+            "type": "string"
+          },
+          "record_type": {
+            "description": "Identifies the record type. Always `ai_collection_source`.",
+            "example": "ai_collection_source",
+            "type": "string"
+          },
+          "source_type": {
+            "$ref": "#/components/schemas/SourceType"
+          },
+          "status": {
+            "example": "ready",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      }
+    },
+    "securitySchemes": {
+      "BearerAuth": {
+        "bearerFormat": "API key",
+        "description": "Telnyx API key supplied as `Authorization: Bearer \u003ctoken\u003e`. In production, auth may be validated by the API gateway and forwarded via Telnyx auth headers.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "Payment": {
+        "description": "Machine Payment Protocol credential used on paid retries, sent as `Authorization: Payment ...`. Obtained by paying a challenge returned in the `WWW-Authenticate` header of a 402 response. This is not a Telnyx API key; initial challenge requests use standard bearer authentication instead.",
+        "in": "header",
+        "name": "Authorization",
+        "type": "apiKey"
+      },
+      "agent-memory_bearerAuth": {
+        "description": "Telnyx API key",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "bearerAuth": {
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "branded-calling_bearerAuth": {
+        "description": "Telnyx API key. Generate one at https://portal.telnyx.com/#/app/api-keys.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "collections_bearerAuth": {
+        "description": "Telnyx API key. Collections and results are automatically scoped to the authenticated user's organization.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "number-reputation_bearerAuth": {
+        "description": "Telnyx API key. Generate one at https://portal.telnyx.com/#/app/api-keys.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "oauthClientAuth": {
+        "description": "OAuth 2.0 authentication for Telnyx API and MCP integrations",
+        "flows": {
+          "authorizationCode": {
+            "authorizationUrl": "https://api.telnyx.com/v2/oauth/authorize",
+            "refreshUrl": "https://api.telnyx.com/v2/oauth/token",
+            "scopes": {
+              "admin": "Administrative access to Telnyx resources"
+            },
+            "tokenUrl": "https://api.telnyx.com/v2/oauth/token"
+          },
+          "clientCredentials": {
+            "scopes": {
+              "admin": "Administrative access to Telnyx resources"
+            },
+            "tokenUrl": "https://api.telnyx.com/v2/oauth/token"
+          }
+        },
+        "type": "oauth2"
+      },
+      "outbound-voice-profiles_bearerAuth": {
+        "bearerFormat": "JWT",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "pay-connectors_bearerAuth": {
+        "description": "Telnyx API key, not the processor bearer token.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "pronunciation-dicts_bearerAuth": {
+        "description": "Telnyx API v2 key. Obtain from https://portal.telnyx.com",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "rcs-registration_bearerAuth": {
+        "bearerFormat": "API key",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "stored-payment-transactions_bearerAuth": {
+        "bearerFormat": "JWT",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "telnyxApiKey": {
+        "description": "Management-only Telnyx account credential.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "transcriptions-search_bearerAuth": {
+        "description": "Telnyx API key. Results are automatically scoped to the authenticated user's organization.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "web-search_bearerAuth": {
+        "description": "Telnyx API key",
+        "scheme": "bearer",
+        "type": "http"
+      }
+    }
+  },
+  "info": {
+    "contact": {
+      "email": "support@telnyx.com"
+    },
+    "description": "SIP trunking, SMS, MMS, Call Control and Telephony Data Services.",
+    "title": "Telnyx API",
+    "version": "2.0.0",
+    "x-endpoint-cost": "light",
+    "x-latency-category": "responsive"
+  },
+  "openapi": "3.1.0",
+  "paths": {
+    "/ai/collections": {
+      "get": {
+        "description": "Returns a paginated list of collections in your organization.",
+        "operationId": "ListCollections",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/PageNumber"
+          },
+          {
+            "$ref": "#/components/parameters/collections_PageSize"
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CollectionListEnvelope"
+                }
+              }
+            },
+            "description": "A paginated list of collections."
+          },
+          "401": {
+            "$ref": "#/components/responses/collections_Unauthorized"
+          }
+        },
+        "summary": "List collections",
+        "tags": [
+          "AI Collections"
+        ]
+      },
+      "post": {
+        "description": "Creates a new collection scoped to your organization. Optionally attach sources and retrieval settings at creation time. If `slug` is omitted, one is derived from `name` and must be unique within your organization.",
+        "operationId": "CreateCollection",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateCollectionRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CollectionEnvelope"
+                }
+              }
+            },
+            "description": "Collection created."
+          },
+          "400": {
+            "$ref": "#/components/responses/collections_BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/collections_Unauthorized"
+          },
+          "409": {
+            "$ref": "#/components/responses/Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "errors": [
+                    {
+                      "code": "invalid_source_configuration",
+                      "detail": "The bucket_id field is required when source_type is bucket.",
+                      "meta": {
+                        "pointer": "/sources/0/bucket_id"
+                      },
+                      "title": "Invalid source configuration"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/Errors"
+                }
+              }
+            },
+            "description": "Validation error -- a `bucket` source without a `bucket_id` (`invalid_source_configuration`), an unknown `source_type` (`invalid_source_type`), an unsupported `retrieval_type` (`unsupported_retrieval_type`), or `top_k` out of range 1-50 (`invalid_top_k`)."
+          }
+        },
+        "summary": "Create a collection",
+        "tags": [
+          "AI Collections"
+        ]
+      }
+    },
+    "/ai/collections/slug/{slug}": {
+      "get": {
+        "description": "Fetches a single collection by its `slug`.",
+        "operationId": "GetCollectionBySlug",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/Slug"
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CollectionEnvelope"
+                }
+              }
+            },
+            "description": "The collection."
+          },
+          "401": {
+            "$ref": "#/components/responses/collections_Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/collections_NotFound"
+          }
+        },
+        "summary": "Get a collection by slug",
+        "tags": [
+          "AI Collections"
+        ]
+      }
+    },
+    "/ai/collections/{uuid}": {
+      "delete": {
+        "description": "Soft-deletes a collection. Its `slug` is freed and may be reused by a new collection.",
+        "operationId": "DeleteCollection",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/Uuid"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Collection deleted."
+          },
+          "401": {
+            "$ref": "#/components/responses/collections_Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/collections_NotFound"
+          }
+        },
+        "summary": "Delete a collection",
+        "tags": [
+          "AI Collections"
+        ]
+      },
+      "get": {
+        "description": "Fetches a single collection by its `uuid`.",
+        "operationId": "GetCollection",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/Uuid"
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CollectionEnvelope"
+                }
+              }
+            },
+            "description": "The collection."
+          },
+          "401": {
+            "$ref": "#/components/responses/collections_Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/collections_NotFound"
+          }
+        },
+        "summary": "Get a collection",
+        "tags": [
+          "AI Collections"
+        ]
+      },
+      "patch": {
+        "description": "Updates a collection's metadata (`name` and/or `description`). Sources and settings are managed through their own sub-resources.",
+        "operationId": "UpdateCollection",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/Uuid"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateCollectionRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CollectionEnvelope"
+                }
+              }
+            },
+            "description": "The updated collection."
+          },
+          "400": {
+            "$ref": "#/components/responses/collections_BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/collections_Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/collections_NotFound"
+          }
+        },
+        "summary": "Update a collection",
+        "tags": [
+          "AI Collections"
+        ]
+      }
+    },
+    "/ai/collections/{uuid}/settings": {
+      "get": {
+        "description": "Returns the retrieval settings for a collection.",
+        "operationId": "GetCollectionSettings",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/Uuid"
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SettingsEnvelope"
+                }
+              }
+            },
+            "description": "The collection's retrieval settings."
+          },
+          "401": {
+            "$ref": "#/components/responses/collections_Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/collections_NotFound"
+          }
+        },
+        "summary": "Get collection settings",
+        "tags": [
+          "AI Collections"
+        ]
+      },
+      "patch": {
+        "description": "Partially updates the collection's retrieval settings.",
+        "operationId": "UpdateCollectionSettings",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/Uuid"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SettingsRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SettingsEnvelope"
+                }
+              }
+            },
+            "description": "The updated settings."
+          },
+          "400": {
+            "$ref": "#/components/responses/collections_BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/collections_Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/collections_NotFound"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "errors": [
+                    {
+                      "code": "unsupported_retrieval_type",
+                      "detail": "retrieval_type 'semantic' is not supported. Supported types: 'hybrid', 'vector'.",
+                      "meta": {
+                        "pointer": "/retrieval/retrieval_type"
+                      },
+                      "title": "Unsupported retrieval type"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/Errors"
+                }
+              }
+            },
+            "description": "Validation error -- unsupported `retrieval_type` (`unsupported_retrieval_type`) or `top_k` out of range 1-50 (`invalid_top_k`)."
+          }
+        },
+        "summary": "Update collection settings",
+        "tags": [
+          "AI Collections"
+        ]
+      },
+      "put": {
+        "description": "Replaces the collection's retrieval settings.",
+        "operationId": "ReplaceCollectionSettings",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/Uuid"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SettingsRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SettingsEnvelope"
+                }
+              }
+            },
+            "description": "The updated settings."
+          },
+          "400": {
+            "$ref": "#/components/responses/collections_BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/collections_Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/collections_NotFound"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "errors": [
+                    {
+                      "code": "unsupported_retrieval_type",
+                      "detail": "retrieval_type 'semantic' is not supported. Supported types: 'hybrid', 'vector'.",
+                      "meta": {
+                        "pointer": "/retrieval/retrieval_type"
+                      },
+                      "title": "Unsupported retrieval type"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/Errors"
+                }
+              }
+            },
+            "description": "Validation error -- unsupported `retrieval_type` (`unsupported_retrieval_type`) or `top_k` out of range 1-50 (`invalid_top_k`)."
+          }
+        },
+        "summary": "Replace collection settings",
+        "tags": [
+          "AI Collections"
+        ]
+      }
+    },
+    "/ai/collections/{uuid}/sources": {
+      "get": {
+        "description": "Returns the sources attached to a collection.",
+        "operationId": "ListCollectionSources",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/Uuid"
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SourceListEnvelope"
+                }
+              }
+            },
+            "description": "The collection's sources."
+          },
+          "401": {
+            "$ref": "#/components/responses/collections_Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/collections_NotFound"
+          }
+        },
+        "summary": "List collection sources",
+        "tags": [
+          "AI Collections"
+        ]
+      },
+      "post": {
+        "description": "Attaches a new content source to the specified collection and returns the created source. The source's content is ingested and embedded so it becomes searchable within the collection.",
+        "operationId": "AddCollectionSource",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/Uuid"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SourceRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SourceEnvelope"
+                }
+              }
+            },
+            "description": "The created source."
+          },
+          "400": {
+            "$ref": "#/components/responses/collections_BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/collections_Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/collections_NotFound"
+          },
+          "409": {
+            "$ref": "#/components/responses/Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "errors": [
+                    {
+                      "code": "invalid_source_configuration",
+                      "detail": "The bucket_id field is required when source_type is bucket.",
+                      "meta": {
+                        "pointer": "/bucket_id"
+                      },
+                      "title": "Invalid source configuration"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/Errors"
+                }
+              }
+            },
+            "description": "Invalid source configuration -- `bucket` without a `bucket_id` (`invalid_source_configuration`) or an unknown `source_type` (`invalid_source_type`)."
+          }
+        },
+        "summary": "Add a collection source",
+        "tags": [
+          "AI Collections"
+        ]
+      },
+      "put": {
+        "description": "Replaces the collection's entire source set. The response `meta` reports which sources were added, retained, and removed.",
+        "operationId": "ReplaceCollectionSources",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/Uuid"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReplaceSourcesRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SourceReconcileEnvelope"
+                }
+              }
+            },
+            "description": "The reconciled source list."
+          },
+          "400": {
+            "$ref": "#/components/responses/collections_BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/collections_Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/collections_NotFound"
+          },
+          "409": {
+            "$ref": "#/components/responses/Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "errors": [
+                    {
+                      "code": "invalid_source_configuration",
+                      "detail": "The bucket_id field is required when source_type is bucket.",
+                      "meta": {
+                        "pointer": "/bucket_id"
+                      },
+                      "title": "Invalid source configuration"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/Errors"
+                }
+              }
+            },
+            "description": "Invalid source configuration -- `bucket` without a `bucket_id` (`invalid_source_configuration`) or an unknown `source_type` (`invalid_source_type`)."
+          }
+        },
+        "summary": "Replace collection sources",
+        "tags": [
+          "AI Collections"
+        ]
+      }
+    },
+    "/ai/collections/{uuid}/sources/{sourceId}": {
+      "delete": {
+        "description": "Removes a single source from a collection.",
+        "operationId": "RemoveCollectionSource",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/Uuid"
+          },
+          {
+            "$ref": "#/components/parameters/SourceId"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Source removed."
+          },
+          "401": {
+            "$ref": "#/components/responses/collections_Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/collections_NotFound"
+          }
+        },
+        "summary": "Remove a collection source",
+        "tags": [
+          "AI Collections"
+        ]
+      }
+    },
+    "/ai/knowledge/collections/{slug}/documents": {
+      "get": {
+        "description": "Runs search over the documents in a collection, ranked by relevance to `query`. Searches currently run `vector` retrieval (semantic similarity). The collection's `retrieval_type` setting is the forward-compatible selector: `hybrid` (vector similarity fused with keyword matching) can be set but cannot be searched yet, and `keyword` (lexical BM25 matching) is not accepted yet -- setting it returns 422 `unsupported_retrieval_type`. A per-request `retrieval_type` is accepted but ignored; `meta.retrieval_type` echoes the mode that actually ran. When `query` is omitted, returns a plain catalog listing of the collection's documents.\n\n**How it works:**\n1. The `query` text is embedded into a 1024-dimensional vector using the multilingual-e5-large model.\n2. The embedding is compared against the collection's indexed document chunks using semantic similarity. When `hybrid` and `keyword` execution ship, those scores will be fused with, or replaced by, lexical BM25 matching.\n3. Results are ranked by `score` (descending) and paginated via `page[number]` / `page[size]`.\n\n**Authentication:** Requires a Telnyx API key via `Authorization: Bearer \u003ckey\u003e`. Results are automatically scoped to your organization and cannot be overridden.\n\n**Filtering:** Use `filter[field][operator]=value` query parameters to narrow results before search. Supported operators: `eq` (default), `in`, `gte`, `gt`, `lte`, `lt`, `contains`. Metadata fields resolve to `metadata.\u003cfield\u003e`.\n\n**Examples:**\n- `GET /v2/ai/knowledge/collections/my-collection/documents?query=billing+issue\u0026top_k=10`\n- `GET /v2/ai/knowledge/collections/my-collection/documents?query=refund\u0026sources=voice,message`\n- `GET /v2/ai/knowledge/collections/my-collection/documents?query=outage\u0026filter[record_created_at][gte]=2026-01-01T00:00:00Z`",
+        "operationId": "SearchCollectionDocuments",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/Slug"
+          },
+          {
+            "description": "Natural-language search query. When provided, the text is matched against the collection's document chunks using the collection's `retrieval_type` (vector or hybrid). When omitted, documents are returned as a plain catalog listing.",
+            "in": "query",
+            "name": "query",
+            "required": false,
+            "schema": {
+              "example": "customer called about billing issue",
+              "minLength": 1,
+              "type": "string"
+            }
+          },
+          {
+            "description": "Maximum number of ranked results to consider. When omitted, the collection's configured `top_k` setting is used.",
+            "in": "query",
+            "name": "top_k",
+            "required": false,
+            "schema": {
+              "example": 10,
+              "maximum": 50,
+              "minimum": 1,
+              "type": "integer"
+            }
+          },
+          {
+            "description": "Comma-separated list of source types to restrict the search to. When omitted, all of the collection's sources are searched.",
+            "in": "query",
+            "name": "sources",
+            "required": false,
+            "schema": {
+              "example": "voice,message",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Reserved; not yet functional. A value supplied here is accepted but ignored — it does not override the collection's configured strategy, and it is not echoed back. Searches run `vector` retrieval, and `meta.retrieval_type` reports the mode that actually ran. To change retrieval strategy, set it on the collection's settings subresource.",
+            "in": "query",
+            "name": "retrieval_type",
+            "required": false,
+            "schema": {
+              "enum": [
+                "vector",
+                "hybrid",
+                "keyword"
+              ],
+              "example": "vector",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Field filters applied before ranking, using `filter[field][operator]=value`. Supported operators: `eq` (default), `in`, `gte`, `gt`, `lte`, `lt`, `contains`. Known fields: `record_type`, `record_id`, `user_id`, `record_created_at`, `ingested_at`; any other name resolves to a `metadata.\u003cfield\u003e` filter. Example: `filter[record_id][eq]=rec_123`.",
+            "explode": true,
+            "in": "query",
+            "name": "filter",
+            "required": false,
+            "schema": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "style": "deepObject"
+          },
+          {
+            "$ref": "#/components/parameters/PageNumber"
+          },
+          {
+            "$ref": "#/components/parameters/collections_PageSize"
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CollectionSearchResponse"
+                }
+              }
+            },
+            "description": "Ranked (or listed) collection documents."
+          },
+          "400": {
+            "$ref": "#/components/responses/collections_BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/collections_Unauthorized"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "errors": [
+                    {
+                      "code": "10005",
+                      "detail": "The requested resource or URL could not be found.",
+                      "meta": {
+                        "url": "https://developers.telnyx.com/docs/overview/errors/10005"
+                      },
+                      "title": "Resource not found"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/Errors"
+                }
+              }
+            },
+            "description": "The collection does not exist or is not searchable."
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "errors": [
+                    {
+                      "code": "10027",
+                      "detail": "The server understood the syntax of the request but was unable to process the instructions.",
+                      "meta": {
+                        "url": "https://developers.telnyx.com/docs/overview/errors/10027"
+                      },
+                      "title": "Unprocessable Entity"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/Errors"
+                }
+              }
+            },
+            "description": "The collection has no searchable sources."
+          }
+        },
+        "summary": "Search collection documents",
+        "tags": [
+          "AI Collections"
+        ]
+      }
+    }
+  },
+  "security": [
+    {
+      "bearerAuth": []
+    }
+  ],
+  "servers": [
+    {
+      "description": "Version 2.0.0 of the Telnyx API",
+      "url": "https://api.telnyx.com/v2"
+    }
+  ]
+}

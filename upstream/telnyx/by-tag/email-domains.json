@@ -1,0 +1,1556 @@
+{
+  "components": {
+    "parameters": {
+      "DomainsPageSize": {
+        "description": "Number of records per page",
+        "in": "query",
+        "name": "page[size]",
+        "required": false,
+        "schema": {
+          "default": 25,
+          "maximum": 100,
+          "minimum": 1,
+          "type": "integer"
+        }
+      },
+      "EmailDomainDomainId": {
+        "description": "Email domain UUID",
+        "in": "path",
+        "name": "domain_id",
+        "required": true,
+        "schema": {
+          "format": "uuid",
+          "type": "string"
+        }
+      },
+      "EmailDomainId": {
+        "description": "Email domain UUID",
+        "in": "path",
+        "name": "id",
+        "required": true,
+        "schema": {
+          "format": "uuid",
+          "type": "string"
+        }
+      },
+      "PageAfter": {
+        "description": "Cursor for records after the provided value (cursor pagination)",
+        "in": "query",
+        "name": "page[after]",
+        "required": false,
+        "schema": {
+          "type": "string"
+        }
+      },
+      "PageBefore": {
+        "description": "Cursor for records before the provided value (cursor pagination)",
+        "in": "query",
+        "name": "page[before]",
+        "required": false,
+        "schema": {
+          "type": "string"
+        }
+      },
+      "email_PageNumber": {
+        "description": "Page number to return (offset pagination)",
+        "in": "query",
+        "name": "page[number]",
+        "required": false,
+        "schema": {
+          "default": 1,
+          "minimum": 1,
+          "type": "integer"
+        }
+      }
+    },
+    "responses": {
+      "InternalServerError": {
+        "content": {
+          "application/json": {
+            "example": {
+              "errors": [
+                {
+                  "code": "500",
+                  "detail": "An unexpected error occurred",
+                  "title": "Internal Server Error"
+                }
+              ]
+            },
+            "schema": {
+              "$ref": "#/components/schemas/DomainsErrorResponse"
+            }
+          }
+        },
+        "description": "Internal server error"
+      },
+      "ValidationFailed": {
+        "content": {
+          "application/json": {
+            "example": {
+              "errors": [
+                {
+                  "code": "10015",
+                  "detail": "domain is invalid",
+                  "source": {
+                    "pointer": "/data/attributes/domain"
+                  },
+                  "title": "Validation Failed"
+                }
+              ]
+            },
+            "schema": {
+              "$ref": "#/components/schemas/DomainsErrorResponse"
+            }
+          }
+        },
+        "description": "Validation failed"
+      },
+      "email_NotFound": {
+        "content": {
+          "application/json": {
+            "example": {
+              "errors": [
+                {
+                  "code": "10001",
+                  "detail": "The requested email domain was not found",
+                  "title": "Not Found"
+                }
+              ]
+            },
+            "schema": {
+              "$ref": "#/components/schemas/DomainsErrorResponse"
+            }
+          }
+        },
+        "description": "Resource not found"
+      }
+    },
+    "schemas": {
+      "CreateEmailDomainRequest": {
+        "properties": {
+          "dmarc_policy": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/EmailDMARCPolicy"
+              }
+            ],
+            "description": "DMARC policy. Omit/null for the advisory default (v=DMARC1; p=none; rua=mailto:dmarc@telnyx.com).\n",
+            "nullable": true,
+            "type": "object"
+          },
+          "domain": {
+            "example": "example.com",
+            "type": "string"
+          },
+          "inbound_enabled": {
+            "default": false,
+            "description": "Enable inbound routing for this domain",
+            "type": "boolean"
+          },
+          "tracking": {
+            "$ref": "#/components/schemas/DomainsTrackingSettings"
+          }
+        },
+        "required": [
+          "domain"
+        ],
+        "type": "object"
+      },
+      "DKIMStatus": {
+        "properties": {
+          "active": {
+            "type": "boolean"
+          },
+          "algorithm": {
+            "enum": [
+              "rsa-sha256",
+              null
+            ],
+            "nullable": true,
+            "type": "string"
+          },
+          "key_length": {
+            "enum": [
+              2048,
+              null
+            ],
+            "nullable": true,
+            "type": "integer"
+          },
+          "rotated_at": {
+            "format": "date-time",
+            "nullable": true,
+            "type": "string"
+          },
+          "selector": {
+            "nullable": true,
+            "type": "string"
+          }
+        },
+        "required": [
+          "selector",
+          "algorithm",
+          "key_length",
+          "active",
+          "rotated_at"
+        ],
+        "type": "object"
+      },
+      "DNSRecord": {
+        "example": {
+          "actual_value": null,
+          "host": "_telnyx-email.example.com",
+          "id": "123e4567-e89b-12d3-a456-426614174001",
+          "priority": null,
+          "purpose": "ownership",
+          "record_type": "TXT",
+          "required": true,
+          "status": "pending",
+          "value": "telnyx-domain-verification=abc123"
+        },
+        "properties": {
+          "actual_value": {
+            "nullable": true,
+            "type": "string"
+          },
+          "host": {
+            "type": "string"
+          },
+          "id": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "priority": {
+            "nullable": true,
+            "type": "integer"
+          },
+          "purpose": {
+            "enum": [
+              "ownership",
+              "spf",
+              "dkim",
+              "dmarc",
+              "mx"
+            ],
+            "type": "string"
+          },
+          "record_type": {
+            "enum": [
+              "TXT",
+              "MX"
+            ],
+            "type": "string"
+          },
+          "required": {
+            "type": "boolean"
+          },
+          "status": {
+            "enum": [
+              "pending",
+              "verified",
+              "failed",
+              "not_required"
+            ],
+            "type": "string"
+          },
+          "value": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "purpose",
+          "record_type",
+          "host",
+          "value",
+          "required",
+          "status"
+        ],
+        "type": "object"
+      },
+      "DomainsErrorResponse": {
+        "properties": {
+          "errors": {
+            "items": {
+              "$ref": "#/components/schemas/email_Error"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "errors"
+        ],
+        "type": "object"
+      },
+      "DomainsTrackingSettings": {
+        "properties": {
+          "click_tracking": {
+            "default": false,
+            "description": "Rewrite HTML links through a tracking redirect to record click events.",
+            "type": "boolean"
+          },
+          "open_tracking": {
+            "default": false,
+            "description": "Inject a tracking pixel into HTML messages to record open events.",
+            "type": "boolean"
+          },
+          "unsubscribe_tracking": {
+            "default": true,
+            "description": "Add RFC 8058 List-Unsubscribe headers with a signed one-click unsubscribe URL. Enabled by default; Gmail/Yahoo bulk-sender rules require one-click unsubscribe support.",
+            "type": "boolean"
+          }
+        },
+        "type": "object"
+      },
+      "EmailDMARCPolicy": {
+        "description": "DMARC policy for a sending domain. Drives the recommended _dmarc.\u003cdomain\u003e TXT record. DMARC is advisory and never blocks sending. When omitted or null, the domain uses the advisory default (v=DMARC1; p=none; rua=mailto:dmarc@telnyx.com).",
+        "properties": {
+          "p": {
+            "default": "none",
+            "description": "Policy applied to messages that fail alignment.",
+            "enum": [
+              "none",
+              "quarantine",
+              "reject"
+            ],
+            "type": "string"
+          },
+          "pct": {
+            "default": 100,
+            "description": "Percentage of messages the policy applies to. Omitted from the record when 100.",
+            "maximum": 100,
+            "minimum": 0,
+            "type": "integer"
+          },
+          "rua": {
+            "description": "URI for aggregate reports. Defaults to the Telnyx address when absent; null omits it.",
+            "nullable": true,
+            "type": "string"
+          },
+          "sp": {
+            "description": "Policy for subdomains. Omitted from the record when null.",
+            "enum": [
+              "none",
+              "quarantine",
+              "reject"
+            ],
+            "nullable": true,
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "EmailDomain": {
+        "example": {
+          "created_at": "2026-01-01T00:00:00Z",
+          "dkim": {
+            "active": false,
+            "algorithm": null,
+            "key_length": null,
+            "rotated_at": null,
+            "selector": null
+          },
+          "dmarc_policy": {
+            "p": "none",
+            "pct": 100,
+            "rua": "mailto:dmarc@telnyx.com"
+          },
+          "dns_records": [],
+          "domain": "example.com",
+          "id": "123e4567-e89b-12d3-a456-426614174000",
+          "inbound": {
+            "catch_all": false,
+            "enabled": false,
+            "mx_required": false
+          },
+          "record_type": "email_domain",
+          "status": "pending",
+          "tracking": {
+            "click_tracking": false,
+            "open_tracking": false,
+            "unsubscribe_tracking": false
+          },
+          "type": "custom",
+          "updated_at": "2026-01-01T00:00:00Z",
+          "usable_for_inbound": false,
+          "usable_for_sending": false,
+          "verification": {
+            "dkim": "pending",
+            "dmarc": "missing_optional",
+            "mx": "not_required",
+            "ownership": "pending",
+            "spf": "missing_optional"
+          },
+          "verified_at": null
+        },
+        "properties": {
+          "created_at": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "dkim": {
+            "$ref": "#/components/schemas/DKIMStatus"
+          },
+          "dmarc_policy": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/EmailDMARCPolicy"
+              }
+            ],
+            "description": "Customer DMARC policy. null means use the advisory default (v=DMARC1; p=none; rua=mailto:dmarc@telnyx.com).\n",
+            "nullable": true,
+            "type": "object"
+          },
+          "dns_records": {
+            "items": {
+              "$ref": "#/components/schemas/DNSRecord"
+            },
+            "type": "array"
+          },
+          "domain": {
+            "example": "example.com",
+            "type": "string"
+          },
+          "id": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "inbound": {
+            "$ref": "#/components/schemas/InboundConfig"
+          },
+          "record_type": {
+            "enum": [
+              "email_domain"
+            ],
+            "type": "string"
+          },
+          "reputation": {
+            "description": "Sender reputation for this domain (present on all domain responses).",
+            "properties": {
+              "band": {
+                "description": "Reputation band, e.g. good/warn/poor.",
+                "type": "string"
+              },
+              "breakdown": {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              "computed_at": {
+                "format": "date-time",
+                "nullable": true,
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
+          "status": {
+            "$ref": "#/components/schemas/EmailDomainStatus"
+          },
+          "tracking": {
+            "$ref": "#/components/schemas/DomainsTrackingSettings"
+          },
+          "type": {
+            "$ref": "#/components/schemas/EmailDomainType",
+            "description": "Domain type. `custom` domains are account-owned (BYOD). `shared` domains are Telnyx-managed, visible to and usable by ALL accounts for sending, but read-only: only the owning (system) account may modify, verify, or delete them; other accounts receive 403 (code 10008)."
+          },
+          "updated_at": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "usable_for_inbound": {
+            "type": "boolean"
+          },
+          "usable_for_sending": {
+            "type": "boolean"
+          },
+          "verification": {
+            "$ref": "#/components/schemas/EmailDomainVerification"
+          },
+          "verified_at": {
+            "format": "date-time",
+            "nullable": true,
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "record_type",
+          "domain",
+          "type",
+          "status",
+          "usable_for_sending",
+          "usable_for_inbound",
+          "verification",
+          "dns_records",
+          "dkim",
+          "inbound",
+          "dmarc_policy",
+          "tracking",
+          "created_at",
+          "updated_at"
+        ],
+        "type": "object"
+      },
+      "EmailDomainDKIMRotation": {
+        "description": "Result of rotating a domain's DKIM key. The new key is active and signing switches to it immediately; the previous key is retired to a `retiring` state (retained, not revoked) so it can be revoked after the DNS propagation grace period. Selectors are fixed, so the DKIM DNS record's TXT value is replaced in place at the shared `\u003cselector\u003e._domainkey.\u003cdomain\u003e` host — `old_selector_retained` is false and the returned dns_records carry the new value the customer must publish promptly.\n",
+        "example": {
+          "dkim": {
+            "activated_at": "2026-09-11T12:00:00Z",
+            "algorithm": "rsa-sha256",
+            "id": "123e4567-e89b-12d3-a456-42661417400a",
+            "key_length": 2048,
+            "selector": "telnyx1",
+            "status": "active",
+            "version": 2
+          },
+          "dns_records": [
+            {
+              "actual_value": null,
+              "host": "telnyx1._domainkey.example.com",
+              "id": "123e4567-e89b-12d3-a456-42661417400b",
+              "priority": null,
+              "purpose": "dkim",
+              "record_type": "TXT",
+              "required": true,
+              "status": "pending",
+              "value": "v=DKIM1; k=rsa; p=MIIBIjANBgkqh..."
+            }
+          ],
+          "domain": "example.com",
+          "domain_id": "123e4567-e89b-12d3-a456-426614174002",
+          "old_selector_retained": false,
+          "previous_dkim_key": {
+            "id": "123e4567-e89b-12d3-a456-426614174009",
+            "selector": "telnyx1",
+            "status": "retiring",
+            "version": 1
+          },
+          "record_type": "email_domain_dkim_rotation"
+        },
+        "properties": {
+          "dkim": {
+            "description": "The new active DKIM key.",
+            "properties": {
+              "activated_at": {
+                "format": "date-time",
+                "nullable": true,
+                "type": "string"
+              },
+              "algorithm": {
+                "enum": [
+                  "rsa-sha256"
+                ],
+                "type": "string"
+              },
+              "id": {
+                "format": "uuid",
+                "type": "string"
+              },
+              "key_length": {
+                "enum": [
+                  2048
+                ],
+                "type": "integer"
+              },
+              "selector": {
+                "type": "string"
+              },
+              "status": {
+                "enum": [
+                  "active"
+                ],
+                "type": "string"
+              },
+              "version": {
+                "description": "Monotonically increasing per-domain key version.",
+                "minimum": 1,
+                "type": "integer"
+              }
+            },
+            "required": [
+              "id",
+              "selector",
+              "algorithm",
+              "key_length",
+              "version",
+              "status"
+            ],
+            "type": "object"
+          },
+          "dns_records": {
+            "description": "The DKIM DNS records the customer must publish, carrying the new key's TXT value with verification reset to pending.\n",
+            "items": {
+              "$ref": "#/components/schemas/DNSRecord"
+            },
+            "type": "array"
+          },
+          "domain": {
+            "type": "string"
+          },
+          "domain_id": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "old_selector_retained": {
+            "description": "False for this service: one selector is fixed per domain, so rotation replaces the TXT value at the existing _domainkey host. There is no dual-selector overlap; publish the replacement TXT promptly because signing switches immediately.",
+            "type": "boolean"
+          },
+          "previous_dkim_key": {
+            "description": "The retired previous key, or null when the domain had no active key before rotation. Retained in a `retiring` state so it can be revoked after the DNS propagation grace period.\n",
+            "nullable": true,
+            "properties": {
+              "id": {
+                "format": "uuid",
+                "type": "string"
+              },
+              "selector": {
+                "type": "string"
+              },
+              "status": {
+                "enum": [
+                  "retiring",
+                  "revoked"
+                ],
+                "type": "string"
+              },
+              "version": {
+                "type": "integer"
+              }
+            },
+            "required": [
+              "id",
+              "selector",
+              "version",
+              "status"
+            ],
+            "type": "object"
+          },
+          "record_type": {
+            "enum": [
+              "email_domain_dkim_rotation"
+            ],
+            "type": "string"
+          }
+        },
+        "required": [
+          "record_type",
+          "domain_id",
+          "domain",
+          "dkim",
+          "previous_dkim_key",
+          "old_selector_retained",
+          "dns_records"
+        ],
+        "type": "object"
+      },
+      "EmailDomainDKIMRotationResponse": {
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/EmailDomainDKIMRotation"
+          }
+        },
+        "required": [
+          "data"
+        ],
+        "type": "object"
+      },
+      "EmailDomainHealth": {
+        "properties": {
+          "checked_at": {
+            "description": "Timestamp of the last health check",
+            "format": "date-time",
+            "type": "string"
+          },
+          "id": {
+            "description": "Unique identifier for the email domain",
+            "format": "uuid",
+            "type": "string"
+          },
+          "record_type": {
+            "description": "Record type discriminator",
+            "enum": [
+              "email_domain_health"
+            ],
+            "type": "string"
+          },
+          "status": {
+            "description": "Current domain status",
+            "enum": [
+              "pending",
+              "verifying",
+              "verified",
+              "failed",
+              "degraded",
+              "suspended"
+            ],
+            "type": "string"
+          },
+          "usable_for_inbound": {
+            "description": "Whether the domain is usable for receiving inbound email",
+            "type": "boolean"
+          },
+          "usable_for_sending": {
+            "description": "Whether the domain is usable for sending email",
+            "type": "boolean"
+          },
+          "verification": {
+            "$ref": "#/components/schemas/EmailDomainVerification"
+          }
+        },
+        "required": [
+          "id",
+          "record_type",
+          "status",
+          "usable_for_sending",
+          "usable_for_inbound",
+          "verification",
+          "checked_at"
+        ],
+        "type": "object"
+      },
+      "EmailDomainHealthResponse": {
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/EmailDomainHealth"
+          }
+        },
+        "required": [
+          "data"
+        ],
+        "type": "object"
+      },
+      "EmailDomainListResponse": {
+        "properties": {
+          "data": {
+            "items": {
+              "$ref": "#/components/schemas/EmailDomain"
+            },
+            "type": "array"
+          },
+          "meta": {
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/OffsetPaginationMeta"
+              },
+              {
+                "$ref": "#/components/schemas/email_CursorPaginationMeta"
+              }
+            ]
+          }
+        },
+        "required": [
+          "data",
+          "meta"
+        ],
+        "type": "object"
+      },
+      "EmailDomainResponse": {
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/EmailDomain"
+          }
+        },
+        "required": [
+          "data"
+        ],
+        "type": "object"
+      },
+      "EmailDomainStatus": {
+        "enum": [
+          "pending",
+          "verifying",
+          "verified",
+          "failed",
+          "degraded",
+          "suspended"
+        ],
+        "type": "string"
+      },
+      "EmailDomainType": {
+        "enum": [
+          "custom",
+          "shared",
+          "shared_inbound"
+        ],
+        "type": "string"
+      },
+      "EmailDomainVerification": {
+        "properties": {
+          "dkim": {
+            "enum": [
+              "pending",
+              "verified",
+              "failed"
+            ],
+            "type": "string"
+          },
+          "dmarc": {
+            "enum": [
+              "missing_optional",
+              "verified",
+              "failed"
+            ],
+            "type": "string"
+          },
+          "mx": {
+            "enum": [
+              "not_required",
+              "pending",
+              "verified",
+              "failed"
+            ],
+            "type": "string"
+          },
+          "ownership": {
+            "enum": [
+              "pending",
+              "verified",
+              "not_required"
+            ],
+            "type": "string"
+          },
+          "spf": {
+            "enum": [
+              "missing_optional",
+              "verified",
+              "failed",
+              "not_required"
+            ],
+            "type": "string"
+          }
+        },
+        "required": [
+          "ownership",
+          "spf",
+          "dkim",
+          "dmarc",
+          "mx"
+        ],
+        "type": "object"
+      },
+      "InboundConfig": {
+        "properties": {
+          "catch_all": {
+            "type": "boolean"
+          },
+          "enabled": {
+            "type": "boolean"
+          },
+          "mx_required": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "enabled",
+          "catch_all",
+          "mx_required"
+        ],
+        "type": "object"
+      },
+      "OffsetPaginationMeta": {
+        "properties": {
+          "page_number": {
+            "minimum": 1,
+            "type": "integer"
+          },
+          "page_size": {
+            "minimum": 1,
+            "type": "integer"
+          },
+          "total_pages": {
+            "minimum": 0,
+            "type": "integer"
+          },
+          "total_results": {
+            "minimum": 0,
+            "type": "integer"
+          }
+        },
+        "required": [
+          "page_number",
+          "page_size",
+          "total_pages",
+          "total_results"
+        ],
+        "type": "object"
+      },
+      "UpdateEmailDomainRequest": {
+        "properties": {
+          "dmarc_policy": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/EmailDMARCPolicy"
+              }
+            ],
+            "description": "Update the DMARC policy. The recommended _dmarc TXT record is rebuilt and its verification reset to pending.\n",
+            "nullable": true,
+            "type": "object"
+          },
+          "inbound_enabled": {
+            "description": "Enable or disable inbound routing for this domain",
+            "type": "boolean"
+          },
+          "tracking": {
+            "$ref": "#/components/schemas/DomainsTrackingSettings"
+          }
+        },
+        "type": "object"
+      },
+      "email_CursorPaginationMeta": {
+        "properties": {
+          "has_next": {
+            "type": "boolean"
+          },
+          "has_previous": {
+            "type": "boolean"
+          },
+          "next_cursor": {
+            "description": "Opaque cursor to fetch the next page",
+            "nullable": true,
+            "type": "string"
+          },
+          "page_size": {
+            "minimum": 1,
+            "type": "integer"
+          },
+          "previous_cursor": {
+            "description": "Opaque cursor to fetch the previous page",
+            "nullable": true,
+            "type": "string"
+          }
+        },
+        "required": [
+          "page_size",
+          "has_next",
+          "has_previous"
+        ],
+        "type": "object"
+      },
+      "email_Error": {
+        "properties": {
+          "code": {
+            "enum": [
+              "10001",
+              "10015",
+              "500",
+              "10007",
+              "10008",
+              "10020",
+              "40901"
+            ],
+            "type": "string"
+          },
+          "detail": {
+            "type": "string"
+          },
+          "source": {
+            "properties": {
+              "pointer": {
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
+          "title": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "title",
+          "detail"
+        ],
+        "type": "object"
+      }
+    },
+    "securitySchemes": {
+      "BearerAuth": {
+        "bearerFormat": "API key",
+        "description": "Telnyx API key supplied as `Authorization: Bearer \u003ctoken\u003e`. In production, auth may be validated by the API gateway and forwarded via Telnyx auth headers.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "Payment": {
+        "description": "Machine Payment Protocol credential used on paid retries, sent as `Authorization: Payment ...`. Obtained by paying a challenge returned in the `WWW-Authenticate` header of a 402 response. This is not a Telnyx API key; initial challenge requests use standard bearer authentication instead.",
+        "in": "header",
+        "name": "Authorization",
+        "type": "apiKey"
+      },
+      "agent-memory_bearerAuth": {
+        "description": "Telnyx API key",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "bearerAuth": {
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "branded-calling_bearerAuth": {
+        "description": "Telnyx API key. Generate one at https://portal.telnyx.com/#/app/api-keys.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "collections_bearerAuth": {
+        "description": "Telnyx API key. Collections and results are automatically scoped to the authenticated user's organization.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "number-reputation_bearerAuth": {
+        "description": "Telnyx API key. Generate one at https://portal.telnyx.com/#/app/api-keys.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "oauthClientAuth": {
+        "description": "OAuth 2.0 authentication for Telnyx API and MCP integrations",
+        "flows": {
+          "authorizationCode": {
+            "authorizationUrl": "https://api.telnyx.com/v2/oauth/authorize",
+            "refreshUrl": "https://api.telnyx.com/v2/oauth/token",
+            "scopes": {
+              "admin": "Administrative access to Telnyx resources"
+            },
+            "tokenUrl": "https://api.telnyx.com/v2/oauth/token"
+          },
+          "clientCredentials": {
+            "scopes": {
+              "admin": "Administrative access to Telnyx resources"
+            },
+            "tokenUrl": "https://api.telnyx.com/v2/oauth/token"
+          }
+        },
+        "type": "oauth2"
+      },
+      "outbound-voice-profiles_bearerAuth": {
+        "bearerFormat": "JWT",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "pay-connectors_bearerAuth": {
+        "description": "Telnyx API key, not the processor bearer token.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "pronunciation-dicts_bearerAuth": {
+        "description": "Telnyx API v2 key. Obtain from https://portal.telnyx.com",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "rcs-registration_bearerAuth": {
+        "bearerFormat": "API key",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "stored-payment-transactions_bearerAuth": {
+        "bearerFormat": "JWT",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "telnyxApiKey": {
+        "description": "Management-only Telnyx account credential.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "transcriptions-search_bearerAuth": {
+        "description": "Telnyx API key. Results are automatically scoped to the authenticated user's organization.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "web-search_bearerAuth": {
+        "description": "Telnyx API key",
+        "scheme": "bearer",
+        "type": "http"
+      }
+    }
+  },
+  "info": {
+    "contact": {
+      "email": "support@telnyx.com"
+    },
+    "description": "SIP trunking, SMS, MMS, Call Control and Telephony Data Services.",
+    "title": "Telnyx API",
+    "version": "2.0.0",
+    "x-endpoint-cost": "light",
+    "x-latency-category": "responsive"
+  },
+  "openapi": "3.1.0",
+  "paths": {
+    "/email_domains": {
+      "get": {
+        "description": "Shared (`type: shared`) Telnyx-managed domains are included/readable for every account, in addition to the account's own custom domains.",
+        "operationId": "listEmailDomains",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/email_PageNumber"
+          },
+          {
+            "$ref": "#/components/parameters/DomainsPageSize"
+          },
+          {
+            "$ref": "#/components/parameters/PageAfter"
+          },
+          {
+            "$ref": "#/components/parameters/PageBefore"
+          },
+          {
+            "description": "Field to sort by. Prefix with `-` for descending order.",
+            "in": "query",
+            "name": "sort",
+            "required": false,
+            "schema": {
+              "enum": [
+                "created_at",
+                "-created_at",
+                "domain",
+                "-domain",
+                "updated_at",
+                "-updated_at"
+              ],
+              "type": "string"
+            }
+          },
+          {
+            "description": "Filter domains by verification status: pending, verifying, verified, failed, degraded, or suspended.",
+            "in": "query",
+            "name": "filter[status]",
+            "required": false,
+            "schema": {
+              "$ref": "#/components/schemas/EmailDomainStatus"
+            }
+          },
+          {
+            "description": "Partial match on domain name (case-insensitive)",
+            "example": "example.com",
+            "in": "query",
+            "name": "filter[domain]",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Filter by profile UUID",
+            "in": "query",
+            "name": "filter[profile_id]",
+            "required": false,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Filter domains by type: custom, shared, or shared_inbound.",
+            "in": "query",
+            "name": "filter[type]",
+            "required": false,
+            "schema": {
+              "$ref": "#/components/schemas/EmailDomainType"
+            }
+          },
+          {
+            "description": "Filter domains by whether they can currently be used to send email.",
+            "in": "query",
+            "name": "filter[usable_for_sending]",
+            "required": false,
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "description": "Filter domains by whether they can currently receive inbound email.",
+            "in": "query",
+            "name": "filter[usable_for_inbound]",
+            "required": false,
+            "schema": {
+              "type": "boolean"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EmailDomainListResponse"
+                }
+              }
+            },
+            "description": "A paginated list of email domains"
+          },
+          "400": {
+            "$ref": "#/components/responses/ValidationFailed"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        },
+        "summary": "List email domains",
+        "tags": [
+          "Email Domains"
+        ]
+      },
+      "post": {
+        "description": "Registers a domain for email sending and optional inbound delivery. The response includes the domain configuration and current verification state.",
+        "operationId": "createEmailDomain",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "example": {
+                "domain": "example.com",
+                "inbound_enabled": true,
+                "tracking": {
+                  "click_tracking": true,
+                  "open_tracking": true,
+                  "unsubscribe_tracking": false
+                }
+              },
+              "schema": {
+                "$ref": "#/components/schemas/CreateEmailDomainRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EmailDomainResponse"
+                }
+              }
+            },
+            "description": "Email domain created"
+          },
+          "422": {
+            "$ref": "#/components/responses/ValidationFailed"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        },
+        "summary": "Create an email domain",
+        "tags": [
+          "Email Domains"
+        ]
+      }
+    },
+    "/email_domains/{domain_id}/rotate_dkim": {
+      "post": {
+        "description": "Generates a new DKIM key for the domain, activates it, and retires the previous key. The response includes the updated DKIM DNS records the customer must publish. Selectors are fixed, so rotation replaces the TXT value at the existing `\u003cselector\u003e._domainkey.\u003cdomain\u003e` host rather than adding a second record — `old_selector_retained` is false and the new TXT value must be published promptly, since signing switches to the new key immediately and the old TXT value will no longer match. The previous key is retired to a `retiring` state (retained, not revoked) so it can be revoked after the DNS propagation grace period.\n",
+        "operationId": "rotateEmailDomainDKIMKey",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/EmailDomainDomainId"
+          }
+        ],
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "data": {
+                    "dkim": {
+                      "activated_at": "2026-09-11T12:00:00Z",
+                      "algorithm": "rsa-sha256",
+                      "id": "123e4567-e89b-12d3-a456-42661417400a",
+                      "key_length": 2048,
+                      "selector": "telnyx1",
+                      "status": "active",
+                      "version": 2
+                    },
+                    "dns_records": [
+                      {
+                        "actual_value": null,
+                        "host": "telnyx1._domainkey.example.com",
+                        "id": "123e4567-e89b-12d3-a456-42661417400b",
+                        "priority": null,
+                        "purpose": "dkim",
+                        "record_type": "TXT",
+                        "required": true,
+                        "status": "pending",
+                        "value": "v=DKIM1; k=rsa; p=MIIBIjANBgkqh..."
+                      }
+                    ],
+                    "domain": "example.com",
+                    "domain_id": "123e4567-e89b-12d3-a456-426614174002",
+                    "old_selector_retained": false,
+                    "previous_dkim_key": {
+                      "id": "123e4567-e89b-12d3-a456-426614174009",
+                      "selector": "telnyx1",
+                      "status": "retiring",
+                      "version": 1
+                    },
+                    "record_type": "email_domain_dkim_rotation"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/EmailDomainDKIMRotationResponse"
+                }
+              }
+            },
+            "description": "DKIM key rotated"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "errors": [
+                    {
+                      "code": "10008",
+                      "detail": "Shared email domains are managed by Telnyx and cannot have their DKIM keys rotated by this account",
+                      "title": "Forbidden"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/DomainsErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden — shared email domains are managed by Telnyx and cannot have their DKIM keys rotated by this account.\n"
+          },
+          "404": {
+            "$ref": "#/components/responses/email_NotFound"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "errors": [
+                    {
+                      "code": "40901",
+                      "detail": "DKIM rotation conflicted with a concurrent operation on this domain. Safe to retry.",
+                      "title": "Conflict"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/DomainsErrorResponse"
+                }
+              }
+            },
+            "description": "DKIM rotation conflicted with a concurrent operation on this domain. Safe to retry."
+          },
+          "422": {
+            "$ref": "#/components/responses/ValidationFailed"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        },
+        "summary": "Rotate the DKIM key for an email domain",
+        "tags": [
+          "Email Domains"
+        ]
+      }
+    },
+    "/email_domains/{id}": {
+      "delete": {
+        "description": "Deletes an email domain configuration. Verified domains require `force=true`, and shared domains are read-only for non-owner accounts.",
+        "operationId": "deleteEmailDomain",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/EmailDomainId"
+          },
+          {
+            "description": "Required as true when deleting verified domains",
+            "in": "query",
+            "name": "force",
+            "required": false,
+            "schema": {
+              "default": false,
+              "type": "boolean"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EmailDomainResponse"
+                }
+              }
+            },
+            "description": "Email domain deleted"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DomainsErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden — shared domains are read-only for non-owner accounts (error code 10008)."
+          },
+          "404": {
+            "$ref": "#/components/responses/email_NotFound"
+          },
+          "422": {
+            "$ref": "#/components/responses/ValidationFailed"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        },
+        "summary": "Delete an email domain",
+        "tags": [
+          "Email Domains"
+        ]
+      },
+      "get": {
+        "description": "Shared (`type: shared`) Telnyx-managed domains are included/readable for every account, in addition to the account's own custom domains.",
+        "operationId": "getEmailDomain",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/EmailDomainId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EmailDomainResponse"
+                }
+              }
+            },
+            "description": "Email domain details"
+          },
+          "404": {
+            "$ref": "#/components/responses/email_NotFound"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        },
+        "summary": "Retrieve an email domain",
+        "tags": [
+          "Email Domains"
+        ]
+      },
+      "patch": {
+        "description": "Updates mutable settings for an existing email domain, including inbound delivery and tracking configuration. Shared domains are read-only for non-owner accounts.",
+        "operationId": "updateEmailDomain",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/EmailDomainId"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "example": {
+                "inbound_enabled": true,
+                "tracking": {
+                  "open_tracking": false
+                }
+              },
+              "schema": {
+                "$ref": "#/components/schemas/UpdateEmailDomainRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EmailDomainResponse"
+                }
+              }
+            },
+            "description": "Email domain updated"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DomainsErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden — shared domains are read-only for non-owner accounts (error code 10008)."
+          },
+          "404": {
+            "$ref": "#/components/responses/email_NotFound"
+          },
+          "422": {
+            "$ref": "#/components/responses/ValidationFailed"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        },
+        "summary": "Update an email domain",
+        "tags": [
+          "Email Domains"
+        ]
+      }
+    },
+    "/email_domains/{id}/health": {
+      "get": {
+        "description": "Returns a summary of domain health including verification status and usability.",
+        "operationId": "getEmailDomainHealth",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/EmailDomainId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "data": {
+                    "checked_at": "2026-05-31T12:00:00Z",
+                    "id": "6a09cdc3-8948-47f0-aa62-74ac943d6c58",
+                    "record_type": "email_domain_health",
+                    "status": "verified",
+                    "usable_for_inbound": false,
+                    "usable_for_sending": true,
+                    "verification": {
+                      "dkim": "verified",
+                      "dmarc": "missing_optional",
+                      "mx": "not_required",
+                      "ownership": "verified",
+                      "spf": "verified"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/EmailDomainHealthResponse"
+                }
+              }
+            },
+            "description": "Domain health summary"
+          },
+          "404": {
+            "$ref": "#/components/responses/email_NotFound"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        },
+        "summary": "Get domain health summary",
+        "tags": [
+          "Email Domains"
+        ]
+      }
+    }
+  },
+  "security": [
+    {
+      "bearerAuth": []
+    }
+  ],
+  "servers": [
+    {
+      "description": "Version 2.0.0 of the Telnyx API",
+      "url": "https://api.telnyx.com/v2"
+    }
+  ]
+}

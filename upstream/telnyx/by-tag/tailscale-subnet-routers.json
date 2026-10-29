@@ -1,0 +1,1003 @@
+{
+  "components": {
+    "parameters": {
+      "PageConsolidated": {
+        "description": "Consolidated page parameter (deepObject style). Originally: page[number], page[size]",
+        "explode": true,
+        "in": "query",
+        "name": "page",
+        "schema": {
+          "properties": {
+            "number": {
+              "default": 1,
+              "description": "The page number to load",
+              "minimum": 1,
+              "type": "integer"
+            },
+            "size": {
+              "default": 20,
+              "description": "The size of the page",
+              "maximum": 250,
+              "minimum": 1,
+              "type": "integer"
+            }
+          },
+          "type": "object"
+        },
+        "style": "deepObject"
+      },
+      "ResourceId": {
+        "description": "Identifies the resource.",
+        "in": "path",
+        "name": "id",
+        "required": true,
+        "schema": {
+          "example": "6a09cdc3-8948-47f0-aa62-74ac943d6c58",
+          "format": "uuid",
+          "type": "string"
+        }
+      }
+    },
+    "responses": {
+      "GenericErrorResponse": {
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Errors"
+            }
+          }
+        },
+        "description": "Unexpected error"
+      },
+      "netapps_UnprocessableEntity_17904fcfbc": {
+        "content": {
+          "application/json": {
+            "example": {
+              "errors": [
+                {
+                  "code": "10027",
+                  "detail": "The server understood the syntax of the request but was unable to process the instructions.",
+                  "title": "Unprocessable Entity"
+                }
+              ]
+            },
+            "schema": {
+              "$ref": "#/components/schemas/Errors"
+            }
+          }
+        },
+        "description": "Unprocessable entity. Check the 'detail' field in response for details."
+      }
+    },
+    "schemas": {
+      "Error": {
+        "example": {
+          "code": "20207",
+          "description": "The street address provided is invalid.",
+          "source": {
+            "pointer": "/street_address"
+          },
+          "title": "Invalid street address"
+        },
+        "properties": {
+          "code": {
+            "type": "string",
+            "x-format": "int64"
+          },
+          "description": {
+            "type": "string"
+          },
+          "detail": {
+            "description": "A human-readable explanation of the error.",
+            "type": "string"
+          },
+          "meta": {
+            "additionalProperties": true,
+            "type": "object"
+          },
+          "source": {
+            "properties": {
+              "parameter": {
+                "description": "Indicates which query parameter caused the error.",
+                "type": "string"
+              },
+              "pointer": {
+                "description": "JSON pointer (RFC6901) to the offending entity.",
+                "format": "json-pointer",
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
+          "title": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "title"
+        ],
+        "type": "object"
+      },
+      "Errors": {
+        "properties": {
+          "errors": {
+            "items": {
+              "$ref": "#/components/schemas/Error"
+            },
+            "type": "array"
+          }
+        },
+        "type": "object"
+      },
+      "PaginationMeta": {
+        "properties": {
+          "page_number": {
+            "example": 2,
+            "type": "integer"
+          },
+          "page_size": {
+            "example": 25,
+            "type": "integer"
+          },
+          "total_pages": {
+            "example": 3,
+            "type": "integer"
+          },
+          "total_results": {
+            "example": 55,
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "TailscaleSubnetRouter": {
+        "properties": {
+          "advertised_routes": {
+            "description": "IPv4 subnets of the Network that the router advertises to the tailnet. Each entry is a canonical CIDR that the Network routes. Default, loopback, link-local, multicast, and Tailscale (`100.64.0.0/10`) ranges are rejected. So are ranges that overlap the router's own, `172.27.254.0/24` and `198.18.0.0/20`.",
+            "example": [
+              "172.27.0.0/24"
+            ],
+            "items": {
+              "example": "172.27.0.0/24",
+              "type": "string"
+            },
+            "maxItems": 64,
+            "minItems": 1,
+            "type": "array",
+            "uniqueItems": true
+          },
+          "created_at": {
+            "description": "ISO 8601 formatted date-time indicating when the resource was created.",
+            "example": "2026-10-13T15:04:05.123456Z",
+            "format": "date-time",
+            "readOnly": true,
+            "type": "string"
+          },
+          "customer_address": {
+            "description": "The router's address on the Network, from `172.27.254.0/24`. Tailnet traffic enters the Network from this address.",
+            "example": "172.27.254.1",
+            "readOnly": true,
+            "type": "string"
+          },
+          "device_id": {
+            "description": "The router's node id on the tailnet. Set once the router has enrolled.",
+            "example": "n5c6f0a7e1CNTRL",
+            "readOnly": true,
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "id": {
+            "description": "Identifies the resource.",
+            "example": "5c6f0a7e-6c7b-4d7f-9f2e-3b1e4e9a8c21",
+            "format": "uuid",
+            "readOnly": true,
+            "type": "string"
+          },
+          "name": {
+            "description": "A user specified name for the router.",
+            "example": "tailnet-ashburn",
+            "maxLength": 128,
+            "minLength": 1,
+            "type": "string"
+          },
+          "network_id": {
+            "description": "The id of the Network the router is attached to.",
+            "example": "0de011ae-ee53-4df4-ba96-754728eb5aad",
+            "format": "uuid",
+            "type": "string"
+          },
+          "record_type": {
+            "description": "Identifies the type of the resource.",
+            "example": "tailscale_subnet_router",
+            "readOnly": true,
+            "type": "string"
+          },
+          "region_code": {
+            "description": "The code of the region the router is created in. `GET /network_coverage` lists the regions whose `available_services` include `tailscale_subnet_router`.",
+            "example": "ashburn-va",
+            "type": "string"
+          },
+          "status": {
+            "description": "`provisioning`: Telnyx is creating the router or applying a change. `provisioned`: the router is on the tailnet and advertises its routes; the tailnet still approves them. `failed`: enrollment did not complete, and `PATCH` retries it. `deleting`: the router is being removed.",
+            "enum": [
+              "provisioning",
+              "provisioned",
+              "failed",
+              "deleting"
+            ],
+            "example": "provisioned",
+            "readOnly": true,
+            "type": "string"
+          },
+          "tailnet_name": {
+            "description": "The name of the tailnet the router is enrolled in. Set once the router has enrolled.",
+            "example": "acme.example",
+            "readOnly": true,
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "tailscale_ips": {
+            "description": "The router's addresses on the tailnet. Empty until the router has enrolled.",
+            "example": [
+              "100.101.2.30",
+              "fd7a:115c:a1e0::2a"
+            ],
+            "items": {
+              "type": "string"
+            },
+            "readOnly": true,
+            "type": "array"
+          },
+          "updated_at": {
+            "description": "ISO 8601 formatted date-time indicating when the resource was updated.",
+            "example": "2026-10-13T15:09:41.654321Z",
+            "format": "date-time",
+            "readOnly": true,
+            "type": "string"
+          }
+        },
+        "title": "TailscaleSubnetRouter",
+        "type": "object"
+      },
+      "TailscaleSubnetRouterCreate": {
+        "additionalProperties": false,
+        "properties": {
+          "advertised_routes": {
+            "description": "IPv4 subnets of the Network that the router advertises to the tailnet. Each entry is a canonical CIDR that the Network routes. Default, loopback, link-local, multicast, and Tailscale (`100.64.0.0/10`) ranges are rejected. So are ranges that overlap the router's own, `172.27.254.0/24` and `198.18.0.0/20`.",
+            "example": [
+              "172.27.0.0/24"
+            ],
+            "items": {
+              "example": "172.27.0.0/24",
+              "type": "string"
+            },
+            "maxItems": 64,
+            "minItems": 1,
+            "type": "array",
+            "uniqueItems": true
+          },
+          "auth_key": {
+            "description": "A Tailscale auth key that enrolls the router in the user's tailnet: reusable, pre-approved, tagged, and not ephemeral. Telnyx stores it encrypted until enrollment succeeds, then discards it. It is never returned.",
+            "example": "tskey-auth-k1AbCdEfGh2IjKlMnOpQrStUv",
+            "format": "password",
+            "pattern": "^tskey-auth-[A-Za-z0-9_-]{10,250}$",
+            "type": "string",
+            "writeOnly": true
+          },
+          "name": {
+            "description": "A user specified name for the router.",
+            "example": "tailnet-ashburn",
+            "maxLength": 128,
+            "minLength": 1,
+            "type": "string"
+          },
+          "network_id": {
+            "description": "The id of the Network to attach the router to.",
+            "example": "0de011ae-ee53-4df4-ba96-754728eb5aad",
+            "format": "uuid",
+            "type": "string"
+          },
+          "region_code": {
+            "description": "The code of the region to create the router in. `GET /network_coverage` lists the regions whose `available_services` include `tailscale_subnet_router`.",
+            "example": "ashburn-va",
+            "type": "string"
+          }
+        },
+        "required": [
+          "name",
+          "network_id",
+          "region_code",
+          "advertised_routes",
+          "auth_key"
+        ],
+        "title": "TailscaleSubnetRouterCreate",
+        "type": "object"
+      },
+      "TailscaleSubnetRouterUpdate": {
+        "additionalProperties": false,
+        "description": "Every field is optional. A change queues a new provisioning run and returns the router with `status` `provisioning`. An empty object retries a `failed` router.",
+        "properties": {
+          "advertised_routes": {
+            "description": "IPv4 subnets of the Network that the router advertises to the tailnet. Each entry is a canonical CIDR that the Network routes. Default, loopback, link-local, multicast, and Tailscale (`100.64.0.0/10`) ranges are rejected. So are ranges that overlap the router's own, `172.27.254.0/24` and `198.18.0.0/20`.",
+            "example": [
+              "172.27.0.0/24"
+            ],
+            "items": {
+              "example": "172.27.0.0/24",
+              "type": "string"
+            },
+            "maxItems": 64,
+            "minItems": 1,
+            "type": "array",
+            "uniqueItems": true
+          },
+          "auth_key": {
+            "description": "A replacement Tailscale auth key. Accepted only while the router has never enrolled, for example after a `failed` enrollment. Never returned.",
+            "example": "tskey-auth-k1AbCdEfGh2IjKlMnOpQrStUv",
+            "format": "password",
+            "pattern": "^tskey-auth-[A-Za-z0-9_-]{10,250}$",
+            "type": "string",
+            "writeOnly": true
+          },
+          "name": {
+            "description": "A user specified name for the router.",
+            "example": "tailnet-ashburn",
+            "maxLength": 128,
+            "minLength": 1,
+            "type": "string"
+          }
+        },
+        "title": "TailscaleSubnetRouterUpdate",
+        "type": "object"
+      }
+    },
+    "securitySchemes": {
+      "BearerAuth": {
+        "bearerFormat": "API key",
+        "description": "Telnyx API key supplied as `Authorization: Bearer \u003ctoken\u003e`. In production, auth may be validated by the API gateway and forwarded via Telnyx auth headers.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "Payment": {
+        "description": "Machine Payment Protocol credential used on paid retries, sent as `Authorization: Payment ...`. Obtained by paying a challenge returned in the `WWW-Authenticate` header of a 402 response. This is not a Telnyx API key; initial challenge requests use standard bearer authentication instead.",
+        "in": "header",
+        "name": "Authorization",
+        "type": "apiKey"
+      },
+      "agent-memory_bearerAuth": {
+        "description": "Telnyx API key",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "bearerAuth": {
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "branded-calling_bearerAuth": {
+        "description": "Telnyx API key. Generate one at https://portal.telnyx.com/#/app/api-keys.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "collections_bearerAuth": {
+        "description": "Telnyx API key. Collections and results are automatically scoped to the authenticated user's organization.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "number-reputation_bearerAuth": {
+        "description": "Telnyx API key. Generate one at https://portal.telnyx.com/#/app/api-keys.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "oauthClientAuth": {
+        "description": "OAuth 2.0 authentication for Telnyx API and MCP integrations",
+        "flows": {
+          "authorizationCode": {
+            "authorizationUrl": "https://api.telnyx.com/v2/oauth/authorize",
+            "refreshUrl": "https://api.telnyx.com/v2/oauth/token",
+            "scopes": {
+              "admin": "Administrative access to Telnyx resources"
+            },
+            "tokenUrl": "https://api.telnyx.com/v2/oauth/token"
+          },
+          "clientCredentials": {
+            "scopes": {
+              "admin": "Administrative access to Telnyx resources"
+            },
+            "tokenUrl": "https://api.telnyx.com/v2/oauth/token"
+          }
+        },
+        "type": "oauth2"
+      },
+      "outbound-voice-profiles_bearerAuth": {
+        "bearerFormat": "JWT",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "pay-connectors_bearerAuth": {
+        "description": "Telnyx API key, not the processor bearer token.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "pronunciation-dicts_bearerAuth": {
+        "description": "Telnyx API v2 key. Obtain from https://portal.telnyx.com",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "rcs-registration_bearerAuth": {
+        "bearerFormat": "API key",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "stored-payment-transactions_bearerAuth": {
+        "bearerFormat": "JWT",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "telnyxApiKey": {
+        "description": "Management-only Telnyx account credential.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "transcriptions-search_bearerAuth": {
+        "description": "Telnyx API key. Results are automatically scoped to the authenticated user's organization.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "web-search_bearerAuth": {
+        "description": "Telnyx API key",
+        "scheme": "bearer",
+        "type": "http"
+      }
+    }
+  },
+  "info": {
+    "contact": {
+      "email": "support@telnyx.com"
+    },
+    "description": "SIP trunking, SMS, MMS, Call Control and Telephony Data Services.",
+    "title": "Telnyx API",
+    "version": "2.0.0",
+    "x-endpoint-cost": "light",
+    "x-latency-category": "responsive"
+  },
+  "openapi": "3.1.0",
+  "paths": {
+    "/tailscale_subnet_routers": {
+      "get": {
+        "description": "Returns a paginated list of the Tailscale Subnet Routers on the account, with support for filtering by Network.",
+        "operationId": "ListTailscaleSubnetRouters",
+        "parameters": [
+          {
+            "description": "Consolidated filter parameter (deepObject style). Originally: filter[network_id]",
+            "explode": true,
+            "in": "query",
+            "name": "filter",
+            "schema": {
+              "properties": {
+                "network_id": {
+                  "description": "The id of the Network to filter on.",
+                  "example": "0de011ae-ee53-4df4-ba96-754728eb5aad",
+                  "type": "string"
+                }
+              },
+              "type": "object"
+            },
+            "style": "deepObject"
+          },
+          {
+            "$ref": "#/components/parameters/PageConsolidated"
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "data": [
+                    {
+                      "advertised_routes": [
+                        "172.27.0.0/24"
+                      ],
+                      "created_at": "2026-10-13T15:04:05.123456Z",
+                      "customer_address": "172.27.254.1",
+                      "device_id": "n5c6f0a7e1CNTRL",
+                      "id": "5c6f0a7e-6c7b-4d7f-9f2e-3b1e4e9a8c21",
+                      "name": "tailnet-ashburn",
+                      "network_id": "0de011ae-ee53-4df4-ba96-754728eb5aad",
+                      "record_type": "tailscale_subnet_router",
+                      "region_code": "ashburn-va",
+                      "status": "provisioned",
+                      "tailnet_name": "acme.example",
+                      "tailscale_ips": [
+                        "100.101.2.30",
+                        "fd7a:115c:a1e0::2a"
+                      ],
+                      "updated_at": "2026-10-13T15:09:41.654321Z"
+                    }
+                  ],
+                  "meta": {
+                    "page_number": 1,
+                    "page_size": 25,
+                    "total_pages": 1,
+                    "total_results": 1
+                  }
+                },
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "items": {
+                        "$ref": "#/components/schemas/TailscaleSubnetRouter"
+                      },
+                      "type": "array"
+                    },
+                    "meta": {
+                      "$ref": "#/components/schemas/PaginationMeta"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful response"
+          },
+          "422": {
+            "$ref": "#/components/responses/netapps_UnprocessableEntity_17904fcfbc"
+          },
+          "default": {
+            "$ref": "#/components/responses/GenericErrorResponse"
+          }
+        },
+        "summary": "List all Tailscale Subnet Routers",
+        "tags": [
+          "Tailscale Subnet Routers"
+        ]
+      },
+      "post": {
+        "description": "Creates a Tailscale Subnet Router on a Network and enrolls it in the user's tailnet with the auth key. The response returns the router with `status` `provisioning`. Poll `GET /tailscale_subnet_routers/{id}` until it is `provisioned`. Then approve its routes in the tailnet, unless an auto-approver covers them.",
+        "operationId": "CreateTailscaleSubnetRouter",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "example": {
+                "advertised_routes": [
+                  "172.27.0.0/24"
+                ],
+                "auth_key": "tskey-auth-k1AbCdEfGh2IjKlMnOpQrStUv",
+                "name": "tailnet-ashburn",
+                "network_id": "0de011ae-ee53-4df4-ba96-754728eb5aad",
+                "region_code": "ashburn-va"
+              },
+              "schema": {
+                "$ref": "#/components/schemas/TailscaleSubnetRouterCreate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "data": {
+                    "advertised_routes": [
+                      "172.27.0.0/24"
+                    ],
+                    "created_at": "2026-10-13T15:04:05.123456Z",
+                    "customer_address": "172.27.254.1",
+                    "device_id": null,
+                    "id": "5c6f0a7e-6c7b-4d7f-9f2e-3b1e4e9a8c21",
+                    "name": "tailnet-ashburn",
+                    "network_id": "0de011ae-ee53-4df4-ba96-754728eb5aad",
+                    "record_type": "tailscale_subnet_router",
+                    "region_code": "ashburn-va",
+                    "status": "provisioning",
+                    "tailnet_name": null,
+                    "tailscale_ips": [],
+                    "updated_at": "2026-10-13T15:04:05.123456Z"
+                  }
+                },
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/TailscaleSubnetRouter"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful response. The router is created and provisioning has started."
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "errors": [
+                    {
+                      "code": "10015",
+                      "detail": "Routes must exclude default, local, and Tailscale ranges.",
+                      "meta": {
+                        "url": "https://developers.telnyx.com/docs/overview/errors/10015"
+                      },
+                      "title": "Bad Request"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/Errors"
+                }
+              }
+            },
+            "description": "Bad request: the body failed validation. `detail` says what failed, for example `Routes must exclude default, local, and Tailscale ranges.` or `The request contains unknown or read-only fields.`; a missing parameter or an unknown `network_id` or `region_code` names the field in `source.pointer`."
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "errors": [
+                    {
+                      "code": "10027",
+                      "detail": "The server understood the syntax of the request but was unable to process the instructions.",
+                      "title": "Unprocessable Entity"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/Errors"
+                }
+              }
+            },
+            "description": "Unprocessable entity: an advertised route overlaps the addresses reserved for routers, `172.27.254.0/24` and `198.18.0.0/20`. The body is the generic error; it does not name the route."
+          },
+          "default": {
+            "$ref": "#/components/responses/GenericErrorResponse"
+          }
+        },
+        "summary": "Create a Tailscale Subnet Router",
+        "tags": [
+          "Tailscale Subnet Routers"
+        ]
+      }
+    },
+    "/tailscale_subnet_routers/{id}": {
+      "delete": {
+        "description": "Removes the router from the Network and logs it out of the tailnet. The response returns the router with `status` `deleting`. The record disappears once removal completes. A machine entry can remain in the tailnet's admin console until it is removed there.",
+        "operationId": "DeleteTailscaleSubnetRouter",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/ResourceId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "data": {
+                    "advertised_routes": [
+                      "172.27.0.0/24"
+                    ],
+                    "created_at": "2026-10-13T15:04:05.123456Z",
+                    "customer_address": "172.27.254.1",
+                    "device_id": "n5c6f0a7e1CNTRL",
+                    "id": "5c6f0a7e-6c7b-4d7f-9f2e-3b1e4e9a8c21",
+                    "name": "tailnet-ashburn",
+                    "network_id": "0de011ae-ee53-4df4-ba96-754728eb5aad",
+                    "record_type": "tailscale_subnet_router",
+                    "region_code": "ashburn-va",
+                    "status": "deleting",
+                    "tailnet_name": "acme.example",
+                    "tailscale_ips": [
+                      "100.101.2.30",
+                      "fd7a:115c:a1e0::2a"
+                    ],
+                    "updated_at": "2026-10-14T10:30:12.000000Z"
+                  }
+                },
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/TailscaleSubnetRouter"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful response. Removal has started."
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "errors": [
+                    {
+                      "code": "10005",
+                      "detail": "The requested resource or URL could not be found.",
+                      "meta": {
+                        "url": "https://developers.telnyx.com/docs/overview/errors/10005"
+                      },
+                      "title": "Resource not found"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/Errors"
+                }
+              }
+            },
+            "description": "Resource not found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Errors"
+                }
+              }
+            },
+            "description": "Conflict. The router is `provisioning` or `deleting`, or another operation holds it. Wait for the current operation to finish."
+          },
+          "default": {
+            "$ref": "#/components/responses/GenericErrorResponse"
+          }
+        },
+        "summary": "Delete a Tailscale Subnet Router",
+        "tags": [
+          "Tailscale Subnet Routers"
+        ]
+      },
+      "get": {
+        "description": "Returns the details of a single Tailscale Subnet Router by its identifier, including its enrollment state.",
+        "operationId": "GetTailscaleSubnetRouter",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/ResourceId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "data": {
+                    "advertised_routes": [
+                      "172.27.0.0/24"
+                    ],
+                    "created_at": "2026-10-13T15:04:05.123456Z",
+                    "customer_address": "172.27.254.1",
+                    "device_id": "n5c6f0a7e1CNTRL",
+                    "id": "5c6f0a7e-6c7b-4d7f-9f2e-3b1e4e9a8c21",
+                    "name": "tailnet-ashburn",
+                    "network_id": "0de011ae-ee53-4df4-ba96-754728eb5aad",
+                    "record_type": "tailscale_subnet_router",
+                    "region_code": "ashburn-va",
+                    "status": "provisioned",
+                    "tailnet_name": "acme.example",
+                    "tailscale_ips": [
+                      "100.101.2.30",
+                      "fd7a:115c:a1e0::2a"
+                    ],
+                    "updated_at": "2026-10-13T15:09:41.654321Z"
+                  }
+                },
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/TailscaleSubnetRouter"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful response"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "errors": [
+                    {
+                      "code": "10005",
+                      "detail": "The requested resource or URL could not be found.",
+                      "meta": {
+                        "url": "https://developers.telnyx.com/docs/overview/errors/10005"
+                      },
+                      "title": "Resource not found"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/Errors"
+                }
+              }
+            },
+            "description": "Resource not found"
+          },
+          "default": {
+            "$ref": "#/components/responses/GenericErrorResponse"
+          }
+        },
+        "summary": "Retrieve a Tailscale Subnet Router",
+        "tags": [
+          "Tailscale Subnet Routers"
+        ]
+      },
+      "patch": {
+        "description": "Renames the router, changes its advertised routes, or retries a failed enrollment. Any change queues a new provisioning run and returns the router with `status` `provisioning`. The router keeps its machine identity on the tailnet. Send an empty object to retry a `failed` router with its stored auth key. Include a new `auth_key` only while the router has never enrolled. The router's Network and region cannot change: create a new router instead.",
+        "operationId": "UpdateTailscaleSubnetRouter",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/ResourceId"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "example": {
+                "advertised_routes": [
+                  "172.27.0.0/24",
+                  "172.27.1.0/24"
+                ]
+              },
+              "schema": {
+                "$ref": "#/components/schemas/TailscaleSubnetRouterUpdate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "data": {
+                    "advertised_routes": [
+                      "172.27.0.0/24",
+                      "172.27.1.0/24"
+                    ],
+                    "created_at": "2026-10-13T15:04:05.123456Z",
+                    "customer_address": "172.27.254.1",
+                    "device_id": "n5c6f0a7e1CNTRL",
+                    "id": "5c6f0a7e-6c7b-4d7f-9f2e-3b1e4e9a8c21",
+                    "name": "tailnet-ashburn",
+                    "network_id": "0de011ae-ee53-4df4-ba96-754728eb5aad",
+                    "record_type": "tailscale_subnet_router",
+                    "region_code": "ashburn-va",
+                    "status": "provisioning",
+                    "tailnet_name": "acme.example",
+                    "tailscale_ips": [
+                      "100.101.2.30",
+                      "fd7a:115c:a1e0::2a"
+                    ],
+                    "updated_at": "2026-10-14T09:12:00.000000Z"
+                  }
+                },
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/TailscaleSubnetRouter"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful response. The change is queued and provisioning has started."
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "errors": [
+                    {
+                      "code": "10015",
+                      "detail": "Routes must exclude default, local, and Tailscale ranges.",
+                      "meta": {
+                        "url": "https://developers.telnyx.com/docs/overview/errors/10015"
+                      },
+                      "title": "Bad Request"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/Errors"
+                }
+              }
+            },
+            "description": "Bad request: the body failed validation. `detail` says what failed, for example `Routes must exclude default, local, and Tailscale ranges.` or `The request contains unknown or read-only fields.`; a missing parameter or an unknown `network_id` or `region_code` names the field in `source.pointer`."
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "errors": [
+                    {
+                      "code": "10005",
+                      "detail": "The requested resource or URL could not be found.",
+                      "meta": {
+                        "url": "https://developers.telnyx.com/docs/overview/errors/10005"
+                      },
+                      "title": "Resource not found"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/Errors"
+                }
+              }
+            },
+            "description": "Resource not found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "errors": [
+                    {
+                      "code": "10015",
+                      "detail": "The request failed because it was not well-formed.",
+                      "meta": {
+                        "url": "https://developers.telnyx.com/docs/overview/errors/10015"
+                      },
+                      "title": "Bad Request"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/Errors"
+                }
+              }
+            },
+            "description": "Conflict: the router is `provisioning` or `deleting`, or another operation holds it. Wait for the current operation to finish. The body carries the generic bad-request error."
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "errors": [
+                    {
+                      "code": "10027",
+                      "detail": "The server understood the syntax of the request but was unable to process the instructions.",
+                      "title": "Unprocessable Entity"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/Errors"
+                }
+              }
+            },
+            "description": "Unprocessable entity: an advertised route overlaps the reserved ranges, the body carries an unknown or read-only field such as `network_id`, or `auth_key` is sent for a router that has already enrolled. The body is the generic error."
+          },
+          "default": {
+            "$ref": "#/components/responses/GenericErrorResponse"
+          }
+        },
+        "summary": "Update a Tailscale Subnet Router",
+        "tags": [
+          "Tailscale Subnet Routers"
+        ]
+      }
+    }
+  },
+  "security": [
+    {
+      "bearerAuth": []
+    }
+  ],
+  "servers": [
+    {
+      "description": "Version 2.0.0 of the Telnyx API",
+      "url": "https://api.telnyx.com/v2"
+    }
+  ]
+}

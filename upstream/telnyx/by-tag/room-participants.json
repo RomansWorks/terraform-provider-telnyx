@@ -1,0 +1,484 @@
+{
+  "components": {
+    "parameters": {
+      "video_PageConsolidated": {
+        "description": "Consolidated page parameter (deepObject style). Originally: page[size], page[number]",
+        "explode": true,
+        "in": "query",
+        "name": "page",
+        "schema": {
+          "properties": {
+            "number": {
+              "default": 1,
+              "description": "The page number to load.",
+              "minimum": 1,
+              "type": "integer"
+            },
+            "size": {
+              "default": 20,
+              "description": "The size of the page.",
+              "maximum": 250,
+              "minimum": 1,
+              "type": "integer"
+            }
+          },
+          "type": "object"
+        },
+        "style": "deepObject"
+      }
+    },
+    "responses": {
+      "video_GenericErrorResponse": {
+        "content": {
+          "application/json": {
+            "schema": {
+              "properties": {
+                "message": {
+                  "example": "Error",
+                  "type": "string"
+                },
+                "success": {
+                  "example": false,
+                  "type": "boolean"
+                }
+              },
+              "type": "object"
+            }
+          }
+        },
+        "description": "Unexpected error"
+      },
+      "video_ResourceNotFound": {
+        "content": {
+          "application/json": {
+            "example": {
+              "code": "string",
+              "detail": "string",
+              "source": {
+                "parameter": "string",
+                "pointer": "string"
+              },
+              "title": "string"
+            },
+            "schema": {
+              "$ref": "#/components/schemas/video_Error"
+            }
+          }
+        },
+        "description": "Resource not found"
+      }
+    },
+    "schemas": {
+      "PaginationMeta": {
+        "properties": {
+          "page_number": {
+            "example": 2,
+            "type": "integer"
+          },
+          "page_size": {
+            "example": 25,
+            "type": "integer"
+          },
+          "total_pages": {
+            "example": 3,
+            "type": "integer"
+          },
+          "total_results": {
+            "example": 55,
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "RoomParticipant": {
+        "example": {
+          "context": "Alice",
+          "id": "7b61621f-62e0-4aad-ab11-9fd19e272e73",
+          "joined_at": "2021-04-16T09:46:20.954863Z",
+          "left_at": "2021-04-16T10:24:55.962200Z",
+          "record_type": "room_participant",
+          "session_id": "7b61621f-5fe4-4aad-ab11-9fd19e272e73",
+          "updated_at": "2021-04-16T10:24:55.962200Z"
+        },
+        "properties": {
+          "context": {
+            "description": "Context provided to the given participant through the client SDK",
+            "example": "Alice",
+            "type": "string"
+          },
+          "id": {
+            "description": "A unique identifier for the room participant.",
+            "example": "0ccc7b54-4df3-4bca-a65a-3da1ecc777f0",
+            "format": "uuid",
+            "type": "string"
+          },
+          "joined_at": {
+            "description": "ISO 8601 timestamp when the participant joined the session.",
+            "example": "2021-03-26T17:51:59.588408Z",
+            "format": "date-time",
+            "type": "string"
+          },
+          "left_at": {
+            "description": "ISO 8601 timestamp when the participant left the session.",
+            "example": "2021-03-26T17:51:59.588408Z",
+            "format": "date-time",
+            "type": "string"
+          },
+          "record_type": {
+            "example": "room_participant",
+            "readOnly": true,
+            "type": "string"
+          },
+          "session_id": {
+            "description": "Identify the room session that participant is part of.",
+            "example": "0ccc7b54-4df3-4bca-a65a-3da1ecc777b0",
+            "format": "uuid",
+            "type": "string"
+          },
+          "updated_at": {
+            "description": "ISO 8601 timestamp when the participant was updated.",
+            "example": "2021-03-26T17:51:59.588408Z",
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "video_Error": {
+        "properties": {
+          "code": {
+            "type": "string"
+          },
+          "detail": {
+            "type": "string"
+          },
+          "meta": {
+            "additionalProperties": true,
+            "type": "object"
+          },
+          "source": {
+            "properties": {
+              "parameter": {
+                "description": "Indicates which query parameter caused the error.",
+                "type": "string"
+              },
+              "pointer": {
+                "description": "JSON pointer (RFC6901) to the offending entity.",
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
+          "title": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "title"
+        ],
+        "type": "object"
+      }
+    },
+    "securitySchemes": {
+      "BearerAuth": {
+        "bearerFormat": "API key",
+        "description": "Telnyx API key supplied as `Authorization: Bearer \u003ctoken\u003e`. In production, auth may be validated by the API gateway and forwarded via Telnyx auth headers.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "Payment": {
+        "description": "Machine Payment Protocol credential used on paid retries, sent as `Authorization: Payment ...`. Obtained by paying a challenge returned in the `WWW-Authenticate` header of a 402 response. This is not a Telnyx API key; initial challenge requests use standard bearer authentication instead.",
+        "in": "header",
+        "name": "Authorization",
+        "type": "apiKey"
+      },
+      "agent-memory_bearerAuth": {
+        "description": "Telnyx API key",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "bearerAuth": {
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "branded-calling_bearerAuth": {
+        "description": "Telnyx API key. Generate one at https://portal.telnyx.com/#/app/api-keys.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "collections_bearerAuth": {
+        "description": "Telnyx API key. Collections and results are automatically scoped to the authenticated user's organization.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "number-reputation_bearerAuth": {
+        "description": "Telnyx API key. Generate one at https://portal.telnyx.com/#/app/api-keys.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "oauthClientAuth": {
+        "description": "OAuth 2.0 authentication for Telnyx API and MCP integrations",
+        "flows": {
+          "authorizationCode": {
+            "authorizationUrl": "https://api.telnyx.com/v2/oauth/authorize",
+            "refreshUrl": "https://api.telnyx.com/v2/oauth/token",
+            "scopes": {
+              "admin": "Administrative access to Telnyx resources"
+            },
+            "tokenUrl": "https://api.telnyx.com/v2/oauth/token"
+          },
+          "clientCredentials": {
+            "scopes": {
+              "admin": "Administrative access to Telnyx resources"
+            },
+            "tokenUrl": "https://api.telnyx.com/v2/oauth/token"
+          }
+        },
+        "type": "oauth2"
+      },
+      "outbound-voice-profiles_bearerAuth": {
+        "bearerFormat": "JWT",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "pay-connectors_bearerAuth": {
+        "description": "Telnyx API key, not the processor bearer token.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "pronunciation-dicts_bearerAuth": {
+        "description": "Telnyx API v2 key. Obtain from https://portal.telnyx.com",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "rcs-registration_bearerAuth": {
+        "bearerFormat": "API key",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "stored-payment-transactions_bearerAuth": {
+        "bearerFormat": "JWT",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "telnyxApiKey": {
+        "description": "Management-only Telnyx account credential.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "transcriptions-search_bearerAuth": {
+        "description": "Telnyx API key. Results are automatically scoped to the authenticated user's organization.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "web-search_bearerAuth": {
+        "description": "Telnyx API key",
+        "scheme": "bearer",
+        "type": "http"
+      }
+    }
+  },
+  "info": {
+    "contact": {
+      "email": "support@telnyx.com"
+    },
+    "description": "SIP trunking, SMS, MMS, Call Control and Telephony Data Services.",
+    "title": "Telnyx API",
+    "version": "2.0.0",
+    "x-endpoint-cost": "light",
+    "x-latency-category": "responsive"
+  },
+  "openapi": "3.1.0",
+  "paths": {
+    "/room_participants": {
+      "get": {
+        "description": "Returns a paginated list of room participants across sessions. Filter participants by session, join, update, or leave date and by participant context.",
+        "operationId": "ListRoomParticipants",
+        "parameters": [
+          {
+            "description": "Consolidated filter parameter (deepObject style). Originally: filter[date_joined_at][eq], filter[date_joined_at][gte], filter[date_joined_at][lte], filter[date_updated_at][eq], filter[date_updated_at][gte], filter[date_updated_at][lte], filter[date_left_at][eq], filter[date_left_at][gte], filter[date_left_at][lte], filter[context], filter[session_id]",
+            "explode": true,
+            "in": "query",
+            "name": "filter",
+            "required": false,
+            "schema": {
+              "properties": {
+                "context": {
+                  "description": "Filter room participants based on the context.",
+                  "example": "Alice",
+                  "type": "string"
+                },
+                "date_joined_at": {
+                  "properties": {
+                    "eq": {
+                      "description": "ISO 8601 date for filtering room participants that joined on that date.",
+                      "example": "2021-04-25",
+                      "format": "date",
+                      "type": "string"
+                    },
+                    "gte": {
+                      "description": "ISO 8601 date for filtering room participants that joined on or after that date.",
+                      "example": "2021-04-25",
+                      "format": "date",
+                      "type": "string"
+                    },
+                    "lte": {
+                      "description": "ISO 8601 date for filtering room participants that joined on or before that date.",
+                      "example": "2021-04-25",
+                      "format": "date",
+                      "type": "string"
+                    }
+                  },
+                  "type": "object"
+                },
+                "date_left_at": {
+                  "properties": {
+                    "eq": {
+                      "description": "ISO 8601 date for filtering room participants that left on that date.",
+                      "example": "2021-04-25",
+                      "format": "date",
+                      "type": "string"
+                    },
+                    "gte": {
+                      "description": "ISO 8601 date for filtering room participants that left on or after that date.",
+                      "example": "2021-04-25",
+                      "format": "date",
+                      "type": "string"
+                    },
+                    "lte": {
+                      "description": "ISO 8601 date for filtering room participants that left on or before that date.",
+                      "example": "2021-04-25",
+                      "format": "date",
+                      "type": "string"
+                    }
+                  },
+                  "type": "object"
+                },
+                "date_updated_at": {
+                  "properties": {
+                    "eq": {
+                      "description": "ISO 8601 date for filtering room participants updated on that date.",
+                      "example": "2021-04-25",
+                      "format": "date",
+                      "type": "string"
+                    },
+                    "gte": {
+                      "description": "ISO 8601 date for filtering room participants updated on or after that date.",
+                      "example": "2021-04-25",
+                      "format": "date",
+                      "type": "string"
+                    },
+                    "lte": {
+                      "description": "ISO 8601 date for filtering room participants updated on or before that date.",
+                      "example": "2021-04-25",
+                      "format": "date",
+                      "type": "string"
+                    }
+                  },
+                  "type": "object"
+                },
+                "session_id": {
+                  "description": "Session_id for filtering room participants.",
+                  "example": "0ccc7b54-4df3-4bca-a65a-3da1ecc777f0",
+                  "type": "string"
+                }
+              },
+              "type": "object"
+            },
+            "style": "deepObject"
+          },
+          {
+            "$ref": "#/components/parameters/video_PageConsolidated"
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "items": {
+                        "$ref": "#/components/schemas/RoomParticipant"
+                      },
+                      "type": "array"
+                    },
+                    "meta": {
+                      "$ref": "#/components/schemas/PaginationMeta"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "List room participants response."
+          },
+          "4XX": {
+            "$ref": "#/components/responses/video_GenericErrorResponse"
+          }
+        },
+        "summary": "View a list of room participants.",
+        "tags": [
+          "Room Participants"
+        ],
+        "x-endpoint-cost": "medium"
+      }
+    },
+    "/room_participants/{room_participant_id}": {
+      "get": {
+        "description": "Returns the participant identified by `room_participant_id`, including its session, context, and join, update, and leave timestamps.",
+        "operationId": "ViewRoomParticipant",
+        "parameters": [
+          {
+            "description": "The unique identifier of a room participant.",
+            "in": "path",
+            "name": "room_participant_id",
+            "required": true,
+            "schema": {
+              "example": "0ccc7b54-4df3-4bca-a65a-3da1ecc777f0",
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/RoomParticipant"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Get room participant response."
+          },
+          "404": {
+            "$ref": "#/components/responses/video_ResourceNotFound"
+          }
+        },
+        "summary": "View a room participant.",
+        "tags": [
+          "Room Participants"
+        ],
+        "x-endpoint-cost": "light"
+      }
+    }
+  },
+  "security": [
+    {
+      "bearerAuth": []
+    }
+  ],
+  "servers": [
+    {
+      "description": "Version 2.0.0 of the Telnyx API",
+      "url": "https://api.telnyx.com/v2"
+    }
+  ]
+}

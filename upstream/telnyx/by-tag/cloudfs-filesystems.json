@@ -1,0 +1,1117 @@
+{
+  "components": {
+    "headers": {
+      "IdempotentReplayed": {
+        "description": "Present with value `true` when Edge replayed a stored successful response for the supplied Idempotency-Key. Omitted for first-time requests and error responses.",
+        "schema": {
+          "enum": [
+            true
+          ],
+          "example": true,
+          "type": "boolean"
+        }
+      }
+    },
+    "schemas": {
+      "CloudfsFilesystem": {
+        "description": "A CloudFS filesystem, including its metadata credential. This shape is returned only by create and rotate-meta-token.",
+        "properties": {
+          "created_at": {
+            "example": "2026-07-14T21:42:01Z",
+            "format": "date-time",
+            "type": "string"
+          },
+          "id": {
+            "example": "550e8400-e29b-41d4-a716-446655440000",
+            "format": "uuid",
+            "type": "string"
+          },
+          "meta_token": {
+            "description": "Metadata access token, in cleartext. Returned only by create and rotate-meta-token and not retrievable afterwards — store it securely.",
+            "example": "cloudfs_tok_0123456789abcdef0123456789abcdef",
+            "type": "string"
+          },
+          "meta_url": {
+            "description": "PostgreSQL connection URL for the filesystem's metadata database. In create and rotate-meta-token responses it embeds the metadata token as the password: `postgres://\u003cdatabase\u003e:\u003cmeta_token\u003e@us-east-1.telnyxcloudfs.com:5432/\u003cdatabase\u003e?sslmode=require` (the example below is shown without the credential; the actual response includes it). Pass it to `juicefs mount`: the storage configuration is baked in at provisioning, so the metadata URL is all a client needs to mount the filesystem.",
+            "example": "postgres://fs_0123456789abcdef@us-east-1.telnyxcloudfs.com:5432/fs_0123456789abcdef?sslmode=require",
+            "type": "string"
+          },
+          "name": {
+            "example": "agent-fs",
+            "type": "string"
+          },
+          "record_type": {
+            "example": "cloudfs",
+            "type": "string"
+          },
+          "region": {
+            "example": "us-east-1",
+            "type": "string"
+          },
+          "s3_bucket": {
+            "description": "Name of the bucket that stores this filesystem's data. Created during provisioning.",
+            "example": "cloudfs-fs-0123456789abcdef",
+            "type": "string"
+          },
+          "s3_endpoint": {
+            "description": "URL of the Telnyx Cloud Storage endpoint backing this filesystem.",
+            "example": "https://us-east-1.telnyxcloudstorage.com",
+            "type": "string"
+          },
+          "status": {
+            "$ref": "#/components/schemas/CloudfsFilesystemStatus"
+          },
+          "updated_at": {
+            "example": "2026-07-14T21:42:01Z",
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "CloudfsFilesystemDetail": {
+        "description": "A CloudFS filesystem as returned by get, update, and delete. `meta_url` omits the credential and there is no `meta_token` field — the token is only returned by create and rotate-meta-token.",
+        "properties": {
+          "created_at": {
+            "example": "2026-07-14T21:42:01Z",
+            "format": "date-time",
+            "type": "string"
+          },
+          "error": {
+            "description": "Explanation of the most recent failed lifecycle action. Present only when the filesystem is in a `failed` state.",
+            "example": "failed to create storage bucket",
+            "type": "string"
+          },
+          "id": {
+            "example": "550e8400-e29b-41d4-a716-446655440000",
+            "format": "uuid",
+            "type": "string"
+          },
+          "meta_url": {
+            "description": "PostgreSQL connection URL for the filesystem's metadata database, without the credential. Combine it with your stored metadata token, or issue a new token with rotate-meta-token.",
+            "example": "postgres://fs_0123456789abcdef@us-east-1.telnyxcloudfs.com:5432/fs_0123456789abcdef?sslmode=require",
+            "type": "string"
+          },
+          "name": {
+            "example": "agent-fs",
+            "type": "string"
+          },
+          "record_type": {
+            "example": "cloudfs",
+            "type": "string"
+          },
+          "region": {
+            "example": "us-east-1",
+            "type": "string"
+          },
+          "s3_bucket": {
+            "description": "Name of the bucket that stores this filesystem's data. Created during provisioning.",
+            "example": "cloudfs-fs-0123456789abcdef",
+            "type": "string"
+          },
+          "s3_endpoint": {
+            "description": "URL of the Telnyx Cloud Storage endpoint backing this filesystem.",
+            "example": "https://us-east-1.telnyxcloudstorage.com",
+            "type": "string"
+          },
+          "status": {
+            "$ref": "#/components/schemas/CloudfsFilesystemStatus"
+          },
+          "updated_at": {
+            "example": "2026-07-14T21:42:01Z",
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "CloudfsFilesystemDetailResponseWrapper": {
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/CloudfsFilesystemDetail"
+          }
+        },
+        "type": "object"
+      },
+      "CloudfsFilesystemListItem": {
+        "description": "A CloudFS filesystem as returned in list results. Connection details (`meta_url`, `meta_token`) are omitted — retrieve the filesystem by ID for its redacted `meta_url`.",
+        "properties": {
+          "created_at": {
+            "example": "2026-07-14T21:42:01Z",
+            "format": "date-time",
+            "type": "string"
+          },
+          "id": {
+            "example": "550e8400-e29b-41d4-a716-446655440000",
+            "format": "uuid",
+            "type": "string"
+          },
+          "name": {
+            "example": "agent-fs",
+            "type": "string"
+          },
+          "record_type": {
+            "example": "cloudfs",
+            "type": "string"
+          },
+          "region": {
+            "example": "us-east-1",
+            "type": "string"
+          },
+          "s3_bucket": {
+            "description": "Name of the bucket that stores this filesystem's data. Created during provisioning.",
+            "example": "cloudfs-fs-0123456789abcdef",
+            "type": "string"
+          },
+          "s3_endpoint": {
+            "description": "URL of the Telnyx Cloud Storage endpoint backing this filesystem.",
+            "example": "https://us-east-1.telnyxcloudstorage.com",
+            "type": "string"
+          },
+          "status": {
+            "$ref": "#/components/schemas/CloudfsFilesystemStatus"
+          },
+          "updated_at": {
+            "example": "2026-07-14T21:42:01Z",
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "CloudfsFilesystemListResponseWrapper": {
+        "properties": {
+          "data": {
+            "items": {
+              "$ref": "#/components/schemas/CloudfsFilesystemListItem"
+            },
+            "type": "array"
+          },
+          "meta": {
+            "$ref": "#/components/schemas/CloudfsListMeta"
+          }
+        },
+        "type": "object"
+      },
+      "CloudfsFilesystemResponseWrapper": {
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/CloudfsFilesystem"
+          }
+        },
+        "type": "object"
+      },
+      "CloudfsFilesystemStatus": {
+        "description": "Lifecycle status of the filesystem. `ready` means it is fully provisioned and usable. `needs_format` means the storage bucket and metadata database were provisioned but the filesystem has not yet been formatted — run `juicefs format` with the filesystem's `meta_url` before mounting. `failed` means the last lifecycle action failed — see the filesystem's `error` message. `deleted` appears only in the delete response: deleted filesystems are excluded from list results and return a `404` on retrieval.",
+        "enum": [
+          "provisioning",
+          "ready",
+          "needs_format",
+          "deleting",
+          "failed",
+          "deleted"
+        ],
+        "example": "ready",
+        "type": "string"
+      },
+      "CloudfsListCursors": {
+        "description": "Opaque cursors for the adjacent pages. Empty when there are no adjacent pages.",
+        "properties": {
+          "after": {
+            "description": "Cursor for the next page; pass it as `page[after]`. Omitted on the last page.",
+            "type": "string"
+          },
+          "before": {
+            "description": "Cursor for the previous page; pass it as `page[before]`. Omitted on the first page.",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "CloudfsListMeta": {
+        "properties": {
+          "cursors": {
+            "$ref": "#/components/schemas/CloudfsListCursors"
+          },
+          "next": {
+            "description": "Relative URL (path and query) of the next page. Omitted when there are no further results.",
+            "type": "string"
+          },
+          "previous": {
+            "description": "Relative URL (path and query) of the previous page. Omitted on the first page.",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "CreateCloudfsFilesystemRequest": {
+        "properties": {
+          "name": {
+            "description": "Filesystem name, unique within your organization. Names are trimmed and lowercased; after normalization they may contain lowercase letters, numbers, `.`, `_`, and `-` only.",
+            "example": "agent-fs",
+            "maxLength": 63,
+            "minLength": 1,
+            "pattern": "^[a-z0-9._-]+$",
+            "type": "string"
+          },
+          "region": {
+            "description": "Region where the filesystem's storage and metadata are provisioned.",
+            "enum": [
+              "us-central-1",
+              "us-east-1",
+              "us-west-1"
+            ],
+            "example": "us-east-1",
+            "type": "string"
+          }
+        },
+        "required": [
+          "name",
+          "region"
+        ],
+        "type": "object"
+      },
+      "Error": {
+        "example": {
+          "code": "20207",
+          "description": "The street address provided is invalid.",
+          "source": {
+            "pointer": "/street_address"
+          },
+          "title": "Invalid street address"
+        },
+        "properties": {
+          "code": {
+            "type": "string",
+            "x-format": "int64"
+          },
+          "description": {
+            "type": "string"
+          },
+          "detail": {
+            "description": "A human-readable explanation of the error.",
+            "type": "string"
+          },
+          "meta": {
+            "additionalProperties": true,
+            "type": "object"
+          },
+          "source": {
+            "properties": {
+              "parameter": {
+                "description": "Indicates which query parameter caused the error.",
+                "type": "string"
+              },
+              "pointer": {
+                "description": "JSON pointer (RFC6901) to the offending entity.",
+                "format": "json-pointer",
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
+          "title": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "title"
+        ],
+        "type": "object"
+      },
+      "ErrorMeta": {
+        "properties": {
+          "url": {
+            "example": "https://docs.telnyx.com/api/errors/10005",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "ErrorSource": {
+        "properties": {
+          "parameter": {
+            "example": "id",
+            "type": "string"
+          },
+          "pointer": {
+            "example": "/id",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "Errors": {
+        "properties": {
+          "errors": {
+            "items": {
+              "$ref": "#/components/schemas/Error"
+            },
+            "type": "array"
+          }
+        },
+        "type": "object"
+      },
+      "GenericErrorResponse": {
+        "properties": {
+          "errors": {
+            "items": {
+              "$ref": "#/components/schemas/edge-compute_Error"
+            },
+            "type": "array"
+          }
+        },
+        "type": "object"
+      },
+      "UpdateCloudfsFilesystemRequest": {
+        "properties": {
+          "name": {
+            "description": "New filesystem name, unique within your organization. Names are trimmed and lowercased; after normalization they may contain lowercase letters, numbers, `.`, `_`, and `-` only.",
+            "example": "agent-fs",
+            "maxLength": 63,
+            "minLength": 1,
+            "pattern": "^[a-z0-9._-]+$",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "edge-compute_Error": {
+        "properties": {
+          "code": {
+            "example": "10005",
+            "type": "string"
+          },
+          "detail": {
+            "example": "The requested function does not exist or you don't have access to it",
+            "type": "string"
+          },
+          "meta": {
+            "$ref": "#/components/schemas/ErrorMeta"
+          },
+          "source": {
+            "$ref": "#/components/schemas/ErrorSource"
+          },
+          "title": {
+            "example": "Function not found",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      }
+    },
+    "securitySchemes": {
+      "BearerAuth": {
+        "bearerFormat": "API key",
+        "description": "Telnyx API key supplied as `Authorization: Bearer \u003ctoken\u003e`. In production, auth may be validated by the API gateway and forwarded via Telnyx auth headers.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "Payment": {
+        "description": "Machine Payment Protocol credential used on paid retries, sent as `Authorization: Payment ...`. Obtained by paying a challenge returned in the `WWW-Authenticate` header of a 402 response. This is not a Telnyx API key; initial challenge requests use standard bearer authentication instead.",
+        "in": "header",
+        "name": "Authorization",
+        "type": "apiKey"
+      },
+      "agent-memory_bearerAuth": {
+        "description": "Telnyx API key",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "bearerAuth": {
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "branded-calling_bearerAuth": {
+        "description": "Telnyx API key. Generate one at https://portal.telnyx.com/#/app/api-keys.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "collections_bearerAuth": {
+        "description": "Telnyx API key. Collections and results are automatically scoped to the authenticated user's organization.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "number-reputation_bearerAuth": {
+        "description": "Telnyx API key. Generate one at https://portal.telnyx.com/#/app/api-keys.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "oauthClientAuth": {
+        "description": "OAuth 2.0 authentication for Telnyx API and MCP integrations",
+        "flows": {
+          "authorizationCode": {
+            "authorizationUrl": "https://api.telnyx.com/v2/oauth/authorize",
+            "refreshUrl": "https://api.telnyx.com/v2/oauth/token",
+            "scopes": {
+              "admin": "Administrative access to Telnyx resources"
+            },
+            "tokenUrl": "https://api.telnyx.com/v2/oauth/token"
+          },
+          "clientCredentials": {
+            "scopes": {
+              "admin": "Administrative access to Telnyx resources"
+            },
+            "tokenUrl": "https://api.telnyx.com/v2/oauth/token"
+          }
+        },
+        "type": "oauth2"
+      },
+      "outbound-voice-profiles_bearerAuth": {
+        "bearerFormat": "JWT",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "pay-connectors_bearerAuth": {
+        "description": "Telnyx API key, not the processor bearer token.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "pronunciation-dicts_bearerAuth": {
+        "description": "Telnyx API v2 key. Obtain from https://portal.telnyx.com",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "rcs-registration_bearerAuth": {
+        "bearerFormat": "API key",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "stored-payment-transactions_bearerAuth": {
+        "bearerFormat": "JWT",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "telnyxApiKey": {
+        "description": "Management-only Telnyx account credential.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "transcriptions-search_bearerAuth": {
+        "description": "Telnyx API key. Results are automatically scoped to the authenticated user's organization.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "web-search_bearerAuth": {
+        "description": "Telnyx API key",
+        "scheme": "bearer",
+        "type": "http"
+      }
+    }
+  },
+  "info": {
+    "contact": {
+      "email": "support@telnyx.com"
+    },
+    "description": "SIP trunking, SMS, MMS, Call Control and Telephony Data Services.",
+    "title": "Telnyx API",
+    "version": "2.0.0",
+    "x-endpoint-cost": "light",
+    "x-latency-category": "responsive"
+  },
+  "openapi": "3.1.0",
+  "paths": {
+    "/storage/cloudfs": {
+      "get": {
+        "description": "Lists the CloudFS filesystems for the authenticated user's organization. Results use cursor-based pagination: fetch the next page by passing `meta.cursors.after` as `page[after]`, or follow the `meta.next` URL.",
+        "operationId": "ListCloudfsFilesystems",
+        "parameters": [
+          {
+            "description": "The number of filesystems to return per page. Values above 250 are treated as 250.",
+            "in": "query",
+            "name": "page[limit]",
+            "schema": {
+              "default": 20,
+              "maximum": 250,
+              "minimum": 1,
+              "type": "integer"
+            }
+          },
+          {
+            "description": "Opaque cursor from a previous response's `meta.cursors.after`; returns the page after it. Mutually exclusive with `page[before]`.",
+            "in": "query",
+            "name": "page[after]",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Opaque cursor from a previous response's `meta.cursors.before`; returns the page before it. Mutually exclusive with `page[after]`.",
+            "in": "query",
+            "name": "page[before]",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Return only the filesystem whose name matches exactly.",
+            "in": "query",
+            "name": "filter[name]",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Return only filesystems with this status. Unrecognized values are ignored.",
+            "in": "query",
+            "name": "filter[status]",
+            "schema": {
+              "enum": [
+                "provisioning",
+                "ready",
+                "needs_format",
+                "deleting",
+                "failed"
+              ],
+              "type": "string"
+            }
+          },
+          {
+            "description": "Return only filesystems in this region.",
+            "in": "query",
+            "name": "filter[region]",
+            "schema": {
+              "example": "us-east-1",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Sort order for the results: a field name for ascending, or the field name prefixed with `-` for descending.",
+            "in": "query",
+            "name": "sort",
+            "schema": {
+              "default": "-created_at",
+              "enum": [
+                "created_at",
+                "-created_at",
+                "updated_at",
+                "-updated_at",
+                "name",
+                "-name"
+              ],
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CloudfsFilesystemListResponseWrapper"
+                }
+              }
+            },
+            "description": "CloudFS filesystems retrieved successfully"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Errors"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Errors"
+                }
+              }
+            },
+            "description": "Unprocessable entity — invalid `page[limit]`, malformed or conflicting cursor, or unsupported `sort` value"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GenericErrorResponse"
+                }
+              }
+            },
+            "description": "Internal server error"
+          }
+        },
+        "summary": "List CloudFS filesystems",
+        "tags": [
+          "cloudfs filesystems"
+        ]
+      },
+      "post": {
+        "description": "Creates a CloudFS filesystem. Provisioning is synchronous — typically a few seconds, up to a few minutes — and the filesystem is returned with status `ready`, together with its S3 bucket and metadata connection details. This response is the only time the filesystem's `meta_token` — and the credential-bearing `meta_url` — are returned; store them securely. If the token is lost, issue a new one with the rotate-meta-token action. Names are unique within your organization: creating with an existing name returns a `422`. Requests are idempotent: retrying with the same `Idempotency-Key` within 24 hours replays the original response instead of creating another filesystem.",
+        "operationId": "CreateCloudfsFilesystem",
+        "parameters": [
+          {
+            "description": "Unique key that makes the request idempotent (1-255 characters: letters, numbers, `_`, and `-`). Retrying with the same key within 24 hours replays the original response (marked with an `Idempotent-Replayed: true` header) instead of repeating the action. Reusing a key with a different request returns a `422`; sending a key while the original request is still being processed returns a `409`.",
+            "in": "header",
+            "name": "Idempotency-Key",
+            "required": true,
+            "schema": {
+              "maxLength": 255,
+              "minLength": 1,
+              "pattern": "^[A-Za-z0-9_-]+$",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateCloudfsFilesystemRequest"
+              }
+            }
+          },
+          "description": "CloudFS filesystem creation request",
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CloudfsFilesystemResponseWrapper"
+                }
+              }
+            },
+            "description": "CloudFS filesystem created successfully. This is the only response (besides rotate-meta-token) that includes `meta_token`.",
+            "headers": {
+              "Idempotent-Replayed": {
+                "$ref": "#/components/headers/IdempotentReplayed"
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Errors"
+                }
+              }
+            },
+            "description": "Bad request — malformed JSON, unknown field, or a missing or invalid `Idempotency-Key` header"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Errors"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Errors"
+                }
+              }
+            },
+            "description": "Conflict — a request with this `Idempotency-Key` is still being processed"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Errors"
+                }
+              }
+            },
+            "description": "Unprocessable entity — missing or invalid `name` or `region`, a filesystem with this name already exists for your organization, or the `Idempotency-Key` was already used for a different request"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GenericErrorResponse"
+                }
+              }
+            },
+            "description": "Internal server error"
+          }
+        },
+        "summary": "Create a CloudFS filesystem",
+        "tags": [
+          "cloudfs filesystems"
+        ]
+      }
+    },
+    "/storage/cloudfs/{id}": {
+      "delete": {
+        "description": "Permanently deletes a CloudFS filesystem, removing its S3 bucket and its metadata database. Deletion is synchronous: the response returns the filesystem's final state with status `deleted`. There is no restore. A filesystem that is still `provisioning` returns a `409`. If the filesystem still contains data, the request may be rejected with a `409` — drain the bucket and retry.",
+        "operationId": "DeleteCloudfsFilesystem",
+        "parameters": [
+          {
+            "description": "CloudFS filesystem ID",
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CloudfsFilesystemDetailResponseWrapper"
+                }
+              }
+            },
+            "description": "CloudFS filesystem deleted; the returned filesystem has status `deleted`"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Errors"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Errors"
+                }
+              }
+            },
+            "description": "CloudFS filesystem not found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Errors"
+                }
+              }
+            },
+            "description": "Conflict — the filesystem is not in a state that allows deletion (for example, still `provisioning`), or its bucket still contains data that must be drained first"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Errors"
+                }
+              }
+            },
+            "description": "Unprocessable entity — `id` is not a valid UUID"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GenericErrorResponse"
+                }
+              }
+            },
+            "description": "Internal server error"
+          }
+        },
+        "summary": "Delete a CloudFS filesystem",
+        "tags": [
+          "cloudfs filesystems"
+        ]
+      },
+      "get": {
+        "description": "Retrieves a CloudFS filesystem by its ID. The returned `meta_url` omits the credential — the metadata token is only ever returned by create and rotate-meta-token. A filesystem whose last lifecycle action failed includes a customer-safe `error` message.",
+        "operationId": "GetCloudfsFilesystem",
+        "parameters": [
+          {
+            "description": "CloudFS filesystem ID",
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CloudfsFilesystemDetailResponseWrapper"
+                }
+              }
+            },
+            "description": "CloudFS filesystem retrieved successfully"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Errors"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Errors"
+                }
+              }
+            },
+            "description": "CloudFS filesystem not found"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Errors"
+                }
+              }
+            },
+            "description": "Unprocessable entity — `id` is not a valid UUID"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GenericErrorResponse"
+                }
+              }
+            },
+            "description": "Internal server error"
+          }
+        },
+        "summary": "Get a CloudFS filesystem",
+        "tags": [
+          "cloudfs filesystems"
+        ]
+      },
+      "patch": {
+        "description": "Updates a CloudFS filesystem. Only `name` can be changed; other fields are immutable and unknown fields are rejected with a `400`. Renaming to a name that already exists in your organization returns a `422`.",
+        "operationId": "UpdateCloudfsFilesystem",
+        "parameters": [
+          {
+            "description": "CloudFS filesystem ID",
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateCloudfsFilesystemRequest"
+              }
+            }
+          },
+          "description": "CloudFS filesystem update request",
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CloudfsFilesystemDetailResponseWrapper"
+                }
+              }
+            },
+            "description": "CloudFS filesystem updated successfully"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Errors"
+                }
+              }
+            },
+            "description": "Bad request — malformed JSON, unknown or immutable field, or missing body"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Errors"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Errors"
+                }
+              }
+            },
+            "description": "CloudFS filesystem not found"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Errors"
+                }
+              }
+            },
+            "description": "Unprocessable entity — `id` is not a valid UUID, the new `name` is invalid, or a filesystem with that name already exists"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GenericErrorResponse"
+                }
+              }
+            },
+            "description": "Internal server error"
+          }
+        },
+        "summary": "Update a CloudFS filesystem",
+        "tags": [
+          "cloudfs filesystems"
+        ]
+      }
+    },
+    "/storage/cloudfs/{id}/actions/rotate-meta-token": {
+      "post": {
+        "description": "Issues a new metadata access token for the filesystem and returns the full filesystem, including the new `meta_token` and credential-bearing `meta_url`. The previous token stops authenticating immediately; the metadata database and S3 bucket are unchanged. The request takes no body. Allowed while the filesystem is `ready` or `needs_format`; otherwise returns a `409`. Retrying with the same `Idempotency-Key` within 24 hours replays the original response — including the same token — instead of rotating again.",
+        "operationId": "RotateCloudfsMetaToken",
+        "parameters": [
+          {
+            "description": "CloudFS filesystem ID",
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Unique key that makes the request idempotent (1-255 characters: letters, numbers, `_`, and `-`). Retrying with the same key within 24 hours replays the original response (marked with an `Idempotent-Replayed: true` header) instead of repeating the action. Reusing a key with a different request returns a `422`; sending a key while the original request is still being processed returns a `409`.",
+            "in": "header",
+            "name": "Idempotency-Key",
+            "required": true,
+            "schema": {
+              "maxLength": 255,
+              "minLength": 1,
+              "pattern": "^[A-Za-z0-9_-]+$",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CloudfsFilesystemResponseWrapper"
+                }
+              }
+            },
+            "description": "New metadata token issued; the response includes the new `meta_token` and credential-bearing `meta_url`",
+            "headers": {
+              "Idempotent-Replayed": {
+                "$ref": "#/components/headers/IdempotentReplayed"
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Errors"
+                }
+              }
+            },
+            "description": "Bad request — missing or invalid `Idempotency-Key` header"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Errors"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Errors"
+                }
+              }
+            },
+            "description": "CloudFS filesystem not found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Errors"
+                }
+              }
+            },
+            "description": "Conflict — the filesystem is not in a state that allows rotation (`status` is neither `ready` nor `needs_format`), or a request with this `Idempotency-Key` is still being processed"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Errors"
+                }
+              }
+            },
+            "description": "Unprocessable entity — `id` is not a valid UUID, or the `Idempotency-Key` was already used for a different request"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GenericErrorResponse"
+                }
+              }
+            },
+            "description": "Internal server error"
+          }
+        },
+        "summary": "Rotate the metadata token",
+        "tags": [
+          "cloudfs filesystems"
+        ]
+      }
+    }
+  },
+  "security": [
+    {
+      "bearerAuth": []
+    }
+  ],
+  "servers": [
+    {
+      "description": "Version 2.0.0 of the Telnyx API",
+      "url": "https://api.telnyx.com/v2"
+    }
+  ]
+}

@@ -1,0 +1,707 @@
+{
+  "components": {
+    "responses": {
+      "GenericErrorResponse": {
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Errors"
+            }
+          }
+        },
+        "description": "Unexpected error"
+      },
+      "numbers_BadRequestResponse_73c9788e53": {
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Errors"
+            }
+          }
+        },
+        "description": "Bad request, the request was unacceptable, often due to missing a required parameter."
+      },
+      "numbers_NotFoundResponse_73c9788e53": {
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Errors"
+            }
+          }
+        },
+        "description": "The requested resource doesn't exist."
+      },
+      "numbers_UnauthorizedResponse_73c9788e53": {
+        "content": {
+          "application/json": {
+            "examples": {
+              "Authentication Failed": {
+                "value": {
+                  "errors": [
+                    {
+                      "code": "10009",
+                      "detail": "Could not understand the provided credentials.",
+                      "meta": {
+                        "url": "https://developers.telnyx.com/docs/overview/errors/10009"
+                      },
+                      "title": "Authentication failed"
+                    }
+                  ]
+                }
+              }
+            },
+            "schema": {
+              "$ref": "#/components/schemas/Errors"
+            }
+          }
+        },
+        "description": "Unauthorized"
+      },
+      "numbers_UnprocessableEntity_73c9788e53": {
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Errors"
+            }
+          }
+        },
+        "description": "Unprocessable entity. Check the 'detail' field in response for details."
+      }
+    },
+    "schemas": {
+      "AvailablePhoneNumber": {
+        "example": {
+          "best_effort": false,
+          "cost_information": {
+            "currency": "USD",
+            "monthly_cost": "6.54",
+            "upfront_cost": "3.21"
+          },
+          "features": [
+            {
+              "name": "sms"
+            },
+            {
+              "name": "voice"
+            }
+          ],
+          "phone_number": "+19705555098",
+          "quickship": true,
+          "record_type": "available_phone_number",
+          "region_information": [
+            {
+              "region_name": "US",
+              "region_type": "country_code"
+            }
+          ],
+          "reservable": true,
+          "vanity_format": ""
+        },
+        "properties": {
+          "best_effort": {
+            "description": "Specifies whether the phone number is an exact match based on the search criteria or not.",
+            "example": false,
+            "type": "boolean"
+          },
+          "cost_information": {
+            "$ref": "#/components/schemas/CostInformation"
+          },
+          "features": {
+            "items": {
+              "$ref": "#/components/schemas/Feature"
+            },
+            "type": "array"
+          },
+          "phone_number": {
+            "example": "+19705555098",
+            "type": "string"
+          },
+          "quickship": {
+            "description": "Specifies whether the phone number can receive calls immediately after purchase or not.",
+            "example": true,
+            "type": "boolean"
+          },
+          "record_type": {
+            "enum": [
+              "available_phone_number"
+            ],
+            "example": "available_phone_number",
+            "type": "string"
+          },
+          "region_information": {
+            "items": {
+              "$ref": "#/components/schemas/RegionInformation"
+            },
+            "type": "array"
+          },
+          "reservable": {
+            "description": "Specifies whether the phone number can be reserved before purchase or not.",
+            "example": true,
+            "type": "boolean"
+          },
+          "vanity_format": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "AvailablePhoneNumberBlock": {
+        "example": {
+          "cost_information": {
+            "currency": "USD",
+            "monthly_cost": "6.54",
+            "upfront_cost": "3.21"
+          },
+          "features": [
+            {
+              "name": "sms"
+            },
+            {
+              "name": "voice"
+            }
+          ],
+          "phone_number": "+19705555000",
+          "range": 10,
+          "record_type": "available_phone_number_block",
+          "region_information": [
+            {
+              "region_name": "US",
+              "region_type": "country_code"
+            }
+          ]
+        },
+        "properties": {
+          "cost_information": {
+            "$ref": "#/components/schemas/CostInformation"
+          },
+          "features": {
+            "items": {
+              "$ref": "#/components/schemas/Feature"
+            },
+            "type": "array"
+          },
+          "phone_number": {
+            "example": "+19705555000",
+            "type": "string"
+          },
+          "range": {
+            "example": 10,
+            "type": "integer"
+          },
+          "record_type": {
+            "enum": [
+              "available_phone_number_block"
+            ],
+            "example": "available_phone_number_block",
+            "type": "string"
+          },
+          "region_information": {
+            "items": {
+              "$ref": "#/components/schemas/RegionInformation"
+            },
+            "type": "array"
+          }
+        },
+        "type": "object"
+      },
+      "AvailablePhoneNumbersMetadata": {
+        "example": {
+          "best_effort_results": 50,
+          "total_results": 100
+        },
+        "properties": {
+          "best_effort_results": {
+            "example": 0,
+            "type": "integer"
+          },
+          "total_results": {
+            "example": 1,
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "CostInformation": {
+        "example": {
+          "currency": "USD",
+          "monthly_cost": "6.54",
+          "upfront_cost": "3.21"
+        },
+        "properties": {
+          "currency": {
+            "description": "The ISO 4217 code for the currency.",
+            "example": "USD",
+            "type": "string"
+          },
+          "monthly_cost": {
+            "example": "6.54",
+            "type": "string"
+          },
+          "upfront_cost": {
+            "example": "3.21",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "Error": {
+        "example": {
+          "code": "20207",
+          "description": "The street address provided is invalid.",
+          "source": {
+            "pointer": "/street_address"
+          },
+          "title": "Invalid street address"
+        },
+        "properties": {
+          "code": {
+            "type": "string",
+            "x-format": "int64"
+          },
+          "description": {
+            "type": "string"
+          },
+          "detail": {
+            "description": "A human-readable explanation of the error.",
+            "type": "string"
+          },
+          "meta": {
+            "additionalProperties": true,
+            "type": "object"
+          },
+          "source": {
+            "properties": {
+              "parameter": {
+                "description": "Indicates which query parameter caused the error.",
+                "type": "string"
+              },
+              "pointer": {
+                "description": "JSON pointer (RFC6901) to the offending entity.",
+                "format": "json-pointer",
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
+          "title": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "title"
+        ],
+        "type": "object"
+      },
+      "Errors": {
+        "properties": {
+          "errors": {
+            "items": {
+              "$ref": "#/components/schemas/Error"
+            },
+            "type": "array"
+          }
+        },
+        "type": "object"
+      },
+      "Feature": {
+        "example": {
+          "name": "sms"
+        },
+        "properties": {
+          "name": {
+            "example": "sms",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "RegionInformation": {
+        "example": {
+          "region_name": "US",
+          "region_type": "country_code"
+        },
+        "properties": {
+          "region_name": {
+            "example": "US",
+            "type": "string"
+          },
+          "region_type": {
+            "enum": [
+              "country_code",
+              "rate_center",
+              "state",
+              "location"
+            ],
+            "example": "country_code",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      }
+    },
+    "securitySchemes": {
+      "BearerAuth": {
+        "bearerFormat": "API key",
+        "description": "Telnyx API key supplied as `Authorization: Bearer \u003ctoken\u003e`. In production, auth may be validated by the API gateway and forwarded via Telnyx auth headers.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "Payment": {
+        "description": "Machine Payment Protocol credential used on paid retries, sent as `Authorization: Payment ...`. Obtained by paying a challenge returned in the `WWW-Authenticate` header of a 402 response. This is not a Telnyx API key; initial challenge requests use standard bearer authentication instead.",
+        "in": "header",
+        "name": "Authorization",
+        "type": "apiKey"
+      },
+      "agent-memory_bearerAuth": {
+        "description": "Telnyx API key",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "bearerAuth": {
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "branded-calling_bearerAuth": {
+        "description": "Telnyx API key. Generate one at https://portal.telnyx.com/#/app/api-keys.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "collections_bearerAuth": {
+        "description": "Telnyx API key. Collections and results are automatically scoped to the authenticated user's organization.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "number-reputation_bearerAuth": {
+        "description": "Telnyx API key. Generate one at https://portal.telnyx.com/#/app/api-keys.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "oauthClientAuth": {
+        "description": "OAuth 2.0 authentication for Telnyx API and MCP integrations",
+        "flows": {
+          "authorizationCode": {
+            "authorizationUrl": "https://api.telnyx.com/v2/oauth/authorize",
+            "refreshUrl": "https://api.telnyx.com/v2/oauth/token",
+            "scopes": {
+              "admin": "Administrative access to Telnyx resources"
+            },
+            "tokenUrl": "https://api.telnyx.com/v2/oauth/token"
+          },
+          "clientCredentials": {
+            "scopes": {
+              "admin": "Administrative access to Telnyx resources"
+            },
+            "tokenUrl": "https://api.telnyx.com/v2/oauth/token"
+          }
+        },
+        "type": "oauth2"
+      },
+      "outbound-voice-profiles_bearerAuth": {
+        "bearerFormat": "JWT",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "pay-connectors_bearerAuth": {
+        "description": "Telnyx API key, not the processor bearer token.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "pronunciation-dicts_bearerAuth": {
+        "description": "Telnyx API v2 key. Obtain from https://portal.telnyx.com",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "rcs-registration_bearerAuth": {
+        "bearerFormat": "API key",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "stored-payment-transactions_bearerAuth": {
+        "bearerFormat": "JWT",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "telnyxApiKey": {
+        "description": "Management-only Telnyx account credential.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "transcriptions-search_bearerAuth": {
+        "description": "Telnyx API key. Results are automatically scoped to the authenticated user's organization.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "web-search_bearerAuth": {
+        "description": "Telnyx API key",
+        "scheme": "bearer",
+        "type": "http"
+      }
+    }
+  },
+  "info": {
+    "contact": {
+      "email": "support@telnyx.com"
+    },
+    "description": "SIP trunking, SMS, MMS, Call Control and Telephony Data Services.",
+    "title": "Telnyx API",
+    "version": "2.0.0",
+    "x-endpoint-cost": "light",
+    "x-latency-category": "responsive"
+  },
+  "openapi": "3.1.0",
+  "paths": {
+    "/available_phone_number_blocks": {
+      "get": {
+        "description": "Searches the Telnyx inventory for available contiguous phone-number blocks. Results can be filtered by locality, country, national destination code, and number type.",
+        "operationId": "ListAvailablePhoneNumberBlocks",
+        "parameters": [
+          {
+            "description": "Consolidated filter parameter (deepObject style). Originally: filter[locality], filter[country_code], filter[national_destination_code], filter[phone_number_type]",
+            "explode": true,
+            "in": "query",
+            "name": "filter",
+            "schema": {
+              "properties": {
+                "country_code": {
+                  "description": "Filter phone numbers by country.",
+                  "type": "string"
+                },
+                "locality": {
+                  "description": "Filter phone numbers by city.",
+                  "type": "string"
+                },
+                "national_destination_code": {
+                  "description": "Filter by the national destination code of the number.",
+                  "type": "string"
+                },
+                "phone_number_type": {
+                  "description": "Filter phone numbers by number type.",
+                  "enum": [
+                    "local",
+                    "toll_free",
+                    "mobile",
+                    "national",
+                    "shared_cost"
+                  ],
+                  "type": "string"
+                }
+              },
+              "type": "object"
+            },
+            "style": "deepObject"
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "items": {
+                        "$ref": "#/components/schemas/AvailablePhoneNumberBlock"
+                      },
+                      "type": "array"
+                    },
+                    "meta": {
+                      "$ref": "#/components/schemas/AvailablePhoneNumbersMetadata"
+                    }
+                  },
+                  "title": "List Available Phone Numbers Blocks Response",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful response with a list of available phone numbers blocks."
+          },
+          "400": {
+            "$ref": "#/components/responses/numbers_BadRequestResponse_73c9788e53"
+          },
+          "401": {
+            "$ref": "#/components/responses/numbers_UnauthorizedResponse_73c9788e53"
+          },
+          "404": {
+            "$ref": "#/components/responses/numbers_NotFoundResponse_73c9788e53"
+          },
+          "422": {
+            "$ref": "#/components/responses/numbers_UnprocessableEntity_73c9788e53"
+          },
+          "500": {
+            "$ref": "#/components/responses/GenericErrorResponse"
+          }
+        },
+        "summary": "List available phone number blocks",
+        "tags": [
+          "Phone Number Search"
+        ]
+      }
+    },
+    "/available_phone_numbers": {
+      "get": {
+        "description": "Searches the Telnyx inventory for available phone numbers. Filters support number patterns, location, number type, features, reservability, and other inventory constraints; the response includes matching numbers and search metadata.",
+        "operationId": "ListAvailablePhoneNumbers",
+        "parameters": [
+          {
+            "description": "Consolidated filter parameter (deepObject style). Originally: filter[phone_number], filter[locality], filter[administrative_area], filter[country_code], filter[national_destination_code], filter[rate_center], filter[phone_number_type], filter[features], filter[limit], filter[best_effort], filter[quickship], filter[reservable], filter[exclude_held_numbers]",
+            "explode": true,
+            "in": "query",
+            "name": "filter",
+            "schema": {
+              "properties": {
+                "administrative_area": {
+                  "description": "Find numbers in a particular US state or CA province.",
+                  "type": "string"
+                },
+                "best_effort": {
+                  "description": "Filter to determine if best effort results should be included. Only available in USA/CANADA.",
+                  "type": "boolean"
+                },
+                "country_code": {
+                  "description": "Filter phone numbers by country.",
+                  "type": "string"
+                },
+                "exclude_held_numbers": {
+                  "description": "Filter to exclude phone numbers that are currently on hold/reserved for your account.",
+                  "type": "boolean"
+                },
+                "features": {
+                  "description": "Filter phone numbers with specific features.",
+                  "items": {
+                    "enum": [
+                      "sms",
+                      "mms",
+                      "voice",
+                      "fax",
+                      "emergency",
+                      "hd_voice",
+                      "international_sms",
+                      "local_calling"
+                    ],
+                    "type": "string"
+                  },
+                  "type": "array"
+                },
+                "limit": {
+                  "description": "Limits the number of results.",
+                  "type": "integer"
+                },
+                "locality": {
+                  "description": "Filter phone numbers by city.",
+                  "type": "string"
+                },
+                "national_destination_code": {
+                  "description": "Filter by the national destination code of the number.",
+                  "type": "string"
+                },
+                "phone_number": {
+                  "additionalProperties": false,
+                  "description": "Filter phone numbers by pattern matching.",
+                  "properties": {
+                    "contains": {
+                      "description": "Filter numbers containing a pattern (excludes NDC if used with `national_destination_code` filter).",
+                      "type": "string"
+                    },
+                    "ends_with": {
+                      "description": "Filter numbers ending with a pattern (excludes NDC if used with `national_destination_code` filter).",
+                      "type": "string"
+                    },
+                    "starts_with": {
+                      "description": "Filter numbers starting with a pattern (excludes NDC if used with `national_destination_code` filter).",
+                      "type": "string"
+                    }
+                  },
+                  "type": "object"
+                },
+                "phone_number_type": {
+                  "description": "Filter phone numbers by number type.",
+                  "enum": [
+                    "local",
+                    "toll_free",
+                    "mobile",
+                    "national",
+                    "shared_cost"
+                  ],
+                  "type": "string"
+                },
+                "quickship": {
+                  "description": "Filter to exclude phone numbers that need additional time after to purchase to activate. Only applicable for +1 toll_free numbers.",
+                  "type": "boolean"
+                },
+                "rate_center": {
+                  "description": "Filter phone numbers by rate center. This filter is only applicable to USA and Canada numbers.",
+                  "type": "string"
+                },
+                "reservable": {
+                  "description": "Filter to ensure only numbers that can be reserved are included in the results.",
+                  "type": "boolean"
+                }
+              },
+              "type": "object"
+            },
+            "style": "deepObject"
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "items": {
+                        "$ref": "#/components/schemas/AvailablePhoneNumber"
+                      },
+                      "type": "array"
+                    },
+                    "meta": {
+                      "$ref": "#/components/schemas/AvailablePhoneNumbersMetadata"
+                    },
+                    "metadata": {
+                      "$ref": "#/components/schemas/AvailablePhoneNumbersMetadata"
+                    }
+                  },
+                  "title": "List Available Phone Numbers Response",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful response with a list of available phone numbers."
+          },
+          "400": {
+            "$ref": "#/components/responses/numbers_BadRequestResponse_73c9788e53"
+          },
+          "401": {
+            "$ref": "#/components/responses/numbers_UnauthorizedResponse_73c9788e53"
+          },
+          "404": {
+            "$ref": "#/components/responses/numbers_NotFoundResponse_73c9788e53"
+          },
+          "422": {
+            "$ref": "#/components/responses/numbers_UnprocessableEntity_73c9788e53"
+          },
+          "500": {
+            "$ref": "#/components/responses/GenericErrorResponse"
+          }
+        },
+        "summary": "List available phone numbers",
+        "tags": [
+          "Phone Number Search"
+        ],
+        "x-endpoint-cost": "heavy",
+        "x-group-parameters": "true"
+      }
+    }
+  },
+  "security": [
+    {
+      "bearerAuth": []
+    }
+  ],
+  "servers": [
+    {
+      "description": "Version 2.0.0 of the Telnyx API",
+      "url": "https://api.telnyx.com/v2"
+    }
+  ]
+}

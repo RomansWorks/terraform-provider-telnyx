@@ -1,0 +1,334 @@
+{
+  "components": {
+    "schemas": {
+      "SttUsageReportResponse": {
+        "properties": {
+          "data": {
+            "type": "object"
+          }
+        },
+        "type": "object"
+      },
+      "standard_Error": {
+        "properties": {
+          "code": {
+            "title": "Telnyx error code",
+            "type": "string"
+          },
+          "detail": {
+            "title": "Error details",
+            "type": "string"
+          },
+          "title": {
+            "title": "Error title",
+            "type": "string"
+          }
+        },
+        "required": [
+          "detail"
+        ],
+        "title": "Error",
+        "type": "object"
+      },
+      "standard_ErrorResponse": {
+        "properties": {
+          "errors": {
+            "items": {
+              "$ref": "#/components/schemas/standard_Error"
+            },
+            "title": "Errors",
+            "type": "array"
+          }
+        },
+        "title": "ErrorResponse",
+        "type": "object"
+      },
+      "standard_ErrorResponse_ffba4faa88": {
+        "properties": {
+          "errors": {
+            "items": {
+              "$ref": "#/components/schemas/standard_Error_ffba4faa88"
+            },
+            "title": "Errors",
+            "type": "array"
+          }
+        },
+        "title": "ErrorResponse",
+        "type": "object"
+      },
+      "standard_Error_ffba4faa88": {
+        "properties": {
+          "code": {
+            "title": "Telnyx error code",
+            "type": "string"
+          },
+          "detail": {
+            "title": "Error details",
+            "type": "string"
+          },
+          "title": {
+            "title": "Error title",
+            "type": "string"
+          }
+        },
+        "required": [
+          "detail"
+        ],
+        "title": "Error",
+        "type": "object"
+      }
+    },
+    "securitySchemes": {
+      "BearerAuth": {
+        "bearerFormat": "API key",
+        "description": "Telnyx API key supplied as `Authorization: Bearer \u003ctoken\u003e`. In production, auth may be validated by the API gateway and forwarded via Telnyx auth headers.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "Payment": {
+        "description": "Machine Payment Protocol credential used on paid retries, sent as `Authorization: Payment ...`. Obtained by paying a challenge returned in the `WWW-Authenticate` header of a 402 response. This is not a Telnyx API key; initial challenge requests use standard bearer authentication instead.",
+        "in": "header",
+        "name": "Authorization",
+        "type": "apiKey"
+      },
+      "agent-memory_bearerAuth": {
+        "description": "Telnyx API key",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "bearerAuth": {
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "branded-calling_bearerAuth": {
+        "description": "Telnyx API key. Generate one at https://portal.telnyx.com/#/app/api-keys.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "collections_bearerAuth": {
+        "description": "Telnyx API key. Collections and results are automatically scoped to the authenticated user's organization.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "number-reputation_bearerAuth": {
+        "description": "Telnyx API key. Generate one at https://portal.telnyx.com/#/app/api-keys.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "oauthClientAuth": {
+        "description": "OAuth 2.0 authentication for Telnyx API and MCP integrations",
+        "flows": {
+          "authorizationCode": {
+            "authorizationUrl": "https://api.telnyx.com/v2/oauth/authorize",
+            "refreshUrl": "https://api.telnyx.com/v2/oauth/token",
+            "scopes": {
+              "admin": "Administrative access to Telnyx resources"
+            },
+            "tokenUrl": "https://api.telnyx.com/v2/oauth/token"
+          },
+          "clientCredentials": {
+            "scopes": {
+              "admin": "Administrative access to Telnyx resources"
+            },
+            "tokenUrl": "https://api.telnyx.com/v2/oauth/token"
+          }
+        },
+        "type": "oauth2"
+      },
+      "outbound-voice-profiles_bearerAuth": {
+        "bearerFormat": "JWT",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "pay-connectors_bearerAuth": {
+        "description": "Telnyx API key, not the processor bearer token.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "pronunciation-dicts_bearerAuth": {
+        "description": "Telnyx API v2 key. Obtain from https://portal.telnyx.com",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "rcs-registration_bearerAuth": {
+        "bearerFormat": "API key",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "stored-payment-transactions_bearerAuth": {
+        "bearerFormat": "JWT",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "telnyxApiKey": {
+        "description": "Management-only Telnyx account credential.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "transcriptions-search_bearerAuth": {
+        "description": "Telnyx API key. Results are automatically scoped to the authenticated user's organization.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "web-search_bearerAuth": {
+        "description": "Telnyx API key",
+        "scheme": "bearer",
+        "type": "http"
+      }
+    }
+  },
+  "info": {
+    "contact": {
+      "email": "support@telnyx.com"
+    },
+    "description": "SIP trunking, SMS, MMS, Call Control and Telephony Data Services.",
+    "title": "Telnyx API",
+    "version": "2.0.0",
+    "x-endpoint-cost": "light",
+    "x-latency-category": "responsive"
+  },
+  "openapi": "3.1.0",
+  "paths": {
+    "/legacy/reporting/usage_reports/speech_to_text": {
+      "get": {
+        "description": "Generate and fetch speech to text usage report synchronously. This endpoint will both generate and fetch the speech to text report over a specified time period. ",
+        "operationId": "getSttUsageReportSync",
+        "parameters": [
+          {
+            "description": "Start of the date range filter (inclusive, ISO 8601).",
+            "in": "query",
+            "name": "start_date",
+            "schema": {
+              "example": "2020-07-02T00:00:00-06:00",
+              "format": "date-time",
+              "type": "string"
+            }
+          },
+          {
+            "description": "End of the date range filter (inclusive, ISO 8601).",
+            "in": "query",
+            "name": "end_date",
+            "schema": {
+              "example": "2020-07-01T00:00:00-06:00",
+              "format": "date-time",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "example": {},
+                "schema": {
+                  "$ref": "#/components/schemas/SttUsageReportResponse"
+                }
+              }
+            },
+            "description": "Successful"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "errors": [
+                    {
+                      "code": "10015",
+                      "detail": "The request failed because it was not well-formed.",
+                      "title": "Bad Request"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/standard_ErrorResponse_ffba4faa88"
+                }
+              }
+            },
+            "description": "Bad Request"
+          }
+        },
+        "summary": "Get speech to text usage report",
+        "tags": [
+          "Speech to text Usage Reports"
+        ],
+        "x-latency-category": "responsive"
+      }
+    },
+    "/legacy_reporting/usage_reports/speech_to_text": {
+      "get": {
+        "description": "Generate and fetch speech to text usage report synchronously. This endpoint will both generate and fetch the speech to text report over a specified time period. ",
+        "operationId": "getSttUsageReportSync",
+        "parameters": [
+          {
+            "description": "Start of the date range filter (inclusive, ISO 8601).",
+            "in": "query",
+            "name": "start_date",
+            "schema": {
+              "example": "2020-07-02T00:00:00-06:00",
+              "format": "date-time",
+              "type": "string"
+            }
+          },
+          {
+            "description": "End of the date range filter (inclusive, ISO 8601).",
+            "in": "query",
+            "name": "end_date",
+            "schema": {
+              "example": "2020-07-01T00:00:00-06:00",
+              "format": "date-time",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "example": {},
+                "schema": {
+                  "$ref": "#/components/schemas/SttUsageReportResponse"
+                }
+              }
+            },
+            "description": "Successful"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "errors": [
+                    {
+                      "code": "10015",
+                      "detail": "The request failed because it was not well-formed.",
+                      "title": "Bad Request"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/standard_ErrorResponse"
+                }
+              }
+            },
+            "description": "Bad Request"
+          }
+        },
+        "summary": "Get speech to text usage report",
+        "tags": [
+          "Speech to text Usage Reports"
+        ],
+        "x-latency-category": "responsive"
+      }
+    }
+  },
+  "security": [
+    {
+      "bearerAuth": []
+    }
+  ],
+  "servers": [
+    {
+      "description": "Version 2.0.0 of the Telnyx API",
+      "url": "https://api.telnyx.com/v2"
+    }
+  ]
+}

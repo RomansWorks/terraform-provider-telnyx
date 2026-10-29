@@ -1,0 +1,832 @@
+{
+  "components": {
+    "parameters": {
+      "PageCursorConsolidated": {
+        "description": "Consolidated page parameter (deepObject style). Originally: page[after], page[limit]",
+        "explode": true,
+        "in": "query",
+        "name": "page",
+        "schema": {
+          "properties": {
+            "after": {
+              "description": "The cursor from `meta.cursors.after` of the previous page.",
+              "type": "string"
+            },
+            "limit": {
+              "default": 20,
+              "description": "The number of results per page.",
+              "maximum": 100,
+              "minimum": 1,
+              "type": "integer"
+            }
+          },
+          "type": "object"
+        },
+        "style": "deepObject"
+      }
+    },
+    "responses": {
+      "GenericErrorResponse": {
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Errors"
+            }
+          }
+        },
+        "description": "Unexpected error"
+      }
+    },
+    "schemas": {
+      "Error": {
+        "example": {
+          "code": "20207",
+          "description": "The street address provided is invalid.",
+          "source": {
+            "pointer": "/street_address"
+          },
+          "title": "Invalid street address"
+        },
+        "properties": {
+          "code": {
+            "type": "string",
+            "x-format": "int64"
+          },
+          "description": {
+            "type": "string"
+          },
+          "detail": {
+            "description": "A human-readable explanation of the error.",
+            "type": "string"
+          },
+          "meta": {
+            "additionalProperties": true,
+            "type": "object"
+          },
+          "source": {
+            "properties": {
+              "parameter": {
+                "description": "Indicates which query parameter caused the error.",
+                "type": "string"
+              },
+              "pointer": {
+                "description": "JSON pointer (RFC6901) to the offending entity.",
+                "format": "json-pointer",
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
+          "title": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "title"
+        ],
+        "type": "object"
+      },
+      "Errors": {
+        "properties": {
+          "errors": {
+            "items": {
+              "$ref": "#/components/schemas/Error"
+            },
+            "type": "array"
+          }
+        },
+        "type": "object"
+      },
+      "Tunnel": {
+        "properties": {
+          "connection_count": {
+            "description": "The number of tunnel processes connected with the tunnel's token.",
+            "example": 2,
+            "minimum": 0,
+            "readOnly": true,
+            "type": "integer"
+          },
+          "connections": {
+            "description": "The tunnel processes connected with the tunnel's token.",
+            "items": {
+              "$ref": "#/components/schemas/TunnelConnection"
+            },
+            "readOnly": true,
+            "type": "array"
+          },
+          "created_at": {
+            "description": "ISO 8601 formatted date-time indicating when the resource was created.",
+            "example": "2026-10-21T15:04:05.123456Z",
+            "format": "date-time",
+            "readOnly": true,
+            "type": "string"
+          },
+          "id": {
+            "description": "Identifies the resource.",
+            "example": "62d438d2-8a51-4c5e-9d0c-1f6b2a7e4c39",
+            "format": "uuid",
+            "readOnly": true,
+            "type": "string"
+          },
+          "name": {
+            "description": "A user specified name for the tunnel.",
+            "example": "chicago-dc",
+            "minLength": 1,
+            "type": "string"
+          },
+          "record_type": {
+            "description": "Identifies the type of the resource.",
+            "example": "tunnel",
+            "readOnly": true,
+            "type": "string"
+          },
+          "status": {
+            "description": "`inactive` when no tunnel process is connected, and `healthy` when one or more are. `degraded` (Preview, not reported yet) when a process is connected but fails to reach its destinations.",
+            "enum": [
+              "inactive",
+              "healthy",
+              "degraded"
+            ],
+            "example": "healthy",
+            "readOnly": true,
+            "type": "string"
+          }
+        },
+        "title": "Tunnel",
+        "type": "object"
+      },
+      "TunnelConnection": {
+        "description": "A tunnel process connected to the tunnel.",
+        "properties": {
+          "connected_at": {
+            "description": "When the process connected.",
+            "example": "2026-10-21T15:04:05.123456Z",
+            "format": "date-time",
+            "type": "string"
+          },
+          "hostname": {
+            "description": "The name the host reports for itself. Preview: empty until the CLI reports it.",
+            "example": "dc1-tunnel-a",
+            "type": "string"
+          },
+          "region_code": {
+            "description": "The Telnyx region the process is connected to. Preview: empty until the CLI reports it.",
+            "example": "chicago-il",
+            "type": "string"
+          },
+          "version": {
+            "description": "The `telnyx-edge` CLI version of the process. Preview: empty until the CLI reports it.",
+            "example": "0.6.0",
+            "type": "string"
+          }
+        },
+        "title": "TunnelConnection",
+        "type": "object"
+      },
+      "TunnelCreate": {
+        "properties": {
+          "name": {
+            "description": "A user specified name for the tunnel.",
+            "example": "chicago-dc",
+            "minLength": 1,
+            "type": "string"
+          }
+        },
+        "required": [
+          "name"
+        ],
+        "title": "TunnelCreate",
+        "type": "object"
+      },
+      "TunnelWithToken": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/Tunnel"
+          },
+          {
+            "properties": {
+              "tunnel_token": {
+                "description": "The credential that a tunnel process presents with `telnyx-edge tunnel run --token`. Returned only by create and rotate_token. Telnyx stores only a hash of it.",
+                "example": "tnl_example-token-shown-once",
+                "readOnly": true,
+                "type": "string"
+              }
+            },
+            "type": "object"
+          }
+        ],
+        "title": "TunnelWithToken"
+      },
+      "netapps_CursorPaginationMeta": {
+        "properties": {
+          "cursors": {
+            "description": "Opaque cursors. Absent keys mean there is no such page.",
+            "properties": {
+              "after": {
+                "description": "Pass as `page[after]` to fetch the next page. Absent on the last page.",
+                "type": "string"
+              },
+              "before": {
+                "description": "The cursor of the previous page. Present when the request used `page[after]`.",
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
+          "next": {
+            "description": "The path of the next page, with the same query parameters. Absent on the last page.",
+            "example": "/v2/network_routes?filter%5Bnetwork_id%5D=91446ee3-5b1c-4f0e-8d2a-6c7e9b0a1f24\u0026page%5Bafter%5D=MjAyNi0xMC0yMVQxNjowNjowMC4wNDMwNDRa\u0026page%5Blimit%5D=1",
+            "type": "string"
+          },
+          "previous": {
+            "description": "The path of the previous page. Present when the request used `page[after]`.",
+            "type": "string"
+          }
+        },
+        "title": "CursorPaginationMeta",
+        "type": "object"
+      }
+    },
+    "securitySchemes": {
+      "BearerAuth": {
+        "bearerFormat": "API key",
+        "description": "Telnyx API key supplied as `Authorization: Bearer \u003ctoken\u003e`. In production, auth may be validated by the API gateway and forwarded via Telnyx auth headers.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "Payment": {
+        "description": "Machine Payment Protocol credential used on paid retries, sent as `Authorization: Payment ...`. Obtained by paying a challenge returned in the `WWW-Authenticate` header of a 402 response. This is not a Telnyx API key; initial challenge requests use standard bearer authentication instead.",
+        "in": "header",
+        "name": "Authorization",
+        "type": "apiKey"
+      },
+      "agent-memory_bearerAuth": {
+        "description": "Telnyx API key",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "bearerAuth": {
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "branded-calling_bearerAuth": {
+        "description": "Telnyx API key. Generate one at https://portal.telnyx.com/#/app/api-keys.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "collections_bearerAuth": {
+        "description": "Telnyx API key. Collections and results are automatically scoped to the authenticated user's organization.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "number-reputation_bearerAuth": {
+        "description": "Telnyx API key. Generate one at https://portal.telnyx.com/#/app/api-keys.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "oauthClientAuth": {
+        "description": "OAuth 2.0 authentication for Telnyx API and MCP integrations",
+        "flows": {
+          "authorizationCode": {
+            "authorizationUrl": "https://api.telnyx.com/v2/oauth/authorize",
+            "refreshUrl": "https://api.telnyx.com/v2/oauth/token",
+            "scopes": {
+              "admin": "Administrative access to Telnyx resources"
+            },
+            "tokenUrl": "https://api.telnyx.com/v2/oauth/token"
+          },
+          "clientCredentials": {
+            "scopes": {
+              "admin": "Administrative access to Telnyx resources"
+            },
+            "tokenUrl": "https://api.telnyx.com/v2/oauth/token"
+          }
+        },
+        "type": "oauth2"
+      },
+      "outbound-voice-profiles_bearerAuth": {
+        "bearerFormat": "JWT",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "pay-connectors_bearerAuth": {
+        "description": "Telnyx API key, not the processor bearer token.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "pronunciation-dicts_bearerAuth": {
+        "description": "Telnyx API v2 key. Obtain from https://portal.telnyx.com",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "rcs-registration_bearerAuth": {
+        "bearerFormat": "API key",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "stored-payment-transactions_bearerAuth": {
+        "bearerFormat": "JWT",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "telnyxApiKey": {
+        "description": "Management-only Telnyx account credential.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "transcriptions-search_bearerAuth": {
+        "description": "Telnyx API key. Results are automatically scoped to the authenticated user's organization.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "web-search_bearerAuth": {
+        "description": "Telnyx API key",
+        "scheme": "bearer",
+        "type": "http"
+      }
+    }
+  },
+  "info": {
+    "contact": {
+      "email": "support@telnyx.com"
+    },
+    "description": "SIP trunking, SMS, MMS, Call Control and Telephony Data Services.",
+    "title": "Telnyx API",
+    "version": "2.0.0",
+    "x-endpoint-cost": "light",
+    "x-latency-category": "responsive"
+  },
+  "openapi": "3.1.0",
+  "paths": {
+    "/tunnels": {
+      "get": {
+        "description": "Lists the tunnels on the account with their status and connected tunnel processes. Responses never include `tunnel_token`.",
+        "operationId": "ListTunnels",
+        "parameters": [
+          {
+            "description": "Consolidated filter parameter (deepObject style). Originally: filter[name], filter[status]",
+            "explode": true,
+            "in": "query",
+            "name": "filter",
+            "schema": {
+              "properties": {
+                "name": {
+                  "description": "The name of the tunnel.",
+                  "example": "chicago-dc",
+                  "type": "string"
+                },
+                "status": {
+                  "description": "The status of the tunnel.",
+                  "enum": [
+                    "inactive",
+                    "healthy",
+                    "degraded"
+                  ],
+                  "example": "healthy",
+                  "type": "string"
+                }
+              },
+              "type": "object"
+            },
+            "style": "deepObject"
+          },
+          {
+            "description": "Sorts the results by a field, ascending, or descending with a leading `-`. The default is `-created_at`.",
+            "in": "query",
+            "name": "sort",
+            "schema": {
+              "enum": [
+                "name",
+                "-name",
+                "status",
+                "-status",
+                "created_at",
+                "-created_at",
+                "updated_at",
+                "-updated_at"
+              ],
+              "example": "-created_at",
+              "type": "string"
+            }
+          },
+          {
+            "$ref": "#/components/parameters/PageCursorConsolidated"
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "data": [
+                    {
+                      "connection_count": 2,
+                      "connections": [
+                        {
+                          "connected_at": "2026-10-21T15:04:05.123456Z",
+                          "hostname": "dc1-tunnel-a",
+                          "region_code": "chicago-il",
+                          "version": "0.6.0"
+                        },
+                        {
+                          "connected_at": "2026-10-21T15:04:05.123456Z",
+                          "hostname": "dc1-tunnel-b",
+                          "region_code": "chicago-il",
+                          "version": "0.6.0"
+                        }
+                      ],
+                      "created_at": "2026-10-21T15:04:05.123456Z",
+                      "id": "62d438d2-8a51-4c5e-9d0c-1f6b2a7e4c39",
+                      "name": "chicago-dc",
+                      "record_type": "tunnel",
+                      "status": "healthy"
+                    }
+                  ],
+                  "meta": {
+                    "cursors": {}
+                  }
+                },
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "items": {
+                        "$ref": "#/components/schemas/Tunnel"
+                      },
+                      "type": "array"
+                    },
+                    "meta": {
+                      "$ref": "#/components/schemas/netapps_CursorPaginationMeta"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful response."
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "errors": [
+                    {
+                      "code": "10022",
+                      "detail": "unsupported sort field",
+                      "source": {
+                        "pointer": "sort"
+                      },
+                      "title": "Unprocessable Entity"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/Errors"
+                }
+              }
+            },
+            "description": "Unprocessable entity: a query parameter is not valid, such as an unsupported `sort` field."
+          },
+          "default": {
+            "$ref": "#/components/responses/GenericErrorResponse"
+          }
+        },
+        "summary": "List all Tunnels",
+        "tags": [
+          "Tunnels"
+        ]
+      },
+      "post": {
+        "description": "Creates a tunnel and returns its `tunnel_token`. The token is the only credential the tunnel process needs, and this response and `POST /tunnels/{id}/actions/rotate_token` are the only ones that return it. A new tunnel is `inactive` until a tunnel process connects with the token.",
+        "operationId": "CreateTunnel",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "example": {
+                "name": "chicago-dc"
+              },
+              "schema": {
+                "$ref": "#/components/schemas/TunnelCreate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "data": {
+                    "connection_count": 0,
+                    "connections": [],
+                    "created_at": "2026-10-21T15:04:05.123456Z",
+                    "id": "62d438d2-8a51-4c5e-9d0c-1f6b2a7e4c39",
+                    "name": "chicago-dc",
+                    "record_type": "tunnel",
+                    "status": "inactive",
+                    "tunnel_token": "tnl_example-token-shown-once"
+                  }
+                },
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/TunnelWithToken"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Created. The response carries the tunnel token, once."
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "errors": [
+                    {
+                      "code": "10022",
+                      "detail": "name is required",
+                      "source": {
+                        "pointer": "/name"
+                      },
+                      "title": "Unprocessable Entity"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/Errors"
+                }
+              }
+            },
+            "description": "Unprocessable entity: the body failed validation. `source.pointer` names the field."
+          },
+          "default": {
+            "$ref": "#/components/responses/GenericErrorResponse"
+          }
+        },
+        "summary": "Create a Tunnel",
+        "tags": [
+          "Tunnels"
+        ]
+      }
+    },
+    "/tunnels/{id}": {
+      "delete": {
+        "description": "Deletes a tunnel. A tunnel that a route names as its next hop cannot be deleted; delete those routes first. Connected tunnel processes are disconnected and cannot reconnect with the tunnel's token.",
+        "operationId": "DeleteTunnel",
+        "parameters": [
+          {
+            "description": "The id of the tunnel.",
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "example": "62d438d2-8a51-4c5e-9d0c-1f6b2a7e4c39",
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Deleted."
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "errors": [
+                    {
+                      "code": "10020",
+                      "detail": "get tunnel: not found",
+                      "title": "Resource not found"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/Errors"
+                }
+              }
+            },
+            "description": "Not found: no tunnel with this id exists on the account."
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "errors": [
+                    {
+                      "code": "10021",
+                      "detail": "tunnel 62d438d2-8a51-4c5e-9d0c-1f6b2a7e4c39 is the next hop of 1 route; delete it first: e8a2c5d0-3f7b-4a19-b6d2-9c1e0f8a7b53",
+                      "meta": {
+                        "route_ids": [
+                          "e8a2c5d0-3f7b-4a19-b6d2-9c1e0f8a7b53"
+                        ]
+                      },
+                      "title": "Resource conflict"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/Errors"
+                }
+              }
+            },
+            "description": "Conflict: one or more routes name the tunnel as their next hop. `detail` and `meta.route_ids` list them."
+          },
+          "default": {
+            "$ref": "#/components/responses/GenericErrorResponse"
+          }
+        },
+        "summary": "Delete a Tunnel",
+        "tags": [
+          "Tunnels"
+        ]
+      },
+      "get": {
+        "description": "Retrieves a tunnel with its status and the tunnel processes connected to it. The response never includes `tunnel_token`.",
+        "operationId": "GetTunnel",
+        "parameters": [
+          {
+            "description": "The id of the tunnel.",
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "example": "62d438d2-8a51-4c5e-9d0c-1f6b2a7e4c39",
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "data": {
+                    "connection_count": 2,
+                    "connections": [
+                      {
+                        "connected_at": "2026-10-21T15:04:05.123456Z",
+                        "hostname": "dc1-tunnel-a",
+                        "region_code": "chicago-il",
+                        "version": "0.6.0"
+                      },
+                      {
+                        "connected_at": "2026-10-21T15:04:05.123456Z",
+                        "hostname": "dc1-tunnel-b",
+                        "region_code": "chicago-il",
+                        "version": "0.6.0"
+                      }
+                    ],
+                    "created_at": "2026-10-21T15:04:05.123456Z",
+                    "id": "62d438d2-8a51-4c5e-9d0c-1f6b2a7e4c39",
+                    "name": "chicago-dc",
+                    "record_type": "tunnel",
+                    "status": "healthy"
+                  }
+                },
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/Tunnel"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful response."
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "errors": [
+                    {
+                      "code": "10020",
+                      "detail": "get tunnel: not found",
+                      "title": "Resource not found"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/Errors"
+                }
+              }
+            },
+            "description": "Not found: no tunnel with this id exists on the account."
+          },
+          "default": {
+            "$ref": "#/components/responses/GenericErrorResponse"
+          }
+        },
+        "summary": "Retrieve a Tunnel",
+        "tags": [
+          "Tunnels"
+        ]
+      }
+    },
+    "/tunnels/{id}/actions/rotate_token": {
+      "post": {
+        "description": "Issues a new `tunnel_token` and invalidates the previous one. Tunnel processes already connected stay connected until they reconnect, and are then refused until they use the new token.",
+        "operationId": "RotateTunnelToken",
+        "parameters": [
+          {
+            "description": "The id of the tunnel.",
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "example": "62d438d2-8a51-4c5e-9d0c-1f6b2a7e4c39",
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "data": {
+                    "connection_count": 2,
+                    "connections": [
+                      {
+                        "connected_at": "2026-10-21T15:04:05.123456Z",
+                        "hostname": "dc1-tunnel-a",
+                        "region_code": "chicago-il",
+                        "version": "0.6.0"
+                      },
+                      {
+                        "connected_at": "2026-10-21T15:04:05.123456Z",
+                        "hostname": "dc1-tunnel-b",
+                        "region_code": "chicago-il",
+                        "version": "0.6.0"
+                      }
+                    ],
+                    "created_at": "2026-10-21T15:04:05.123456Z",
+                    "id": "62d438d2-8a51-4c5e-9d0c-1f6b2a7e4c39",
+                    "name": "chicago-dc",
+                    "record_type": "tunnel",
+                    "status": "healthy",
+                    "tunnel_token": "tnl_example-new-token-shown-once"
+                  }
+                },
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/TunnelWithToken"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful response. The response carries the new tunnel token, once."
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "errors": [
+                    {
+                      "code": "10020",
+                      "detail": "get tunnel: not found",
+                      "title": "Resource not found"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/Errors"
+                }
+              }
+            },
+            "description": "Not found: no tunnel with this id exists on the account."
+          },
+          "default": {
+            "$ref": "#/components/responses/GenericErrorResponse"
+          }
+        },
+        "summary": "Rotate a Tunnel Token",
+        "tags": [
+          "Tunnels"
+        ]
+      }
+    }
+  },
+  "security": [
+    {
+      "bearerAuth": []
+    }
+  ],
+  "servers": [
+    {
+      "description": "Version 2.0.0 of the Telnyx API",
+      "url": "https://api.telnyx.com/v2"
+    }
+  ]
+}

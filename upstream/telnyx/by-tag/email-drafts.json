@@ -1,0 +1,1875 @@
+{
+  "components": {
+    "parameters": {
+      "DraftId": {
+        "description": "Email draft UUID.",
+        "in": "path",
+        "name": "draft_id",
+        "required": true,
+        "schema": {
+          "format": "uuid",
+          "type": "string"
+        }
+      },
+      "DraftInboxId": {
+        "description": "Email inbox UUID.",
+        "in": "path",
+        "name": "inbox_id",
+        "required": true,
+        "schema": {
+          "format": "uuid",
+          "type": "string"
+        }
+      }
+    },
+    "responses": {
+      "DraftUnavailableResponse": {
+        "content": {
+          "application/json": {
+            "example": {
+              "errors": [
+                {
+                  "code": "10016",
+                  "detail": "Drafts are temporarily unavailable. Please try again later.",
+                  "title": "Service Unavailable"
+                }
+              ]
+            },
+            "schema": {
+              "$ref": "#/components/schemas/email_ErrorResponse"
+            }
+          }
+        },
+        "description": "Drafts or the email domain service are temporarily unavailable (10016)."
+      },
+      "EmailSendTooManyRequestsResponse": {
+        "content": {
+          "application/json": {
+            "examples": {
+              "accountDailyLimit": {
+                "summary": "Account daily recipient quota exhausted",
+                "value": {
+                  "errors": [
+                    {
+                      "code": "10011",
+                      "detail": "Daily send limit of 1000 recipients exceeded. The limit resets at midnight UTC.",
+                      "title": "Too Many Requests"
+                    }
+                  ]
+                }
+              },
+              "reputationSuspended": {
+                "summary": "Domain reputation is poor",
+                "value": {
+                  "errors": [
+                    {
+                      "code": "reputation_suspended",
+                      "detail": "Sender domain reputation is too low. Sending has been suspended. Please contact support to resolve deliverability issues.",
+                      "title": "Sending Suspended"
+                    }
+                  ]
+                }
+              },
+              "senderDomainGraduation": {
+                "summary": "Sender-domain graduation ceiling exceeded",
+                "value": {
+                  "errors": [
+                    {
+                      "code": "domain_graduation_limit_exceeded",
+                      "detail": "Daily send limit of 250 recipients for this sender domain exceeded. The limit resets at midnight UTC.",
+                      "meta": {
+                        "remaining_today": 0,
+                        "retry_after_seconds": 3600
+                      },
+                      "title": "Too Many Requests"
+                    }
+                  ]
+                }
+              }
+            },
+            "schema": {
+              "oneOf": [
+                {
+                  "$ref": "#/components/schemas/DailySendLimitError"
+                },
+                {
+                  "$ref": "#/components/schemas/DomainGraduationLimitExceededError"
+                },
+                {
+                  "$ref": "#/components/schemas/ReputationSuspendedError"
+                }
+              ]
+            }
+          }
+        },
+        "description": "Send rejected before message creation because the account daily recipient quota was exhausted (10011), the sender-domain graduation ceiling was exceeded (domain_graduation_limit_exceeded), or domain reputation is poor (reputation_suspended).",
+        "headers": {
+          "Retry-After": {
+            "description": "Seconds until the next UTC-midnight reset. Present only for domain_graduation_limit_exceeded; omitted for 10011 and reputation_suspended.",
+            "example": 3600,
+            "schema": {
+              "minimum": 1,
+              "type": "integer"
+            }
+          }
+        }
+      },
+      "ValidationErrorResponse": {
+        "content": {
+          "application/json": {
+            "example": {
+              "errors": [
+                {
+                  "code": "10015",
+                  "detail": "subject can't be blank",
+                  "source": {
+                    "pointer": "/data/attributes/subject"
+                  },
+                  "title": "Validation Failed"
+                }
+              ]
+            },
+            "schema": {
+              "$ref": "#/components/schemas/email_ErrorResponse"
+            }
+          }
+        },
+        "description": "Validation Failed (10015) or changeset validation error."
+      },
+      "email_NotFoundResponse": {
+        "content": {
+          "application/json": {
+            "example": {
+              "errors": [
+                {
+                  "code": "10001",
+                  "detail": "The requested resource was not found",
+                  "title": "Not Found"
+                }
+              ]
+            },
+            "schema": {
+              "$ref": "#/components/schemas/email_ErrorResponse"
+            }
+          }
+        },
+        "description": "Resource not found (10001)."
+      },
+      "email_UnauthorizedResponse": {
+        "content": {
+          "application/json": {
+            "example": {
+              "errors": [
+                {
+                  "code": "10006",
+                  "detail": "Invalid API key",
+                  "meta": {
+                    "url": "https://developers.telnyx.com/docs/overview/errors/10006"
+                  },
+                  "title": "Not authorized"
+                }
+              ]
+            },
+            "schema": {
+              "$ref": "#/components/schemas/email_ErrorResponse"
+            }
+          }
+        },
+        "description": "Not authorized (10006)."
+      }
+    },
+    "schemas": {
+      "AttachmentResponse": {
+        "description": "EDR-aligned attachment metadata. The base64 `content` is never returned.",
+        "properties": {
+          "content_id": {
+            "description": "MIME Content-ID for inline references.",
+            "nullable": true,
+            "type": "string"
+          },
+          "content_type": {
+            "type": "string"
+          },
+          "disposition": {
+            "default": "attachment",
+            "description": "MIME disposition (e.g. `attachment` or `inline`). Runtime passes through the stored value without enforcing an enum.",
+            "type": "string"
+          },
+          "filename": {
+            "type": "string"
+          },
+          "sha256": {
+            "description": "SHA-256 hex digest of the attachment content.",
+            "nullable": true,
+            "type": "string"
+          },
+          "size_bytes": {
+            "description": "Attachment size in bytes.",
+            "nullable": true,
+            "type": "integer"
+          },
+          "url": {
+            "description": "Telnyx-hosted public URL for the attachment content.",
+            "format": "uri",
+            "nullable": true,
+            "type": "string"
+          }
+        },
+        "required": [
+          "url",
+          "sha256",
+          "size_bytes",
+          "filename",
+          "content_type",
+          "disposition",
+          "content_id"
+        ],
+        "type": "object"
+      },
+      "DailySendLimitError": {
+        "description": "Error envelope returned when the account's daily recipient quota is exhausted before message creation.",
+        "properties": {
+          "errors": {
+            "items": {
+              "properties": {
+                "code": {
+                  "enum": [
+                    "10011"
+                  ],
+                  "type": "string"
+                },
+                "detail": {
+                  "example": "Daily send limit of 1000 recipients exceeded. The limit resets at midnight UTC.",
+                  "type": "string"
+                },
+                "title": {
+                  "example": "Too Many Requests",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "code",
+                "title",
+                "detail"
+              ],
+              "type": "object"
+            },
+            "maxItems": 1,
+            "minItems": 1,
+            "type": "array"
+          }
+        },
+        "required": [
+          "errors"
+        ],
+        "type": "object"
+      },
+      "DomainGraduationLimitExceededError": {
+        "description": "Error envelope returned when a newly sending custom domain on shared egress would exceed its current daily graduation ceiling. The send is rejected before message creation.",
+        "properties": {
+          "errors": {
+            "items": {
+              "properties": {
+                "code": {
+                  "enum": [
+                    "domain_graduation_limit_exceeded"
+                  ],
+                  "type": "string"
+                },
+                "detail": {
+                  "example": "Daily send limit of 250 recipients for this sender domain exceeded. The limit resets at midnight UTC.",
+                  "type": "string"
+                },
+                "meta": {
+                  "additionalProperties": false,
+                  "description": "Bounded retry guidance. Each field is omitted when unknown.",
+                  "properties": {
+                    "remaining_today": {
+                      "description": "Recipient headroom remaining for the sender-domain identity before this rejected request.",
+                      "minimum": 0,
+                      "type": "integer"
+                    },
+                    "retry_after_seconds": {
+                      "description": "Seconds until the next UTC-midnight reset.",
+                      "minimum": 1,
+                      "type": "integer"
+                    }
+                  },
+                  "type": "object"
+                },
+                "title": {
+                  "example": "Too Many Requests",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "code",
+                "title",
+                "detail"
+              ],
+              "type": "object"
+            },
+            "maxItems": 1,
+            "minItems": 1,
+            "type": "array"
+          }
+        },
+        "required": [
+          "errors"
+        ],
+        "type": "object"
+      },
+      "EmailAddress": {
+        "properties": {
+          "email": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "email"
+        ],
+        "type": "object"
+      },
+      "EmailAddressInput": {
+        "oneOf": [
+          {
+            "type": "string"
+          },
+          {
+            "$ref": "#/components/schemas/EmailAddress"
+          }
+        ]
+      },
+      "EmailDraft": {
+        "description": "An unsent, mutable draft message belonging to an inbox.",
+        "properties": {
+          "attachments": {
+            "items": {
+              "type": "object"
+            },
+            "type": "array"
+          },
+          "bcc": {
+            "items": {
+              "$ref": "#/components/schemas/EmailAddress"
+            },
+            "type": "array"
+          },
+          "cc": {
+            "items": {
+              "$ref": "#/components/schemas/EmailAddress"
+            },
+            "type": "array"
+          },
+          "created_at": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "from": {
+            "description": "Sender address. Defaults to the inbox address at send time when null.",
+            "nullable": true,
+            "type": "string"
+          },
+          "from_name": {
+            "nullable": true,
+            "type": "string"
+          },
+          "headers": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "description": "Custom headers. Reply drafts carry `In-Reply-To` and `References`.",
+            "type": "object"
+          },
+          "html_body": {
+            "nullable": true,
+            "type": "string"
+          },
+          "id": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "inbox_id": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "labels": {
+            "description": "Mutable mailbox-state labels. Not propagated to Email Detail Records.",
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "metadata": {
+            "description": "Arbitrary customer-defined metadata.",
+            "type": "object"
+          },
+          "record_type": {
+            "enum": [
+              "email_draft"
+            ],
+            "type": "string"
+          },
+          "reply_to": {
+            "nullable": true,
+            "type": "string"
+          },
+          "reply_to_message_id": {
+            "description": "Inbound message this draft replies to. Server-owned; set only on reply drafts.",
+            "format": "uuid",
+            "nullable": true,
+            "type": "string"
+          },
+          "sent_at": {
+            "format": "date-time",
+            "nullable": true,
+            "type": "string"
+          },
+          "sent_message_id": {
+            "description": "The email message created when this draft was sent.",
+            "format": "uuid",
+            "nullable": true,
+            "type": "string"
+          },
+          "status": {
+            "description": "`draft` until the draft is sent. A sent draft is retained for audit and\nbecomes immutable.\n",
+            "enum": [
+              "draft",
+              "sending",
+              "sent"
+            ],
+            "type": "string"
+          },
+          "subject": {
+            "nullable": true,
+            "type": "string"
+          },
+          "tags": {
+            "description": "Transport/reporting attribution tags, propagated to Email Detail Records at send time.",
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "text_body": {
+            "nullable": true,
+            "type": "string"
+          },
+          "thread_id": {
+            "description": "Conversation thread inherited from the parent message.",
+            "format": "uuid",
+            "nullable": true,
+            "type": "string"
+          },
+          "to": {
+            "items": {
+              "$ref": "#/components/schemas/EmailAddress"
+            },
+            "type": "array"
+          },
+          "updated_at": {
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "required": [
+          "record_type",
+          "id",
+          "inbox_id",
+          "status"
+        ],
+        "type": "object"
+      },
+      "EmailDraftListResponse": {
+        "properties": {
+          "data": {
+            "items": {
+              "$ref": "#/components/schemas/EmailDraft"
+            },
+            "type": "array"
+          },
+          "meta": {
+            "$ref": "#/components/schemas/email_PaginationMeta"
+          }
+        },
+        "required": [
+          "data",
+          "meta"
+        ],
+        "type": "object"
+      },
+      "EmailDraftRequest": {
+        "description": "All fields are optional — a draft may be saved incomplete. `account_id`,\n`inbox_id`, `status`, `sent_at`, `sent_message_id`, `reply_to_message_id` and\n`thread_id` are server-owned and ignored if supplied.\n",
+        "properties": {
+          "attachments": {
+            "items": {
+              "type": "object"
+            },
+            "type": "array"
+          },
+          "bcc": {
+            "items": {
+              "$ref": "#/components/schemas/EmailAddressInput"
+            },
+            "type": "array"
+          },
+          "cc": {
+            "items": {
+              "$ref": "#/components/schemas/EmailAddressInput"
+            },
+            "type": "array"
+          },
+          "from_email": {
+            "type": "string"
+          },
+          "from_name": {
+            "type": "string"
+          },
+          "headers": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "type": "object"
+          },
+          "html": {
+            "description": "Alias for `html_body`, matching the send endpoint.",
+            "type": "string"
+          },
+          "html_body": {
+            "type": "string"
+          },
+          "labels": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "metadata": {
+            "type": "object"
+          },
+          "reply_to": {
+            "type": "string"
+          },
+          "subject": {
+            "maxLength": 255,
+            "type": "string"
+          },
+          "tags": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "text": {
+            "description": "Alias for `text_body`, matching the send endpoint.",
+            "type": "string"
+          },
+          "text_body": {
+            "type": "string"
+          },
+          "to": {
+            "items": {
+              "$ref": "#/components/schemas/EmailAddressInput"
+            },
+            "type": "array"
+          }
+        },
+        "type": "object"
+      },
+      "EmailDraftResponse": {
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/EmailDraft"
+          }
+        },
+        "required": [
+          "data"
+        ],
+        "type": "object"
+      },
+      "EmailEventType": {
+        "description": "Bare stored event names returned by message history. In addition to the normal send and delivery lifecycle, polling can expose suppression, scan, and quarantine lifecycle rows. Sharp canonical names gw_reject, injection_timeout, and expired distinguish gateway rejection, ambiguous injection timeout, and MTA expiration. The failed and bounced names remain valid for system/admin failures and hard bounces respectively. Existing stored rows retain their original names.",
+        "enum": [
+          "queued",
+          "deferred",
+          "scheduled",
+          "cancelled",
+          "sandbox",
+          "sending",
+          "sent",
+          "failed",
+          "delivered",
+          "bounced",
+          "complained",
+          "suppressed",
+          "rejected",
+          "opened",
+          "clicked",
+          "unsubscribed",
+          "daily_limit_exceeded",
+          "scan_deferred",
+          "quarantined",
+          "quarantine_released",
+          "quarantine_release_dispatched",
+          "quarantine_rejected",
+          "quarantine_expired",
+          "gw_reject",
+          "injection_timeout",
+          "expired"
+        ],
+        "type": "string"
+      },
+      "EmailMessage": {
+        "properties": {
+          "attachments": {
+            "items": {
+              "$ref": "#/components/schemas/AttachmentResponse"
+            },
+            "type": "array"
+          },
+          "bcc": {
+            "items": {
+              "$ref": "#/components/schemas/EmailAddress"
+            },
+            "type": "array"
+          },
+          "cc": {
+            "items": {
+              "$ref": "#/components/schemas/EmailAddress"
+            },
+            "type": "array"
+          },
+          "created_at": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "events": {
+            "items": {
+              "$ref": "#/components/schemas/EmbeddedMessageEvent"
+            },
+            "type": "array"
+          },
+          "from": {
+            "$ref": "#/components/schemas/EmailAddress"
+          },
+          "id": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "inline_css": {
+            "description": "Present when true in the immediate create response. Not persisted; absent on subsequent GET requests.",
+            "type": "boolean"
+          },
+          "metadata": {
+            "additionalProperties": true,
+            "default": {},
+            "description": "Customer-supplied metadata stored with the message.",
+            "type": "object"
+          },
+          "recipient_statuses": {
+            "additionalProperties": {
+              "type": "integer"
+            },
+            "description": "Per-status recipient counts for the message. Present only for outbound messages\nwith recipient rows. Keys are recipient statuses, values are counts.\nExample: `{\"delivered\": 998, \"bounced\": 2}`.\n",
+            "example": {
+              "bounced": 2,
+              "delivered": 998
+            },
+            "type": "object"
+          },
+          "record_type": {
+            "enum": [
+              "email_message"
+            ],
+            "type": "string"
+          },
+          "reply_to": {
+            "nullable": true,
+            "type": "string"
+          },
+          "sandbox": {
+            "description": "Present when sandbox mode was used.",
+            "type": "boolean"
+          },
+          "scheduled_at": {
+            "description": "Present when a scheduled_at value was stored. Persists even after the scheduled send has been processed or cancelled.",
+            "format": "date-time",
+            "type": "string"
+          },
+          "status": {
+            "$ref": "#/components/schemas/EmailMessageStatus"
+          },
+          "subject": {
+            "type": "string"
+          },
+          "suppressed": {
+            "description": "Recipients excluded from delivery by suppression checks, with reasons. On batch items, present when that item had suppressed recipients; all other recipients of the item still receive the message. For single sends this information appears at the top level of the response instead (see EmailMessageResponse.suppressed).",
+            "items": {
+              "$ref": "#/components/schemas/SuppressedRecipient"
+            },
+            "type": "array"
+          },
+          "tags": {
+            "default": [],
+            "description": "Customer-supplied tags stored with the message.",
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "template_id": {
+            "format": "uuid",
+            "nullable": true,
+            "type": "string"
+          },
+          "template_variables": {
+            "additionalProperties": true,
+            "default": {},
+            "type": "object"
+          },
+          "to": {
+            "items": {
+              "$ref": "#/components/schemas/EmailAddress"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "record_type",
+          "id",
+          "status",
+          "from",
+          "to",
+          "cc",
+          "bcc",
+          "subject",
+          "reply_to",
+          "template_id",
+          "template_variables",
+          "tags",
+          "metadata",
+          "attachments",
+          "events",
+          "created_at"
+        ],
+        "type": "object"
+      },
+      "EmailMessageResponse": {
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/EmailMessage"
+          },
+          "suppressed": {
+            "description": "Recipients removed by suppression checks when at least one recipient remains and the message is accepted.",
+            "items": {
+              "$ref": "#/components/schemas/SuppressedRecipient"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "data"
+        ],
+        "type": "object"
+      },
+      "EmailMessageStatus": {
+        "description": "Current status of an email message. Lifecycle statuses (queued, scheduled, etc.) are set on creation. Delivery statuses (delivered, bounced, etc.) are updated by delivery event consumers.",
+        "enum": [
+          "queued",
+          "scheduled",
+          "cancelled",
+          "sandbox",
+          "sending",
+          "sent",
+          "failed",
+          "deferred",
+          "delivered",
+          "bounced",
+          "complained",
+          "rejected",
+          "opened",
+          "clicked",
+          "unsubscribed"
+        ],
+        "type": "string"
+      },
+      "EmbeddedMessageEvent": {
+        "description": "An event embedded in a message response. The dedicated per-message events endpoint additionally returns event_type and canonical_event_type.",
+        "properties": {
+          "occurred_at": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "payload": {
+            "additionalProperties": true,
+            "type": "object"
+          },
+          "type": {
+            "$ref": "#/components/schemas/EmailEventType"
+          }
+        },
+        "required": [
+          "type",
+          "occurred_at"
+        ],
+        "type": "object"
+      },
+      "ErrorObject": {
+        "properties": {
+          "code": {
+            "description": "Telnyx error code. Send admission errors include account daily quota 10011 and sender-domain ramp code domain_graduation_limit_exceeded. Edge idempotency errors use 10027 or 10036. Fallback 404/500 responses from the framework may use string status codes ('404', '500') instead.",
+            "enum": [
+              "10001",
+              "10006",
+              "10007",
+              "10011",
+              "10015",
+              "10016",
+              "10019",
+              "domain_graduation_limit_exceeded",
+              "recipient_suppressed",
+              "reputation_suspended",
+              "404",
+              "500",
+              "10027",
+              "10036"
+            ],
+            "type": "string"
+          },
+          "detail": {
+            "description": "Human-readable error detail. Changeset responses may return a structured object.",
+            "oneOf": [
+              {
+                "type": "string"
+              },
+              {
+                "additionalProperties": true,
+                "type": "object"
+              }
+            ]
+          },
+          "meta": {
+            "additionalProperties": true,
+            "description": "Additional metadata. Present on 401 errors with a documentation URL.",
+            "nullable": true,
+            "type": "object"
+          },
+          "source": {
+            "additionalProperties": true,
+            "nullable": true,
+            "type": "object"
+          },
+          "title": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "title",
+          "detail"
+        ],
+        "type": "object"
+      },
+      "ReputationSuspendedError": {
+        "description": "Non-standard error envelope returned when the sending domain's reputation band is 'poor'. Uses string code `reputation_suspended` instead of a numeric code.",
+        "properties": {
+          "errors": {
+            "items": {
+              "properties": {
+                "code": {
+                  "enum": [
+                    "reputation_suspended"
+                  ],
+                  "type": "string"
+                },
+                "detail": {
+                  "type": "string"
+                },
+                "title": {
+                  "example": "Sending Suspended",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "code",
+                "title",
+                "detail"
+              ],
+              "type": "object"
+            },
+            "maxItems": 1,
+            "minItems": 1,
+            "type": "array"
+          }
+        },
+        "required": [
+          "errors"
+        ],
+        "type": "object"
+      },
+      "SuppressedRecipient": {
+        "properties": {
+          "override_allowed": {
+            "description": "Whether an authorized send may override this suppression.",
+            "type": "boolean"
+          },
+          "reason": {
+            "description": "Suppression reason returned by the recipient suppression service.",
+            "type": "string"
+          },
+          "scope": {
+            "description": "Scope at which the suppression applies.",
+            "type": "string"
+          },
+          "to": {
+            "description": "Suppressed recipient email address.",
+            "format": "email",
+            "type": "string"
+          }
+        },
+        "required": [
+          "to",
+          "reason",
+          "scope",
+          "override_allowed"
+        ],
+        "type": "object"
+      },
+      "email_ErrorResponse": {
+        "properties": {
+          "errors": {
+            "items": {
+              "$ref": "#/components/schemas/ErrorObject"
+            },
+            "type": "array"
+          },
+          "suppressed": {
+            "description": "Present when every recipient is suppressed, so the request is rejected and no message is created.",
+            "items": {
+              "$ref": "#/components/schemas/SuppressedRecipient"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "errors"
+        ],
+        "type": "object"
+      },
+      "email_PaginationMeta": {
+        "properties": {
+          "page_cursor": {
+            "description": "Cursor for the next page, when more results are available.",
+            "type": "string"
+          },
+          "page_size": {
+            "maximum": 100,
+            "minimum": 1,
+            "type": "integer"
+          }
+        },
+        "required": [
+          "page_size"
+        ],
+        "type": "object"
+      }
+    },
+    "securitySchemes": {
+      "BearerAuth": {
+        "bearerFormat": "API key",
+        "description": "Telnyx API key supplied as `Authorization: Bearer \u003ctoken\u003e`. In production, auth may be validated by the API gateway and forwarded via Telnyx auth headers.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "Payment": {
+        "description": "Machine Payment Protocol credential used on paid retries, sent as `Authorization: Payment ...`. Obtained by paying a challenge returned in the `WWW-Authenticate` header of a 402 response. This is not a Telnyx API key; initial challenge requests use standard bearer authentication instead.",
+        "in": "header",
+        "name": "Authorization",
+        "type": "apiKey"
+      },
+      "agent-memory_bearerAuth": {
+        "description": "Telnyx API key",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "bearerAuth": {
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "branded-calling_bearerAuth": {
+        "description": "Telnyx API key. Generate one at https://portal.telnyx.com/#/app/api-keys.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "collections_bearerAuth": {
+        "description": "Telnyx API key. Collections and results are automatically scoped to the authenticated user's organization.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "number-reputation_bearerAuth": {
+        "description": "Telnyx API key. Generate one at https://portal.telnyx.com/#/app/api-keys.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "oauthClientAuth": {
+        "description": "OAuth 2.0 authentication for Telnyx API and MCP integrations",
+        "flows": {
+          "authorizationCode": {
+            "authorizationUrl": "https://api.telnyx.com/v2/oauth/authorize",
+            "refreshUrl": "https://api.telnyx.com/v2/oauth/token",
+            "scopes": {
+              "admin": "Administrative access to Telnyx resources"
+            },
+            "tokenUrl": "https://api.telnyx.com/v2/oauth/token"
+          },
+          "clientCredentials": {
+            "scopes": {
+              "admin": "Administrative access to Telnyx resources"
+            },
+            "tokenUrl": "https://api.telnyx.com/v2/oauth/token"
+          }
+        },
+        "type": "oauth2"
+      },
+      "outbound-voice-profiles_bearerAuth": {
+        "bearerFormat": "JWT",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "pay-connectors_bearerAuth": {
+        "description": "Telnyx API key, not the processor bearer token.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "pronunciation-dicts_bearerAuth": {
+        "description": "Telnyx API v2 key. Obtain from https://portal.telnyx.com",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "rcs-registration_bearerAuth": {
+        "bearerFormat": "API key",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "stored-payment-transactions_bearerAuth": {
+        "bearerFormat": "JWT",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "telnyxApiKey": {
+        "description": "Management-only Telnyx account credential.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "transcriptions-search_bearerAuth": {
+        "description": "Telnyx API key. Results are automatically scoped to the authenticated user's organization.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "web-search_bearerAuth": {
+        "description": "Telnyx API key",
+        "scheme": "bearer",
+        "type": "http"
+      }
+    }
+  },
+  "info": {
+    "contact": {
+      "email": "support@telnyx.com"
+    },
+    "description": "SIP trunking, SMS, MMS, Call Control and Telephony Data Services.",
+    "title": "Telnyx API",
+    "version": "2.0.0",
+    "x-endpoint-cost": "light",
+    "x-latency-category": "responsive"
+  },
+  "openapi": "3.1.0",
+  "paths": {
+    "/email_inboxes/{inbox_id}/drafts": {
+      "get": {
+        "description": "Lists drafts newest first using stable cursor pagination. All access is scoped\nto the authenticated account and the given inbox.\n",
+        "operationId": "ListEmailDrafts",
+        "parameters": [
+          {
+            "description": "Email inbox UUID.",
+            "in": "path",
+            "name": "inbox_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Restrict results to drafts in this state.",
+            "in": "query",
+            "name": "filter[status]",
+            "required": false,
+            "schema": {
+              "enum": [
+                "draft",
+                "sending",
+                "sent"
+              ],
+              "type": "string"
+            }
+          },
+          {
+            "description": "Number of results to return. Defaults to 25; maximum is 100.",
+            "in": "query",
+            "name": "page[size]",
+            "required": false,
+            "schema": {
+              "default": 25,
+              "maximum": 100,
+              "minimum": 1,
+              "type": "integer"
+            }
+          },
+          {
+            "description": "Opaque cursor returned by the previous page.",
+            "in": "query",
+            "name": "page[after]",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "data": [
+                    {
+                      "attachments": [],
+                      "bcc": [
+                        {
+                          "email": "string",
+                          "name": "string"
+                        }
+                      ],
+                      "cc": [
+                        {
+                          "email": "string",
+                          "name": "string"
+                        }
+                      ],
+                      "created_at": "2024-01-23T18:10:02.574Z",
+                      "from": "string",
+                      "from_name": "string",
+                      "html_body": "string",
+                      "id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+                      "inbox_id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+                      "labels": [
+                        "string"
+                      ],
+                      "record_type": "email_draft",
+                      "reply_to": "string",
+                      "reply_to_message_id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+                      "sent_at": "2024-01-23T18:10:02.574Z",
+                      "sent_message_id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+                      "status": "draft",
+                      "subject": "string",
+                      "tags": [
+                        "string"
+                      ],
+                      "text_body": "string",
+                      "thread_id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+                      "to": [
+                        {
+                          "email": "string",
+                          "name": "string"
+                        }
+                      ],
+                      "updated_at": "2024-01-23T18:10:02.574Z"
+                    }
+                  ],
+                  "meta": {
+                    "page_cursor": "string",
+                    "page_size": 1
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/EmailDraftListResponse"
+                }
+              }
+            },
+            "description": "Paginated drafts."
+          },
+          "401": {
+            "$ref": "#/components/responses/email_UnauthorizedResponse"
+          },
+          "404": {
+            "$ref": "#/components/responses/email_NotFoundResponse"
+          },
+          "503": {
+            "$ref": "#/components/responses/DraftUnavailableResponse"
+          }
+        },
+        "summary": "List drafts in an inbox",
+        "tags": [
+          "Email Drafts"
+        ]
+      },
+      "post": {
+        "description": "Creates an unsent draft in the inbox. Every field is optional — a draft is a\nwork-in-progress and may be saved incomplete. Send-time requirements (sender,\nsubject, at least one recipient) are enforced when the draft is sent, not when\nit is created.\n\nDrafts are unbillable and emit no Email Detail Records until they are sent.\n",
+        "operationId": "CreateEmailDraft",
+        "parameters": [
+          {
+            "description": "Email inbox UUID.",
+            "in": "path",
+            "name": "inbox_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "example": {
+                "labels": [
+                  "important"
+                ],
+                "subject": "Quarterly update",
+                "text_body": "Here is the update.",
+                "to": [
+                  {
+                    "email": "recipient@example.com",
+                    "name": "Recipient"
+                  }
+                ]
+              },
+              "schema": {
+                "$ref": "#/components/schemas/EmailDraftRequest"
+              }
+            }
+          },
+          "required": false
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "data": {
+                    "attachments": [],
+                    "bcc": [
+                      {
+                        "email": "string",
+                        "name": "string"
+                      }
+                    ],
+                    "cc": [
+                      {
+                        "email": "string",
+                        "name": "string"
+                      }
+                    ],
+                    "created_at": "2024-01-23T18:10:02.574Z",
+                    "from": "string",
+                    "from_name": "string",
+                    "html_body": "string",
+                    "id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+                    "inbox_id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+                    "labels": [
+                      "string"
+                    ],
+                    "record_type": "email_draft",
+                    "reply_to": "string",
+                    "reply_to_message_id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+                    "sent_at": "2024-01-23T18:10:02.574Z",
+                    "sent_message_id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+                    "status": "draft",
+                    "subject": "string",
+                    "tags": [
+                      "string"
+                    ],
+                    "text_body": "string",
+                    "thread_id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+                    "to": [
+                      {
+                        "email": "string",
+                        "name": "string"
+                      }
+                    ],
+                    "updated_at": "2024-01-23T18:10:02.574Z"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/EmailDraftResponse"
+                }
+              }
+            },
+            "description": "The created draft."
+          },
+          "401": {
+            "$ref": "#/components/responses/email_UnauthorizedResponse"
+          },
+          "404": {
+            "$ref": "#/components/responses/email_NotFoundResponse"
+          },
+          "422": {
+            "$ref": "#/components/responses/ValidationErrorResponse"
+          },
+          "503": {
+            "$ref": "#/components/responses/DraftUnavailableResponse"
+          }
+        },
+        "summary": "Create a draft",
+        "tags": [
+          "Email Drafts"
+        ]
+      }
+    },
+    "/email_inboxes/{inbox_id}/drafts/{draft_id}": {
+      "delete": {
+        "description": "Permanently deletes an unsent draft. Drafts that are being sent or have been sent\ncannot be deleted; sent drafts are retained for audit.\n",
+        "operationId": "DeleteEmailDraft",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/DraftInboxId"
+          },
+          {
+            "$ref": "#/components/parameters/DraftId"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "The draft was deleted."
+          },
+          "401": {
+            "$ref": "#/components/responses/email_UnauthorizedResponse"
+          },
+          "404": {
+            "$ref": "#/components/responses/email_NotFoundResponse"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "errors": [
+                    {
+                      "code": "10027",
+                      "detail": "The server understood the syntax of the request but was unable to process the instructions.",
+                      "title": "Unprocessable Entity"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/email_ErrorResponse"
+                }
+              }
+            },
+            "description": "The draft is being sent or has already been sent and is retained for audit."
+          },
+          "503": {
+            "$ref": "#/components/responses/DraftUnavailableResponse"
+          }
+        },
+        "summary": "Delete a draft",
+        "tags": [
+          "Email Drafts"
+        ]
+      },
+      "get": {
+        "description": "Returns a single draft. Drafts that have been sent remain retrievable, so the\nexact content that was sent stays auditable.\n",
+        "operationId": "GetEmailDraft",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/DraftInboxId"
+          },
+          {
+            "$ref": "#/components/parameters/DraftId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "data": {
+                    "attachments": [],
+                    "bcc": [
+                      {
+                        "email": "string",
+                        "name": "string"
+                      }
+                    ],
+                    "cc": [
+                      {
+                        "email": "string",
+                        "name": "string"
+                      }
+                    ],
+                    "created_at": "2024-01-23T18:10:02.574Z",
+                    "from": "string",
+                    "from_name": "string",
+                    "html_body": "string",
+                    "id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+                    "inbox_id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+                    "labels": [
+                      "string"
+                    ],
+                    "record_type": "email_draft",
+                    "reply_to": "string",
+                    "reply_to_message_id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+                    "sent_at": "2024-01-23T18:10:02.574Z",
+                    "sent_message_id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+                    "status": "draft",
+                    "subject": "string",
+                    "tags": [
+                      "string"
+                    ],
+                    "text_body": "string",
+                    "thread_id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+                    "to": [
+                      {
+                        "email": "string",
+                        "name": "string"
+                      }
+                    ],
+                    "updated_at": "2024-01-23T18:10:02.574Z"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/EmailDraftResponse"
+                }
+              }
+            },
+            "description": "The requested draft."
+          },
+          "401": {
+            "$ref": "#/components/responses/email_UnauthorizedResponse"
+          },
+          "404": {
+            "$ref": "#/components/responses/email_NotFoundResponse"
+          },
+          "503": {
+            "$ref": "#/components/responses/DraftUnavailableResponse"
+          }
+        },
+        "summary": "Retrieve a draft",
+        "tags": [
+          "Email Drafts"
+        ]
+      },
+      "patch": {
+        "description": "Identical to `PUT`; both apply a partial update to the supplied fields.",
+        "operationId": "PatchEmailDraft",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/DraftInboxId"
+          },
+          {
+            "$ref": "#/components/parameters/DraftId"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "example": {
+                "subject": "Quarterly update (revised)",
+                "text_body": "Updated body."
+              },
+              "schema": {
+                "$ref": "#/components/schemas/EmailDraftRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "data": {
+                    "attachments": [],
+                    "bcc": [
+                      {
+                        "email": "string",
+                        "name": "string"
+                      }
+                    ],
+                    "cc": [
+                      {
+                        "email": "string",
+                        "name": "string"
+                      }
+                    ],
+                    "created_at": "2024-01-23T18:10:02.574Z",
+                    "from": "string",
+                    "from_name": "string",
+                    "html_body": "string",
+                    "id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+                    "inbox_id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+                    "labels": [
+                      "string"
+                    ],
+                    "record_type": "email_draft",
+                    "reply_to": "string",
+                    "reply_to_message_id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+                    "sent_at": "2024-01-23T18:10:02.574Z",
+                    "sent_message_id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+                    "status": "draft",
+                    "subject": "string",
+                    "tags": [
+                      "string"
+                    ],
+                    "text_body": "string",
+                    "thread_id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+                    "to": [
+                      {
+                        "email": "string",
+                        "name": "string"
+                      }
+                    ],
+                    "updated_at": "2024-01-23T18:10:02.574Z"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/EmailDraftResponse"
+                }
+              }
+            },
+            "description": "The updated draft."
+          },
+          "401": {
+            "$ref": "#/components/responses/email_UnauthorizedResponse"
+          },
+          "404": {
+            "$ref": "#/components/responses/email_NotFoundResponse"
+          },
+          "422": {
+            "$ref": "#/components/responses/ValidationErrorResponse"
+          },
+          "503": {
+            "$ref": "#/components/responses/DraftUnavailableResponse"
+          }
+        },
+        "summary": "Update a draft (alias)",
+        "tags": [
+          "Email Drafts"
+        ]
+      },
+      "put": {
+        "description": "Updates the supplied fields on a draft. `account_id` and `inbox_id` are\nserver-owned and ignored if present in the body, so a draft can never be moved\nbetween accounts or inboxes.\n\nA draft that is being sent or has already been sent is immutable and returns\n422 — modifying it would race with delivery or rewrite the record of what was\nactually sent.\n",
+        "operationId": "UpdateEmailDraft",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/DraftInboxId"
+          },
+          {
+            "$ref": "#/components/parameters/DraftId"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "example": {
+                "subject": "Quarterly update (revised)",
+                "text_body": "Updated body."
+              },
+              "schema": {
+                "$ref": "#/components/schemas/EmailDraftRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "data": {
+                    "attachments": [],
+                    "bcc": [
+                      {
+                        "email": "string",
+                        "name": "string"
+                      }
+                    ],
+                    "cc": [
+                      {
+                        "email": "string",
+                        "name": "string"
+                      }
+                    ],
+                    "created_at": "2024-01-23T18:10:02.574Z",
+                    "from": "string",
+                    "from_name": "string",
+                    "html_body": "string",
+                    "id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+                    "inbox_id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+                    "labels": [
+                      "string"
+                    ],
+                    "record_type": "email_draft",
+                    "reply_to": "string",
+                    "reply_to_message_id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+                    "sent_at": "2024-01-23T18:10:02.574Z",
+                    "sent_message_id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+                    "status": "draft",
+                    "subject": "string",
+                    "tags": [
+                      "string"
+                    ],
+                    "text_body": "string",
+                    "thread_id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+                    "to": [
+                      {
+                        "email": "string",
+                        "name": "string"
+                      }
+                    ],
+                    "updated_at": "2024-01-23T18:10:02.574Z"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/EmailDraftResponse"
+                }
+              }
+            },
+            "description": "The updated draft."
+          },
+          "401": {
+            "$ref": "#/components/responses/email_UnauthorizedResponse"
+          },
+          "404": {
+            "$ref": "#/components/responses/email_NotFoundResponse"
+          },
+          "422": {
+            "$ref": "#/components/responses/ValidationErrorResponse"
+          },
+          "503": {
+            "$ref": "#/components/responses/DraftUnavailableResponse"
+          }
+        },
+        "summary": "Update a draft",
+        "tags": [
+          "Email Drafts"
+        ]
+      }
+    },
+    "/email_inboxes/{inbox_id}/drafts/{draft_id}/send": {
+      "post": {
+        "description": "Sends the draft through the standard send pipeline — the same domain resolution,\nsuppression, reputation, daily-quota, persistence and Detail Record behaviour as\n`POST /v2/email_messages`. The response body is the created email message.\n\nIf the draft has no explicit `from_email`, the inbox address is used.\n\nThe draft is marked `sent` only after the send is accepted; a send rejected for\nsuppression, quota or reputation leaves the draft editable so it can be fixed and\nretried. A draft that is already `sent` returns 422 rather than sending twice.\n",
+        "operationId": "SendEmailDraft",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/DraftInboxId"
+          },
+          {
+            "$ref": "#/components/parameters/DraftId"
+          }
+        ],
+        "responses": {
+          "202": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EmailMessageResponse"
+                }
+              }
+            },
+            "description": "The draft was accepted for delivery. Returns the created email message."
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "errors": [
+                    {
+                      "code": "10015",
+                      "detail": "The request failed because it was not well-formed.",
+                      "title": "Bad Request"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/email_ErrorResponse"
+                }
+              }
+            },
+            "description": "The draft is missing fields required to send (sender, subject, or recipients)."
+          },
+          "401": {
+            "$ref": "#/components/responses/email_UnauthorizedResponse"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/email_ErrorResponse"
+                }
+              }
+            },
+            "description": "The sender domain is not permitted to send."
+          },
+          "404": {
+            "$ref": "#/components/responses/email_NotFoundResponse"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "errors": [
+                    {
+                      "code": "10015",
+                      "detail": "this draft has already been sent",
+                      "source": {
+                        "pointer": "/data/attributes/status"
+                      },
+                      "title": "Validation Failed"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/email_ErrorResponse"
+                }
+              }
+            },
+            "description": "The draft has already been sent, or failed send-time validation."
+          },
+          "429": {
+            "$ref": "#/components/responses/EmailSendTooManyRequestsResponse"
+          },
+          "503": {
+            "$ref": "#/components/responses/DraftUnavailableResponse"
+          }
+        },
+        "summary": "Send a draft",
+        "tags": [
+          "Email Drafts"
+        ]
+      }
+    },
+    "/email_inboxes/{inbox_id}/messages/{message_id}/drafts": {
+      "post": {
+        "description": "Creates an unsent reply draft for an inbound message. Unlike the\n`/actions/reply` endpoint, which sends immediately, this stores a draft that can\nbe reviewed and edited before sending.\n\n`reply_to_message_id` and `thread_id` are inherited from the parent message and\ncannot be set by the caller. The recipient, `Re:` subject and\n`In-Reply-To`/`References` headers are pre-filled from the parent using the same\nrules as a live reply, so sending the draft threads identically. Supplying `to`\nor `subject` explicitly overrides the pre-filled value.\n",
+        "operationId": "CreateEmailReplyDraft",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/DraftInboxId"
+          },
+          {
+            "description": "Inbound message UUID to reply to.",
+            "in": "path",
+            "name": "message_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "example": {
+                "text_body": "Thanks for the update — I will review today."
+              },
+              "schema": {
+                "$ref": "#/components/schemas/EmailDraftRequest"
+              }
+            }
+          },
+          "required": false
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "data": {
+                    "attachments": [],
+                    "bcc": [
+                      {
+                        "email": "string",
+                        "name": "string"
+                      }
+                    ],
+                    "cc": [
+                      {
+                        "email": "string",
+                        "name": "string"
+                      }
+                    ],
+                    "created_at": "2024-01-23T18:10:02.574Z",
+                    "from": "string",
+                    "from_name": "string",
+                    "html_body": "string",
+                    "id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+                    "inbox_id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+                    "labels": [
+                      "string"
+                    ],
+                    "record_type": "email_draft",
+                    "reply_to": "string",
+                    "reply_to_message_id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+                    "sent_at": "2024-01-23T18:10:02.574Z",
+                    "sent_message_id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+                    "status": "draft",
+                    "subject": "string",
+                    "tags": [
+                      "string"
+                    ],
+                    "text_body": "string",
+                    "thread_id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+                    "to": [
+                      {
+                        "email": "string",
+                        "name": "string"
+                      }
+                    ],
+                    "updated_at": "2024-01-23T18:10:02.574Z"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/EmailDraftResponse"
+                }
+              }
+            },
+            "description": "The created reply draft."
+          },
+          "401": {
+            "$ref": "#/components/responses/email_UnauthorizedResponse"
+          },
+          "404": {
+            "$ref": "#/components/responses/email_NotFoundResponse"
+          },
+          "422": {
+            "$ref": "#/components/responses/ValidationErrorResponse"
+          },
+          "503": {
+            "$ref": "#/components/responses/DraftUnavailableResponse"
+          }
+        },
+        "summary": "Create a reply draft",
+        "tags": [
+          "Email Drafts"
+        ]
+      }
+    }
+  },
+  "security": [
+    {
+      "bearerAuth": []
+    }
+  ],
+  "servers": [
+    {
+      "description": "Version 2.0.0 of the Telnyx API",
+      "url": "https://api.telnyx.com/v2"
+    }
+  ]
+}

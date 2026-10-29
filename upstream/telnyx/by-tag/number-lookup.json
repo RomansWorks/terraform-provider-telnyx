@@ -1,0 +1,645 @@
+{
+  "components": {
+    "parameters": {
+      "NumberLookupType": {
+        "description": "Specifies the type of number lookup to be performed. May be supplied more than once to request several data sources in a single call (for example, `?type=carrier\u0026type=enhanced-caller-name`). Each requested type populates the corresponding object in the response.",
+        "in": "query",
+        "name": "type",
+        "required": false,
+        "schema": {
+          "enum": [
+            "carrier",
+            "caller-name",
+            "caller-identity",
+            "enhanced-caller-name"
+          ],
+          "type": "string"
+        }
+      },
+      "PhoneNumber": {
+        "description": "The phone number to be looked up",
+        "in": "path",
+        "name": "phone_number",
+        "required": true,
+        "schema": {
+          "example": "+18665552368",
+          "type": "string"
+        }
+      }
+    },
+    "responses": {
+      "number-lookup_GenericErrorResponse": {
+        "content": {
+          "application/json": {
+            "example": {
+              "errors": [
+                {
+                  "code": "10007",
+                  "detail": "An unexpected error occured.",
+                  "title": "Unexpected error"
+                }
+              ]
+            },
+            "schema": {
+              "$ref": "#/components/schemas/Errors"
+            }
+          }
+        },
+        "description": "Unexpected error"
+      },
+      "number-lookup_UnprocessableEntity": {
+        "content": {
+          "application/json": {
+            "example": {
+              "errors": [
+                {
+                  "code": "10027",
+                  "detail": "The server understood the syntax of the request but was unable to process the instructions.",
+                  "title": "Unprocessable Entity"
+                }
+              ]
+            },
+            "schema": {
+              "$ref": "#/components/schemas/Errors"
+            }
+          }
+        },
+        "description": "Unprocessable entity. Check the 'detail' field in response for details."
+      }
+    },
+    "schemas": {
+      "CallerIdentity": {
+        "description": "Identity information for the phone number's owner, including name and postal address. Populated when `type=caller-identity` is requested.",
+        "properties": {
+          "address": {
+            "$ref": "#/components/schemas/number-lookup_Address"
+          },
+          "confidence_score": {
+            "description": "How strongly the phone number is linked to the returned name, on a scale of 50 to 90 (higher means more supporting signals). Reflects signal strength, not probability: 70 indicates stronger, more consistent evidence than 60, not a 70% chance of being correct. As a guide, 70+ is high confidence, 60 moderate, and 50 limited. Below 50 no name is returned, so scores under 50 are never present.",
+            "example": 80,
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "error_code": {
+            "description": "A lookup-specific error code if the identity could not be resolved; otherwise null.",
+            "example": null,
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "name": {
+            "description": "The name associated with the phone number.",
+            "example": "Jane Doe",
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "type": "object"
+      },
+      "CallerName": {
+        "properties": {
+          "caller_name": {
+            "description": "The name of the requested phone number's owner as per the CNAM database",
+            "example": "TELNYX LLC",
+            "type": "string"
+          },
+          "error_code": {
+            "description": "A caller-name lookup specific error code, expressed as a stringified 5-digit integer",
+            "example": "10001",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "Carrier": {
+        "properties": {
+          "error_code": {
+            "description": "Unused",
+            "example": null,
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "mobile_country_code": {
+            "description": "Region code that matches the specific country calling code if the requested phone number type is mobile",
+            "example": "US",
+            "type": "string"
+          },
+          "mobile_network_code": {
+            "description": "National destination code (NDC), with a 0 prefix, if an NDC is found and the requested phone number type is mobile",
+            "example": "0866",
+            "type": "string"
+          },
+          "name": {
+            "description": "SPID (Service Provider ID) name, if the requested phone number has been ported; otherwise, the name of carrier who owns the phone number block",
+            "example": "Telnyx/4",
+            "type": "string"
+          },
+          "normalized_carrier": {
+            "description": "If known to Telnyx and applicable, the primary network carrier.",
+            "example": "AT\u0026T",
+            "type": "string"
+          },
+          "type": {
+            "description": "A phone number type that identifies the type of service associated with the requested phone number",
+            "enum": [
+              "fixed line",
+              "mobile",
+              "voip",
+              "fixed line or mobile",
+              "toll free",
+              "premium rate",
+              "shared cost",
+              "personal number",
+              "pager",
+              "uan",
+              "voicemail",
+              "unknown"
+            ],
+            "example": "voip",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "EnhancedCallerName": {
+        "description": "Enhanced caller name for the phone number's owner. Populated when `type=enhanced-caller-name` is requested.",
+        "properties": {
+          "caller_name": {
+            "description": "The name associated with the phone number.",
+            "example": "Jane Doe",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "error_code": {
+            "description": "A lookup-specific error code if the enhanced caller name could not be resolved; otherwise null.",
+            "example": null,
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "type": "object"
+      },
+      "Error": {
+        "example": {
+          "code": "20207",
+          "description": "The street address provided is invalid.",
+          "source": {
+            "pointer": "/street_address"
+          },
+          "title": "Invalid street address"
+        },
+        "properties": {
+          "code": {
+            "type": "string",
+            "x-format": "int64"
+          },
+          "description": {
+            "type": "string"
+          },
+          "detail": {
+            "description": "A human-readable explanation of the error.",
+            "type": "string"
+          },
+          "meta": {
+            "additionalProperties": true,
+            "type": "object"
+          },
+          "source": {
+            "properties": {
+              "parameter": {
+                "description": "Indicates which query parameter caused the error.",
+                "type": "string"
+              },
+              "pointer": {
+                "description": "JSON pointer (RFC6901) to the offending entity.",
+                "format": "json-pointer",
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
+          "title": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "title"
+        ],
+        "type": "object"
+      },
+      "Errors": {
+        "properties": {
+          "errors": {
+            "items": {
+              "$ref": "#/components/schemas/Error"
+            },
+            "type": "array"
+          }
+        },
+        "type": "object"
+      },
+      "NumberLookupRecord": {
+        "properties": {
+          "caller_identity": {
+            "$ref": "#/components/schemas/CallerIdentity"
+          },
+          "caller_name": {
+            "$ref": "#/components/schemas/CallerName"
+          },
+          "carrier": {
+            "$ref": "#/components/schemas/Carrier"
+          },
+          "country_code": {
+            "description": "Region code that matches the specific country calling code",
+            "example": "US",
+            "type": "string"
+          },
+          "enhanced_caller_name": {
+            "$ref": "#/components/schemas/EnhancedCallerName"
+          },
+          "fraud": {
+            "description": "Unused",
+            "example": null,
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "national_format": {
+            "description": "Hyphen-separated national number, preceded by the national destination code (NDC), with a 0 prefix, if an NDC is found",
+            "example": "(0312) 945-7420",
+            "type": "string"
+          },
+          "nnid_override": {
+            "description": "Network number ID (NNID) override for the phone number, when one applies (available only to accounts enabled for NNID); otherwise null.",
+            "example": null,
+            "properties": {
+              "name": {
+                "description": "Name associated with the NNID.",
+                "type": "string"
+              },
+              "nnid": {
+                "description": "The network number ID.",
+                "type": "string"
+              },
+              "type": {
+                "description": "The NNID type.",
+                "type": "string"
+              }
+            },
+            "type": [
+              "object",
+              "null"
+            ]
+          },
+          "phone_number": {
+            "description": "E164-formatted phone number",
+            "example": "+13129457420",
+            "type": "string"
+          },
+          "portability": {
+            "$ref": "#/components/schemas/Portability"
+          },
+          "record_type": {
+            "description": "Identifies the type of record",
+            "example": "number_lookup",
+            "type": "string"
+          },
+          "valid_number": {
+            "description": "Indicates whether the phone number is valid.",
+            "example": true,
+            "type": "boolean"
+          }
+        },
+        "title": "NumberLookup",
+        "type": "object"
+      },
+      "Portability": {
+        "properties": {
+          "altspid": {
+            "description": "Alternative SPID (Service Provider ID). Often used when a carrier is using a number from another carrier",
+            "example": "073H",
+            "type": "string"
+          },
+          "altspid_carrier_name": {
+            "description": "Alternative service provider name",
+            "example": "Telnyx/4",
+            "type": "string"
+          },
+          "altspid_carrier_type": {
+            "description": "Alternative service provider type",
+            "example": "3",
+            "type": "string"
+          },
+          "city": {
+            "description": "City name extracted from the locality in the Local Exchange Routing Guide (LERG) database",
+            "example": "WAUKEGAN",
+            "type": "string"
+          },
+          "line_type": {
+            "description": "The line type of the phone number. Uses the same value set as carrier.type; see the API reference for the full list.",
+            "enum": [
+              "fixed line",
+              "mobile",
+              "voip",
+              "fixed line or mobile",
+              "toll free",
+              "premium rate",
+              "shared cost",
+              "personal number",
+              "pager",
+              "uan",
+              "voicemail",
+              "unknown"
+            ],
+            "example": "voip",
+            "type": "string"
+          },
+          "lrn": {
+            "description": "Local Routing Number, if assigned to the requested phone number",
+            "example": "2245701999",
+            "type": "string"
+          },
+          "ocn": {
+            "description": "Operating Company Name (OCN) as per the Local Exchange Routing Guide (LERG) database",
+            "example": "073H",
+            "type": "string"
+          },
+          "ported_date": {
+            "description": "ISO-formatted date when the requested phone number has been ported",
+            "example": "2017-10-20",
+            "type": "string"
+          },
+          "ported_status": {
+            "description": "Indicates whether or not the requested phone number has been ported",
+            "enum": [
+              "Y",
+              "N",
+              ""
+            ],
+            "example": "Y",
+            "type": "string"
+          },
+          "spid": {
+            "description": "SPID (Service Provider ID)",
+            "example": "073H",
+            "type": "string"
+          },
+          "spid_carrier_name": {
+            "description": "Service provider name",
+            "example": "Telnyx/4",
+            "type": "string"
+          },
+          "spid_carrier_type": {
+            "description": "Service provider type",
+            "example": "3",
+            "type": "string"
+          },
+          "state": {
+            "example": "Illinois",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "number-lookup_Address": {
+        "description": "Postal address associated with the phone number's owner.",
+        "properties": {
+          "city": {
+            "description": "City.",
+            "example": "Anytown",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "country_code": {
+            "description": "Two-letter ISO 3166-1 country code.",
+            "example": "US",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "postal_code": {
+            "description": "Postal or ZIP code.",
+            "example": "90210",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "state_code": {
+            "description": "Two-letter state or province code.",
+            "example": "CA",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "street_line_1": {
+            "description": "First line of the street address.",
+            "example": "123 Main St",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "street_line_2": {
+            "description": "Second line of the street address, if any.",
+            "example": null,
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "zip4": {
+            "description": "ZIP+4 extension, if available.",
+            "example": "1234",
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "type": "object"
+      }
+    },
+    "securitySchemes": {
+      "BearerAuth": {
+        "bearerFormat": "API key",
+        "description": "Telnyx API key supplied as `Authorization: Bearer \u003ctoken\u003e`. In production, auth may be validated by the API gateway and forwarded via Telnyx auth headers.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "Payment": {
+        "description": "Machine Payment Protocol credential used on paid retries, sent as `Authorization: Payment ...`. Obtained by paying a challenge returned in the `WWW-Authenticate` header of a 402 response. This is not a Telnyx API key; initial challenge requests use standard bearer authentication instead.",
+        "in": "header",
+        "name": "Authorization",
+        "type": "apiKey"
+      },
+      "agent-memory_bearerAuth": {
+        "description": "Telnyx API key",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "bearerAuth": {
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "branded-calling_bearerAuth": {
+        "description": "Telnyx API key. Generate one at https://portal.telnyx.com/#/app/api-keys.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "collections_bearerAuth": {
+        "description": "Telnyx API key. Collections and results are automatically scoped to the authenticated user's organization.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "number-reputation_bearerAuth": {
+        "description": "Telnyx API key. Generate one at https://portal.telnyx.com/#/app/api-keys.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "oauthClientAuth": {
+        "description": "OAuth 2.0 authentication for Telnyx API and MCP integrations",
+        "flows": {
+          "authorizationCode": {
+            "authorizationUrl": "https://api.telnyx.com/v2/oauth/authorize",
+            "refreshUrl": "https://api.telnyx.com/v2/oauth/token",
+            "scopes": {
+              "admin": "Administrative access to Telnyx resources"
+            },
+            "tokenUrl": "https://api.telnyx.com/v2/oauth/token"
+          },
+          "clientCredentials": {
+            "scopes": {
+              "admin": "Administrative access to Telnyx resources"
+            },
+            "tokenUrl": "https://api.telnyx.com/v2/oauth/token"
+          }
+        },
+        "type": "oauth2"
+      },
+      "outbound-voice-profiles_bearerAuth": {
+        "bearerFormat": "JWT",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "pay-connectors_bearerAuth": {
+        "description": "Telnyx API key, not the processor bearer token.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "pronunciation-dicts_bearerAuth": {
+        "description": "Telnyx API v2 key. Obtain from https://portal.telnyx.com",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "rcs-registration_bearerAuth": {
+        "bearerFormat": "API key",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "stored-payment-transactions_bearerAuth": {
+        "bearerFormat": "JWT",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "telnyxApiKey": {
+        "description": "Management-only Telnyx account credential.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "transcriptions-search_bearerAuth": {
+        "description": "Telnyx API key. Results are automatically scoped to the authenticated user's organization.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "web-search_bearerAuth": {
+        "description": "Telnyx API key",
+        "scheme": "bearer",
+        "type": "http"
+      }
+    }
+  },
+  "info": {
+    "contact": {
+      "email": "support@telnyx.com"
+    },
+    "description": "SIP trunking, SMS, MMS, Call Control and Telephony Data Services.",
+    "title": "Telnyx API",
+    "version": "2.0.0",
+    "x-endpoint-cost": "light",
+    "x-latency-category": "responsive"
+  },
+  "openapi": "3.1.0",
+  "paths": {
+    "/number_lookup/{phone_number}": {
+      "get": {
+        "description": "Returns information about the provided phone number.",
+        "operationId": "LookupNumber",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/PhoneNumber"
+          },
+          {
+            "$ref": "#/components/parameters/NumberLookupType"
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/NumberLookupRecord"
+                    }
+                  },
+                  "title": "Number Lookup Response",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful response"
+          },
+          "422": {
+            "$ref": "#/components/responses/number-lookup_UnprocessableEntity"
+          },
+          "default": {
+            "$ref": "#/components/responses/number-lookup_GenericErrorResponse"
+          }
+        },
+        "summary": "Lookup phone number data",
+        "tags": [
+          "Number Lookup"
+        ]
+      }
+    }
+  },
+  "security": [
+    {
+      "bearerAuth": []
+    }
+  ],
+  "servers": [
+    {
+      "description": "Version 2.0.0 of the Telnyx API",
+      "url": "https://api.telnyx.com/v2"
+    }
+  ]
+}

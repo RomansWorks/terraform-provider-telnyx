@@ -1,0 +1,758 @@
+{
+  "components": {
+    "parameters": {
+      "pronunciation_dict_id": {
+        "description": "The UUID of the pronunciation dictionary.",
+        "in": "path",
+        "name": "id",
+        "required": true,
+        "schema": {
+          "example": "c215a3e1-be41-4701-97e8-1d3c22f9a5b7",
+          "format": "uuid",
+          "type": "string"
+        }
+      }
+    },
+    "schemas": {
+      "CreatePronunciationDictRequest": {
+        "description": "Request body for creating a pronunciation dictionary.",
+        "properties": {
+          "items": {
+            "description": "List of pronunciation items (alias or phoneme type). At least one item is required.",
+            "items": {
+              "$ref": "#/components/schemas/PronunciationDictItem"
+            },
+            "maxItems": 100,
+            "minItems": 1,
+            "type": "array"
+          },
+          "name": {
+            "description": "Human-readable name. Must be unique within the organization.",
+            "example": "Brand Names",
+            "maxLength": 255,
+            "minLength": 1,
+            "type": "string"
+          }
+        },
+        "required": [
+          "name",
+          "items"
+        ],
+        "type": "object"
+      },
+      "PronunciationDictAliasItem": {
+        "additionalProperties": false,
+        "description": "An alias pronunciation item. When the `text` value is found in input, it is replaced with the `alias` before speech synthesis.",
+        "properties": {
+          "alias": {
+            "description": "The replacement text that will be spoken instead.",
+            "example": "tel-nicks",
+            "maxLength": 500,
+            "minLength": 1,
+            "type": "string"
+          },
+          "text": {
+            "description": "The text to match in the input. Case-insensitive matching is used during synthesis.",
+            "example": "Telnyx",
+            "maxLength": 200,
+            "minLength": 1,
+            "type": "string"
+          },
+          "type": {
+            "description": "The item type.",
+            "enum": [
+              "alias"
+            ],
+            "example": "alias",
+            "type": "string"
+          }
+        },
+        "required": [
+          "text",
+          "type",
+          "alias"
+        ],
+        "type": "object"
+      },
+      "PronunciationDictData": {
+        "description": "A pronunciation dictionary record.",
+        "properties": {
+          "created_at": {
+            "description": "ISO 8601 timestamp with millisecond precision.",
+            "example": "2026-03-25T12:00:00.000Z",
+            "format": "date-time",
+            "type": "string"
+          },
+          "id": {
+            "description": "Unique identifier for the pronunciation dictionary.",
+            "example": "c215a3e1-be41-4701-97e8-1d3c22f9a5b7",
+            "format": "uuid",
+            "type": "string"
+          },
+          "items": {
+            "description": "List of pronunciation items (alias or phoneme type).",
+            "items": {
+              "$ref": "#/components/schemas/PronunciationDictItem"
+            },
+            "type": "array"
+          },
+          "name": {
+            "description": "Human-readable name for the dictionary. Must be unique within the organization.",
+            "example": "Brand Names",
+            "type": "string"
+          },
+          "record_type": {
+            "description": "Identifies the resource type.",
+            "enum": [
+              "pronunciation_dict"
+            ],
+            "example": "pronunciation_dict",
+            "type": "string"
+          },
+          "updated_at": {
+            "description": "ISO 8601 timestamp with millisecond precision.",
+            "example": "2026-03-25T12:00:00.000Z",
+            "format": "date-time",
+            "type": "string"
+          },
+          "version": {
+            "description": "Auto-incrementing version number. Increases by 1 on each update. Used for optimistic concurrency control and cache invalidation.",
+            "example": 1,
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "PronunciationDictItem": {
+        "description": "A single pronunciation dictionary item. Use type 'alias' to replace matched text with a spoken alias, or type 'phoneme' to specify exact pronunciation using IPA notation.",
+        "discriminator": {
+          "mapping": {
+            "alias": "#/components/schemas/PronunciationDictAliasItem",
+            "phoneme": "#/components/schemas/PronunciationDictPhonemeItem"
+          },
+          "propertyName": "type"
+        },
+        "oneOf": [
+          {
+            "$ref": "#/components/schemas/PronunciationDictAliasItem"
+          },
+          {
+            "$ref": "#/components/schemas/PronunciationDictPhonemeItem"
+          }
+        ]
+      },
+      "PronunciationDictListResponse": {
+        "description": "Paginated list of pronunciation dictionaries.",
+        "properties": {
+          "data": {
+            "description": "Array of pronunciation dictionary objects.",
+            "items": {
+              "$ref": "#/components/schemas/PronunciationDictData"
+            },
+            "type": "array"
+          },
+          "meta": {
+            "$ref": "#/components/schemas/pronunciation-dicts_PaginationMeta"
+          }
+        },
+        "type": "object"
+      },
+      "PronunciationDictPhonemeItem": {
+        "additionalProperties": false,
+        "description": "A phoneme pronunciation item. When the `text` value is found in input, it is pronounced using the specified IPA phoneme notation.",
+        "properties": {
+          "alphabet": {
+            "description": "The phonetic alphabet used for the phoneme notation.",
+            "enum": [
+              "ipa"
+            ],
+            "example": "ipa",
+            "type": "string"
+          },
+          "phoneme": {
+            "description": "The phoneme notation representing the desired pronunciation.",
+            "example": "ˈtɛl.nɪks",
+            "maxLength": 500,
+            "minLength": 1,
+            "type": "string"
+          },
+          "text": {
+            "description": "The text to match in the input. Case-insensitive matching is used during synthesis.",
+            "example": "Telnyx",
+            "maxLength": 200,
+            "minLength": 1,
+            "type": "string"
+          },
+          "type": {
+            "description": "The item type.",
+            "enum": [
+              "phoneme"
+            ],
+            "example": "phoneme",
+            "type": "string"
+          }
+        },
+        "required": [
+          "text",
+          "type",
+          "phoneme",
+          "alphabet"
+        ],
+        "type": "object"
+      },
+      "PronunciationDictResponse": {
+        "description": "Response containing a single pronunciation dictionary.",
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/PronunciationDictData"
+          }
+        },
+        "type": "object"
+      },
+      "UpdatePronunciationDictRequest": {
+        "description": "Request body for updating a pronunciation dictionary. At least one field must be provided.",
+        "minProperties": 1,
+        "properties": {
+          "items": {
+            "description": "Updated list of pronunciation items (alias or phoneme type).",
+            "items": {
+              "$ref": "#/components/schemas/PronunciationDictItem"
+            },
+            "maxItems": 100,
+            "minItems": 1,
+            "type": "array"
+          },
+          "name": {
+            "description": "Updated dictionary name.",
+            "example": "Updated Brand Names",
+            "maxLength": 255,
+            "minLength": 1,
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "pronunciation-dicts_ErrorObject": {
+        "properties": {
+          "code": {
+            "description": "Machine-readable error code.",
+            "example": "90202",
+            "type": "string"
+          },
+          "detail": {
+            "description": "Detailed error description.",
+            "example": "items must have at least one item",
+            "type": "string"
+          },
+          "source": {
+            "description": "Source of the error.",
+            "properties": {
+              "pointer": {
+                "description": "JSON pointer to the field that caused the error.",
+                "example": "/items",
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
+          "title": {
+            "description": "Short human-readable error title.",
+            "example": "Validation failed",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "pronunciation-dicts_ErrorResponse": {
+        "description": "Standard Telnyx error response.",
+        "properties": {
+          "errors": {
+            "items": {
+              "$ref": "#/components/schemas/pronunciation-dicts_ErrorObject"
+            },
+            "type": "array"
+          }
+        },
+        "type": "object"
+      },
+      "pronunciation-dicts_PaginationMeta": {
+        "description": "Pagination metadata returned with list responses.",
+        "properties": {
+          "page_number": {
+            "description": "Current page number (1-based).",
+            "example": 1,
+            "type": "integer"
+          },
+          "page_size": {
+            "description": "Number of results per page.",
+            "example": 20,
+            "type": "integer"
+          },
+          "total_pages": {
+            "description": "Total number of pages.",
+            "example": 1,
+            "type": "integer"
+          },
+          "total_results": {
+            "description": "Total number of results across all pages.",
+            "example": 3,
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      }
+    },
+    "securitySchemes": {
+      "BearerAuth": {
+        "bearerFormat": "API key",
+        "description": "Telnyx API key supplied as `Authorization: Bearer \u003ctoken\u003e`. In production, auth may be validated by the API gateway and forwarded via Telnyx auth headers.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "Payment": {
+        "description": "Machine Payment Protocol credential used on paid retries, sent as `Authorization: Payment ...`. Obtained by paying a challenge returned in the `WWW-Authenticate` header of a 402 response. This is not a Telnyx API key; initial challenge requests use standard bearer authentication instead.",
+        "in": "header",
+        "name": "Authorization",
+        "type": "apiKey"
+      },
+      "agent-memory_bearerAuth": {
+        "description": "Telnyx API key",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "bearerAuth": {
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "branded-calling_bearerAuth": {
+        "description": "Telnyx API key. Generate one at https://portal.telnyx.com/#/app/api-keys.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "collections_bearerAuth": {
+        "description": "Telnyx API key. Collections and results are automatically scoped to the authenticated user's organization.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "number-reputation_bearerAuth": {
+        "description": "Telnyx API key. Generate one at https://portal.telnyx.com/#/app/api-keys.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "oauthClientAuth": {
+        "description": "OAuth 2.0 authentication for Telnyx API and MCP integrations",
+        "flows": {
+          "authorizationCode": {
+            "authorizationUrl": "https://api.telnyx.com/v2/oauth/authorize",
+            "refreshUrl": "https://api.telnyx.com/v2/oauth/token",
+            "scopes": {
+              "admin": "Administrative access to Telnyx resources"
+            },
+            "tokenUrl": "https://api.telnyx.com/v2/oauth/token"
+          },
+          "clientCredentials": {
+            "scopes": {
+              "admin": "Administrative access to Telnyx resources"
+            },
+            "tokenUrl": "https://api.telnyx.com/v2/oauth/token"
+          }
+        },
+        "type": "oauth2"
+      },
+      "outbound-voice-profiles_bearerAuth": {
+        "bearerFormat": "JWT",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "pay-connectors_bearerAuth": {
+        "description": "Telnyx API key, not the processor bearer token.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "pronunciation-dicts_bearerAuth": {
+        "description": "Telnyx API v2 key. Obtain from https://portal.telnyx.com",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "rcs-registration_bearerAuth": {
+        "bearerFormat": "API key",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "stored-payment-transactions_bearerAuth": {
+        "bearerFormat": "JWT",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "telnyxApiKey": {
+        "description": "Management-only Telnyx account credential.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "transcriptions-search_bearerAuth": {
+        "description": "Telnyx API key. Results are automatically scoped to the authenticated user's organization.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "web-search_bearerAuth": {
+        "description": "Telnyx API key",
+        "scheme": "bearer",
+        "type": "http"
+      }
+    }
+  },
+  "info": {
+    "contact": {
+      "email": "support@telnyx.com"
+    },
+    "description": "SIP trunking, SMS, MMS, Call Control and Telephony Data Services.",
+    "title": "Telnyx API",
+    "version": "2.0.0",
+    "x-endpoint-cost": "light",
+    "x-latency-category": "responsive"
+  },
+  "openapi": "3.1.0",
+  "paths": {
+    "/pronunciation_dicts": {
+      "get": {
+        "description": "List all pronunciation dictionaries for the authenticated organization. Results are paginated using offset-based pagination.",
+        "operationId": "ListPronunciationDicts",
+        "parameters": [
+          {
+            "description": "Page number (1-based). Defaults to 1.",
+            "in": "query",
+            "name": "page[number]",
+            "required": false,
+            "schema": {
+              "default": 1,
+              "minimum": 1,
+              "type": "integer"
+            }
+          },
+          {
+            "description": "Number of results per page. Defaults to 20, maximum 250.",
+            "in": "query",
+            "name": "page[size]",
+            "required": false,
+            "schema": {
+              "default": 20,
+              "maximum": 250,
+              "minimum": 1,
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PronunciationDictListResponse"
+                }
+              }
+            },
+            "description": "A paginated list of pronunciation dictionaries."
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/pronunciation-dicts_ErrorResponse"
+                }
+              }
+            },
+            "description": "Invalid pagination parameters."
+          },
+          "401": {
+            "description": "Unauthorized. Invalid or missing API key."
+          }
+        },
+        "summary": "List pronunciation dictionaries",
+        "tags": [
+          "Pronunciation Dictionaries"
+        ]
+      },
+      "post": {
+        "description": "Create a new pronunciation dictionary for the authenticated organization. Each dictionary contains a list of items that control how specific words are spoken. Items can be alias type (text replacement) or phoneme type (IPA pronunciation notation).\n\nAs an alternative to providing items directly as JSON, you can upload a dictionary file (PLS/XML or plain text format, max 1MB) using multipart/form-data. PLS files use the standard W3C Pronunciation Lexicon Specification XML format. Text files use a line-based format: `word=alias` for aliases, `word:/phoneme/` for IPA phonemes.\n\nLimits:\n- Maximum 50 dictionaries per organization\n- Maximum 100 items per dictionary\n- Text: max 200 characters\n- Alias/phoneme value: max 500 characters\n- File upload: max 1MB (1,048,576 bytes)",
+        "operationId": "CreatePronunciationDict",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreatePronunciationDictRequest"
+              }
+            },
+            "multipart/form-data": {
+              "schema": {
+                "properties": {
+                  "file": {
+                    "description": "Dictionary file to upload. Supported formats: PLS/XML (.pls, .xml) and plain text (.txt). Max size: 1MB (1,048,576 bytes).",
+                    "format": "binary",
+                    "type": "string"
+                  },
+                  "name": {
+                    "description": "Human-readable name. Must be unique within the organization.",
+                    "example": "Brand Names",
+                    "maxLength": 255,
+                    "minLength": 1,
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "name",
+                  "file"
+                ],
+                "type": "object"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PronunciationDictResponse"
+                }
+              }
+            },
+            "description": "Pronunciation dictionary created successfully."
+          },
+          "401": {
+            "description": "Unauthorized. Invalid or missing API key."
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "duplicate_name": {
+                    "summary": "Duplicate dictionary name",
+                    "value": {
+                      "errors": [
+                        {
+                          "code": "90202",
+                          "detail": "organization_id, name a dictionary with this name already exists",
+                          "source": {
+                            "pointer": "/organization_id, name"
+                          },
+                          "title": "Validation failed"
+                        }
+                      ]
+                    }
+                  },
+                  "limit_exceeded": {
+                    "summary": "Organization limit exceeded",
+                    "value": {
+                      "errors": [
+                        {
+                          "code": "90203",
+                          "detail": "Maximum number of pronunciation dictionaries (50) reached",
+                          "source": {
+                            "pointer": "/"
+                          },
+                          "title": "Limit exceeded"
+                        }
+                      ]
+                    }
+                  },
+                  "validation_error": {
+                    "summary": "Validation failed",
+                    "value": {
+                      "errors": [
+                        {
+                          "code": "90202",
+                          "detail": "items must have at least one item",
+                          "source": {
+                            "pointer": "/items"
+                          },
+                          "title": "Validation failed"
+                        }
+                      ]
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/pronunciation-dicts_ErrorResponse"
+                }
+              }
+            },
+            "description": "Validation error or organization limit exceeded."
+          }
+        },
+        "summary": "Create a pronunciation dictionary",
+        "tags": [
+          "Pronunciation Dictionaries"
+        ]
+      }
+    },
+    "/pronunciation_dicts/{id}": {
+      "delete": {
+        "description": "Permanently delete a pronunciation dictionary.",
+        "operationId": "DeletePronunciationDict",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/pronunciation_dict_id"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Dictionary deleted successfully. No content returned."
+          },
+          "401": {
+            "description": "Unauthorized. Invalid or missing API key."
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/pronunciation-dicts_ErrorResponse"
+                }
+              }
+            },
+            "description": "Pronunciation dictionary not found."
+          }
+        },
+        "summary": "Delete a pronunciation dictionary",
+        "tags": [
+          "Pronunciation Dictionaries"
+        ]
+      },
+      "get": {
+        "description": "Retrieve a single pronunciation dictionary by ID.",
+        "operationId": "GetPronunciationDict",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/pronunciation_dict_id"
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PronunciationDictResponse"
+                }
+              }
+            },
+            "description": "The requested pronunciation dictionary."
+          },
+          "401": {
+            "description": "Unauthorized. Invalid or missing API key."
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "errors": [
+                    {
+                      "code": "90201",
+                      "detail": "The requested pronunciation dictionary does not exist",
+                      "title": "Pronunciation dictionary not found"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/pronunciation-dicts_ErrorResponse"
+                }
+              }
+            },
+            "description": "Pronunciation dictionary not found."
+          }
+        },
+        "summary": "Get a pronunciation dictionary",
+        "tags": [
+          "Pronunciation Dictionaries"
+        ]
+      },
+      "patch": {
+        "description": "Update the name and/or items of an existing pronunciation dictionary. Uses optimistic locking — if the dictionary was modified concurrently, the request returns 409 Conflict.",
+        "operationId": "UpdatePronunciationDict",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/pronunciation_dict_id"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdatePronunciationDictRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PronunciationDictResponse"
+                }
+              }
+            },
+            "description": "Pronunciation dictionary updated successfully."
+          },
+          "401": {
+            "description": "Unauthorized. Invalid or missing API key."
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/pronunciation-dicts_ErrorResponse"
+                }
+              }
+            },
+            "description": "Pronunciation dictionary not found."
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "errors": [
+                    {
+                      "code": "90200",
+                      "detail": "Dictionary was modified concurrently, please retry",
+                      "title": "Pronunciation dictionary error"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/pronunciation-dicts_ErrorResponse"
+                }
+              }
+            },
+            "description": "Conflict. The dictionary was modified concurrently. Re-fetch and retry."
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/pronunciation-dicts_ErrorResponse"
+                }
+              }
+            },
+            "description": "Validation error."
+          }
+        },
+        "summary": "Update a pronunciation dictionary",
+        "tags": [
+          "Pronunciation Dictionaries"
+        ]
+      }
+    }
+  },
+  "security": [
+    {
+      "bearerAuth": []
+    }
+  ],
+  "servers": [
+    {
+      "description": "Version 2.0.0 of the Telnyx API",
+      "url": "https://api.telnyx.com/v2"
+    }
+  ]
+}

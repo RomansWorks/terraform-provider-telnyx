@@ -1,0 +1,2644 @@
+{
+  "components": {
+    "parameters": {
+      "FilterCivicAddressesConsolidated": {
+        "description": "Filter parameter for civic addresses (deepObject style). Supports filtering by country.",
+        "explode": true,
+        "in": "query",
+        "name": "filter",
+        "schema": {
+          "properties": {
+            "country": {
+              "description": "The country (or countries) to filter addresses by.",
+              "example": [
+                "US",
+                "CA",
+                "MX",
+                "BR"
+              ],
+              "items": {
+                "description": "The ISO 3166-1 alpha-2 country code (2 characters)",
+                "type": "string"
+              },
+              "type": "array"
+            }
+          },
+          "type": "object"
+        },
+        "style": "deepObject"
+      },
+      "FilterConnectionsConsolidated": {
+        "description": "Filter parameter for external connections (deepObject style). Supports filtering by connection_name, external_sip_connection, id, created_at, and phone_number.",
+        "explode": true,
+        "in": "query",
+        "name": "filter",
+        "schema": {
+          "properties": {
+            "connection_name": {
+              "properties": {
+                "contains": {
+                  "default": null,
+                  "description": "If present, connections with \u003ccode\u003econnection_name\u003c/code\u003e containing the given value will be returned. Matching is not case-sensitive. Requires at least three characters.",
+                  "example": "My Connection",
+                  "type": "string"
+                }
+              },
+              "type": "object"
+            },
+            "created_at": {
+              "default": null,
+              "description": "If present, connections with \u003ccode\u003ecreated_at\u003c/code\u003e date matching the given YYYY-MM-DD date will be returned.",
+              "example": "2022-12-31",
+              "type": "string"
+            },
+            "external_sip_connection": {
+              "description": "If present, connections with \u003ccode\u003eexternal_sip_connection\u003c/code\u003e matching the given value will be returned.",
+              "enum": [
+                "zoom",
+                "operator_connect"
+              ],
+              "example": "zoom",
+              "type": "string"
+            },
+            "id": {
+              "default": null,
+              "description": "If present, connections with \u003ccode\u003eid\u003c/code\u003e matching the given value will be returned.",
+              "example": "1930241863466354012",
+              "type": "string"
+            },
+            "phone_number": {
+              "description": "Phone number filter for connections. Note: Despite the 'contains' name, this requires a full E164 match per the original specification.",
+              "properties": {
+                "contains": {
+                  "description": "If present, connections associated with the given phone_number will be returned. A full match is necessary with a e164 format.",
+                  "example": "+15555555555",
+                  "type": "string"
+                }
+              },
+              "type": "object"
+            }
+          },
+          "type": "object"
+        },
+        "style": "deepObject"
+      },
+      "FilterLogMessagesConsolidated": {
+        "description": "Filter parameter for log messages (deepObject style). Supports filtering by external_connection_id and telephone_number with eq/contains operations.",
+        "explode": true,
+        "in": "query",
+        "name": "filter",
+        "schema": {
+          "properties": {
+            "external_connection_id": {
+              "description": "The external connection ID to filter by or \"null\" to filter for logs without an external connection ID",
+              "example": "67ea7693-9cd5-4a68-8c76-abb3aa5bf5d2",
+              "type": "string"
+            },
+            "telephone_number": {
+              "description": "Telephone number filter operations for log messages. Use 'eq' for exact matches or 'contains' for partial matches.",
+              "properties": {
+                "contains": {
+                  "description": "The partial phone number to filter log messages for. Requires 3-15 digits.",
+                  "example": "+123",
+                  "type": "string"
+                },
+                "eq": {
+                  "description": "The phone number to filter log messages for or \"null\" to filter for logs without a phone number",
+                  "example": "+1234567890",
+                  "type": "string",
+                  "x-format": "E164"
+                }
+              },
+              "type": "object"
+            }
+          },
+          "type": "object"
+        },
+        "style": "deepObject"
+      },
+      "FilterPhoneNumbersConsolidated": {
+        "description": "Filter parameter for phone numbers (deepObject style). Supports filtering by phone_number, civic_address_id, and location_id with eq/contains operations.",
+        "explode": true,
+        "in": "query",
+        "name": "filter",
+        "required": false,
+        "schema": {
+          "properties": {
+            "civic_address_id": {
+              "properties": {
+                "eq": {
+                  "description": "The civic address ID to filter by",
+                  "example": "19990261512338516954",
+                  "type": "string"
+                }
+              },
+              "type": "object"
+            },
+            "location_id": {
+              "properties": {
+                "eq": {
+                  "description": "The location ID to filter by",
+                  "example": "19995665508264022121",
+                  "type": "string"
+                }
+              },
+              "type": "object"
+            },
+            "phone_number": {
+              "properties": {
+                "contains": {
+                  "description": "The phone number to filter by (partial match)",
+                  "example": "+1970",
+                  "type": "string"
+                },
+                "eq": {
+                  "description": "The phone number to filter by (exact match)",
+                  "example": "+19705555098",
+                  "type": "string"
+                }
+              },
+              "type": "object"
+            }
+          },
+          "type": "object"
+        },
+        "style": "deepObject"
+      },
+      "FilterReleasesConsolidated": {
+        "description": "Filter parameter for releases (deepObject style). Supports filtering by status, civic_address_id, location_id, and phone_number with eq/contains operations.",
+        "explode": true,
+        "in": "query",
+        "name": "filter",
+        "schema": {
+          "properties": {
+            "civic_address_id": {
+              "properties": {
+                "eq": {
+                  "description": "The civic address ID to filter by",
+                  "example": "19990261512338516954",
+                  "type": "string"
+                }
+              },
+              "type": "object"
+            },
+            "location_id": {
+              "properties": {
+                "eq": {
+                  "description": "The location ID to filter by",
+                  "example": "19995665508264022121",
+                  "type": "string"
+                }
+              },
+              "type": "object"
+            },
+            "phone_number": {
+              "description": "Phone number filter operations. Use 'eq' for exact matches or 'contains' for partial matches.",
+              "properties": {
+                "contains": {
+                  "description": "The partial phone number to filter by. Requires 3-15 digits.",
+                  "example": "+123",
+                  "type": "string"
+                },
+                "eq": {
+                  "description": "The phone number to filter by",
+                  "example": "+1234567890",
+                  "type": "string",
+                  "x-format": "E164"
+                }
+              },
+              "type": "object"
+            },
+            "status": {
+              "properties": {
+                "eq": {
+                  "description": "The status of the release to filter by",
+                  "example": [
+                    "pending",
+                    "in_progress"
+                  ],
+                  "items": {
+                    "enum": [
+                      "pending_upload",
+                      "pending",
+                      "in_progress",
+                      "complete",
+                      "failed",
+                      "expired",
+                      "unknown"
+                    ],
+                    "type": "string"
+                  },
+                  "type": "array"
+                }
+              },
+              "type": "object"
+            }
+          },
+          "type": "object"
+        },
+        "style": "deepObject"
+      },
+      "FilterUploadsConsolidated": {
+        "description": "Filter parameter for uploads (deepObject style). Supports filtering by status, civic_address_id, location_id, and phone_number with eq/contains operations.",
+        "explode": true,
+        "in": "query",
+        "name": "filter",
+        "required": false,
+        "schema": {
+          "properties": {
+            "civic_address_id": {
+              "properties": {
+                "eq": {
+                  "description": "The civic address ID to filter by",
+                  "example": "19990261512338516954",
+                  "type": "string"
+                }
+              },
+              "type": "object"
+            },
+            "location_id": {
+              "properties": {
+                "eq": {
+                  "description": "The location ID to filter by",
+                  "example": "19995665508264022121",
+                  "type": "string"
+                }
+              },
+              "type": "object"
+            },
+            "phone_number": {
+              "properties": {
+                "contains": {
+                  "description": "The phone number to filter by (partial match)",
+                  "example": "+1970",
+                  "type": "string"
+                },
+                "eq": {
+                  "description": "The phone number to filter by (exact match)",
+                  "example": "+19705555098",
+                  "type": "string"
+                }
+              },
+              "type": "object"
+            },
+            "status": {
+              "properties": {
+                "eq": {
+                  "description": "The status of the upload to filter by",
+                  "example": [
+                    "pending_upload",
+                    "pending"
+                  ],
+                  "items": {
+                    "enum": [
+                      "pending_upload",
+                      "pending",
+                      "in_progress",
+                      "success",
+                      "error"
+                    ],
+                    "type": "string"
+                  },
+                  "type": "array"
+                }
+              },
+              "type": "object"
+            }
+          },
+          "type": "object"
+        },
+        "style": "deepObject"
+      },
+      "address_id": {
+        "description": "Identifies a civic address or a location.",
+        "in": "path",
+        "name": "address_id",
+        "required": true,
+        "schema": {
+          "example": "318fb664-d341-44d2-8405-e6bfb9ced6d9",
+          "format": "uuid",
+          "type": "string"
+        }
+      },
+      "external-voice-integrations_PageConsolidated": {
+        "description": "Consolidated page parameter (deepObject style). Originally: page[size], page[number]",
+        "explode": true,
+        "in": "query",
+        "name": "page",
+        "schema": {
+          "properties": {
+            "number": {
+              "default": 1,
+              "description": "The page number to load",
+              "minimum": 1,
+              "type": "integer"
+            },
+            "size": {
+              "default": 250,
+              "description": "The size of the page",
+              "maximum": 250,
+              "minimum": 1,
+              "type": "integer"
+            }
+          },
+          "type": "object"
+        },
+        "style": "deepObject"
+      },
+      "external-voice-integrations_id": {
+        "description": "Identifies the resource.",
+        "in": "path",
+        "name": "id",
+        "required": true,
+        "schema": {
+          "example": "1293384261075731499",
+          "type": "string",
+          "x-format": "int64"
+        }
+      },
+      "phone_number_id": {
+        "description": "A phone number's ID via the Telnyx API",
+        "in": "path",
+        "name": "phone_number_id",
+        "required": true,
+        "schema": {
+          "example": "1234567889",
+          "type": "string"
+        }
+      },
+      "release_id": {
+        "description": "Identifies a Release request",
+        "in": "path",
+        "name": "release_id",
+        "required": true,
+        "schema": {
+          "example": "7b6a6449-b055-45a6-81f6-f6f0dffa4cc6",
+          "format": "uuid",
+          "type": "string"
+        }
+      },
+      "ticket_id": {
+        "description": "Identifies an Upload request",
+        "in": "path",
+        "name": "ticket_id",
+        "required": true,
+        "schema": {
+          "example": "7b6a6449-b055-45a6-81f6-f6f0dffa4cc6",
+          "format": "uuid",
+          "type": "string"
+        }
+      }
+    },
+    "schemas": {
+      "CivicAddress": {
+        "example": {
+          "city_or_town": "Austin",
+          "city_or_town_alias": "",
+          "company_name": "Telnyx",
+          "country": "US",
+          "country_or_district": "US",
+          "default_location_id": "18ded4bb-b694-44c1-a89b-a35b7acd4c9e",
+          "description": "Austin Office",
+          "house_number": "600",
+          "house_number_suffix": "",
+          "id": "07a4dc5d-9b3b-4ba2-88a4-6ba172316c65",
+          "locations": [
+            {
+              "additional_info": "",
+              "description": "Austin Office",
+              "id": "18ded4bb-b694-44c1-a89b-a35b7acd4c9e",
+              "is_default": true
+            },
+            {
+              "additional_info": "14th Floor",
+              "description": "",
+              "id": "d420a57f-c4ae-4697-87e1-fbefd9e86f72",
+              "is_default": false
+            }
+          ],
+          "postal_or_zip_code": "78701",
+          "record_type": "civic_address",
+          "state_or_province": "TX",
+          "street_name": "Congress Street",
+          "street_suffix": ""
+        },
+        "properties": {
+          "city_or_town": {
+            "example": "Chicago",
+            "type": "string"
+          },
+          "city_or_town_alias": {
+            "type": "string"
+          },
+          "company_name": {
+            "example": "Telnyx",
+            "type": "string"
+          },
+          "country": {
+            "example": "US",
+            "type": "string"
+          },
+          "country_or_district": {
+            "example": "US",
+            "type": "string"
+          },
+          "default_location_id": {
+            "description": "Identifies what is the default location in the list of locations.",
+            "format": "uuid",
+            "type": "string"
+          },
+          "description": {
+            "example": "Texas Office",
+            "type": "string"
+          },
+          "house_number": {
+            "example": "600",
+            "type": "string"
+          },
+          "house_number_suffix": {
+            "type": "string"
+          },
+          "id": {
+            "$ref": "#/components/schemas/UUID"
+          },
+          "locations": {
+            "items": {
+              "$ref": "#/components/schemas/Location"
+            },
+            "type": "array"
+          },
+          "postal_or_zip_code": {
+            "example": "78701",
+            "type": "string"
+          },
+          "record_type": {
+            "description": "Identifies the type of the resource.",
+            "example": "civic_address",
+            "type": "string"
+          },
+          "state_or_province": {
+            "example": "TX",
+            "type": "string"
+          },
+          "street_name": {
+            "example": "Congress",
+            "type": "string"
+          },
+          "street_suffix": {
+            "example": "St",
+            "type": "string"
+          }
+        },
+        "title": "Civic Address",
+        "type": "object"
+      },
+      "ConnectionActive": {
+        "default": true,
+        "description": "Specifies whether the connection can be used.",
+        "example": false,
+        "title": "Connection Active",
+        "type": "boolean"
+      },
+      "CreateExternalConnectionRequest": {
+        "example": {
+          "active": false,
+          "external_sip_connection": "zoom",
+          "outbound": {
+            "outbound_voice_profile_id": "1911630617284445511"
+          }
+        },
+        "properties": {
+          "active": {
+            "$ref": "#/components/schemas/ConnectionActive"
+          },
+          "external_sip_connection": {
+            "$ref": "#/components/schemas/ExternalSipConnectionZoomOnly"
+          },
+          "inbound": {
+            "properties": {
+              "channel_limit": {
+                "default": null,
+                "description": "When set, this will limit the number of concurrent inbound calls to phone numbers associated with this connection.",
+                "example": 10,
+                "type": "integer"
+              },
+              "outbound_voice_profile_id": {
+                "description": "The ID of the outbound voice profile to use for inbound calls.",
+                "example": "12345678-1234-1234-1234-123456789012",
+                "type": "string"
+              }
+            },
+            "required": [
+              "outbound_voice_profile_id"
+            ],
+            "type": "object"
+          },
+          "outbound": {
+            "properties": {
+              "channel_limit": {
+                "default": null,
+                "description": "When set, this will limit the number of concurrent outbound calls to phone numbers associated with this connection.",
+                "example": 10,
+                "type": "integer"
+              },
+              "outbound_voice_profile_id": {
+                "$ref": "#/components/schemas/external-voice-integrations_OutboundVoiceProfileId"
+              }
+            },
+            "type": "object"
+          },
+          "tags": {
+            "description": "Tags associated with the connection.",
+            "example": [
+              "tag1",
+              "tag2"
+            ],
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "webhook_event_failover_url": {
+            "default": "",
+            "description": "The failover URL where webhooks related to this connection will be sent if sending to the primary URL fails. Must include a scheme, such as 'https'.",
+            "example": "https://failover.example.com",
+            "format": "uri",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "webhook_event_url": {
+            "description": "The URL where webhooks related to this connection will be sent. Must include a scheme, such as 'https'.",
+            "example": "https://example.com",
+            "format": "uri",
+            "type": "string"
+          },
+          "webhook_timeout_secs": {
+            "default": null,
+            "description": "Specifies how many seconds to wait before timing out a webhook.",
+            "example": 25,
+            "maximum": 30,
+            "minimum": 0,
+            "type": [
+              "integer",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "external_sip_connection",
+          "outbound"
+        ],
+        "title": "Create External Connection Request",
+        "type": "object"
+      },
+      "CreateExternalConnectionUploadRequest": {
+        "example": {
+          "location_id": "67ea7693-9cd5-4a68-8c76-abb3aa5bf5d2",
+          "number_ids": [
+            "3920457616934164700",
+            "3920457616934164701",
+            "3920457616934164702",
+            "3920457616934164703"
+          ],
+          "usage": "first_party_app_assignment"
+        },
+        "properties": {
+          "additional_usages": {
+            "items": {
+              "description": "Additional use cases of the upload request. If not provided, all supported usages will be used.",
+              "enum": [
+                "calling_user_assignment",
+                "first_party_app_assignment"
+              ],
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "civic_address_id": {
+            "description": "Identifies the civic address to assign all phone numbers to.",
+            "format": "uuid",
+            "type": "string"
+          },
+          "location_id": {
+            "description": "Identifies the location to assign all phone numbers to.",
+            "format": "uuid",
+            "type": "string"
+          },
+          "number_ids": {
+            "items": {
+              "description": "Phone number ID from the Telnyx API.",
+              "type": "string"
+            },
+            "minItems": 1,
+            "type": "array"
+          },
+          "usage": {
+            "description": "The use case of the upload request. NOTE: `calling_user_assignment` is not supported for toll free numbers.",
+            "enum": [
+              "calling_user_assignment",
+              "first_party_app_assignment"
+            ],
+            "type": "string"
+          }
+        },
+        "required": [
+          "number_ids"
+        ],
+        "title": "Create Upload Request",
+        "type": "object"
+      },
+      "CredentialActive": {
+        "default": false,
+        "description": "If the credential associated with this service is active.",
+        "example": true,
+        "title": "Credential Active",
+        "type": "boolean"
+      },
+      "ExternalConnection": {
+        "example": {
+          "active": false,
+          "created_at": "2022-06-29T19:23:59Z",
+          "credential_active": false,
+          "external_sip_connection": "zoom",
+          "id": "1930241863466354012",
+          "outbound": {
+            "outbound_voice_profile_id": "1911630617284445511"
+          },
+          "record_type": "external_connection",
+          "updated_at": "2022-06-29T19:39:47Z"
+        },
+        "properties": {
+          "active": {
+            "$ref": "#/components/schemas/ConnectionActive"
+          },
+          "created_at": {
+            "description": "ISO 8601 formatted date indicating when the resource was created.",
+            "example": "2018-02-02T22:25:27.521Z",
+            "type": "string"
+          },
+          "credential_active": {
+            "$ref": "#/components/schemas/CredentialActive"
+          },
+          "external_sip_connection": {
+            "$ref": "#/components/schemas/ExternalSipConnection"
+          },
+          "id": {
+            "$ref": "#/components/schemas/external-voice-integrations_IntId"
+          },
+          "inbound": {
+            "properties": {
+              "channel_limit": {
+                "default": null,
+                "description": "When set, this will limit the number of concurrent inbound calls to phone numbers associated with this connection.",
+                "example": 10,
+                "type": "integer"
+              }
+            },
+            "type": "object"
+          },
+          "outbound": {
+            "properties": {
+              "channel_limit": {
+                "default": null,
+                "description": "When set, this will limit the number of concurrent outbound calls to phone numbers associated with this connection.",
+                "example": 10,
+                "type": "integer"
+              },
+              "outbound_voice_profile_id": {
+                "$ref": "#/components/schemas/external-voice-integrations_OutboundVoiceProfileId"
+              }
+            },
+            "type": "object"
+          },
+          "record_type": {
+            "description": "Identifies the type of the resource.",
+            "example": "external_connection",
+            "type": "string"
+          },
+          "tags": {
+            "description": "Tags associated with the connection.",
+            "example": [
+              "tag1",
+              "tag2"
+            ],
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "updated_at": {
+            "description": "ISO 8601 formatted date indicating when the resource was updated.",
+            "example": "2018-02-02T22:25:27.521Z",
+            "type": "string"
+          },
+          "webhook_api_version": {
+            "default": "1",
+            "description": "Determines which webhook format will be used, Telnyx API v1 or v2.",
+            "enum": [
+              "1",
+              "2"
+            ],
+            "example": "1",
+            "type": "string"
+          },
+          "webhook_event_failover_url": {
+            "default": "",
+            "description": "The failover URL where webhooks related to this connection will be sent if sending to the primary URL fails. Must include a scheme, such as 'https'.",
+            "example": "https://failover.example.com",
+            "format": "uri",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "webhook_event_url": {
+            "description": "The URL where webhooks related to this connection will be sent. Must include a scheme, such as 'https'.",
+            "example": "https://example.com",
+            "format": "uri",
+            "type": "string"
+          },
+          "webhook_timeout_secs": {
+            "default": null,
+            "description": "Specifies how many seconds to wait before timing out a webhook.",
+            "example": 25,
+            "maximum": 30,
+            "minimum": 0,
+            "type": [
+              "integer",
+              "null"
+            ]
+          }
+        },
+        "title": "External Connection",
+        "type": "object"
+      },
+      "ExternalConnectionPhoneNumber": {
+        "properties": {
+          "acquired_capabilities": {
+            "items": {
+              "description": "The capabilities that are available for this phone number on Microsoft Teams.",
+              "enum": [
+                "FirstPartyAppAssignment",
+                "InboundCalling",
+                "Office365",
+                "OutboundCalling",
+                "UserAssignment"
+              ],
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "civic_address_id": {
+            "description": "Identifies the civic address assigned to the phone number.",
+            "format": "uuid",
+            "type": "string"
+          },
+          "displayed_country_code": {
+            "description": "The iso country code that will be displayed to the user when they receive a call from this phone number.",
+            "type": "string"
+          },
+          "location_id": {
+            "description": "Identifies the location assigned to the phone number.",
+            "format": "uuid",
+            "type": "string"
+          },
+          "number_id": {
+            "description": "Phone number ID from the Telnyx API.",
+            "type": "string"
+          },
+          "telephone_number": {
+            "description": "Phone number in E164 format.",
+            "type": "string"
+          },
+          "ticket_id": {
+            "$ref": "#/components/schemas/UUID"
+          }
+        },
+        "title": "Phone number details with relation to an external connection",
+        "type": "object"
+      },
+      "ExternalSipConnection": {
+        "default": "zoom",
+        "description": "The service that will be consuming this connection.",
+        "enum": [
+          "zoom",
+          "operator_connect"
+        ],
+        "example": "zoom",
+        "title": "External SIP Connection",
+        "type": "string"
+      },
+      "ExternalSipConnectionZoomOnly": {
+        "default": "zoom",
+        "description": "The service that will be consuming this connection.",
+        "enum": [
+          "zoom"
+        ],
+        "example": "zoom",
+        "title": "External SIP Connection",
+        "type": "string"
+      },
+      "Location": {
+        "properties": {
+          "additional_info": {
+            "example": "14th Floor",
+            "type": "string"
+          },
+          "description": {
+            "example": "Austin Office",
+            "type": "string"
+          },
+          "id": {
+            "$ref": "#/components/schemas/UUID"
+          },
+          "is_default": {
+            "description": "Represents whether the location is the default or not.",
+            "type": "boolean"
+          }
+        },
+        "title": "Location",
+        "type": "object"
+      },
+      "LocationResponse": {
+        "properties": {
+          "data": {
+            "properties": {
+              "accepted_address_suggestions": {
+                "type": "boolean"
+              },
+              "location_id": {
+                "format": "uuid",
+                "type": "string"
+              },
+              "static_emergency_address_id": {
+                "format": "uuid",
+                "type": "string"
+              }
+            },
+            "type": "object"
+          }
+        },
+        "type": "object"
+      },
+      "LogMessage": {
+        "properties": {
+          "code": {
+            "example": "10015",
+            "type": "string",
+            "x-format": "int64"
+          },
+          "detail": {
+            "example": "The value provided for the attribute is not valid. Check the value used and try again.",
+            "type": "string"
+          },
+          "meta": {
+            "properties": {
+              "external_connection_id": {
+                "description": "The external connection the log message is associated with, if any.",
+                "example": "1293384261075731499",
+                "type": "string",
+                "x-format": "int64"
+              },
+              "telephone_number": {
+                "description": "The telephone number the log message is associated with, if any.",
+                "example": "+12345678",
+                "type": "string"
+              },
+              "ticket_id": {
+                "description": "The ticket ID for an operation that generated the log message, if any.",
+                "example": "542c3bca-d247-42bc-8fe7-e01d16ecd761",
+                "format": "uuid",
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
+          "source": {
+            "properties": {
+              "pointer": {
+                "description": "JSON pointer (RFC6901) to the offending entity.",
+                "example": "/attribute",
+                "format": "json-pointer",
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
+          "title": {
+            "example": "Invalid attribute",
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "title"
+        ],
+        "type": "object"
+      },
+      "Release": {
+        "properties": {
+          "created_at": {
+            "description": "ISO 8601 formatted date indicating when the resource was created.",
+            "example": "2018-02-02T22:25:27.521Z",
+            "type": "string"
+          },
+          "error_message": {
+            "description": "A message set if there is an error with the upload process.",
+            "type": "string"
+          },
+          "status": {
+            "default": "pending_upload",
+            "description": "Represents the status of the release on Microsoft Teams.",
+            "enum": [
+              "pending_upload",
+              "pending",
+              "in_progress",
+              "complete",
+              "failed",
+              "expired",
+              "unknown"
+            ],
+            "example": "pending",
+            "type": "string"
+          },
+          "telephone_numbers": {
+            "items": {
+              "$ref": "#/components/schemas/TnReleaseEntry"
+            },
+            "type": "array"
+          },
+          "tenant_id": {
+            "example": "ea175aba-f47c-4702-9400-efaa42688048",
+            "format": "uuid",
+            "type": "string"
+          },
+          "ticket_id": {
+            "$ref": "#/components/schemas/UUID"
+          }
+        },
+        "title": "Phone Number Release",
+        "type": "object"
+      },
+      "TnReleaseEntry": {
+        "properties": {
+          "number_id": {
+            "description": "Phone number ID from the Telnyx API.",
+            "type": "string"
+          },
+          "phone_number": {
+            "description": "Phone number in E164 format.",
+            "type": "string"
+          }
+        },
+        "title": "TnReleaseEntry",
+        "type": "object"
+      },
+      "TnUploadEntry": {
+        "properties": {
+          "civic_address_id": {
+            "description": "Identifies the civic address assigned to the phone number entry.",
+            "format": "uuid",
+            "type": "string"
+          },
+          "error_code": {
+            "description": "A code returned by Microsoft Teams if there is an error with the phone number entry upload.",
+            "enum": [
+              "internal_error",
+              "unable_to_retrieve_default_location",
+              "unknown_country_code",
+              "unable_to_retrieve_location",
+              "unable_to_retrieve_partner_info",
+              "unable_to_match_geography_entry"
+            ],
+            "example": "internal_error",
+            "type": "string"
+          },
+          "error_message": {
+            "description": "A message returned by Microsoft Teams if there is an error with the upload process.",
+            "type": "string"
+          },
+          "internal_status": {
+            "default": "pending_assignment",
+            "description": "Represents the status of the phone number entry upload on Telnyx.",
+            "enum": [
+              "pending_assignment",
+              "in_progress",
+              "all_internal_jobs_completed",
+              "release_requested",
+              "release_completed",
+              "error"
+            ],
+            "example": "error",
+            "type": "string"
+          },
+          "location_id": {
+            "description": "Identifies the location assigned to the phone number entry.",
+            "format": "uuid",
+            "type": "string"
+          },
+          "number_id": {
+            "$ref": "#/components/schemas/UUID"
+          },
+          "phone_number": {
+            "description": "Phone number in E164 format.",
+            "type": "string"
+          },
+          "status": {
+            "default": "pending_upload",
+            "description": "Represents the status of the phone number entry upload on Microsoft Teams.",
+            "enum": [
+              "pending_upload",
+              "pending",
+              "in_progress",
+              "success",
+              "error"
+            ],
+            "example": "error",
+            "type": "string"
+          }
+        },
+        "title": "TnUploadEntry",
+        "type": "object"
+      },
+      "UUID": {
+        "description": "Uniquely identifies the resource.",
+        "example": "542c3bca-d247-42bc-8fe7-e01d16ecd761",
+        "format": "uuid",
+        "title": "UUID",
+        "type": "string"
+      },
+      "UpdateExternalConnectionPhoneNumberRequest": {
+        "properties": {
+          "location_id": {
+            "description": "Identifies the location to assign the phone number to.",
+            "format": "uuid",
+            "type": "string"
+          }
+        },
+        "title": "Update External Connection Phone Number Request",
+        "type": "object"
+      },
+      "UpdateExternalConnectionRequest": {
+        "example": {
+          "active": false,
+          "outbound": {
+            "outbound_voice_profile_id": "1911630617284445511"
+          }
+        },
+        "properties": {
+          "active": {
+            "$ref": "#/components/schemas/ConnectionActive"
+          },
+          "inbound": {
+            "properties": {
+              "channel_limit": {
+                "default": null,
+                "description": "When set, this will limit the number of concurrent inbound calls to phone numbers associated with this connection.",
+                "example": 10,
+                "type": "integer"
+              }
+            },
+            "type": "object"
+          },
+          "outbound": {
+            "properties": {
+              "channel_limit": {
+                "default": null,
+                "description": "When set, this will limit the number of concurrent outbound calls to phone numbers associated with this connection.",
+                "example": 10,
+                "type": "integer"
+              },
+              "outbound_voice_profile_id": {
+                "$ref": "#/components/schemas/external-voice-integrations_OutboundVoiceProfileId"
+              }
+            },
+            "required": [
+              "outbound_voice_profile_id"
+            ],
+            "type": "object"
+          },
+          "tags": {
+            "description": "Tags associated with the connection.",
+            "example": [
+              "tag1",
+              "tag2"
+            ],
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "webhook_event_failover_url": {
+            "default": "",
+            "description": "The failover URL where webhooks related to this connection will be sent if sending to the primary URL fails. Must include a scheme, such as 'https'.",
+            "example": "https://failover.example.com",
+            "format": "uri",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "webhook_event_url": {
+            "description": "The URL where webhooks related to this connection will be sent. Must include a scheme, such as 'https'.",
+            "example": "https://example.com",
+            "format": "uri",
+            "type": "string"
+          },
+          "webhook_timeout_secs": {
+            "default": null,
+            "description": "Specifies how many seconds to wait before timing out a webhook.",
+            "example": 25,
+            "maximum": 30,
+            "minimum": 0,
+            "type": [
+              "integer",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "outbound"
+        ],
+        "title": "Update External Connection Request",
+        "type": "object"
+      },
+      "Upload": {
+        "properties": {
+          "available_usages": {
+            "items": {
+              "description": "Available usages for the numbers in the upload on Microsoft Teams.",
+              "enum": [
+                "calling_user_assignment",
+                "first_party_app_assignment"
+              ],
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "error_code": {
+            "description": "A code returned by Microsoft Teams if there is an error with the upload process.",
+            "type": "string"
+          },
+          "error_message": {
+            "description": "A message set if there is an error with the upload process.",
+            "type": "string"
+          },
+          "location_id": {
+            "example": "c37e5036-1e87-42e6-86a2-b3e8dd39a2ad",
+            "format": "uuid",
+            "type": "string"
+          },
+          "status": {
+            "default": "pending_upload",
+            "description": "Represents the status of the upload on Microsoft Teams.",
+            "enum": [
+              "pending_upload",
+              "pending",
+              "in_progress",
+              "partial_success",
+              "success",
+              "error"
+            ],
+            "example": "error",
+            "type": "string"
+          },
+          "tenant_id": {
+            "example": "ea175aba-f47c-4702-9400-efaa42688048",
+            "format": "uuid",
+            "type": "string"
+          },
+          "ticket_id": {
+            "$ref": "#/components/schemas/UUID"
+          },
+          "tn_upload_entries": {
+            "items": {
+              "$ref": "#/components/schemas/TnUploadEntry"
+            },
+            "type": "array"
+          }
+        },
+        "title": "Upload",
+        "type": "object"
+      },
+      "external-voice-integrations_ErrorResponse": {
+        "properties": {
+          "errors": {
+            "items": {
+              "properties": {
+                "code": {
+                  "type": "string"
+                },
+                "detail": {
+                  "type": "string"
+                },
+                "meta": {
+                  "properties": {
+                    "url": {
+                      "format": "uri",
+                      "type": "string"
+                    }
+                  },
+                  "type": "object"
+                },
+                "source": {
+                  "properties": {
+                    "pointer": {
+                      "type": "string"
+                    }
+                  },
+                  "type": "object"
+                },
+                "title": {
+                  "type": "string"
+                }
+              },
+              "type": "object"
+            },
+            "type": "array"
+          }
+        },
+        "type": "object"
+      },
+      "external-voice-integrations_IntId": {
+        "description": "Uniquely identifies the resource.",
+        "example": "1293384261075731499",
+        "title": "Int ID",
+        "type": "string",
+        "x-format": "int64"
+      },
+      "external-voice-integrations_OutboundVoiceProfileId": {
+        "description": "Identifies the associated outbound voice profile.",
+        "example": "1293384261075731499",
+        "title": "Outbound Voice Profile ID",
+        "type": "string",
+        "x-format": "int64"
+      },
+      "external-voice-integrations_PaginationMeta": {
+        "properties": {
+          "page_number": {
+            "example": 2,
+            "type": "integer"
+          },
+          "page_size": {
+            "example": 25,
+            "type": "integer"
+          },
+          "total_pages": {
+            "example": 3,
+            "type": "integer"
+          },
+          "total_results": {
+            "example": 55,
+            "type": "integer"
+          }
+        },
+        "title": "Pagination Meta",
+        "type": "object"
+      }
+    },
+    "securitySchemes": {
+      "BearerAuth": {
+        "bearerFormat": "API key",
+        "description": "Telnyx API key supplied as `Authorization: Bearer \u003ctoken\u003e`. In production, auth may be validated by the API gateway and forwarded via Telnyx auth headers.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "Payment": {
+        "description": "Machine Payment Protocol credential used on paid retries, sent as `Authorization: Payment ...`. Obtained by paying a challenge returned in the `WWW-Authenticate` header of a 402 response. This is not a Telnyx API key; initial challenge requests use standard bearer authentication instead.",
+        "in": "header",
+        "name": "Authorization",
+        "type": "apiKey"
+      },
+      "agent-memory_bearerAuth": {
+        "description": "Telnyx API key",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "bearerAuth": {
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "branded-calling_bearerAuth": {
+        "description": "Telnyx API key. Generate one at https://portal.telnyx.com/#/app/api-keys.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "collections_bearerAuth": {
+        "description": "Telnyx API key. Collections and results are automatically scoped to the authenticated user's organization.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "number-reputation_bearerAuth": {
+        "description": "Telnyx API key. Generate one at https://portal.telnyx.com/#/app/api-keys.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "oauthClientAuth": {
+        "description": "OAuth 2.0 authentication for Telnyx API and MCP integrations",
+        "flows": {
+          "authorizationCode": {
+            "authorizationUrl": "https://api.telnyx.com/v2/oauth/authorize",
+            "refreshUrl": "https://api.telnyx.com/v2/oauth/token",
+            "scopes": {
+              "admin": "Administrative access to Telnyx resources"
+            },
+            "tokenUrl": "https://api.telnyx.com/v2/oauth/token"
+          },
+          "clientCredentials": {
+            "scopes": {
+              "admin": "Administrative access to Telnyx resources"
+            },
+            "tokenUrl": "https://api.telnyx.com/v2/oauth/token"
+          }
+        },
+        "type": "oauth2"
+      },
+      "outbound-voice-profiles_bearerAuth": {
+        "bearerFormat": "JWT",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "pay-connectors_bearerAuth": {
+        "description": "Telnyx API key, not the processor bearer token.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "pronunciation-dicts_bearerAuth": {
+        "description": "Telnyx API v2 key. Obtain from https://portal.telnyx.com",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "rcs-registration_bearerAuth": {
+        "bearerFormat": "API key",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "stored-payment-transactions_bearerAuth": {
+        "bearerFormat": "JWT",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "telnyxApiKey": {
+        "description": "Management-only Telnyx account credential.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "transcriptions-search_bearerAuth": {
+        "description": "Telnyx API key. Results are automatically scoped to the authenticated user's organization.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "web-search_bearerAuth": {
+        "description": "Telnyx API key",
+        "scheme": "bearer",
+        "type": "http"
+      }
+    }
+  },
+  "info": {
+    "contact": {
+      "email": "support@telnyx.com"
+    },
+    "description": "SIP trunking, SMS, MMS, Call Control and Telephony Data Services.",
+    "title": "Telnyx API",
+    "version": "2.0.0",
+    "x-endpoint-cost": "light",
+    "x-latency-category": "responsive"
+  },
+  "openapi": "3.1.0",
+  "paths": {
+    "/external_connections": {
+      "get": {
+        "description": "This endpoint returns a list of your External Connections inside the 'data' attribute of the response. External Connections are used by Telnyx customers to seamless configure SIP trunking integrations with Telnyx Partners, through External Voice Integrations in Mission Control Portal.",
+        "operationId": "ListExternalConnections",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/FilterConnectionsConsolidated"
+          },
+          {
+            "$ref": "#/components/parameters/external-voice-integrations_PageConsolidated"
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "items": {
+                        "$ref": "#/components/schemas/ExternalConnection"
+                      },
+                      "type": "array"
+                    },
+                    "meta": {
+                      "$ref": "#/components/schemas/external-voice-integrations_PaginationMeta"
+                    }
+                  },
+                  "title": "Get All External Connections Response",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful response"
+          },
+          "400": {
+            "description": "Bad request"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Resource not found"
+          }
+        },
+        "summary": "List all External Connections",
+        "tags": [
+          "External Connections"
+        ],
+        "x-endpoint-cost": "medium"
+      },
+      "post": {
+        "description": "Creates a new External Connection based on the parameters sent in the request. The external_sip_connection and outbound voice profile id are required. Once created, you can assign phone numbers to your application using the `/phone_numbers` endpoint.",
+        "operationId": "CreateExternalConnection",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateExternalConnectionRequest"
+              }
+            }
+          },
+          "description": "Parameters that can be set when creating a External Connection",
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/ExternalConnection"
+                    }
+                  },
+                  "title": "External Connection Response",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful response"
+          },
+          "422": {
+            "description": "Bad request"
+          }
+        },
+        "summary": "Creates an External Connection",
+        "tags": [
+          "External Connections"
+        ],
+        "x-endpoint-cost": "medium"
+      }
+    },
+    "/external_connections/log_messages": {
+      "get": {
+        "description": "Retrieve a list of log messages for all external connections associated with your account.",
+        "operationId": "ListExternalConnectionLogMessages",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/FilterLogMessagesConsolidated"
+          },
+          {
+            "$ref": "#/components/parameters/external-voice-integrations_PageConsolidated"
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "log_messages": {
+                      "items": {
+                        "$ref": "#/components/schemas/LogMessage"
+                      },
+                      "type": "array"
+                    },
+                    "meta": {
+                      "$ref": "#/components/schemas/external-voice-integrations_PaginationMeta"
+                    }
+                  },
+                  "title": "List Log Messages Response",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful response"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "422": {
+            "description": "Bad request"
+          }
+        },
+        "summary": "List all log messages",
+        "tags": [
+          "External Connections"
+        ]
+      }
+    },
+    "/external_connections/log_messages/{id}": {
+      "delete": {
+        "description": "Dismiss a log message for an external connection associated with your account.",
+        "operationId": "DeleteExternalConnectionLogMessage",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/external-voice-integrations_id"
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "success": true
+                },
+                "schema": {
+                  "properties": {
+                    "success": {
+                      "description": "Describes wether or not the operation was successful",
+                      "type": "boolean"
+                    }
+                  },
+                  "title": "Dismiss request was successful",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful response"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Resource not found"
+          }
+        },
+        "summary": "Dismiss a log message",
+        "tags": [
+          "External Connections"
+        ]
+      },
+      "get": {
+        "description": "Retrieve a log message for an external connection associated with your account.",
+        "operationId": "GetExternalConnectionLogMessage",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/external-voice-integrations_id"
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "log_messages": {
+                      "items": {
+                        "$ref": "#/components/schemas/LogMessage"
+                      },
+                      "maxItems": 1,
+                      "minItems": 1,
+                      "type": "array"
+                    }
+                  },
+                  "title": "Get Log Message Response",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful response"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Resource not found"
+          }
+        },
+        "summary": "Retrieve a log message",
+        "tags": [
+          "External Connections"
+        ]
+      }
+    },
+    "/external_connections/{id}": {
+      "delete": {
+        "description": "Permanently deletes an External Connection. Deletion may be prevented if the application is in use by phone numbers, is active, or if it is an Operator Connect connection. To remove an Operator Connect integration please contact Telnyx support.",
+        "operationId": "DeleteExternalConnection",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/external-voice-integrations_id"
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/ExternalConnection"
+                    }
+                  },
+                  "title": "External Connection Response",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful response"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Resource not found"
+          },
+          "422": {
+            "description": "Bad request"
+          }
+        },
+        "summary": "Deletes an External Connection",
+        "tags": [
+          "External Connections"
+        ]
+      },
+      "get": {
+        "description": "Return the details of an existing External Connection inside the 'data' attribute of the response.",
+        "operationId": "GetExternalConnection",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/external-voice-integrations_id"
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/ExternalConnection"
+                    }
+                  },
+                  "title": "External Connection Response",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful response"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Resource not found"
+          },
+          "422": {
+            "description": "Bad request"
+          }
+        },
+        "summary": "Retrieve an External Connection",
+        "tags": [
+          "External Connections"
+        ]
+      },
+      "patch": {
+        "description": "Updates settings of an existing External Connection based on the parameters of the request.",
+        "operationId": "UpdateExternalConnection",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/external-voice-integrations_id"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateExternalConnectionRequest"
+              }
+            }
+          },
+          "description": "Parameters to be updated for the External Connection",
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/ExternalConnection"
+                    }
+                  },
+                  "title": "External Connection Response",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful response"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Resource not found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "errors": [
+                    {
+                      "detail": "A previous update to this connection is still in progress. Please try again later."
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/external-voice-integrations_ErrorResponse"
+                }
+              }
+            },
+            "description": "Conflict. Another update to this connection is still in progress. Wait and retry the request later."
+          },
+          "422": {
+            "description": "Bad request"
+          }
+        },
+        "summary": "Update an External Connection",
+        "tags": [
+          "External Connections"
+        ]
+      }
+    },
+    "/external_connections/{id}/civic_addresses": {
+      "get": {
+        "description": "Returns the civic addresses and locations from Microsoft Teams.",
+        "operationId": "ListCivicAddresses",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/external-voice-integrations_id"
+          },
+          {
+            "$ref": "#/components/parameters/FilterCivicAddressesConsolidated"
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "items": {
+                        "$ref": "#/components/schemas/CivicAddress"
+                      },
+                      "type": "array"
+                    }
+                  },
+                  "title": "Get All Civic Addresses Response",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful response"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Not found"
+          },
+          "500": {
+            "description": "Unexpected Error"
+          },
+          "502": {
+            "description": "Bad Gateway"
+          }
+        },
+        "summary": "List all civic addresses and locations",
+        "tags": [
+          "External Connections"
+        ]
+      }
+    },
+    "/external_connections/{id}/civic_addresses/{address_id}": {
+      "get": {
+        "description": "Return the details of an existing Civic Address with its Locations inside the 'data' attribute of the response.",
+        "operationId": "GetExternalConnectionCivicAddress",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/external-voice-integrations_id"
+          },
+          {
+            "$ref": "#/components/parameters/address_id"
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/CivicAddress"
+                    }
+                  },
+                  "title": "Get Civic Address Response",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful response"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Not found"
+          },
+          "500": {
+            "description": "Unexpected Error"
+          },
+          "502": {
+            "description": "Bad Gateway"
+          }
+        },
+        "summary": "Retrieve a Civic Address",
+        "tags": [
+          "External Connections"
+        ]
+      }
+    },
+    "/external_connections/{id}/locations/{location_id}": {
+      "patch": {
+        "description": "Update the static emergency address assigned to a specific location of an external connection.",
+        "operationId": "updateLocation",
+        "parameters": [
+          {
+            "description": "The ID of the external connection",
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "description": "The ID of the location to update",
+            "in": "path",
+            "name": "location_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "example": {
+                "static_emergency_address_id": "3fa85f64-5717-4562-b3fc-2c963f66afa6"
+              },
+              "schema": {
+                "properties": {
+                  "static_emergency_address_id": {
+                    "description": "A new static emergency address ID to update the location with",
+                    "format": "uuid",
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "static_emergency_address_id"
+                ],
+                "type": "object"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "data": {
+                    "accepted_address_suggestions": false,
+                    "location_id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+                    "static_emergency_address_id": "3fa85f64-5717-4562-b3fc-2c963f66afa6"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/LocationResponse"
+                }
+              }
+            },
+            "description": "Location successfully updated with no associated orders to process"
+          },
+          "202": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LocationResponse"
+                }
+              }
+            },
+            "description": "Location update accepted; associated orders being processed"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "errors": [
+                    {
+                      "code": "10005",
+                      "detail": "The requested resource or URL could not be found.",
+                      "title": "Resource not found"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/external-voice-integrations_ErrorResponse"
+                }
+              }
+            },
+            "description": "Location or external connection not found"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "errors": [
+                    {
+                      "code": "10027",
+                      "detail": "The server understood the syntax of the request but was unable to process the instructions.",
+                      "title": "Unprocessable Entity"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/external-voice-integrations_ErrorResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Entity - Location already has an accepted emergency address"
+          }
+        },
+        "summary": "Update a location's static emergency address",
+        "tags": [
+          "External Connections"
+        ]
+      }
+    },
+    "/external_connections/{id}/phone_numbers": {
+      "get": {
+        "description": "Returns a list of all active phone numbers associated with the given external connection.",
+        "operationId": "ListExternalConnectionPhoneNumbers",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/external-voice-integrations_id"
+          },
+          {
+            "$ref": "#/components/parameters/FilterPhoneNumbersConsolidated"
+          },
+          {
+            "$ref": "#/components/parameters/external-voice-integrations_PageConsolidated"
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "items": {
+                        "$ref": "#/components/schemas/ExternalConnectionPhoneNumber"
+                      },
+                      "type": "array"
+                    },
+                    "meta": {
+                      "$ref": "#/components/schemas/external-voice-integrations_PaginationMeta"
+                    }
+                  },
+                  "title": "List External Connection Phone Numbers Response",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful response"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Not found"
+          },
+          "422": {
+            "description": "Bad request"
+          }
+        },
+        "summary": "List all phone numbers",
+        "tags": [
+          "External Connections"
+        ]
+      }
+    },
+    "/external_connections/{id}/phone_numbers/{phone_number_id}": {
+      "get": {
+        "description": "Return the details of a phone number associated with the given external connection.",
+        "operationId": "GetExternalConnectionPhoneNumber",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/external-voice-integrations_id"
+          },
+          {
+            "$ref": "#/components/parameters/phone_number_id"
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/ExternalConnectionPhoneNumber"
+                    }
+                  },
+                  "title": "Get External Connection Phone Number Response",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful response"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Not found"
+          }
+        },
+        "summary": "Retrieve a phone number",
+        "tags": [
+          "External Connections"
+        ]
+      },
+      "patch": {
+        "description": "Asynchronously update settings of the phone number associated with the given external connection.",
+        "operationId": "UpdateExternalConnectionPhoneNumber",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/external-voice-integrations_id"
+          },
+          {
+            "$ref": "#/components/parameters/phone_number_id"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "example": {
+                "location_id": "3fa85f64-5717-4562-b3fc-2c963f66afa6"
+              },
+              "schema": {
+                "$ref": "#/components/schemas/UpdateExternalConnectionPhoneNumberRequest"
+              }
+            }
+          },
+          "description": "Values that can be set when updating a phone number",
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/ExternalConnectionPhoneNumber"
+                    }
+                  },
+                  "title": "Get External Connection Phone Number Response",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful response"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Not found"
+          },
+          "422": {
+            "description": "Bad request"
+          }
+        },
+        "summary": "Update a phone number",
+        "tags": [
+          "External Connections"
+        ]
+      }
+    },
+    "/external_connections/{id}/releases": {
+      "get": {
+        "description": "Returns a list of your Releases for the given external connection. These are automatically created when you change the `connection_id` of a phone number that is currently on Microsoft Teams.",
+        "operationId": "ListExternalConnectionReleases",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/external-voice-integrations_id"
+          },
+          {
+            "$ref": "#/components/parameters/FilterReleasesConsolidated"
+          },
+          {
+            "$ref": "#/components/parameters/external-voice-integrations_PageConsolidated"
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "items": {
+                        "$ref": "#/components/schemas/Release"
+                      },
+                      "type": "array"
+                    },
+                    "meta": {
+                      "$ref": "#/components/schemas/external-voice-integrations_PaginationMeta"
+                    }
+                  },
+                  "title": "List Releases Response",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful response"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Not found"
+          },
+          "422": {
+            "description": "Bad request"
+          }
+        },
+        "summary": "List all Releases",
+        "tags": [
+          "External Connections"
+        ]
+      }
+    },
+    "/external_connections/{id}/releases/{release_id}": {
+      "get": {
+        "description": "Return the details of a Release request and its phone numbers.",
+        "operationId": "GetExternalConnectionRelease",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/external-voice-integrations_id"
+          },
+          {
+            "$ref": "#/components/parameters/release_id"
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/Release"
+                    }
+                  },
+                  "title": "Get Release Response",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful response"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Not found"
+          }
+        },
+        "summary": "Retrieve a Release request",
+        "tags": [
+          "External Connections"
+        ]
+      }
+    },
+    "/external_connections/{id}/uploads": {
+      "get": {
+        "description": "Returns a list of your Upload requests for the given external connection.",
+        "operationId": "ListExternalConnectionUploads",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/external-voice-integrations_id"
+          },
+          {
+            "$ref": "#/components/parameters/FilterUploadsConsolidated"
+          },
+          {
+            "$ref": "#/components/parameters/external-voice-integrations_PageConsolidated"
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "items": {
+                        "$ref": "#/components/schemas/Upload"
+                      },
+                      "type": "array"
+                    },
+                    "meta": {
+                      "$ref": "#/components/schemas/external-voice-integrations_PaginationMeta"
+                    }
+                  },
+                  "title": "List Uploads Response",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful response"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Not found"
+          },
+          "422": {
+            "description": "Bad request"
+          }
+        },
+        "summary": "List all Upload requests",
+        "tags": [
+          "External Connections"
+        ]
+      },
+      "post": {
+        "description": "Creates a new Upload request to Microsoft teams with the included phone numbers. Only one of civic_address_id or location_id must be provided, not both. The maximum allowed phone numbers for the numbers_ids array is 1000.",
+        "operationId": "CreateExternalConnectionUpload",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/external-voice-integrations_id"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateExternalConnectionUploadRequest"
+              }
+            }
+          },
+          "description": "Parameters that can be set when creating an Upload request.",
+          "required": true
+        },
+        "responses": {
+          "202": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "success": true,
+                  "ticket_id": "3fa85f64-5717-4562-b3fc-2c963f66afa6"
+                },
+                "schema": {
+                  "properties": {
+                    "success": {
+                      "description": "Describes wether or not the operation was successful",
+                      "type": "boolean"
+                    },
+                    "ticket_id": {
+                      "description": "Ticket id of the upload request",
+                      "format": "uuid",
+                      "type": "string"
+                    }
+                  },
+                  "title": "Create Upload request Response",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Upload request accepted. Track progress via GET /external_connections/{id}/uploads/status, or per ticket via GET /external_connections/{id}/uploads/{ticket_id}."
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Not found"
+          },
+          "413": {
+            "description": "Payload too large. The maximum allowed phone numbers for the numbers_ids array is 1000."
+          },
+          "422": {
+            "description": "Unprocessable Entity"
+          },
+          "504": {
+            "description": "Gateway Timeout"
+          }
+        },
+        "summary": "Creates an Upload request",
+        "tags": [
+          "External Connections"
+        ]
+      }
+    },
+    "/external_connections/{id}/uploads/refresh": {
+      "post": {
+        "description": "Forces a recheck of the status of all pending Upload requests for the given external connection in the background.",
+        "operationId": "RefreshExternalConnectionUploads",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/external-voice-integrations_id"
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "success": true
+                },
+                "schema": {
+                  "properties": {
+                    "success": {
+                      "description": "Describes wether or not the operation was successful",
+                      "type": "boolean"
+                    }
+                  },
+                  "title": "Create Upload request Response",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful response"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Not found"
+          },
+          "409": {
+            "description": "Status refresh is still in progress, please wait before calling again"
+          }
+        },
+        "summary": "Refresh the status of all Upload requests",
+        "tags": [
+          "External Connections"
+        ]
+      }
+    },
+    "/external_connections/{id}/uploads/status": {
+      "get": {
+        "description": "Returns the count of all pending upload requests for the given external connection.",
+        "operationId": "GetExternalConnectionUploadsStatus",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/external-voice-integrations_id"
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "data": {
+                    "pending_numbers_count": 0,
+                    "pending_orders_count": 0
+                  }
+                },
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "properties": {
+                        "pending_numbers_count": {
+                          "description": "The count of phone numbers that are pending assignment to the external connection.",
+                          "type": "integer"
+                        },
+                        "pending_orders_count": {
+                          "description": "The count of number uploads that have not yet been uploaded to Microsoft.",
+                          "type": "integer"
+                        }
+                      },
+                      "type": "object"
+                    }
+                  },
+                  "title": "Get Uploads Status Response",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful response"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Not found"
+          }
+        },
+        "summary": "Get the count of pending upload requests",
+        "tags": [
+          "External Connections"
+        ]
+      }
+    },
+    "/external_connections/{id}/uploads/{ticket_id}": {
+      "get": {
+        "description": "Return the details of an Upload request and its phone numbers.",
+        "operationId": "GetExternalConnectionUpload",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/external-voice-integrations_id"
+          },
+          {
+            "$ref": "#/components/parameters/ticket_id"
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/Upload"
+                    }
+                  },
+                  "title": "Get Upload Response",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful response"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Not found"
+          }
+        },
+        "summary": "Retrieve an Upload request",
+        "tags": [
+          "External Connections"
+        ]
+      }
+    },
+    "/external_connections/{id}/uploads/{ticket_id}/retry": {
+      "post": {
+        "description": "If there were any errors during the upload process, this endpoint will retry the upload request. In some cases this will reattempt the existing upload request, in other cases it may create a new upload request. Please check the ticket_id in the response to determine if a new upload request was created.",
+        "operationId": "RetryUpload",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/external-voice-integrations_id"
+          },
+          {
+            "$ref": "#/components/parameters/ticket_id"
+          }
+        ],
+        "responses": {
+          "202": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/Upload"
+                    }
+                  },
+                  "title": "Get Upload Response",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Retry accepted. Track the upload via GET /external_connections/{id}/uploads/{ticket_id}."
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Not found"
+          },
+          "409": {
+            "description": "Order is still in progress, please wait before retrying"
+          },
+          "422": {
+            "description": "Unprocessable Entity"
+          }
+        },
+        "summary": "Retry an Upload request",
+        "tags": [
+          "External Connections"
+        ]
+      }
+    },
+    "/operator_connect/actions/refresh": {
+      "post": {
+        "description": "This endpoint will make an asynchronous request to refresh the Operator Connect integration with Microsoft Teams for the current user. This will create new external connections on the user's account if needed, and/or report the integration results as [log messages](https://developers.telnyx.com/api-reference/external-connections/list-all-log-messages#list-all-log-messages).",
+        "operationId": "OperatorConnectRefresh",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "message": {
+                      "description": "A message describing the result of the operation",
+                      "example": "Operator connect refresh already in progress",
+                      "type": "string"
+                    },
+                    "success": {
+                      "description": "Describes wether or not the operation was successful",
+                      "example": true,
+                      "type": "boolean"
+                    }
+                  },
+                  "title": "Operator Connect Refresh Response",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful response"
+          },
+          "202": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "message": {
+                      "description": "A message describing the result of the operation",
+                      "example": "Operator connect refresh started",
+                      "type": "string"
+                    },
+                    "success": {
+                      "description": "Describes wether or not the operation was successful",
+                      "example": true,
+                      "type": "boolean"
+                    }
+                  },
+                  "title": "Operator Connect Refresh Response",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful response"
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
+        },
+        "summary": "Refresh Operator Connect integration",
+        "tags": [
+          "External Connections"
+        ]
+      }
+    }
+  },
+  "security": [
+    {
+      "bearerAuth": []
+    }
+  ],
+  "servers": [
+    {
+      "description": "Version 2.0.0 of the Telnyx API",
+      "url": "https://api.telnyx.com/v2"
+    }
+  ]
+}

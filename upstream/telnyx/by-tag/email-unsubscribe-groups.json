@@ -1,0 +1,1042 @@
+{
+  "components": {
+    "parameters": {
+      "BlocksPageNumber": {
+        "description": "Offset page number (≥1, default 1).",
+        "in": "query",
+        "name": "page[number]",
+        "schema": {
+          "default": 1,
+          "minimum": 1,
+          "type": "integer"
+        }
+      },
+      "BlocksPageSize": {
+        "description": "Page size (1–100, default 25).",
+        "in": "query",
+        "name": "page[size]",
+        "schema": {
+          "default": 25,
+          "maximum": 100,
+          "minimum": 1,
+          "type": "integer"
+        }
+      },
+      "ForceQuery": {
+        "description": "Force-delete a group with active suppressions. Only `\"true\"` (string) or `true` (bool) are truthy; all other values are false.",
+        "in": "query",
+        "name": "force",
+        "schema": {
+          "oneOf": [
+            {
+              "enum": [
+                "true",
+                "false"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "boolean"
+            }
+          ]
+        }
+      },
+      "PathEmail": {
+        "description": "Recipient address (normalized: trim + lower-case before matching).",
+        "in": "path",
+        "name": "email",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      },
+      "PathId": {
+        "description": "Resource UUID. Malformed UUIDs are treated as not-found (not 400).",
+        "in": "path",
+        "name": "id",
+        "required": true,
+        "schema": {
+          "format": "uuid",
+          "type": "string"
+        }
+      }
+    },
+    "responses": {
+      "BlocksNotFound": {
+        "content": {
+          "application/json": {
+            "example": {
+              "errors": [
+                {
+                  "code": "10001",
+                  "detail": "The requested email block was not found",
+                  "title": "Not Found"
+                }
+              ]
+            },
+            "schema": {
+              "$ref": "#/components/schemas/ErrorList"
+            }
+          }
+        },
+        "description": "Resource not found (cross-account lookups and malformed UUIDs also return 404 — no leak)."
+      },
+      "ChangesetError": {
+        "content": {
+          "application/json": {
+            "example": {
+              "errors": [
+                {
+                  "code": "10015",
+                  "detail": "can't be blank",
+                  "source": {
+                    "pointer": "/data/attributes/to"
+                  },
+                  "title": "Validation Failed"
+                }
+              ]
+            },
+            "schema": {
+              "$ref": "#/components/schemas/ErrorList"
+            }
+          }
+        },
+        "description": "Validation error (changeset or internal `Params`). One error object per field, `source.pointer /data/attributes/\u003cfield\u003e`."
+      },
+      "FrameworkError": {
+        "content": {
+          "application/json": {
+            "example": {
+              "errors": [
+                {
+                  "code": "406",
+                  "detail": "Not Acceptable",
+                  "title": "Not Acceptable"
+                }
+              ]
+            },
+            "schema": {
+              "$ref": "#/components/schemas/ErrorList"
+            }
+          }
+        },
+        "description": "Framework-rendered error (e.g. 406 Not Acceptable, 405 Method Not\nAllowed, 415 Unsupported Media Type). HTTP status matches the error\nand the body `code` carries that same status (e.g. `\"406\"`, not a\nhardcoded `\"500\"`). The explicit `500.json` clause still emits\n`code: \"500\"` for genuine 500s.\n"
+      },
+      "email_Unauthorized": {
+        "content": {
+          "application/json": {
+            "example": {
+              "errors": [
+                {
+                  "code": "10007",
+                  "detail": "Missing authentication",
+                  "title": "Unauthorized"
+                }
+              ]
+            },
+            "schema": {
+              "$ref": "#/components/schemas/ErrorList"
+            }
+          }
+        },
+        "description": "Missing or invalid gateway auth."
+      }
+    },
+    "schemas": {
+      "AddGroupSuppressionRequest": {
+        "description": "Only `to` is read; all other fields are ignored (`reason: unsubscribe`, `source: manual`, `group_id: \u003cgroup\u003e` are forced).",
+        "properties": {
+          "to": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "to"
+        ],
+        "type": "object"
+      },
+      "BlocksErrorObject": {
+        "properties": {
+          "code": {
+            "description": "Error codes: `10001` (Not Found), `10007` (Unauthorized),\n`10015` (Validation Failed), `10019` (Internal — import create\nfallback), `40901` (Conflict), `500` (framework/catch-all).\n",
+            "type": "string"
+          },
+          "detail": {
+            "type": "string"
+          },
+          "source": {
+            "description": "`/data/attributes/\u003cfield\u003e` for changeset/Params; `/\u003cfield\u003e` for query-param errors.",
+            "properties": {
+              "pointer": {
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
+          "title": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "title",
+          "detail"
+        ],
+        "type": "object"
+      },
+      "CreateUnsubscribeGroupRequest": {
+        "properties": {
+          "description": {
+            "nullable": true,
+            "type": "string"
+          },
+          "name": {
+            "maxLength": 255,
+            "minLength": 1,
+            "type": "string"
+          }
+        },
+        "required": [
+          "name"
+        ],
+        "type": "object"
+      },
+      "EmailBlock": {
+        "description": "Suppression record. Schema fields hidden by the view:\n`account_id`, `bounce_category`, `dsn_code`, `meta`.\n",
+        "properties": {
+          "created_at": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "domain_id": {
+            "description": "`null` ⇒ account scope. Stored on the row; exposed here.",
+            "format": "uuid",
+            "nullable": true,
+            "type": "string"
+          },
+          "expires_at": {
+            "description": "Optional expiration time. An active row stops matching\nsend-time suppression checks as soon as `expires_at \u003c= now()`.\nA maintenance worker later transitions the row to `status: expired`\nand appends an `expired` audit event (normally within 15 minutes).\n",
+            "format": "date-time",
+            "nullable": true,
+            "type": "string"
+          },
+          "from": {
+            "description": "`null` ⇒ not address-scope. (schema: from_address)",
+            "nullable": true,
+            "type": "string"
+          },
+          "group_id": {
+            "description": "`null` ⇒ global; set ⇒ group-scoped opt-out.",
+            "format": "uuid",
+            "nullable": true,
+            "type": "string"
+          },
+          "id": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "reason": {
+            "$ref": "#/components/schemas/Reason"
+          },
+          "record_type": {
+            "description": "View-only discriminator.",
+            "enum": [
+              "email_block"
+            ],
+            "type": "string"
+          },
+          "scope": {
+            "$ref": "#/components/schemas/Scope"
+          },
+          "source": {
+            "$ref": "#/components/schemas/email_Source"
+          },
+          "status": {
+            "$ref": "#/components/schemas/Status"
+          },
+          "to": {
+            "description": "Normalized recipient. (schema: to_address)",
+            "type": "string"
+          },
+          "updated_at": {
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "record_type",
+          "to",
+          "reason",
+          "source",
+          "scope",
+          "status",
+          "created_at",
+          "updated_at"
+        ],
+        "type": "object"
+      },
+      "EmailBlockResponse": {
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/EmailBlock"
+          }
+        },
+        "required": [
+          "data"
+        ],
+        "type": "object"
+      },
+      "ErrorList": {
+        "properties": {
+          "errors": {
+            "items": {
+              "$ref": "#/components/schemas/BlocksErrorObject"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "errors"
+        ],
+        "type": "object"
+      },
+      "GroupListMeta": {
+        "description": "Group list `meta` (consistent with `GET /v2/email_blocks`).",
+        "properties": {
+          "page_number": {
+            "type": "integer"
+          },
+          "page_size": {
+            "type": "integer"
+          },
+          "total_pages": {
+            "type": "integer"
+          },
+          "total_results": {
+            "type": "integer"
+          }
+        },
+        "required": [
+          "page_number",
+          "page_size",
+          "total_pages",
+          "total_results"
+        ],
+        "type": "object"
+      },
+      "GroupSuppressionListResponse": {
+        "properties": {
+          "data": {
+            "items": {
+              "$ref": "#/components/schemas/EmailBlock"
+            },
+            "type": "array"
+          },
+          "meta": {
+            "$ref": "#/components/schemas/GroupListMeta"
+          }
+        },
+        "required": [
+          "data",
+          "meta"
+        ],
+        "type": "object"
+      },
+      "Reason": {
+        "enum": [
+          "hard_bounce",
+          "spam_complaint",
+          "unsubscribe",
+          "invalid",
+          "manual_block"
+        ],
+        "type": "string"
+      },
+      "Scope": {
+        "description": "Derived server-side from `domain_id`/`from`; never trusted from the caller.",
+        "enum": [
+          "account",
+          "domain",
+          "address"
+        ],
+        "type": "string"
+      },
+      "Status": {
+        "enum": [
+          "active",
+          "expired",
+          "removed"
+        ],
+        "type": "string"
+      },
+      "UnsubscribeGroup": {
+        "properties": {
+          "created_at": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "description": {
+            "description": "Always present (not omit-nullable); `null` when unset.",
+            "nullable": true,
+            "type": "string"
+          },
+          "id": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "name": {
+            "maxLength": 255,
+            "minLength": 1,
+            "type": "string"
+          },
+          "record_type": {
+            "description": "View-only.",
+            "enum": [
+              "email_unsubscribe_group"
+            ],
+            "type": "string"
+          },
+          "updated_at": {
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "record_type",
+          "name",
+          "description",
+          "created_at",
+          "updated_at"
+        ],
+        "type": "object"
+      },
+      "UnsubscribeGroupListResponse": {
+        "properties": {
+          "data": {
+            "items": {
+              "$ref": "#/components/schemas/UnsubscribeGroup"
+            },
+            "type": "array"
+          },
+          "meta": {
+            "$ref": "#/components/schemas/GroupListMeta"
+          }
+        },
+        "required": [
+          "data",
+          "meta"
+        ],
+        "type": "object"
+      },
+      "UnsubscribeGroupResponse": {
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/UnsubscribeGroup"
+          }
+        },
+        "required": [
+          "data"
+        ],
+        "type": "object"
+      },
+      "UpdateUnsubscribeGroupRequest": {
+        "description": "Partial update; `account_id`/`id` are immutable.",
+        "properties": {
+          "description": {
+            "nullable": true,
+            "type": "string"
+          },
+          "name": {
+            "maxLength": 255,
+            "minLength": 1,
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "email_Source": {
+        "enum": [
+          "feedback",
+          "manual",
+          "import",
+          "system"
+        ],
+        "type": "string"
+      }
+    },
+    "securitySchemes": {
+      "BearerAuth": {
+        "bearerFormat": "API key",
+        "description": "Telnyx API key supplied as `Authorization: Bearer \u003ctoken\u003e`. In production, auth may be validated by the API gateway and forwarded via Telnyx auth headers.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "Payment": {
+        "description": "Machine Payment Protocol credential used on paid retries, sent as `Authorization: Payment ...`. Obtained by paying a challenge returned in the `WWW-Authenticate` header of a 402 response. This is not a Telnyx API key; initial challenge requests use standard bearer authentication instead.",
+        "in": "header",
+        "name": "Authorization",
+        "type": "apiKey"
+      },
+      "agent-memory_bearerAuth": {
+        "description": "Telnyx API key",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "bearerAuth": {
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "branded-calling_bearerAuth": {
+        "description": "Telnyx API key. Generate one at https://portal.telnyx.com/#/app/api-keys.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "collections_bearerAuth": {
+        "description": "Telnyx API key. Collections and results are automatically scoped to the authenticated user's organization.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "number-reputation_bearerAuth": {
+        "description": "Telnyx API key. Generate one at https://portal.telnyx.com/#/app/api-keys.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "oauthClientAuth": {
+        "description": "OAuth 2.0 authentication for Telnyx API and MCP integrations",
+        "flows": {
+          "authorizationCode": {
+            "authorizationUrl": "https://api.telnyx.com/v2/oauth/authorize",
+            "refreshUrl": "https://api.telnyx.com/v2/oauth/token",
+            "scopes": {
+              "admin": "Administrative access to Telnyx resources"
+            },
+            "tokenUrl": "https://api.telnyx.com/v2/oauth/token"
+          },
+          "clientCredentials": {
+            "scopes": {
+              "admin": "Administrative access to Telnyx resources"
+            },
+            "tokenUrl": "https://api.telnyx.com/v2/oauth/token"
+          }
+        },
+        "type": "oauth2"
+      },
+      "outbound-voice-profiles_bearerAuth": {
+        "bearerFormat": "JWT",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "pay-connectors_bearerAuth": {
+        "description": "Telnyx API key, not the processor bearer token.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "pronunciation-dicts_bearerAuth": {
+        "description": "Telnyx API v2 key. Obtain from https://portal.telnyx.com",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "rcs-registration_bearerAuth": {
+        "bearerFormat": "API key",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "stored-payment-transactions_bearerAuth": {
+        "bearerFormat": "JWT",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "telnyxApiKey": {
+        "description": "Management-only Telnyx account credential.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "transcriptions-search_bearerAuth": {
+        "description": "Telnyx API key. Results are automatically scoped to the authenticated user's organization.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "web-search_bearerAuth": {
+        "description": "Telnyx API key",
+        "scheme": "bearer",
+        "type": "http"
+      }
+    }
+  },
+  "info": {
+    "contact": {
+      "email": "support@telnyx.com"
+    },
+    "description": "SIP trunking, SMS, MMS, Call Control and Telephony Data Services.",
+    "title": "Telnyx API",
+    "version": "2.0.0",
+    "x-endpoint-cost": "light",
+    "x-latency-category": "responsive"
+  },
+  "openapi": "3.1.0",
+  "paths": {
+    "/email_unsubscribe_groups": {
+      "get": {
+        "description": "Offset pagination only (`page[number]` default 1, `page[size]`\ndefault 25, max 100). No `sort`/`filter`/cursor — ordering fixed\n`desc created_at, desc id`. Uses the shared `QueryParser.parse_offset/1`\n— a malformed `page` (e.g. flat `?page=1` instead of\n`?page[number]=1`) returns `400` (code `10015`), consistent with\n`GET /v2/email_blocks`. `meta` includes `total_pages`.\n",
+        "operationId": "listUnsubscribeGroups",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/BlocksPageNumber"
+          },
+          {
+            "$ref": "#/components/parameters/BlocksPageSize"
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "data": [
+                    {
+                      "created_at": "2024-01-23T18:10:02.574Z",
+                      "description": "string",
+                      "id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+                      "name": "string",
+                      "record_type": "email_unsubscribe_group",
+                      "updated_at": "2024-01-23T18:10:02.574Z"
+                    }
+                  ],
+                  "meta": {
+                    "page_number": 0,
+                    "page_size": 0,
+                    "total_pages": 0,
+                    "total_results": 0
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/UnsubscribeGroupListResponse"
+                }
+              }
+            },
+            "description": "Groups."
+          },
+          "401": {
+            "$ref": "#/components/responses/email_Unauthorized"
+          },
+          "406": {
+            "$ref": "#/components/responses/FrameworkError"
+          }
+        },
+        "summary": "List unsubscribe groups",
+        "tags": [
+          "Email Unsubscribe Groups"
+        ]
+      },
+      "post": {
+        "description": "Creates an account-owned unsubscribe group for associating email categories with separate recipient suppression lists.",
+        "operationId": "createUnsubscribeGroup",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "example": {
+                "description": "Weekly product updates and promotions",
+                "name": "Marketing Newsletter"
+              },
+              "schema": {
+                "$ref": "#/components/schemas/CreateUnsubscribeGroupRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "data": {
+                    "created_at": "2024-01-23T18:10:02.574Z",
+                    "description": "string",
+                    "id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+                    "name": "string",
+                    "record_type": "email_unsubscribe_group",
+                    "updated_at": "2024-01-23T18:10:02.574Z"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/UnsubscribeGroupResponse"
+                }
+              }
+            },
+            "description": "Created."
+          },
+          "401": {
+            "$ref": "#/components/responses/email_Unauthorized"
+          },
+          "406": {
+            "$ref": "#/components/responses/FrameworkError"
+          },
+          "422": {
+            "$ref": "#/components/responses/ChangesetError"
+          }
+        },
+        "summary": "Create an unsubscribe group",
+        "tags": [
+          "Email Unsubscribe Groups"
+        ]
+      }
+    },
+    "/email_unsubscribe_groups/{id}": {
+      "delete": {
+        "description": "If the group has 0 active suppressions, hard-deletes the row. With\n`force=true`, soft-deletes all active suppressions first (status →\n`removed`, `group_id` cleared, `removed` audit event per block) in a\nsingle transaction, then hard-deletes the group. Without `force`\nand active suppressions present → `409`. Audit trail is preserved.\n`force` only accepts the string `\"true\"` or boolean `true`; all other\nvalues are false.\n",
+        "operationId": "deleteUnsubscribeGroup",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/ForceQuery"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Deleted."
+          },
+          "401": {
+            "$ref": "#/components/responses/email_Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/BlocksNotFound"
+          },
+          "406": {
+            "$ref": "#/components/responses/FrameworkError"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "errors": [
+                    {
+                      "code": "40901",
+                      "detail": "Group has 3 active suppression(s). Remove them first or use ?force=true.",
+                      "title": "Conflict"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorList"
+                }
+              }
+            },
+            "description": "Group has active suppressions and `force` is false."
+          },
+          "422": {
+            "$ref": "#/components/responses/ChangesetError"
+          }
+        },
+        "summary": "Delete an unsubscribe group",
+        "tags": [
+          "Email Unsubscribe Groups"
+        ]
+      },
+      "get": {
+        "description": "Returns the account-owned unsubscribe group identified by ID.",
+        "operationId": "showUnsubscribeGroup",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "data": {
+                    "created_at": "2024-01-23T18:10:02.574Z",
+                    "description": "string",
+                    "id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+                    "name": "string",
+                    "record_type": "email_unsubscribe_group",
+                    "updated_at": "2024-01-23T18:10:02.574Z"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/UnsubscribeGroupResponse"
+                }
+              }
+            },
+            "description": "The group."
+          },
+          "401": {
+            "$ref": "#/components/responses/email_Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/BlocksNotFound"
+          },
+          "406": {
+            "$ref": "#/components/responses/FrameworkError"
+          }
+        },
+        "summary": "Retrieve an unsubscribe group",
+        "tags": [
+          "Email Unsubscribe Groups"
+        ]
+      },
+      "parameters": [
+        {
+          "$ref": "#/components/parameters/PathId"
+        }
+      ],
+      "patch": {
+        "description": "Partial update (only `name` / `description`). `PUT` is not routed.",
+        "operationId": "updateUnsubscribeGroup",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "example": {
+                "description": "Weekly product updates and promotions"
+              },
+              "schema": {
+                "$ref": "#/components/schemas/UpdateUnsubscribeGroupRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "data": {
+                    "created_at": "2024-01-23T18:10:02.574Z",
+                    "description": "string",
+                    "id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+                    "name": "string",
+                    "record_type": "email_unsubscribe_group",
+                    "updated_at": "2024-01-23T18:10:02.574Z"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/UnsubscribeGroupResponse"
+                }
+              }
+            },
+            "description": "The updated group."
+          },
+          "401": {
+            "$ref": "#/components/responses/email_Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/BlocksNotFound"
+          },
+          "406": {
+            "$ref": "#/components/responses/FrameworkError"
+          },
+          "422": {
+            "$ref": "#/components/responses/ChangesetError"
+          }
+        },
+        "summary": "Update an unsubscribe group",
+        "tags": [
+          "Email Unsubscribe Groups"
+        ]
+      }
+    },
+    "/email_unsubscribe_groups/{id}/suppressions": {
+      "get": {
+        "description": "Account + group scoped. Offset pagination only (`page[number]`\ndefault 1, `page[size]` default 25, max 100). No `sort`/`filter`/\ncursor — ordering fixed `desc created_at, desc id`. Uses the shared\n`QueryParser.parse_offset/1` — a malformed `page` returns `400`\n(code `10015`), consistent with `GET /v2/email_blocks`. `meta`\nincludes `total_pages`. Rows reuse the standard suppression shape\n(`group_id` set to this group).\n",
+        "operationId": "listGroupSuppressions",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/BlocksPageNumber"
+          },
+          {
+            "$ref": "#/components/parameters/BlocksPageSize"
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "data": [
+                    {
+                      "created_at": "2024-01-23T18:10:02.574Z",
+                      "domain_id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+                      "expires_at": "2024-01-23T18:10:02.574Z",
+                      "from": "string",
+                      "group_id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+                      "id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+                      "reason": "hard_bounce",
+                      "record_type": "email_block",
+                      "scope": "account",
+                      "source": "feedback",
+                      "status": "active",
+                      "to": "string",
+                      "updated_at": "2024-01-23T18:10:02.574Z"
+                    }
+                  ],
+                  "meta": {
+                    "page_number": 0,
+                    "page_size": 0,
+                    "total_pages": 0,
+                    "total_results": 0
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/GroupSuppressionListResponse"
+                }
+              }
+            },
+            "description": "Group suppressions."
+          },
+          "401": {
+            "$ref": "#/components/responses/email_Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/BlocksNotFound"
+          },
+          "406": {
+            "$ref": "#/components/responses/FrameworkError"
+          }
+        },
+        "summary": "List suppressions in a group",
+        "tags": [
+          "Email Unsubscribe Groups"
+        ]
+      },
+      "parameters": [
+        {
+          "$ref": "#/components/parameters/PathId"
+        }
+      ],
+      "post": {
+        "description": "Creates a suppression with `reason: unsubscribe`, `source: manual`,\n`group_id: \u003cthis group\u003e`. All other body fields are ignored; only\n`to` is read. Idempotent (same dedupe key → `200`, no new event).\n",
+        "operationId": "addGroupSuppression",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "example": {
+                "to": "user@example.com"
+              },
+              "schema": {
+                "$ref": "#/components/schemas/AddGroupSuppressionRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "data": {
+                    "created_at": "2024-01-23T18:10:02.574Z",
+                    "domain_id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+                    "expires_at": "2024-01-23T18:10:02.574Z",
+                    "from": "string",
+                    "group_id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+                    "id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+                    "reason": "hard_bounce",
+                    "record_type": "email_block",
+                    "scope": "account",
+                    "source": "feedback",
+                    "status": "active",
+                    "to": "string",
+                    "updated_at": "2024-01-23T18:10:02.574Z"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/EmailBlockResponse"
+                }
+              }
+            },
+            "description": "Idempotent — already existed."
+          },
+          "201": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "data": {
+                    "created_at": "2024-01-23T18:10:02.574Z",
+                    "domain_id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+                    "expires_at": "2024-01-23T18:10:02.574Z",
+                    "from": "string",
+                    "group_id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+                    "id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+                    "reason": "hard_bounce",
+                    "record_type": "email_block",
+                    "scope": "account",
+                    "source": "feedback",
+                    "status": "active",
+                    "to": "string",
+                    "updated_at": "2024-01-23T18:10:02.574Z"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/EmailBlockResponse"
+                }
+              }
+            },
+            "description": "Created."
+          },
+          "401": {
+            "$ref": "#/components/responses/email_Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/BlocksNotFound"
+          },
+          "406": {
+            "$ref": "#/components/responses/FrameworkError"
+          },
+          "422": {
+            "$ref": "#/components/responses/ChangesetError"
+          }
+        },
+        "summary": "Add a group suppression",
+        "tags": [
+          "Email Unsubscribe Groups"
+        ]
+      }
+    },
+    "/email_unsubscribe_groups/{id}/suppressions/{email}": {
+      "delete": {
+        "description": "Soft-deletes all active blocks for (account, group, normalized\nemail) — one `removed` audit event per block (`actor: manual`).\nThe `email` path segment is normalized (trim + lower-case) before\nmatching. Idempotent on already-removed rows (returns `404` since\nthey're no longer `active`).\n\nTwo distinct `404` cases: a missing/cross-account **group** returns\n`10001 \"The requested unsubscribe group was not found\"`; a group that\nexists but has **no active suppression** for that email returns\n`10001 \"The requested group suppression was not found\"`.\n",
+        "operationId": "removeGroupSuppression",
+        "responses": {
+          "204": {
+            "description": "Removed."
+          },
+          "401": {
+            "$ref": "#/components/responses/email_Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/BlocksNotFound"
+          },
+          "406": {
+            "$ref": "#/components/responses/FrameworkError"
+          },
+          "422": {
+            "$ref": "#/components/responses/ChangesetError"
+          }
+        },
+        "summary": "Remove a group suppression",
+        "tags": [
+          "Email Unsubscribe Groups"
+        ]
+      },
+      "parameters": [
+        {
+          "$ref": "#/components/parameters/PathId"
+        },
+        {
+          "$ref": "#/components/parameters/PathEmail"
+        }
+      ]
+    }
+  },
+  "security": [
+    {
+      "bearerAuth": []
+    }
+  ],
+  "servers": [
+    {
+      "description": "Version 2.0.0 of the Telnyx API",
+      "url": "https://api.telnyx.com/v2"
+    }
+  ]
+}

@@ -1,0 +1,968 @@
+{
+  "components": {
+    "schemas": {
+      "ChildRelationshipInfo": {
+        "properties": {
+          "child_event": {
+            "type": "string"
+          },
+          "child_product": {
+            "type": "string"
+          },
+          "child_record_type": {
+            "type": "string"
+          },
+          "cost_rollup": {
+            "type": "boolean"
+          },
+          "description": {
+            "type": "string"
+          },
+          "relationship_type": {
+            "type": "string"
+          },
+          "traversal_enabled": {
+            "type": "boolean"
+          },
+          "via": {
+            "$ref": "#/components/schemas/MetadataFieldMapping"
+          }
+        },
+        "required": [
+          "relationship_type",
+          "via",
+          "cost_rollup",
+          "traversal_enabled",
+          "description",
+          "child_product",
+          "child_event",
+          "child_record_type"
+        ],
+        "type": "object"
+      },
+      "CostInfo": {
+        "properties": {
+          "cumulative_cost": {
+            "description": "Cumulative cost including all descendants.",
+            "type": "string"
+          },
+          "currency": {
+            "description": "ISO 4217 currency code.",
+            "type": "string"
+          },
+          "event_cost": {
+            "description": "Cost of this individual event.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "event_cost",
+          "cumulative_cost",
+          "currency"
+        ],
+        "type": "object"
+      },
+      "CostSummary": {
+        "properties": {
+          "currency": {
+            "description": "ISO 4217 currency code.",
+            "type": "string"
+          },
+          "total": {
+            "description": "Total session cost as a decimal string.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "total",
+          "currency"
+        ],
+        "type": "object"
+      },
+      "EventNode": {
+        "properties": {
+          "children": {
+            "description": "Child events in the session tree.",
+            "items": {
+              "$ref": "#/components/schemas/EventNode"
+            },
+            "type": "array"
+          },
+          "cost": {
+            "$ref": "#/components/schemas/CostInfo"
+          },
+          "event_name": {
+            "description": "Name of the event type.",
+            "type": "string"
+          },
+          "id": {
+            "description": "Event identifier.",
+            "type": "string"
+          },
+          "links": {
+            "$ref": "#/components/schemas/Links"
+          },
+          "product": {
+            "description": "Product that generated this event.",
+            "type": "string"
+          },
+          "record": {
+            "additionalProperties": true,
+            "description": "The underlying detail record data. Contents vary by record type.",
+            "type": "object"
+          },
+          "relationship": {
+            "description": "Relationship to the parent node, null for root.",
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/RelationshipInfo"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "product",
+          "event_name",
+          "cost",
+          "links",
+          "record",
+          "children"
+        ],
+        "type": "object"
+      },
+      "FieldMapping": {
+        "properties": {
+          "local_field": {
+            "description": "Field name on the child record.",
+            "type": "string"
+          },
+          "parent_field": {
+            "description": "Field name on the parent record.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "local_field",
+          "parent_field"
+        ],
+        "type": "object"
+      },
+      "Links": {
+        "properties": {
+          "records": {
+            "description": "Link to the underlying detail records.",
+            "type": "string"
+          },
+          "self": {
+            "description": "Link to this session analysis node.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "self",
+          "records"
+        ],
+        "type": "object"
+      },
+      "MetadataFieldMapping": {
+        "properties": {
+          "local_field": {
+            "type": "string"
+          },
+          "parent_field": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "local_field",
+          "parent_field"
+        ],
+        "type": "object"
+      },
+      "MetadataInfo": {
+        "properties": {
+          "last_updated": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "total_record_types": {
+            "type": "integer"
+          }
+        },
+        "required": [
+          "total_record_types",
+          "last_updated"
+        ],
+        "type": "object"
+      },
+      "MetadataOverviewResponse": {
+        "properties": {
+          "meta": {
+            "$ref": "#/components/schemas/MetadataInfo"
+          },
+          "query_parameters": {
+            "additionalProperties": {
+              "$ref": "#/components/schemas/QueryParameterInfo"
+            },
+            "description": "Map of supported query parameter names to their definitions.",
+            "type": "object"
+          },
+          "record_types": {
+            "items": {
+              "$ref": "#/components/schemas/RecordTypeInfo"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "record_types",
+          "query_parameters",
+          "meta"
+        ],
+        "type": "object"
+      },
+      "ParentRelationshipInfo": {
+        "properties": {
+          "cost_rollup": {
+            "type": "boolean"
+          },
+          "description": {
+            "type": "string"
+          },
+          "parent_event": {
+            "type": "string"
+          },
+          "parent_product": {
+            "type": "string"
+          },
+          "parent_record_type": {
+            "type": "string"
+          },
+          "relationship_type": {
+            "type": "string"
+          },
+          "traversal_enabled": {
+            "type": "boolean"
+          },
+          "via": {
+            "$ref": "#/components/schemas/MetadataFieldMapping"
+          }
+        },
+        "required": [
+          "relationship_type",
+          "via",
+          "cost_rollup",
+          "traversal_enabled",
+          "description",
+          "parent_product",
+          "parent_event",
+          "parent_record_type"
+        ],
+        "type": "object"
+      },
+      "QueryParameterInfo": {
+        "properties": {
+          "default": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "enum_values": {
+            "items": {
+              "type": "string"
+            },
+            "type": [
+              "array",
+              "null"
+            ]
+          },
+          "max": {
+            "type": [
+              "integer",
+              "null"
+            ]
+          },
+          "min": {
+            "type": [
+              "integer",
+              "null"
+            ]
+          },
+          "type": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "type",
+          "default",
+          "description"
+        ],
+        "type": "object"
+      },
+      "RecordTypeInfo": {
+        "properties": {
+          "aliases": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "child_relationships": {
+            "items": {
+              "$ref": "#/components/schemas/ChildRelationshipInfo"
+            },
+            "type": "array"
+          },
+          "description": {
+            "type": "string"
+          },
+          "event": {
+            "type": "string"
+          },
+          "parent_relationships": {
+            "items": {
+              "$ref": "#/components/schemas/ParentRelationshipInfo"
+            },
+            "type": "array"
+          },
+          "product": {
+            "type": "string"
+          },
+          "record_type": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "record_type",
+          "aliases",
+          "product",
+          "event",
+          "description",
+          "child_relationships",
+          "parent_relationships"
+        ],
+        "type": "object"
+      },
+      "RecordTypeMetadataResponse": {
+        "properties": {
+          "aliases": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "child_relationships": {
+            "items": {
+              "$ref": "#/components/schemas/ChildRelationshipInfo"
+            },
+            "type": "array"
+          },
+          "event": {
+            "type": "string"
+          },
+          "examples": {
+            "additionalProperties": true,
+            "description": "Example queries and responses for this record type.",
+            "type": "object"
+          },
+          "meta": {
+            "$ref": "#/components/schemas/RelationshipMetadata"
+          },
+          "parent_relationships": {
+            "items": {
+              "$ref": "#/components/schemas/ParentRelationshipInfo"
+            },
+            "type": "array"
+          },
+          "product": {
+            "type": "string"
+          },
+          "record_type": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "record_type",
+          "aliases",
+          "product",
+          "event",
+          "child_relationships",
+          "parent_relationships",
+          "examples",
+          "meta"
+        ],
+        "type": "object"
+      },
+      "RelationshipInfo": {
+        "properties": {
+          "parent_id": {
+            "description": "Identifier of the parent event.",
+            "type": "string"
+          },
+          "type": {
+            "description": "Relationship type identifier.",
+            "type": "string"
+          },
+          "via": {
+            "$ref": "#/components/schemas/FieldMapping"
+          }
+        },
+        "required": [
+          "type",
+          "via",
+          "parent_id"
+        ],
+        "type": "object"
+      },
+      "RelationshipMetadata": {
+        "properties": {
+          "max_recommended_depth": {
+            "type": "integer"
+          },
+          "total_children": {
+            "type": "integer"
+          },
+          "total_parents": {
+            "type": "integer"
+          },
+          "total_siblings": {
+            "type": "integer"
+          }
+        },
+        "required": [
+          "total_children",
+          "total_siblings",
+          "total_parents",
+          "max_recommended_depth"
+        ],
+        "type": "object"
+      },
+      "ResponseMeta": {
+        "properties": {
+          "event_count": {
+            "description": "Total number of events in the session tree.",
+            "type": "integer"
+          },
+          "products": {
+            "description": "List of distinct products involved in the session.",
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "event_count",
+          "products"
+        ],
+        "type": "object"
+      },
+      "SessionAnalysisError": {
+        "properties": {
+          "code": {
+            "type": "string"
+          },
+          "detail": {
+            "type": "string"
+          },
+          "message": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "message"
+        ],
+        "type": "object"
+      },
+      "SessionAnalysisErrorResponse": {
+        "properties": {
+          "errors": {
+            "items": {
+              "$ref": "#/components/schemas/SessionAnalysisError"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "errors"
+        ],
+        "type": "object"
+      },
+      "SessionAnalysisResponse": {
+        "properties": {
+          "cost": {
+            "$ref": "#/components/schemas/CostSummary"
+          },
+          "meta": {
+            "$ref": "#/components/schemas/ResponseMeta"
+          },
+          "root": {
+            "$ref": "#/components/schemas/EventNode"
+          },
+          "session_id": {
+            "description": "Identifier for the analyzed session.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "session_id",
+          "cost",
+          "root",
+          "meta"
+        ],
+        "type": "object"
+      }
+    },
+    "securitySchemes": {
+      "BearerAuth": {
+        "bearerFormat": "API key",
+        "description": "Telnyx API key supplied as `Authorization: Bearer \u003ctoken\u003e`. In production, auth may be validated by the API gateway and forwarded via Telnyx auth headers.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "Payment": {
+        "description": "Machine Payment Protocol credential used on paid retries, sent as `Authorization: Payment ...`. Obtained by paying a challenge returned in the `WWW-Authenticate` header of a 402 response. This is not a Telnyx API key; initial challenge requests use standard bearer authentication instead.",
+        "in": "header",
+        "name": "Authorization",
+        "type": "apiKey"
+      },
+      "agent-memory_bearerAuth": {
+        "description": "Telnyx API key",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "bearerAuth": {
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "branded-calling_bearerAuth": {
+        "description": "Telnyx API key. Generate one at https://portal.telnyx.com/#/app/api-keys.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "collections_bearerAuth": {
+        "description": "Telnyx API key. Collections and results are automatically scoped to the authenticated user's organization.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "number-reputation_bearerAuth": {
+        "description": "Telnyx API key. Generate one at https://portal.telnyx.com/#/app/api-keys.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "oauthClientAuth": {
+        "description": "OAuth 2.0 authentication for Telnyx API and MCP integrations",
+        "flows": {
+          "authorizationCode": {
+            "authorizationUrl": "https://api.telnyx.com/v2/oauth/authorize",
+            "refreshUrl": "https://api.telnyx.com/v2/oauth/token",
+            "scopes": {
+              "admin": "Administrative access to Telnyx resources"
+            },
+            "tokenUrl": "https://api.telnyx.com/v2/oauth/token"
+          },
+          "clientCredentials": {
+            "scopes": {
+              "admin": "Administrative access to Telnyx resources"
+            },
+            "tokenUrl": "https://api.telnyx.com/v2/oauth/token"
+          }
+        },
+        "type": "oauth2"
+      },
+      "outbound-voice-profiles_bearerAuth": {
+        "bearerFormat": "JWT",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "pay-connectors_bearerAuth": {
+        "description": "Telnyx API key, not the processor bearer token.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "pronunciation-dicts_bearerAuth": {
+        "description": "Telnyx API v2 key. Obtain from https://portal.telnyx.com",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "rcs-registration_bearerAuth": {
+        "bearerFormat": "API key",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "stored-payment-transactions_bearerAuth": {
+        "bearerFormat": "JWT",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "telnyxApiKey": {
+        "description": "Management-only Telnyx account credential.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "transcriptions-search_bearerAuth": {
+        "description": "Telnyx API key. Results are automatically scoped to the authenticated user's organization.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "web-search_bearerAuth": {
+        "description": "Telnyx API key",
+        "scheme": "bearer",
+        "type": "http"
+      }
+    }
+  },
+  "info": {
+    "contact": {
+      "email": "support@telnyx.com"
+    },
+    "description": "SIP trunking, SMS, MMS, Call Control and Telephony Data Services.",
+    "title": "Telnyx API",
+    "version": "2.0.0",
+    "x-endpoint-cost": "light",
+    "x-latency-category": "responsive"
+  },
+  "openapi": "3.1.0",
+  "paths": {
+    "/session_analysis/metadata": {
+      "get": {
+        "description": "Returns all available record types and supported query parameters for session analysis.",
+        "operationId": "GetSessionAnalysisMetadata",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "meta": {
+                    "last_updated": "2024-01-23T18:10:02.574Z",
+                    "total_record_types": 0
+                  },
+                  "query_parameters": {},
+                  "record_types": [
+                    {
+                      "aliases": [
+                        "string"
+                      ],
+                      "child_relationships": [
+                        {
+                          "child_event": "string",
+                          "child_product": "string",
+                          "child_record_type": "string",
+                          "cost_rollup": false,
+                          "description": "string",
+                          "relationship_type": "string",
+                          "traversal_enabled": false,
+                          "via": {
+                            "local_field": "string",
+                            "parent_field": "string"
+                          }
+                        }
+                      ],
+                      "description": "string",
+                      "event": "string",
+                      "parent_relationships": [
+                        {
+                          "cost_rollup": false,
+                          "description": "string",
+                          "parent_event": "string",
+                          "parent_product": "string",
+                          "parent_record_type": "string",
+                          "relationship_type": "string",
+                          "traversal_enabled": false,
+                          "via": {
+                            "local_field": "string",
+                            "parent_field": "string"
+                          }
+                        }
+                      ],
+                      "product": "string",
+                      "record_type": "string"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/MetadataOverviewResponse"
+                }
+              }
+            },
+            "description": "Metadata overview"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SessionAnalysisErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SessionAnalysisErrorResponse"
+                }
+              }
+            },
+            "description": "Internal server error"
+          }
+        },
+        "summary": "Get metadata overview",
+        "tags": [
+          "Session Analysis"
+        ]
+      }
+    },
+    "/session_analysis/metadata/{record_type}": {
+      "get": {
+        "description": "Returns detailed metadata for a specific record type, including relationships and examples.",
+        "operationId": "GetSessionAnalysisRecordTypeMetadata",
+        "parameters": [
+          {
+            "description": "The record type identifier (e.g. \"call-control\").",
+            "in": "path",
+            "name": "record_type",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "aliases": [
+                    "call_control"
+                  ],
+                  "child_relationships": [],
+                  "event": "call.hangup",
+                  "examples": {
+                    "event_id": "0ccc7b54-4df3-4bca-a65a-3da1ecc777f0"
+                  },
+                  "meta": {
+                    "max_recommended_depth": 1,
+                    "total_children": 0,
+                    "total_parents": 0,
+                    "total_siblings": 0
+                  },
+                  "parent_relationships": [],
+                  "product": "Voice",
+                  "record_type": "call-control"
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/RecordTypeMetadataResponse"
+                }
+              }
+            },
+            "description": "Record type metadata"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SessionAnalysisErrorResponse"
+                }
+              }
+            },
+            "description": "Record type not found"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SessionAnalysisErrorResponse"
+                }
+              }
+            },
+            "description": "Internal server error"
+          }
+        },
+        "summary": "Get record type metadata",
+        "tags": [
+          "Session Analysis"
+        ]
+      }
+    },
+    "/session_analysis/{record_type}/{event_id}": {
+      "get": {
+        "description": "Retrieves a full session analysis tree for a given event, including costs, child events, and product linkages.",
+        "operationId": "GetSessionAnalysis",
+        "parameters": [
+          {
+            "description": "The record type identifier.",
+            "in": "path",
+            "name": "record_type",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "The event identifier (UUID).",
+            "in": "path",
+            "name": "event_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Whether to include child events in the response.",
+            "in": "query",
+            "name": "include_children",
+            "required": false,
+            "schema": {
+              "default": true,
+              "type": "boolean"
+            }
+          },
+          {
+            "description": "Maximum traversal depth for the event tree.",
+            "in": "query",
+            "name": "max_depth",
+            "required": false,
+            "schema": {
+              "default": 2,
+              "maximum": 5,
+              "minimum": 1,
+              "type": "integer"
+            }
+          },
+          {
+            "description": "Controls what data to expand on each event node.",
+            "in": "query",
+            "name": "expand",
+            "required": false,
+            "schema": {
+              "default": "record",
+              "enum": [
+                "record",
+                "none"
+              ],
+              "type": "string"
+            }
+          },
+          {
+            "description": "ISO 8601 timestamp or date to narrow index selection for faster lookups. Accepts full datetime (e.g., 2026-03-17T10:00:00Z) or date-only format (e.g., 2026-03-17).",
+            "in": "query",
+            "name": "date_time",
+            "required": false,
+            "schema": {
+              "format": "date-time",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "cost": {
+                    "currency": "USD",
+                    "total": "0.056800"
+                  },
+                  "meta": {
+                    "event_count": 3,
+                    "products": [
+                      "ai-voice-assistant",
+                      "callcontrol-cdrs",
+                      "inference"
+                    ]
+                  },
+                  "root": {
+                    "children": [],
+                    "cost": {
+                      "cumulative_cost": "0.056800",
+                      "currency": "USD",
+                      "event_cost": "0.001800"
+                    },
+                    "event_name": "callcontrol-cdrs",
+                    "id": "call-123",
+                    "links": {
+                      "records": "/v2/detail_records?record_type=callcontrol-cdrs\u0026id=call-123",
+                      "self": "/v2/session_analysis/callcontrol-cdrs/call-123"
+                    },
+                    "product": "callcontrol-cdrs",
+                    "record": {},
+                    "relationship": null
+                  },
+                  "session_id": "call-123"
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/SessionAnalysisResponse"
+                }
+              }
+            },
+            "description": "Session analysis result"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SessionAnalysisErrorResponse"
+                }
+              }
+            },
+            "description": "Invalid request parameters"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SessionAnalysisErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SessionAnalysisErrorResponse"
+                }
+              }
+            },
+            "description": "Event not found"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SessionAnalysisErrorResponse"
+                }
+              }
+            },
+            "description": "Internal server error"
+          }
+        },
+        "summary": "Get session analysis",
+        "tags": [
+          "Session Analysis"
+        ]
+      }
+    }
+  },
+  "security": [
+    {
+      "bearerAuth": []
+    }
+  ],
+  "servers": [
+    {
+      "description": "Version 2.0.0 of the Telnyx API",
+      "url": "https://api.telnyx.com/v2"
+    }
+  ]
+}

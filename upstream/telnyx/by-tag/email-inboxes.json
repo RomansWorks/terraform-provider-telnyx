@@ -1,0 +1,3688 @@
+{
+  "components": {
+    "parameters": {
+      "InboxIdPathParam": {
+        "description": "Email inbox UUID.",
+        "in": "path",
+        "name": "inbox_id",
+        "required": true,
+        "schema": {
+          "format": "uuid",
+          "type": "string"
+        }
+      },
+      "MessageIdPathParam": {
+        "description": "Inbound message UUID.",
+        "in": "path",
+        "name": "message_id",
+        "required": true,
+        "schema": {
+          "format": "uuid",
+          "type": "string"
+        }
+      },
+      "ThreadIdPathParam": {
+        "description": "Thread UUID.",
+        "in": "path",
+        "name": "thread_id",
+        "required": true,
+        "schema": {
+          "format": "uuid",
+          "type": "string"
+        }
+      }
+    },
+    "responses": {
+      "EmailSendTooManyRequestsResponse": {
+        "content": {
+          "application/json": {
+            "examples": {
+              "accountDailyLimit": {
+                "summary": "Account daily recipient quota exhausted",
+                "value": {
+                  "errors": [
+                    {
+                      "code": "10011",
+                      "detail": "Daily send limit of 1000 recipients exceeded. The limit resets at midnight UTC.",
+                      "title": "Too Many Requests"
+                    }
+                  ]
+                }
+              },
+              "reputationSuspended": {
+                "summary": "Domain reputation is poor",
+                "value": {
+                  "errors": [
+                    {
+                      "code": "reputation_suspended",
+                      "detail": "Sender domain reputation is too low. Sending has been suspended. Please contact support to resolve deliverability issues.",
+                      "title": "Sending Suspended"
+                    }
+                  ]
+                }
+              },
+              "senderDomainGraduation": {
+                "summary": "Sender-domain graduation ceiling exceeded",
+                "value": {
+                  "errors": [
+                    {
+                      "code": "domain_graduation_limit_exceeded",
+                      "detail": "Daily send limit of 250 recipients for this sender domain exceeded. The limit resets at midnight UTC.",
+                      "meta": {
+                        "remaining_today": 0,
+                        "retry_after_seconds": 3600
+                      },
+                      "title": "Too Many Requests"
+                    }
+                  ]
+                }
+              }
+            },
+            "schema": {
+              "oneOf": [
+                {
+                  "$ref": "#/components/schemas/DailySendLimitError"
+                },
+                {
+                  "$ref": "#/components/schemas/DomainGraduationLimitExceededError"
+                },
+                {
+                  "$ref": "#/components/schemas/ReputationSuspendedError"
+                }
+              ]
+            }
+          }
+        },
+        "description": "Send rejected before message creation because the account daily recipient quota was exhausted (10011), the sender-domain graduation ceiling was exceeded (domain_graduation_limit_exceeded), or domain reputation is poor (reputation_suspended).",
+        "headers": {
+          "Retry-After": {
+            "description": "Seconds until the next UTC-midnight reset. Present only for domain_graduation_limit_exceeded; omitted for 10011 and reputation_suspended.",
+            "example": 3600,
+            "schema": {
+              "minimum": 1,
+              "type": "integer"
+            }
+          }
+        }
+      },
+      "InboundMessageLabelResponse": {
+        "content": {
+          "application/json": {
+            "example": {
+              "data": {
+                "attachments": [],
+                "bcc": [],
+                "cc": [],
+                "created_at": "2026-07-15T12:30:00Z",
+                "direction": "inbound",
+                "from": {
+                  "email": "alice@example.com",
+                  "name": "Alice"
+                },
+                "has_quoted_text": true,
+                "headers": {},
+                "html_body_url": null,
+                "id": "55555555-5555-5555-5555-555555555555",
+                "in_reply_to": "\u003cearlier@example.com\u003e",
+                "inbox_id": "11111111-1111-1111-1111-111111111111",
+                "inline_files": [],
+                "labels": [
+                  "spam",
+                  "urgent"
+                ],
+                "message_id": "\u003cmessage@example.com\u003e",
+                "read_at": null,
+                "received_at": "2026-07-15T12:30:00Z",
+                "record_type": "email_message",
+                "references": [
+                  "\u003cearlier@example.com\u003e"
+                ],
+                "reply_text": "Thanks, I will send it today.",
+                "reply_to": [],
+                "sent_at": null,
+                "status": "received",
+                "subject": "Project update",
+                "text_body_url": null,
+                "thread_id": "33333333-3333-3333-3333-333333333333",
+                "to": [
+                  {
+                    "email": "agent@inbox.example.test"
+                  }
+                ],
+                "updated_at": "2026-07-15T12:30:00Z"
+              }
+            },
+            "schema": {
+              "$ref": "#/components/schemas/InboundMessageResponse"
+            }
+          }
+        },
+        "description": "The updated message, including its current label set."
+      },
+      "InboundThreadLabelResponse": {
+        "content": {
+          "application/json": {
+            "example": {
+              "data": {
+                "id": "33333333-3333-3333-3333-333333333333",
+                "inbox_id": "11111111-1111-1111-1111-111111111111",
+                "labels": [
+                  "needs_review"
+                ],
+                "record_type": "email_thread"
+              }
+            },
+            "schema": {
+              "properties": {
+                "data": {
+                  "properties": {
+                    "id": {
+                      "format": "uuid",
+                      "type": "string"
+                    },
+                    "inbox_id": {
+                      "format": "uuid",
+                      "type": "string"
+                    },
+                    "labels": {
+                      "items": {
+                        "maxLength": 255,
+                        "type": "string"
+                      },
+                      "maxItems": 50,
+                      "type": "array"
+                    },
+                    "record_type": {
+                      "enum": [
+                        "email_thread"
+                      ],
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "id",
+                    "record_type",
+                    "labels"
+                  ],
+                  "type": "object"
+                }
+              },
+              "required": [
+                "data"
+              ],
+              "type": "object"
+            }
+          }
+        },
+        "description": "The thread identity and its current label set."
+      },
+      "InboxFiltersResponse": {
+        "content": {
+          "application/json": {
+            "example": {
+              "data": {
+                "allowlist": [
+                  "trusted@example.com",
+                  "@partner.example"
+                ],
+                "blocklist": [
+                  "@spam.example"
+                ],
+                "record_type": "email_inbox_filters"
+              }
+            },
+            "schema": {
+              "$ref": "#/components/schemas/InboxFiltersResponse"
+            }
+          }
+        },
+        "description": "The inbox's current sender allowlist and blocklist."
+      },
+      "LabelServiceUnavailableResponse": {
+        "content": {
+          "application/json": {
+            "example": {
+              "errors": [
+                {
+                  "code": "10016",
+                  "detail": "Inbox labels are temporarily unavailable. Please try again later.",
+                  "title": "Service Unavailable"
+                }
+              ]
+            },
+            "schema": {
+              "$ref": "#/components/schemas/email_ErrorResponse"
+            }
+          }
+        },
+        "description": "Inbound label storage is temporarily unavailable."
+      },
+      "ValidationErrorResponse": {
+        "content": {
+          "application/json": {
+            "example": {
+              "errors": [
+                {
+                  "code": "10015",
+                  "detail": "subject can't be blank",
+                  "source": {
+                    "pointer": "/data/attributes/subject"
+                  },
+                  "title": "Validation Failed"
+                }
+              ]
+            },
+            "schema": {
+              "$ref": "#/components/schemas/email_ErrorResponse"
+            }
+          }
+        },
+        "description": "Validation Failed (10015) or changeset validation error."
+      },
+      "email_BadRequestResponse": {
+        "content": {
+          "application/json": {
+            "example": {
+              "errors": [
+                {
+                  "code": "10015",
+                  "detail": "email is required",
+                  "title": "Bad Request"
+                }
+              ]
+            },
+            "schema": {
+              "$ref": "#/components/schemas/email_ErrorResponse"
+            }
+          }
+        },
+        "description": "Bad Request / Validation Failed (10015)."
+      },
+      "email_ForbiddenResponse": {
+        "content": {
+          "application/json": {
+            "example": {
+              "errors": [
+                {
+                  "code": "10007",
+                  "detail": "Domain is not verified. Complete DNS setup before sending email.",
+                  "title": "Forbidden"
+                }
+              ]
+            },
+            "schema": {
+              "$ref": "#/components/schemas/email_ErrorResponse"
+            }
+          }
+        },
+        "description": "Forbidden (10007), such as domain not verified, suspended, degraded, or missing DKIM."
+      },
+      "email_NotFoundResponse": {
+        "content": {
+          "application/json": {
+            "example": {
+              "errors": [
+                {
+                  "code": "10001",
+                  "detail": "The requested resource was not found",
+                  "title": "Not Found"
+                }
+              ]
+            },
+            "schema": {
+              "$ref": "#/components/schemas/email_ErrorResponse"
+            }
+          }
+        },
+        "description": "Resource not found (10001)."
+      },
+      "email_ServiceUnavailableResponse": {
+        "content": {
+          "application/json": {
+            "example": {
+              "errors": [
+                {
+                  "code": "10016",
+                  "detail": "The email domain service is temporarily unavailable. Please try again later.",
+                  "title": "Service Unavailable"
+                }
+              ]
+            },
+            "schema": {
+              "$ref": "#/components/schemas/email_ErrorResponse"
+            }
+          }
+        },
+        "description": "Service unavailable (10016), including an unavailable upstream dependency or unavailable Edge idempotency protection for a keyed request."
+      },
+      "email_UnauthorizedResponse": {
+        "content": {
+          "application/json": {
+            "example": {
+              "errors": [
+                {
+                  "code": "10006",
+                  "detail": "Invalid API key",
+                  "meta": {
+                    "url": "https://developers.telnyx.com/docs/overview/errors/10006"
+                  },
+                  "title": "Not authorized"
+                }
+              ]
+            },
+            "schema": {
+              "$ref": "#/components/schemas/email_ErrorResponse"
+            }
+          }
+        },
+        "description": "Not authorized (10006)."
+      }
+    },
+    "schemas": {
+      "AttachmentResponse": {
+        "description": "EDR-aligned attachment metadata. The base64 `content` is never returned.",
+        "properties": {
+          "content_id": {
+            "description": "MIME Content-ID for inline references.",
+            "nullable": true,
+            "type": "string"
+          },
+          "content_type": {
+            "type": "string"
+          },
+          "disposition": {
+            "default": "attachment",
+            "description": "MIME disposition (e.g. `attachment` or `inline`). Runtime passes through the stored value without enforcing an enum.",
+            "type": "string"
+          },
+          "filename": {
+            "type": "string"
+          },
+          "sha256": {
+            "description": "SHA-256 hex digest of the attachment content.",
+            "nullable": true,
+            "type": "string"
+          },
+          "size_bytes": {
+            "description": "Attachment size in bytes.",
+            "nullable": true,
+            "type": "integer"
+          },
+          "url": {
+            "description": "Telnyx-hosted public URL for the attachment content.",
+            "format": "uri",
+            "nullable": true,
+            "type": "string"
+          }
+        },
+        "required": [
+          "url",
+          "sha256",
+          "size_bytes",
+          "filename",
+          "content_type",
+          "disposition",
+          "content_id"
+        ],
+        "type": "object"
+      },
+      "CreateEmailInboxRequest": {
+        "description": "Both fields are optional. Omitting `username` generates one; omitting `domain_id` uses the account's shared inbound subdomain. Omitting both creates an instant inbox with a generated username.",
+        "properties": {
+          "domain_id": {
+            "description": "Account-owned, inbound-enabled domain UUID. The account's shared inbound subdomain is allocated when omitted.",
+            "format": "uuid",
+            "type": "string"
+          },
+          "username": {
+            "description": "Inbox local part. Trimmed and lowercased before validation; the normalized value must be 1-64 characters, start and end with a letter or digit, and contain only letters, digits, dots, hyphens, and underscores. Generated when omitted.",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "DailySendLimitError": {
+        "description": "Error envelope returned when the account's daily recipient quota is exhausted before message creation.",
+        "properties": {
+          "errors": {
+            "items": {
+              "properties": {
+                "code": {
+                  "enum": [
+                    "10011"
+                  ],
+                  "type": "string"
+                },
+                "detail": {
+                  "example": "Daily send limit of 1000 recipients exceeded. The limit resets at midnight UTC.",
+                  "type": "string"
+                },
+                "title": {
+                  "example": "Too Many Requests",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "code",
+                "title",
+                "detail"
+              ],
+              "type": "object"
+            },
+            "maxItems": 1,
+            "minItems": 1,
+            "type": "array"
+          }
+        },
+        "required": [
+          "errors"
+        ],
+        "type": "object"
+      },
+      "DomainGraduationLimitExceededError": {
+        "description": "Error envelope returned when a newly sending custom domain on shared egress would exceed its current daily graduation ceiling. The send is rejected before message creation.",
+        "properties": {
+          "errors": {
+            "items": {
+              "properties": {
+                "code": {
+                  "enum": [
+                    "domain_graduation_limit_exceeded"
+                  ],
+                  "type": "string"
+                },
+                "detail": {
+                  "example": "Daily send limit of 250 recipients for this sender domain exceeded. The limit resets at midnight UTC.",
+                  "type": "string"
+                },
+                "meta": {
+                  "additionalProperties": false,
+                  "description": "Bounded retry guidance. Each field is omitted when unknown.",
+                  "properties": {
+                    "remaining_today": {
+                      "description": "Recipient headroom remaining for the sender-domain identity before this rejected request.",
+                      "minimum": 0,
+                      "type": "integer"
+                    },
+                    "retry_after_seconds": {
+                      "description": "Seconds until the next UTC-midnight reset.",
+                      "minimum": 1,
+                      "type": "integer"
+                    }
+                  },
+                  "type": "object"
+                },
+                "title": {
+                  "example": "Too Many Requests",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "code",
+                "title",
+                "detail"
+              ],
+              "type": "object"
+            },
+            "maxItems": 1,
+            "minItems": 1,
+            "type": "array"
+          }
+        },
+        "required": [
+          "errors"
+        ],
+        "type": "object"
+      },
+      "EmailAddress": {
+        "properties": {
+          "email": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "email"
+        ],
+        "type": "object"
+      },
+      "EmailEventType": {
+        "description": "Bare stored event names returned by message history. In addition to the normal send and delivery lifecycle, polling can expose suppression, scan, and quarantine lifecycle rows. Sharp canonical names gw_reject, injection_timeout, and expired distinguish gateway rejection, ambiguous injection timeout, and MTA expiration. The failed and bounced names remain valid for system/admin failures and hard bounces respectively. Existing stored rows retain their original names.",
+        "enum": [
+          "queued",
+          "deferred",
+          "scheduled",
+          "cancelled",
+          "sandbox",
+          "sending",
+          "sent",
+          "failed",
+          "delivered",
+          "bounced",
+          "complained",
+          "suppressed",
+          "rejected",
+          "opened",
+          "clicked",
+          "unsubscribed",
+          "daily_limit_exceeded",
+          "scan_deferred",
+          "quarantined",
+          "quarantine_released",
+          "quarantine_release_dispatched",
+          "quarantine_rejected",
+          "quarantine_expired",
+          "gw_reject",
+          "injection_timeout",
+          "expired"
+        ],
+        "type": "string"
+      },
+      "EmailInbox": {
+        "properties": {
+          "address": {
+            "format": "email",
+            "type": "string"
+          },
+          "created_at": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "domain": {
+            "description": "Domain name used by the inbox address.",
+            "type": "string"
+          },
+          "domain_id": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "id": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "record_type": {
+            "enum": [
+              "email_inbox"
+            ],
+            "type": "string"
+          },
+          "settings": {
+            "additionalProperties": true,
+            "type": "object"
+          },
+          "status": {
+            "enum": [
+              "active",
+              "paused"
+            ],
+            "type": "string"
+          },
+          "updated_at": {
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "record_type",
+          "address",
+          "status",
+          "domain_id",
+          "domain",
+          "settings",
+          "created_at",
+          "updated_at"
+        ],
+        "type": "object"
+      },
+      "EmailInboxListResponse": {
+        "properties": {
+          "data": {
+            "items": {
+              "$ref": "#/components/schemas/EmailInbox"
+            },
+            "type": "array"
+          },
+          "meta": {
+            "$ref": "#/components/schemas/EmailInboxPaginationMeta"
+          }
+        },
+        "required": [
+          "data",
+          "meta"
+        ],
+        "type": "object"
+      },
+      "EmailInboxPaginationMeta": {
+        "properties": {
+          "page_cursor": {
+            "description": "Cursor for the next inbox page, when more results are available.",
+            "type": "string"
+          },
+          "page_size": {
+            "maximum": 250,
+            "minimum": 1,
+            "type": "integer"
+          }
+        },
+        "required": [
+          "page_size"
+        ],
+        "type": "object"
+      },
+      "EmailInboxResponse": {
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/EmailInbox"
+          }
+        },
+        "required": [
+          "data"
+        ],
+        "type": "object"
+      },
+      "EmailMessage": {
+        "properties": {
+          "attachments": {
+            "items": {
+              "$ref": "#/components/schemas/AttachmentResponse"
+            },
+            "type": "array"
+          },
+          "bcc": {
+            "items": {
+              "$ref": "#/components/schemas/EmailAddress"
+            },
+            "type": "array"
+          },
+          "cc": {
+            "items": {
+              "$ref": "#/components/schemas/EmailAddress"
+            },
+            "type": "array"
+          },
+          "created_at": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "events": {
+            "items": {
+              "$ref": "#/components/schemas/EmbeddedMessageEvent"
+            },
+            "type": "array"
+          },
+          "from": {
+            "$ref": "#/components/schemas/EmailAddress"
+          },
+          "id": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "inline_css": {
+            "description": "Present when true in the immediate create response. Not persisted; absent on subsequent GET requests.",
+            "type": "boolean"
+          },
+          "metadata": {
+            "additionalProperties": true,
+            "default": {},
+            "description": "Customer-supplied metadata stored with the message.",
+            "type": "object"
+          },
+          "recipient_statuses": {
+            "additionalProperties": {
+              "type": "integer"
+            },
+            "description": "Per-status recipient counts for the message. Present only for outbound messages\nwith recipient rows. Keys are recipient statuses, values are counts.\nExample: `{\"delivered\": 998, \"bounced\": 2}`.\n",
+            "example": {
+              "bounced": 2,
+              "delivered": 998
+            },
+            "type": "object"
+          },
+          "record_type": {
+            "enum": [
+              "email_message"
+            ],
+            "type": "string"
+          },
+          "reply_to": {
+            "nullable": true,
+            "type": "string"
+          },
+          "sandbox": {
+            "description": "Present when sandbox mode was used.",
+            "type": "boolean"
+          },
+          "scheduled_at": {
+            "description": "Present when a scheduled_at value was stored. Persists even after the scheduled send has been processed or cancelled.",
+            "format": "date-time",
+            "type": "string"
+          },
+          "status": {
+            "$ref": "#/components/schemas/EmailMessageStatus"
+          },
+          "subject": {
+            "type": "string"
+          },
+          "suppressed": {
+            "description": "Recipients excluded from delivery by suppression checks, with reasons. On batch items, present when that item had suppressed recipients; all other recipients of the item still receive the message. For single sends this information appears at the top level of the response instead (see EmailMessageResponse.suppressed).",
+            "items": {
+              "$ref": "#/components/schemas/SuppressedRecipient"
+            },
+            "type": "array"
+          },
+          "tags": {
+            "default": [],
+            "description": "Customer-supplied tags stored with the message.",
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "template_id": {
+            "format": "uuid",
+            "nullable": true,
+            "type": "string"
+          },
+          "template_variables": {
+            "additionalProperties": true,
+            "default": {},
+            "type": "object"
+          },
+          "to": {
+            "items": {
+              "$ref": "#/components/schemas/EmailAddress"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "record_type",
+          "id",
+          "status",
+          "from",
+          "to",
+          "cc",
+          "bcc",
+          "subject",
+          "reply_to",
+          "template_id",
+          "template_variables",
+          "tags",
+          "metadata",
+          "attachments",
+          "events",
+          "created_at"
+        ],
+        "type": "object"
+      },
+      "EmailMessageResponse": {
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/EmailMessage"
+          },
+          "suppressed": {
+            "description": "Recipients removed by suppression checks when at least one recipient remains and the message is accepted.",
+            "items": {
+              "$ref": "#/components/schemas/SuppressedRecipient"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "data"
+        ],
+        "type": "object"
+      },
+      "EmailMessageStatus": {
+        "description": "Current status of an email message. Lifecycle statuses (queued, scheduled, etc.) are set on creation. Delivery statuses (delivered, bounced, etc.) are updated by delivery event consumers.",
+        "enum": [
+          "queued",
+          "scheduled",
+          "cancelled",
+          "sandbox",
+          "sending",
+          "sent",
+          "failed",
+          "deferred",
+          "delivered",
+          "bounced",
+          "complained",
+          "rejected",
+          "opened",
+          "clicked",
+          "unsubscribed"
+        ],
+        "type": "string"
+      },
+      "EmbeddedMessageEvent": {
+        "description": "An event embedded in a message response. The dedicated per-message events endpoint additionally returns event_type and canonical_event_type.",
+        "properties": {
+          "occurred_at": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "payload": {
+            "additionalProperties": true,
+            "type": "object"
+          },
+          "type": {
+            "$ref": "#/components/schemas/EmailEventType"
+          }
+        },
+        "required": [
+          "type",
+          "occurred_at"
+        ],
+        "type": "object"
+      },
+      "ErrorObject": {
+        "properties": {
+          "code": {
+            "description": "Telnyx error code. Send admission errors include account daily quota 10011 and sender-domain ramp code domain_graduation_limit_exceeded. Edge idempotency errors use 10027 or 10036. Fallback 404/500 responses from the framework may use string status codes ('404', '500') instead.",
+            "enum": [
+              "10001",
+              "10006",
+              "10007",
+              "10011",
+              "10015",
+              "10016",
+              "10019",
+              "domain_graduation_limit_exceeded",
+              "recipient_suppressed",
+              "reputation_suspended",
+              "404",
+              "500",
+              "10027",
+              "10036"
+            ],
+            "type": "string"
+          },
+          "detail": {
+            "description": "Human-readable error detail. Changeset responses may return a structured object.",
+            "oneOf": [
+              {
+                "type": "string"
+              },
+              {
+                "additionalProperties": true,
+                "type": "object"
+              }
+            ]
+          },
+          "meta": {
+            "additionalProperties": true,
+            "description": "Additional metadata. Present on 401 errors with a documentation URL.",
+            "nullable": true,
+            "type": "object"
+          },
+          "source": {
+            "additionalProperties": true,
+            "nullable": true,
+            "type": "object"
+          },
+          "title": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "title",
+          "detail"
+        ],
+        "type": "object"
+      },
+      "ForwardEmailInboxMessageRequest": {
+        "properties": {
+          "bcc": {
+            "$ref": "#/components/schemas/InboxActionRecipientInput"
+          },
+          "cc": {
+            "$ref": "#/components/schemas/InboxActionRecipientInput"
+          },
+          "html": {
+            "description": "Optional HTML note prepended to the generated forwarded-message block. Blank values are treated as omitted.",
+            "type": "string"
+          },
+          "text": {
+            "description": "Optional plain-text note prepended to the generated forwarded-message block. Blank values are treated as omitted.",
+            "type": "string"
+          },
+          "to": {
+            "$ref": "#/components/schemas/RequiredInboxActionRecipientInput"
+          }
+        },
+        "required": [
+          "to"
+        ],
+        "type": "object"
+      },
+      "InboundEmailAddress": {
+        "properties": {
+          "email": {
+            "format": "email",
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "email"
+        ],
+        "type": "object"
+      },
+      "InboundMessage": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/ThreadMessage"
+          },
+          {
+            "properties": {
+              "direction": {
+                "enum": [
+                  "inbound"
+                ],
+                "type": "string"
+              },
+              "status": {
+                "enum": [
+                  "received"
+                ],
+                "type": "string"
+              }
+            },
+            "type": "object"
+          }
+        ]
+      },
+      "InboundMessageListResponse": {
+        "properties": {
+          "data": {
+            "items": {
+              "$ref": "#/components/schemas/InboundMessage"
+            },
+            "type": "array"
+          },
+          "meta": {
+            "$ref": "#/components/schemas/email_PaginationMeta"
+          }
+        },
+        "required": [
+          "data",
+          "meta"
+        ],
+        "type": "object"
+      },
+      "InboundMessageResponse": {
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/InboundMessage"
+          }
+        },
+        "required": [
+          "data"
+        ],
+        "type": "object"
+      },
+      "InboundThread": {
+        "properties": {
+          "created_at": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "id": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "inbox_id": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "labels": {
+            "description": "Mutable thread labels used for agent workflow state. Independent of the labels on the thread's messages, and distinct from the send-time `tags` on outbound messages.",
+            "items": {
+              "maxLength": 255,
+              "type": "string"
+            },
+            "maxItems": 50,
+            "type": "array"
+          },
+          "last_message_at": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "last_message_id": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "message_count": {
+            "description": "Total inbound and outbound messages in the thread.",
+            "minimum": 1,
+            "type": "integer"
+          },
+          "preview": {
+            "maxLength": 200,
+            "nullable": true,
+            "type": "string"
+          },
+          "record_type": {
+            "enum": [
+              "email_thread"
+            ],
+            "type": "string"
+          },
+          "subject": {
+            "nullable": true,
+            "type": "string"
+          },
+          "unread_count": {
+            "description": "Unread inbound messages; outbound messages never increment this count.",
+            "minimum": 0,
+            "type": "integer"
+          },
+          "updated_at": {
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "record_type",
+          "inbox_id",
+          "subject",
+          "preview",
+          "message_count",
+          "unread_count",
+          "last_message_id",
+          "last_message_at",
+          "created_at",
+          "updated_at",
+          "labels"
+        ],
+        "type": "object"
+      },
+      "InboundThreadDetail": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/InboundThread"
+          },
+          {
+            "properties": {
+              "messages": {
+                "items": {
+                  "$ref": "#/components/schemas/ThreadMessage"
+                },
+                "type": "array"
+              }
+            },
+            "required": [
+              "messages"
+            ],
+            "type": "object"
+          }
+        ]
+      },
+      "InboundThreadListResponse": {
+        "properties": {
+          "data": {
+            "items": {
+              "$ref": "#/components/schemas/InboundThread"
+            },
+            "type": "array"
+          },
+          "meta": {
+            "$ref": "#/components/schemas/email_PaginationMeta"
+          }
+        },
+        "required": [
+          "data",
+          "meta"
+        ],
+        "type": "object"
+      },
+      "InboxActionEmailAddressInput": {
+        "description": "Email address accepted by inbox message actions, as a string or an object with `email` and optional `name`.",
+        "oneOf": [
+          {
+            "minLength": 3,
+            "pattern": "^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$",
+            "type": "string"
+          },
+          {
+            "properties": {
+              "email": {
+                "minLength": 3,
+                "pattern": "^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$",
+                "type": "string"
+              },
+              "name": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "email"
+            ],
+            "type": "object"
+          }
+        ]
+      },
+      "InboxActionRecipientInput": {
+        "description": "One recipient or a recipient array. Each recipient may be an email string or an object with `email` and optional `name`.",
+        "oneOf": [
+          {
+            "$ref": "#/components/schemas/InboxActionEmailAddressInput"
+          },
+          {
+            "items": {
+              "$ref": "#/components/schemas/InboxActionEmailAddressInput"
+            },
+            "type": "array"
+          }
+        ]
+      },
+      "InboxFilterEntry": {
+        "description": "An exact sender address (`user@example.com`) or domain wildcard\n(`@example.com`). Values are trimmed and normalized to lowercase.\n",
+        "example": "@example.com",
+        "type": "string"
+      },
+      "InboxFilterEntryList": {
+        "items": {
+          "$ref": "#/components/schemas/InboxFilterEntry"
+        },
+        "maxItems": 500,
+        "type": "array"
+      },
+      "InboxFilters": {
+        "properties": {
+          "allowlist": {
+            "$ref": "#/components/schemas/InboxFilterEntryList"
+          },
+          "blocklist": {
+            "$ref": "#/components/schemas/InboxFilterEntryList"
+          },
+          "record_type": {
+            "enum": [
+              "email_inbox_filters"
+            ],
+            "type": "string"
+          }
+        },
+        "required": [
+          "record_type",
+          "allowlist",
+          "blocklist"
+        ],
+        "type": "object"
+      },
+      "InboxFiltersResponse": {
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/InboxFilters"
+          }
+        },
+        "required": [
+          "data"
+        ],
+        "type": "object"
+      },
+      "LabelMutationRequest": {
+        "description": "Labels to add or remove. Both operations are idempotent set operations, so a retried request converges instead of failing.",
+        "properties": {
+          "labels": {
+            "description": "One or more labels. Each label is a freeform, case-sensitive string of at most 255 characters; a message or thread may carry at most 50 labels. The `telnyx:` prefix is a reserved system namespace and is rejected on customer writes.",
+            "items": {
+              "maxLength": 255,
+              "minLength": 1,
+              "type": "string"
+            },
+            "maxItems": 50,
+            "minItems": 1,
+            "type": "array"
+          }
+        },
+        "required": [
+          "labels"
+        ],
+        "type": "object"
+      },
+      "MutateInboxFiltersRequest": {
+        "properties": {
+          "entries": {
+            "$ref": "#/components/schemas/InboxFilterEntryList"
+          },
+          "type": {
+            "description": "The list to change.",
+            "enum": [
+              "allowlist",
+              "blocklist"
+            ],
+            "type": "string"
+          }
+        },
+        "required": [
+          "type",
+          "entries"
+        ],
+        "type": "object"
+      },
+      "ReplaceInboxFiltersRequest": {
+        "description": "The complete filter configuration. An omitted list is replaced with an\nempty list. Unknown keys are ignored by the controller.\n",
+        "properties": {
+          "allowlist": {
+            "$ref": "#/components/schemas/InboxFilterEntryList"
+          },
+          "blocklist": {
+            "$ref": "#/components/schemas/InboxFilterEntryList"
+          }
+        },
+        "type": "object"
+      },
+      "ReplyEmailInboxMessageRequest": {
+        "anyOf": [
+          {
+            "required": [
+              "text"
+            ]
+          },
+          {
+            "required": [
+              "html"
+            ]
+          }
+        ],
+        "description": "At least one of `text` or `html` must contain a non-whitespace body. Recipients are derived from the source message; caller-supplied `to`, `cc`, or `bcc` values are ignored.",
+        "properties": {
+          "html": {
+            "description": "HTML reply body.",
+            "minLength": 1,
+            "pattern": "\\S",
+            "type": "string"
+          },
+          "text": {
+            "description": "Plain-text reply body.",
+            "minLength": 1,
+            "pattern": "\\S",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "ReputationSuspendedError": {
+        "description": "Non-standard error envelope returned when the sending domain's reputation band is 'poor'. Uses string code `reputation_suspended` instead of a numeric code.",
+        "properties": {
+          "errors": {
+            "items": {
+              "properties": {
+                "code": {
+                  "enum": [
+                    "reputation_suspended"
+                  ],
+                  "type": "string"
+                },
+                "detail": {
+                  "type": "string"
+                },
+                "title": {
+                  "example": "Sending Suspended",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "code",
+                "title",
+                "detail"
+              ],
+              "type": "object"
+            },
+            "maxItems": 1,
+            "minItems": 1,
+            "type": "array"
+          }
+        },
+        "required": [
+          "errors"
+        ],
+        "type": "object"
+      },
+      "RequiredInboxActionRecipientInput": {
+        "description": "One recipient or a non-empty recipient array. Each recipient may be an email string or an object with `email` and optional `name`.",
+        "oneOf": [
+          {
+            "$ref": "#/components/schemas/InboxActionEmailAddressInput"
+          },
+          {
+            "items": {
+              "$ref": "#/components/schemas/InboxActionEmailAddressInput"
+            },
+            "minItems": 1,
+            "type": "array"
+          }
+        ]
+      },
+      "SuppressedRecipient": {
+        "properties": {
+          "override_allowed": {
+            "description": "Whether an authorized send may override this suppression.",
+            "type": "boolean"
+          },
+          "reason": {
+            "description": "Suppression reason returned by the recipient suppression service.",
+            "type": "string"
+          },
+          "scope": {
+            "description": "Scope at which the suppression applies.",
+            "type": "string"
+          },
+          "to": {
+            "description": "Suppressed recipient email address.",
+            "format": "email",
+            "type": "string"
+          }
+        },
+        "required": [
+          "to",
+          "reason",
+          "scope",
+          "override_allowed"
+        ],
+        "type": "object"
+      },
+      "ThreadMessage": {
+        "properties": {
+          "attachments": {
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "type": "array"
+          },
+          "bcc": {
+            "items": {
+              "$ref": "#/components/schemas/InboundEmailAddress"
+            },
+            "type": "array"
+          },
+          "cc": {
+            "items": {
+              "$ref": "#/components/schemas/InboundEmailAddress"
+            },
+            "type": "array"
+          },
+          "created_at": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "direction": {
+            "enum": [
+              "inbound",
+              "outbound"
+            ],
+            "type": "string"
+          },
+          "from": {
+            "$ref": "#/components/schemas/InboundEmailAddress"
+          },
+          "has_quoted_text": {
+            "description": "Whether conservative plain-text extraction detected a quoted tail. False does not prove that the source contains no quoted content.",
+            "type": "boolean"
+          },
+          "headers": {
+            "additionalProperties": true,
+            "type": "object"
+          },
+          "html_body_url": {
+            "description": "URL for an offloaded HTML body. Null means the body is not offloaded to a URL; an inline HTML body may still exist but is not returned on list reads. Reply extraction uses only the plain-text body during ingest.",
+            "format": "uri",
+            "nullable": true,
+            "type": "string"
+          },
+          "id": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "in_reply_to": {
+            "nullable": true,
+            "type": "string"
+          },
+          "inbox_id": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "inline_files": {
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "type": "array"
+          },
+          "labels": {
+            "description": "Mutable message labels used for agent workflow state (for example `spam`, `needs_review`, `processed`). Distinct from the immutable send-time `tags` on outbound messages: labels are never propagated to Email Detail Records or Mission Control reporting. Always empty for outbound messages. Labels on a message are independent of the labels on its thread.",
+            "items": {
+              "maxLength": 255,
+              "type": "string"
+            },
+            "maxItems": 50,
+            "type": "array"
+          },
+          "message_id": {
+            "description": "RFC Message-ID header. Null is possible for legacy outbound messages.",
+            "nullable": true,
+            "type": "string"
+          },
+          "read_at": {
+            "description": "Time the inbound message was marked read. Null means unread.",
+            "format": "date-time",
+            "nullable": true,
+            "type": "string"
+          },
+          "received_at": {
+            "description": "Receipt time for inbound messages; null for outbound messages.",
+            "format": "date-time",
+            "nullable": true,
+            "type": "string"
+          },
+          "record_type": {
+            "enum": [
+              "email_message"
+            ],
+            "type": "string"
+          },
+          "references": {
+            "description": "Ordered RFC Message-ID values from the References header.",
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "reply_text": {
+            "description": "Conservatively extracted new-reply content persisted from the plain-text body during ingest. Null means no plain-text extraction input was available or extraction was skipped or failed; HTML bodies are not parsed.",
+            "nullable": true,
+            "type": "string"
+          },
+          "reply_to": {
+            "items": {
+              "$ref": "#/components/schemas/InboundEmailAddress"
+            },
+            "type": "array"
+          },
+          "sent_at": {
+            "description": "Creation/send-acceptance time for outbound messages; null for inbound messages.",
+            "format": "date-time",
+            "nullable": true,
+            "type": "string"
+          },
+          "status": {
+            "description": "Received for inbound messages; the current send status for outbound messages.",
+            "type": "string"
+          },
+          "subject": {
+            "nullable": true,
+            "type": "string"
+          },
+          "text_body_url": {
+            "description": "URL for an offloaded plain-text body. Null means the body is not offloaded to a URL; an inline plain-text body may still exist but is not returned on list reads. `reply_text` and `has_quoted_text` are persisted during ingest before any body offload.",
+            "format": "uri",
+            "nullable": true,
+            "type": "string"
+          },
+          "thread_id": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "to": {
+            "items": {
+              "$ref": "#/components/schemas/InboundEmailAddress"
+            },
+            "type": "array"
+          },
+          "updated_at": {
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "record_type",
+          "direction",
+          "status",
+          "inbox_id",
+          "thread_id",
+          "message_id",
+          "in_reply_to",
+          "references",
+          "from",
+          "to",
+          "cc",
+          "bcc",
+          "reply_to",
+          "subject",
+          "text_body_url",
+          "html_body_url",
+          "reply_text",
+          "has_quoted_text",
+          "headers",
+          "inline_files",
+          "attachments",
+          "labels",
+          "read_at",
+          "received_at",
+          "sent_at",
+          "created_at",
+          "updated_at"
+        ],
+        "type": "object"
+      },
+      "UpdateInboundMessageRequest": {
+        "properties": {
+          "read_at": {
+            "description": "Set to `true` for server time, an ISO 8601 timestamp for an explicit read time, or `null` to mark unread.",
+            "oneOf": [
+              {
+                "enum": [
+                  true
+                ],
+                "type": "boolean"
+              },
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "enum": [
+                  null
+                ],
+                "nullable": true,
+                "type": "string"
+              }
+            ]
+          }
+        },
+        "required": [
+          "read_at"
+        ],
+        "type": "object"
+      },
+      "email_ErrorResponse": {
+        "properties": {
+          "errors": {
+            "items": {
+              "$ref": "#/components/schemas/ErrorObject"
+            },
+            "type": "array"
+          },
+          "suppressed": {
+            "description": "Present when every recipient is suppressed, so the request is rejected and no message is created.",
+            "items": {
+              "$ref": "#/components/schemas/SuppressedRecipient"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "errors"
+        ],
+        "type": "object"
+      },
+      "email_PaginationMeta": {
+        "properties": {
+          "page_cursor": {
+            "description": "Cursor for the next page, when more results are available.",
+            "type": "string"
+          },
+          "page_size": {
+            "maximum": 100,
+            "minimum": 1,
+            "type": "integer"
+          }
+        },
+        "required": [
+          "page_size"
+        ],
+        "type": "object"
+      }
+    },
+    "securitySchemes": {
+      "BearerAuth": {
+        "bearerFormat": "API key",
+        "description": "Telnyx API key supplied as `Authorization: Bearer \u003ctoken\u003e`. In production, auth may be validated by the API gateway and forwarded via Telnyx auth headers.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "Payment": {
+        "description": "Machine Payment Protocol credential used on paid retries, sent as `Authorization: Payment ...`. Obtained by paying a challenge returned in the `WWW-Authenticate` header of a 402 response. This is not a Telnyx API key; initial challenge requests use standard bearer authentication instead.",
+        "in": "header",
+        "name": "Authorization",
+        "type": "apiKey"
+      },
+      "agent-memory_bearerAuth": {
+        "description": "Telnyx API key",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "bearerAuth": {
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "branded-calling_bearerAuth": {
+        "description": "Telnyx API key. Generate one at https://portal.telnyx.com/#/app/api-keys.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "collections_bearerAuth": {
+        "description": "Telnyx API key. Collections and results are automatically scoped to the authenticated user's organization.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "number-reputation_bearerAuth": {
+        "description": "Telnyx API key. Generate one at https://portal.telnyx.com/#/app/api-keys.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "oauthClientAuth": {
+        "description": "OAuth 2.0 authentication for Telnyx API and MCP integrations",
+        "flows": {
+          "authorizationCode": {
+            "authorizationUrl": "https://api.telnyx.com/v2/oauth/authorize",
+            "refreshUrl": "https://api.telnyx.com/v2/oauth/token",
+            "scopes": {
+              "admin": "Administrative access to Telnyx resources"
+            },
+            "tokenUrl": "https://api.telnyx.com/v2/oauth/token"
+          },
+          "clientCredentials": {
+            "scopes": {
+              "admin": "Administrative access to Telnyx resources"
+            },
+            "tokenUrl": "https://api.telnyx.com/v2/oauth/token"
+          }
+        },
+        "type": "oauth2"
+      },
+      "outbound-voice-profiles_bearerAuth": {
+        "bearerFormat": "JWT",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "pay-connectors_bearerAuth": {
+        "description": "Telnyx API key, not the processor bearer token.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "pronunciation-dicts_bearerAuth": {
+        "description": "Telnyx API v2 key. Obtain from https://portal.telnyx.com",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "rcs-registration_bearerAuth": {
+        "bearerFormat": "API key",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "stored-payment-transactions_bearerAuth": {
+        "bearerFormat": "JWT",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "telnyxApiKey": {
+        "description": "Management-only Telnyx account credential.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "transcriptions-search_bearerAuth": {
+        "description": "Telnyx API key. Results are automatically scoped to the authenticated user's organization.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "web-search_bearerAuth": {
+        "description": "Telnyx API key",
+        "scheme": "bearer",
+        "type": "http"
+      }
+    }
+  },
+  "info": {
+    "contact": {
+      "email": "support@telnyx.com"
+    },
+    "description": "SIP trunking, SMS, MMS, Call Control and Telephony Data Services.",
+    "title": "Telnyx API",
+    "version": "2.0.0",
+    "x-endpoint-cost": "light",
+    "x-latency-category": "responsive"
+  },
+  "openapi": "3.1.0",
+  "paths": {
+    "/email_inboxes": {
+      "get": {
+        "description": "Lists the account's non-deleted inboxes newest first using stable cursor pagination.",
+        "operationId": "ListEmailInboxes",
+        "parameters": [
+          {
+            "description": "Number of results to return. Defaults to 20; maximum is 250.",
+            "in": "query",
+            "name": "page_size",
+            "required": false,
+            "schema": {
+              "default": 20,
+              "maximum": 250,
+              "minimum": 1,
+              "type": "integer"
+            }
+          },
+          {
+            "description": "Opaque cursor returned by the previous inbox page.",
+            "in": "query",
+            "name": "page_cursor",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "data": [
+                    {
+                      "address": "agent-1@abc123def456.mail.test.telnyx.com",
+                      "created_at": "2026-07-12T00:00:00Z",
+                      "domain": "abc123def456.mail.test.telnyx.com",
+                      "domain_id": "22222222-2222-2222-2222-222222222222",
+                      "id": "11111111-1111-1111-1111-111111111111",
+                      "record_type": "email_inbox",
+                      "settings": {},
+                      "status": "active",
+                      "updated_at": "2026-07-12T00:00:00Z"
+                    }
+                  ],
+                  "meta": {
+                    "page_cursor": "MjAyNi0wNy0xMlQwMCUzQTAwJTNBMDBafDExMTExMTExLTExMTEtMTExMS0xMTExLTExMTExMTExMTExMQ",
+                    "page_size": 20
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/EmailInboxListResponse"
+                }
+              }
+            },
+            "description": "Paginated email inboxes."
+          },
+          "401": {
+            "$ref": "#/components/responses/email_UnauthorizedResponse"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "invalidPageCursor": {
+                    "value": {
+                      "errors": [
+                        {
+                          "code": "10015",
+                          "detail": "cursor is invalid or corrupted",
+                          "source": {
+                            "pointer": "/page_cursor"
+                          },
+                          "title": "Validation Failed"
+                        }
+                      ]
+                    }
+                  },
+                  "invalidPageSize": {
+                    "value": {
+                      "errors": [
+                        {
+                          "code": "10015",
+                          "detail": "page_size must be between 1 and 250",
+                          "source": {
+                            "pointer": "/page_size"
+                          },
+                          "title": "Validation Failed"
+                        }
+                      ]
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/email_ErrorResponse"
+                }
+              }
+            },
+            "description": "Pagination validation failed (10015)."
+          },
+          "503": {
+            "$ref": "#/components/responses/email_ServiceUnavailableResponse"
+          }
+        },
+        "summary": "List email inboxes",
+        "tags": [
+          "Email Inboxes"
+        ]
+      },
+      "post": {
+        "description": "Creates an inbox on an inbound-enabled domain. When `domain_id` is omitted, Telnyx\nallocates the account's shared inbound subdomain so the inbox is immediately usable\nwithout customer DNS setup. When `username` is omitted, a unique username is generated.\n",
+        "operationId": "CreateEmailInbox",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "examples": {
+                "customDomainInbox": {
+                  "value": {
+                    "domain_id": "22222222-2222-2222-2222-222222222222",
+                    "username": "support"
+                  }
+                },
+                "generatedUsername": {
+                  "value": {}
+                },
+                "instantInbox": {
+                  "value": {
+                    "username": "agent-1"
+                  }
+                }
+              },
+              "schema": {
+                "$ref": "#/components/schemas/CreateEmailInboxRequest"
+              }
+            }
+          },
+          "required": false
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "data": {
+                    "address": "agent-1@abc123def456.mail.test.telnyx.com",
+                    "created_at": "2026-07-12T00:00:00Z",
+                    "domain": "abc123def456.mail.test.telnyx.com",
+                    "domain_id": "22222222-2222-2222-2222-222222222222",
+                    "id": "11111111-1111-1111-1111-111111111111",
+                    "record_type": "email_inbox",
+                    "settings": {},
+                    "status": "active",
+                    "updated_at": "2026-07-12T00:00:00Z"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/EmailInboxResponse"
+                }
+              }
+            },
+            "description": "Email inbox created."
+          },
+          "401": {
+            "$ref": "#/components/responses/email_UnauthorizedResponse"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "errors": [
+                    {
+                      "code": "10015",
+                      "detail": "username must start and end with a letter or digit and may contain only lowercase letters, digits, dots, hyphens, and underscores",
+                      "source": {
+                        "pointer": "/data/attributes/username"
+                      },
+                      "title": "Validation Failed"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/email_ErrorResponse"
+                }
+              }
+            },
+            "description": "Inbox validation failed (10015)."
+          },
+          "503": {
+            "$ref": "#/components/responses/email_ServiceUnavailableResponse"
+          }
+        },
+        "summary": "Create an email inbox",
+        "tags": [
+          "Email Inboxes"
+        ]
+      }
+    },
+    "/email_inboxes/{id}": {
+      "delete": {
+        "description": "Soft-deletes an account-scoped inbox. Its address remains reserved and the inbox is no longer returned by list or get operations.",
+        "operationId": "DeleteEmailInbox",
+        "parameters": [
+          {
+            "description": "Email inbox UUID.",
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Email inbox deleted. The response has no body."
+          },
+          "401": {
+            "$ref": "#/components/responses/email_UnauthorizedResponse"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "errors": [
+                    {
+                      "code": "10001",
+                      "detail": "The requested email_inbox was not found",
+                      "title": "Not Found"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/email_ErrorResponse"
+                }
+              }
+            },
+            "description": "Email inbox not found, already deleted, or owned by another account (10001)."
+          },
+          "503": {
+            "$ref": "#/components/responses/email_ServiceUnavailableResponse"
+          }
+        },
+        "summary": "Delete an email inbox",
+        "tags": [
+          "Email Inboxes"
+        ]
+      },
+      "get": {
+        "description": "Returns an account-scoped, non-deleted inbox. Missing and foreign inboxes are indistinguishable.",
+        "operationId": "GetEmailInbox",
+        "parameters": [
+          {
+            "description": "Email inbox UUID.",
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "data": {
+                    "address": "agent-1@abc123def456.mail.test.telnyx.com",
+                    "created_at": "2026-07-12T00:00:00Z",
+                    "domain": "abc123def456.mail.test.telnyx.com",
+                    "domain_id": "22222222-2222-2222-2222-222222222222",
+                    "id": "11111111-1111-1111-1111-111111111111",
+                    "record_type": "email_inbox",
+                    "settings": {},
+                    "status": "active",
+                    "updated_at": "2026-07-12T00:00:00Z"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/EmailInboxResponse"
+                }
+              }
+            },
+            "description": "Email inbox details."
+          },
+          "401": {
+            "$ref": "#/components/responses/email_UnauthorizedResponse"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "errors": [
+                    {
+                      "code": "10001",
+                      "detail": "The requested email_inbox was not found",
+                      "title": "Not Found"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/email_ErrorResponse"
+                }
+              }
+            },
+            "description": "Email inbox not found (10001)."
+          },
+          "503": {
+            "$ref": "#/components/responses/email_ServiceUnavailableResponse"
+          }
+        },
+        "summary": "Get an email inbox",
+        "tags": [
+          "Email Inboxes"
+        ]
+      }
+    },
+    "/email_inboxes/{inbox_id}/filters": {
+      "delete": {
+        "description": "Removes entries from either the allowlist or blocklist. The operation is\nidempotent: removing an entry that is not present still returns the current\nfilter lists.\n",
+        "operationId": "RemoveEmailInboxFilterEntries",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "example": {
+                "entries": [
+                  "former-partner@example.com"
+                ],
+                "type": "allowlist"
+              },
+              "schema": {
+                "$ref": "#/components/schemas/MutateInboxFiltersRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/InboxFiltersResponse"
+          },
+          "401": {
+            "$ref": "#/components/responses/email_UnauthorizedResponse"
+          },
+          "404": {
+            "$ref": "#/components/responses/email_NotFoundResponse"
+          },
+          "422": {
+            "$ref": "#/components/responses/ValidationErrorResponse"
+          },
+          "503": {
+            "$ref": "#/components/responses/email_ServiceUnavailableResponse"
+          }
+        },
+        "summary": "Remove sender filter entries from an inbox",
+        "tags": [
+          "Email Inboxes"
+        ]
+      },
+      "get": {
+        "description": "Returns the inbox's sender allowlist and blocklist. Entries are normalized\nto lowercase. A blocklist match takes precedence over an allowlist match;\nwhen both lists are empty, all senders are accepted.\n",
+        "operationId": "ListEmailInboxFilters",
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/InboxFiltersResponse"
+          },
+          "401": {
+            "$ref": "#/components/responses/email_UnauthorizedResponse"
+          },
+          "404": {
+            "$ref": "#/components/responses/email_NotFoundResponse"
+          },
+          "503": {
+            "$ref": "#/components/responses/email_ServiceUnavailableResponse"
+          }
+        },
+        "summary": "List sender filters for an inbox",
+        "tags": [
+          "Email Inboxes"
+        ]
+      },
+      "parameters": [
+        {
+          "$ref": "#/components/parameters/InboxIdPathParam"
+        }
+      ],
+      "post": {
+        "description": "Adds entries to either the allowlist or blocklist. The operation is an\nidempotent set union: entries already present remain unchanged.\n",
+        "operationId": "AddEmailInboxFilterEntries",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "example": {
+                "entries": [
+                  "@spam.example"
+                ],
+                "type": "blocklist"
+              },
+              "schema": {
+                "$ref": "#/components/schemas/MutateInboxFiltersRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/InboxFiltersResponse"
+          },
+          "401": {
+            "$ref": "#/components/responses/email_UnauthorizedResponse"
+          },
+          "404": {
+            "$ref": "#/components/responses/email_NotFoundResponse"
+          },
+          "422": {
+            "$ref": "#/components/responses/ValidationErrorResponse"
+          },
+          "503": {
+            "$ref": "#/components/responses/email_ServiceUnavailableResponse"
+          }
+        },
+        "summary": "Add sender filter entries to an inbox",
+        "tags": [
+          "Email Inboxes"
+        ]
+      },
+      "put": {
+        "description": "Replaces both sender filter lists atomically. Omitting either list clears\nthat list. Use `POST` or `DELETE` for incremental changes.\n",
+        "operationId": "ReplaceEmailInboxFilters",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "example": {
+                "allowlist": [
+                  "trusted@example.com",
+                  "@partner.example"
+                ],
+                "blocklist": [
+                  "@spam.example"
+                ]
+              },
+              "schema": {
+                "$ref": "#/components/schemas/ReplaceInboxFiltersRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/InboxFiltersResponse"
+          },
+          "401": {
+            "$ref": "#/components/responses/email_UnauthorizedResponse"
+          },
+          "404": {
+            "$ref": "#/components/responses/email_NotFoundResponse"
+          },
+          "422": {
+            "$ref": "#/components/responses/ValidationErrorResponse"
+          },
+          "503": {
+            "$ref": "#/components/responses/email_ServiceUnavailableResponse"
+          }
+        },
+        "summary": "Replace sender filters for an inbox",
+        "tags": [
+          "Email Inboxes"
+        ]
+      }
+    },
+    "/email_inboxes/{inbox_id}/messages": {
+      "get": {
+        "description": "Lists inbound messages newest first. All access is scoped to the authenticated\naccount. `filter[search]` performs PostgreSQL full-text search over the subject,\nplain-text body, and HTML body. Filters compose with stable cursor pagination.\n",
+        "operationId": "ListEmailInboxMessages",
+        "parameters": [
+          {
+            "description": "Email inbox UUID.",
+            "in": "path",
+            "name": "inbox_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Case-insensitive literal substring of the sender address.",
+            "in": "query",
+            "name": "filter[from]",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Case-insensitive literal substring of the subject.",
+            "in": "query",
+            "name": "filter[subject]",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Inclusive ISO 8601 lower bound for the received timestamp.",
+            "in": "query",
+            "name": "filter[received_after]",
+            "required": false,
+            "schema": {
+              "format": "date-time",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Inclusive ISO 8601 upper bound for the received timestamp.",
+            "in": "query",
+            "name": "filter[received_before]",
+            "required": false,
+            "schema": {
+              "format": "date-time",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Whether the message has a read timestamp.",
+            "in": "query",
+            "name": "filter[read]",
+            "required": false,
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "description": "Whether the message has no read timestamp. Set to `true` to return only unread messages.",
+            "in": "query",
+            "name": "filter[unread]",
+            "required": false,
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "description": "Returns only messages carrying this label. Matching is exact and case-sensitive. Reserved `telnyx:` labels can be filtered on even though they cannot be written by customers.",
+            "in": "query",
+            "name": "filter[label]",
+            "required": false,
+            "schema": {
+              "maxLength": 255,
+              "type": "string"
+            }
+          },
+          {
+            "description": "Full-text query over subject and body, up to 500 characters.",
+            "in": "query",
+            "name": "filter[search]",
+            "required": false,
+            "schema": {
+              "maxLength": 500,
+              "type": "string"
+            }
+          },
+          {
+            "description": "Number of results to return. Defaults to 25; maximum is 100.",
+            "in": "query",
+            "name": "page[size]",
+            "required": false,
+            "schema": {
+              "default": 25,
+              "maximum": 100,
+              "minimum": 1,
+              "type": "integer"
+            }
+          },
+          {
+            "description": "Opaque cursor returned by the previous page.",
+            "in": "query",
+            "name": "page[after]",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "data": [
+                    {
+                      "attachments": [],
+                      "bcc": [],
+                      "cc": [],
+                      "created_at": "2026-07-15T12:30:00Z",
+                      "direction": "inbound",
+                      "from": {
+                        "email": "alice@example.com",
+                        "name": "Alice"
+                      },
+                      "has_quoted_text": true,
+                      "headers": {},
+                      "html_body_url": null,
+                      "id": "55555555-5555-5555-5555-555555555555",
+                      "in_reply_to": "\u003cearlier@example.com\u003e",
+                      "inbox_id": "11111111-1111-1111-1111-111111111111",
+                      "inline_files": [],
+                      "labels": [],
+                      "message_id": "\u003cmessage@example.com\u003e",
+                      "read_at": null,
+                      "received_at": "2026-07-15T12:30:00Z",
+                      "record_type": "email_message",
+                      "references": [
+                        "\u003cearlier@example.com\u003e"
+                      ],
+                      "reply_text": "Thanks, I will send it today.",
+                      "reply_to": [],
+                      "sent_at": null,
+                      "status": "received",
+                      "subject": "Project update",
+                      "text_body_url": null,
+                      "thread_id": "33333333-3333-3333-3333-333333333333",
+                      "to": [
+                        {
+                          "email": "agent@inbox.example.test"
+                        }
+                      ],
+                      "updated_at": "2026-07-15T12:30:00Z"
+                    }
+                  ],
+                  "meta": {
+                    "page_cursor": "MjAyNi0wNy0xNVQxMjozMDowMFp8NTU1NTU1NTUtNTU1NS01NTU1LTU1NTUtNTU1NTU1NTU1NTU1",
+                    "page_size": 25
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/InboundMessageListResponse"
+                }
+              }
+            },
+            "description": "Paginated inbox messages."
+          },
+          "401": {
+            "$ref": "#/components/responses/email_UnauthorizedResponse"
+          },
+          "404": {
+            "$ref": "#/components/responses/email_NotFoundResponse"
+          },
+          "422": {
+            "$ref": "#/components/responses/ValidationErrorResponse"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "errors": [
+                    {
+                      "code": "10016",
+                      "detail": "Inbox messages are temporarily unavailable. Please try again later.",
+                      "title": "Service Unavailable"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/email_ErrorResponse"
+                }
+              }
+            },
+            "description": "Inbound message storage is temporarily unavailable."
+          }
+        },
+        "summary": "List and search messages in an inbox",
+        "tags": [
+          "Email Inboxes"
+        ]
+      }
+    },
+    "/email_inboxes/{inbox_id}/messages/{message_id}": {
+      "patch": {
+        "description": "Updates the explicit read state of an account-scoped inbound message. Set `read_at`\nto `true` to mark the message read at the server's current time, to an ISO 8601\ntimestamp to use that timestamp, or to `null` to mark the message unread. Repeating\nthe same update is idempotent.\n",
+        "operationId": "UpdateEmailInboxMessage",
+        "parameters": [
+          {
+            "description": "Email inbox UUID.",
+            "in": "path",
+            "name": "inbox_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Inbound email message UUID.",
+            "in": "path",
+            "name": "message_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "examples": {
+                "explicitTimestamp": {
+                  "value": {
+                    "read_at": "2026-07-23T12:34:56Z"
+                  }
+                },
+                "markRead": {
+                  "value": {
+                    "read_at": true
+                  }
+                },
+                "markUnread": {
+                  "value": {
+                    "read_at": null
+                  }
+                }
+              },
+              "schema": {
+                "$ref": "#/components/schemas/UpdateInboundMessageRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "data": {
+                    "attachments": [],
+                    "bcc": [
+                      {
+                        "email": "example@telnyx.com",
+                        "name": "string"
+                      }
+                    ],
+                    "cc": [
+                      {
+                        "email": "example@telnyx.com",
+                        "name": "string"
+                      }
+                    ],
+                    "created_at": "2024-01-23T18:10:02.574Z",
+                    "direction": "inbound",
+                    "from": {
+                      "email": "example@telnyx.com",
+                      "name": "string"
+                    },
+                    "has_quoted_text": false,
+                    "headers": {
+                      "Message-ID": "\u003cmessage-id@example.com\u003e"
+                    },
+                    "html_body_url": "https://example.com",
+                    "id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+                    "in_reply_to": "string",
+                    "inbox_id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+                    "inline_files": [],
+                    "labels": [
+                      "string"
+                    ],
+                    "message_id": "string",
+                    "read_at": "2024-01-23T18:10:02.574Z",
+                    "received_at": "2024-01-23T18:10:02.574Z",
+                    "record_type": "email_message",
+                    "references": [
+                      "string"
+                    ],
+                    "reply_text": "string",
+                    "reply_to": [
+                      {
+                        "email": "example@telnyx.com",
+                        "name": "string"
+                      }
+                    ],
+                    "sent_at": "2024-01-23T18:10:02.574Z",
+                    "status": "received",
+                    "subject": "string",
+                    "text_body_url": "https://example.com",
+                    "thread_id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+                    "to": [
+                      {
+                        "email": "example@telnyx.com",
+                        "name": "string"
+                      }
+                    ],
+                    "updated_at": "2024-01-23T18:10:02.574Z"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/InboundMessageResponse"
+                }
+              }
+            },
+            "description": "Updated inbox message."
+          },
+          "401": {
+            "$ref": "#/components/responses/email_UnauthorizedResponse"
+          },
+          "404": {
+            "$ref": "#/components/responses/email_NotFoundResponse"
+          },
+          "422": {
+            "$ref": "#/components/responses/ValidationErrorResponse"
+          },
+          "503": {
+            "$ref": "#/components/responses/email_ServiceUnavailableResponse"
+          }
+        },
+        "summary": "Update an inbox message",
+        "tags": [
+          "Email Inboxes"
+        ]
+      }
+    },
+    "/email_inboxes/{inbox_id}/messages/{message_id}/actions/forward": {
+      "post": {
+        "description": "Sends from the inbox address through the standard email send pipeline to caller-supplied\nTo, Cc, and Bcc recipients. `to` must contain at least one recipient. Optional `text` and\n`html` are prepended to a forwarded-message block containing the original metadata and\navailable body content. The subject is prefixed with `Fwd:` unless it already has that prefix.\n\nThreading headers are derived from the original message: `In-Reply-To` is set to its\nRFC Message-ID, and `References` contains the original References values plus that\nMessage-ID, de-duplicated and limited to the most recent 20 values.\n",
+        "operationId": "ForwardEmailInboxMessage",
+        "parameters": [
+          {
+            "description": "Email inbox UUID.",
+            "in": "path",
+            "name": "inbox_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Inbound email message UUID.",
+            "in": "path",
+            "name": "message_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "example": {
+                "bcc": [
+                  "blind@example.com"
+                ],
+                "cc": [
+                  {
+                    "email": "copy@example.com"
+                  }
+                ],
+                "text": "FYI",
+                "to": "new@example.com"
+              },
+              "schema": {
+                "$ref": "#/components/schemas/ForwardEmailInboxMessageRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "202": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "data": {
+                    "attachments": [],
+                    "bcc": [
+                      {
+                        "email": "blind@example.com"
+                      }
+                    ],
+                    "cc": [
+                      {
+                        "email": "copy@example.com"
+                      }
+                    ],
+                    "created_at": "2026-07-15T12:35:00Z",
+                    "events": [],
+                    "from": {
+                      "email": "agent@inbox.example.test"
+                    },
+                    "id": "44444444-4444-4444-4444-444444444444",
+                    "metadata": {},
+                    "record_type": "email_message",
+                    "reply_to": null,
+                    "status": "queued",
+                    "subject": "Fwd: Project update",
+                    "tags": [],
+                    "template_id": null,
+                    "template_variables": {},
+                    "to": [
+                      {
+                        "email": "new@example.com"
+                      }
+                    ]
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/EmailMessageResponse"
+                }
+              }
+            },
+            "description": "Forward accepted by the standard email send pipeline.",
+            "headers": {
+              "X-Telnyx-Reputation-Warning": {
+                "description": "Present with `warn` when the accepted send uses a sender domain in the reputation warn band; delivery proceeds with reduced sending limits.",
+                "schema": {
+                  "enum": [
+                    "warn"
+                  ],
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/email_BadRequestResponse"
+          },
+          "401": {
+            "$ref": "#/components/responses/email_UnauthorizedResponse"
+          },
+          "403": {
+            "$ref": "#/components/responses/email_ForbiddenResponse"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "inboxNotFound": {
+                    "value": {
+                      "errors": [
+                        {
+                          "code": "10001",
+                          "detail": "The requested email_inbox was not found",
+                          "title": "Not Found"
+                        }
+                      ]
+                    }
+                  },
+                  "messageNotFound": {
+                    "value": {
+                      "errors": [
+                        {
+                          "code": "10001",
+                          "detail": "The requested email_message was not found",
+                          "title": "Not Found"
+                        }
+                      ]
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/email_ErrorResponse"
+                }
+              }
+            },
+            "description": "The inbox, source message, or sending domain was not found (10001)."
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "allRecipientsSuppressed": {
+                    "value": {
+                      "errors": [
+                        {
+                          "code": "recipient_suppressed",
+                          "detail": "All recipients are suppressed. The email was not sent.",
+                          "title": "Recipient Suppressed"
+                        }
+                      ],
+                      "suppressed": [
+                        {
+                          "override_allowed": false,
+                          "reason": "hard_bounce",
+                          "scope": "account",
+                          "to": "new@example.com"
+                        }
+                      ]
+                    }
+                  },
+                  "invalidRecipients": {
+                    "value": {
+                      "errors": [
+                        {
+                          "code": "10015",
+                          "detail": "to must contain at least one recipient",
+                          "source": {
+                            "pointer": "/data/attributes/to"
+                          },
+                          "title": "Validation Failed"
+                        }
+                      ]
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/email_ErrorResponse"
+                }
+              }
+            },
+            "description": "Forward validation failed (10015), or all recipients are suppressed."
+          },
+          "429": {
+            "$ref": "#/components/responses/EmailSendTooManyRequestsResponse"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "errors": [
+                    {
+                      "code": "10016",
+                      "detail": "Inbox message actions are temporarily unavailable. Please try again later.",
+                      "title": "Service Unavailable"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/email_ErrorResponse"
+                }
+              }
+            },
+            "description": "Inbox message actions or the email domain service are temporarily unavailable (10016)."
+          }
+        },
+        "summary": "Forward an inbox message",
+        "tags": [
+          "Email Inboxes"
+        ]
+      }
+    },
+    "/email_inboxes/{inbox_id}/messages/{message_id}/actions/reply": {
+      "post": {
+        "description": "Sends from the inbox address through the standard email send pipeline. The recipient is\nthe original `Reply-To`, falling back to `From`; original Cc recipients are not included.\nThe subject is prefixed with `Re:` unless it already has that prefix.\n\nThreading headers are derived from the original message: `In-Reply-To` is set to its\nRFC Message-ID, and `References` contains the original References values plus that\nMessage-ID, de-duplicated and limited to the most recent 20 values.\n",
+        "operationId": "ReplyToEmailInboxMessage",
+        "parameters": [
+          {
+            "description": "Email inbox UUID.",
+            "in": "path",
+            "name": "inbox_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Inbound email message UUID.",
+            "in": "path",
+            "name": "message_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "examples": {
+                "html": {
+                  "value": {
+                    "html": "\u003cp\u003eThanks for the update.\u003c/p\u003e"
+                  }
+                },
+                "plainText": {
+                  "value": {
+                    "text": "Thanks for the update."
+                  }
+                }
+              },
+              "schema": {
+                "$ref": "#/components/schemas/ReplyEmailInboxMessageRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "202": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "data": {
+                    "attachments": [],
+                    "bcc": [],
+                    "cc": [],
+                    "created_at": "2026-07-15T12:35:00Z",
+                    "events": [],
+                    "from": {
+                      "email": "agent@inbox.example.test"
+                    },
+                    "id": "44444444-4444-4444-4444-444444444444",
+                    "metadata": {},
+                    "record_type": "email_message",
+                    "reply_to": null,
+                    "status": "queued",
+                    "subject": "Re: Project update",
+                    "tags": [],
+                    "template_id": null,
+                    "template_variables": {},
+                    "to": [
+                      {
+                        "email": "reply@example.com"
+                      }
+                    ]
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/EmailMessageResponse"
+                }
+              }
+            },
+            "description": "Reply accepted by the standard email send pipeline.",
+            "headers": {
+              "X-Telnyx-Reputation-Warning": {
+                "description": "Present with `warn` when the accepted send uses a sender domain in the reputation warn band; delivery proceeds with reduced sending limits.",
+                "schema": {
+                  "enum": [
+                    "warn"
+                  ],
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/email_BadRequestResponse"
+          },
+          "401": {
+            "$ref": "#/components/responses/email_UnauthorizedResponse"
+          },
+          "403": {
+            "$ref": "#/components/responses/email_ForbiddenResponse"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "inboxNotFound": {
+                    "value": {
+                      "errors": [
+                        {
+                          "code": "10001",
+                          "detail": "The requested email_inbox was not found",
+                          "title": "Not Found"
+                        }
+                      ]
+                    }
+                  },
+                  "messageNotFound": {
+                    "value": {
+                      "errors": [
+                        {
+                          "code": "10001",
+                          "detail": "The requested email_message was not found",
+                          "title": "Not Found"
+                        }
+                      ]
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/email_ErrorResponse"
+                }
+              }
+            },
+            "description": "The inbox, source message, or sending domain was not found (10001)."
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "errors": [
+                    {
+                      "code": "10015",
+                      "detail": "text or html must contain a body for reply actions",
+                      "source": {
+                        "pointer": "/data/attributes/text"
+                      },
+                      "title": "Validation Failed"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/email_ErrorResponse"
+                }
+              }
+            },
+            "description": "Reply validation failed (10015), or all recipients are suppressed."
+          },
+          "429": {
+            "$ref": "#/components/responses/EmailSendTooManyRequestsResponse"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "errors": [
+                    {
+                      "code": "10016",
+                      "detail": "Inbox message actions are temporarily unavailable. Please try again later.",
+                      "title": "Service Unavailable"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/email_ErrorResponse"
+                }
+              }
+            },
+            "description": "Inbox message actions or the email domain service are temporarily unavailable (10016)."
+          }
+        },
+        "summary": "Reply to an inbox message",
+        "tags": [
+          "Email Inboxes"
+        ]
+      }
+    },
+    "/email_inboxes/{inbox_id}/messages/{message_id}/actions/reply_all": {
+      "post": {
+        "description": "Sends from the inbox address through the standard email send pipeline. The To list starts\nwith the original `Reply-To` (or `From`) and includes original To recipients; the Cc list\nincludes original Cc recipients. The inbox address is excluded, and recipients are\nde-duplicated case-insensitively across To and Cc. Bcc is always empty. The subject is\nprefixed with `Re:` unless it already has that prefix.\n\nThreading headers are derived from the original message: `In-Reply-To` is set to its\nRFC Message-ID, and `References` contains the original References values plus that\nMessage-ID, de-duplicated and limited to the most recent 20 values.\n",
+        "operationId": "ReplyAllToEmailInboxMessage",
+        "parameters": [
+          {
+            "description": "Email inbox UUID.",
+            "in": "path",
+            "name": "inbox_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Inbound email message UUID.",
+            "in": "path",
+            "name": "message_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "examples": {
+                "html": {
+                  "value": {
+                    "html": "\u003cp\u003eEveryone, please review.\u003c/p\u003e"
+                  }
+                },
+                "plainText": {
+                  "value": {
+                    "text": "Everyone, please review."
+                  }
+                }
+              },
+              "schema": {
+                "$ref": "#/components/schemas/ReplyEmailInboxMessageRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "202": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "data": {
+                    "attachments": [],
+                    "bcc": [],
+                    "cc": [],
+                    "created_at": "2026-07-15T12:35:00Z",
+                    "events": [],
+                    "from": {
+                      "email": "agent@inbox.example.test"
+                    },
+                    "id": "44444444-4444-4444-4444-444444444444",
+                    "metadata": {},
+                    "record_type": "email_message",
+                    "reply_to": null,
+                    "status": "queued",
+                    "subject": "Re: Project update",
+                    "tags": [],
+                    "template_id": null,
+                    "template_variables": {},
+                    "to": [
+                      {
+                        "email": "reply@example.com"
+                      },
+                      {
+                        "email": "other@example.com"
+                      }
+                    ]
+                  },
+                  "suppressed": [
+                    {
+                      "override_allowed": false,
+                      "reason": "hard_bounce",
+                      "scope": "account",
+                      "to": "observer@example.com"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/EmailMessageResponse"
+                }
+              }
+            },
+            "description": "Reply-all message accepted by the standard email send pipeline.",
+            "headers": {
+              "X-Telnyx-Reputation-Warning": {
+                "description": "Present with `warn` when the accepted send uses a sender domain in the reputation warn band; delivery proceeds with reduced sending limits.",
+                "schema": {
+                  "enum": [
+                    "warn"
+                  ],
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/email_BadRequestResponse"
+          },
+          "401": {
+            "$ref": "#/components/responses/email_UnauthorizedResponse"
+          },
+          "403": {
+            "$ref": "#/components/responses/email_ForbiddenResponse"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "inboxNotFound": {
+                    "value": {
+                      "errors": [
+                        {
+                          "code": "10001",
+                          "detail": "The requested email_inbox was not found",
+                          "title": "Not Found"
+                        }
+                      ]
+                    }
+                  },
+                  "messageNotFound": {
+                    "value": {
+                      "errors": [
+                        {
+                          "code": "10001",
+                          "detail": "The requested email_message was not found",
+                          "title": "Not Found"
+                        }
+                      ]
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/email_ErrorResponse"
+                }
+              }
+            },
+            "description": "The inbox, source message, or sending domain was not found (10001)."
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "errors": [
+                    {
+                      "code": "10015",
+                      "detail": "text or html must contain a body for reply actions",
+                      "source": {
+                        "pointer": "/data/attributes/text"
+                      },
+                      "title": "Validation Failed"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/email_ErrorResponse"
+                }
+              }
+            },
+            "description": "Reply-all validation failed (10015), or all recipients are suppressed."
+          },
+          "429": {
+            "$ref": "#/components/responses/EmailSendTooManyRequestsResponse"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "errors": [
+                    {
+                      "code": "10016",
+                      "detail": "Inbox message actions are temporarily unavailable. Please try again later.",
+                      "title": "Service Unavailable"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/email_ErrorResponse"
+                }
+              }
+            },
+            "description": "Inbox message actions or the email domain service are temporarily unavailable (10016)."
+          }
+        },
+        "summary": "Reply all to an inbox message",
+        "tags": [
+          "Email Inboxes"
+        ]
+      }
+    },
+    "/email_inboxes/{inbox_id}/messages/{message_id}/labels": {
+      "delete": {
+        "description": "Removes one or more labels from a message. Idempotent — removing a\nlabel the message does not carry is a no-op and still returns 200.\nRemoval is case-sensitive.\n",
+        "operationId": "RemoveEmailInboxMessageLabels",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/InboxIdPathParam"
+          },
+          {
+            "$ref": "#/components/parameters/MessageIdPathParam"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "example": {
+                "labels": [
+                  "spam"
+                ]
+              },
+              "schema": {
+                "$ref": "#/components/schemas/LabelMutationRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/InboundMessageLabelResponse"
+          },
+          "401": {
+            "$ref": "#/components/responses/email_UnauthorizedResponse"
+          },
+          "404": {
+            "$ref": "#/components/responses/email_NotFoundResponse"
+          },
+          "422": {
+            "$ref": "#/components/responses/ValidationErrorResponse"
+          },
+          "503": {
+            "$ref": "#/components/responses/LabelServiceUnavailableResponse"
+          }
+        },
+        "summary": "Remove labels from an inbox message",
+        "tags": [
+          "Email Inboxes"
+        ]
+      },
+      "post": {
+        "description": "Adds one or more mutable labels to a message. Labels carry agent\nworkflow state such as `spam`, `needs_review`, or `processed`.\n\nLabels are **not** the same as the send-time `tags` on outbound\nmessages: `tags` are immutable and propagate to Email Detail Records\nand Mission Control for billing attribution, while labels are mailbox\nstate that never reaches the reporting contract.\n\nThe operation is an idempotent set union — adding a label the message\nalready carries is a no-op and still returns 200. Labels are\ncase-sensitive, and message labels are independent of thread labels.\n",
+        "operationId": "AddEmailInboxMessageLabels",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/InboxIdPathParam"
+          },
+          {
+            "$ref": "#/components/parameters/MessageIdPathParam"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "example": {
+                "labels": [
+                  "spam",
+                  "urgent"
+                ]
+              },
+              "schema": {
+                "$ref": "#/components/schemas/LabelMutationRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/InboundMessageLabelResponse"
+          },
+          "401": {
+            "$ref": "#/components/responses/email_UnauthorizedResponse"
+          },
+          "404": {
+            "$ref": "#/components/responses/email_NotFoundResponse"
+          },
+          "422": {
+            "$ref": "#/components/responses/ValidationErrorResponse"
+          },
+          "503": {
+            "$ref": "#/components/responses/LabelServiceUnavailableResponse"
+          }
+        },
+        "summary": "Add labels to an inbox message",
+        "tags": [
+          "Email Inboxes"
+        ]
+      }
+    },
+    "/email_inboxes/{inbox_id}/threads": {
+      "get": {
+        "description": "Lists thread summaries newest first using stable cursor pagination.",
+        "operationId": "ListEmailInboxThreads",
+        "parameters": [
+          {
+            "description": "Email inbox UUID.",
+            "in": "path",
+            "name": "inbox_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Number of results to return. Defaults to 25; maximum is 100.",
+            "in": "query",
+            "name": "page[size]",
+            "required": false,
+            "schema": {
+              "default": 25,
+              "maximum": 100,
+              "minimum": 1,
+              "type": "integer"
+            }
+          },
+          {
+            "description": "Opaque cursor returned by the previous page.",
+            "in": "query",
+            "name": "page[after]",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Returns only threads carrying this label. Thread labels are independent of the labels on the thread's messages.",
+            "in": "query",
+            "name": "filter[label]",
+            "required": false,
+            "schema": {
+              "maxLength": 255,
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "data": [
+                    {
+                      "created_at": "2026-07-14T10:00:00Z",
+                      "id": "33333333-3333-3333-3333-333333333333",
+                      "inbox_id": "11111111-1111-1111-1111-111111111111",
+                      "labels": [
+                        "needs_review"
+                      ],
+                      "last_message_at": "2026-07-15T12:30:00Z",
+                      "last_message_id": "55555555-5555-5555-5555-555555555555",
+                      "message_count": 2,
+                      "preview": null,
+                      "record_type": "email_thread",
+                      "subject": "Project update",
+                      "unread_count": 1,
+                      "updated_at": "2026-07-15T12:30:00Z"
+                    }
+                  ],
+                  "meta": {
+                    "page_cursor": "MjAyNi0wNy0xNVQxMjozMDowMFp8MzMzMzMzMzMtMzMzMy0zMzMzLTMzMzMtMzMzMzMzMzMzMzMz",
+                    "page_size": 25
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/InboundThreadListResponse"
+                }
+              }
+            },
+            "description": "Paginated inbox threads."
+          },
+          "401": {
+            "$ref": "#/components/responses/email_UnauthorizedResponse"
+          },
+          "404": {
+            "$ref": "#/components/responses/email_NotFoundResponse"
+          },
+          "422": {
+            "$ref": "#/components/responses/ValidationErrorResponse"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "errors": [
+                    {
+                      "code": "10016",
+                      "detail": "Inbox threads are temporarily unavailable. Please try again later.",
+                      "title": "Service Unavailable"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/email_ErrorResponse"
+                }
+              }
+            },
+            "description": "Inbound thread storage is temporarily unavailable."
+          }
+        },
+        "summary": "List threads in an inbox",
+        "tags": [
+          "Email Inboxes"
+        ]
+      }
+    },
+    "/email_inboxes/{inbox_id}/threads/{thread_id}": {
+      "get": {
+        "description": "Returns a bounded page of inbound and outbound thread messages interleaved in chronological order using stable cursor pagination.",
+        "operationId": "GetEmailInboxThread",
+        "parameters": [
+          {
+            "description": "Email inbox UUID.",
+            "in": "path",
+            "name": "inbox_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Email thread UUID.",
+            "in": "path",
+            "name": "thread_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Number of thread messages to return. Defaults to 25; maximum is 100.",
+            "in": "query",
+            "name": "page[size]",
+            "required": false,
+            "schema": {
+              "default": 25,
+              "maximum": 100,
+              "minimum": 1,
+              "type": "integer"
+            }
+          },
+          {
+            "description": "Opaque message cursor returned by the previous thread-detail page.",
+            "in": "query",
+            "name": "page[after]",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "data": {
+                    "created_at": "2026-07-14T10:00:00Z",
+                    "id": "33333333-3333-3333-3333-333333333333",
+                    "inbox_id": "11111111-1111-1111-1111-111111111111",
+                    "labels": [
+                      "needs_review"
+                    ],
+                    "last_message_at": "2026-07-15T12:30:00Z",
+                    "last_message_id": "55555555-5555-5555-5555-555555555555",
+                    "message_count": 2,
+                    "messages": [
+                      {
+                        "attachments": [],
+                        "bcc": [],
+                        "cc": [],
+                        "created_at": "2026-07-15T12:30:00Z",
+                        "direction": "inbound",
+                        "from": {
+                          "email": "alice@example.com",
+                          "name": "Alice"
+                        },
+                        "has_quoted_text": true,
+                        "headers": {},
+                        "html_body_url": null,
+                        "id": "55555555-5555-5555-5555-555555555555",
+                        "in_reply_to": "\u003cearlier@example.com\u003e",
+                        "inbox_id": "11111111-1111-1111-1111-111111111111",
+                        "inline_files": [],
+                        "labels": [],
+                        "message_id": "\u003cmessage@example.com\u003e",
+                        "read_at": null,
+                        "received_at": "2026-07-15T12:30:00Z",
+                        "record_type": "email_message",
+                        "references": [
+                          "\u003cearlier@example.com\u003e"
+                        ],
+                        "reply_text": "Thanks, I will send it today.",
+                        "reply_to": [],
+                        "sent_at": null,
+                        "status": "received",
+                        "subject": "Project update",
+                        "text_body_url": null,
+                        "thread_id": "33333333-3333-3333-3333-333333333333",
+                        "to": [
+                          {
+                            "email": "agent@inbox.example.test"
+                          }
+                        ],
+                        "updated_at": "2026-07-15T12:30:00Z"
+                      }
+                    ],
+                    "preview": null,
+                    "record_type": "email_thread",
+                    "subject": "Project update",
+                    "unread_count": 1,
+                    "updated_at": "2026-07-15T12:30:00Z"
+                  },
+                  "meta": {
+                    "page_cursor": "MjAyNi0wNy0xNVQxMjozMDowMFp8NTU1NTU1NTUtNTU1NS01NTU1LTU1NTUtNTU1NTU1NTU1NTU1",
+                    "page_size": 25
+                  }
+                },
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/InboundThreadDetail"
+                    },
+                    "meta": {
+                      "$ref": "#/components/schemas/email_PaginationMeta"
+                    }
+                  },
+                  "required": [
+                    "data",
+                    "meta"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Thread summary and chronological messages."
+          },
+          "401": {
+            "$ref": "#/components/responses/email_UnauthorizedResponse"
+          },
+          "404": {
+            "$ref": "#/components/responses/email_NotFoundResponse"
+          },
+          "422": {
+            "$ref": "#/components/responses/ValidationErrorResponse"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "errors": [
+                    {
+                      "code": "10016",
+                      "detail": "Inbox threads are temporarily unavailable. Please try again later.",
+                      "title": "Service Unavailable"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/email_ErrorResponse"
+                }
+              }
+            },
+            "description": "Inbound thread storage is temporarily unavailable."
+          }
+        },
+        "summary": "Get a thread and a page of its messages",
+        "tags": [
+          "Email Inboxes"
+        ]
+      }
+    },
+    "/email_inboxes/{inbox_id}/threads/{thread_id}/labels": {
+      "delete": {
+        "description": "Removes one or more labels from a thread. Idempotent — removing a label\nthe thread does not carry is a no-op and still returns 200.\n",
+        "operationId": "RemoveEmailInboxThreadLabels",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/InboxIdPathParam"
+          },
+          {
+            "$ref": "#/components/parameters/ThreadIdPathParam"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "example": {
+                "labels": [
+                  "needs_review"
+                ]
+              },
+              "schema": {
+                "$ref": "#/components/schemas/LabelMutationRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/InboundThreadLabelResponse"
+          },
+          "401": {
+            "$ref": "#/components/responses/email_UnauthorizedResponse"
+          },
+          "404": {
+            "$ref": "#/components/responses/email_NotFoundResponse"
+          },
+          "422": {
+            "$ref": "#/components/responses/ValidationErrorResponse"
+          },
+          "503": {
+            "$ref": "#/components/responses/LabelServiceUnavailableResponse"
+          }
+        },
+        "summary": "Remove labels from an inbox thread",
+        "tags": [
+          "Email Inboxes"
+        ]
+      },
+      "post": {
+        "description": "Adds one or more mutable labels to a thread, letting an agent mark a\nwhole conversation (for example `needs_review`) without labelling each\nmessage individually.\n\nThread labels are independent of message labels: labelling a thread\ndoes not label its messages, and labelling a message does not label its\nthread. Idempotent and case-sensitive.\n",
+        "operationId": "AddEmailInboxThreadLabels",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/InboxIdPathParam"
+          },
+          {
+            "$ref": "#/components/parameters/ThreadIdPathParam"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "example": {
+                "labels": [
+                  "needs_review"
+                ]
+              },
+              "schema": {
+                "$ref": "#/components/schemas/LabelMutationRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/InboundThreadLabelResponse"
+          },
+          "401": {
+            "$ref": "#/components/responses/email_UnauthorizedResponse"
+          },
+          "404": {
+            "$ref": "#/components/responses/email_NotFoundResponse"
+          },
+          "422": {
+            "$ref": "#/components/responses/ValidationErrorResponse"
+          },
+          "503": {
+            "$ref": "#/components/responses/LabelServiceUnavailableResponse"
+          }
+        },
+        "summary": "Add labels to an inbox thread",
+        "tags": [
+          "Email Inboxes"
+        ]
+      }
+    }
+  },
+  "security": [
+    {
+      "bearerAuth": []
+    }
+  ],
+  "servers": [
+    {
+      "description": "Version 2.0.0 of the Telnyx API",
+      "url": "https://api.telnyx.com/v2"
+    }
+  ]
+}

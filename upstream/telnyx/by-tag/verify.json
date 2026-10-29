@@ -1,0 +1,2044 @@
+{
+  "components": {
+    "responses": {
+      "verify_GenericErrorResponse": {
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Errors"
+            }
+          }
+        },
+        "description": "Bad Request"
+      }
+    },
+    "schemas": {
+      "CreateMessageTemplateRequest": {
+        "description": "The request body when creating a message template.",
+        "properties": {
+          "text": {
+            "description": "The text content of the message template.",
+            "example": "Your {{app_name}} verification code is: {{code}}.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "text"
+        ],
+        "title": "CreateMessageTemplateRequest",
+        "type": "object"
+      },
+      "CreateVerificationRequest": {
+        "description": "The request body when creating a verification.",
+        "properties": {
+          "phone_number": {
+            "description": "+E164 formatted phone number.",
+            "example": "+13035551234",
+            "type": "string"
+          },
+          "timeout_secs": {
+            "description": "The number of seconds the verification code is valid for.",
+            "example": 300,
+            "type": "integer"
+          },
+          "verify_profile_id": {
+            "description": "The identifier of the associated Verify profile.",
+            "example": "12ade33a-21c0-473b-b055-b3c836e1c292",
+            "format": "uuid",
+            "type": "string"
+          }
+        },
+        "required": [
+          "phone_number",
+          "verify_profile_id"
+        ],
+        "title": "CreateVerificationRequest",
+        "type": "object"
+      },
+      "CreateVerificationRequestCall": {
+        "description": "The request body when creating a verification.",
+        "properties": {
+          "custom_code": {
+            "default": null,
+            "description": "Send a self-generated numeric code to the end-user",
+            "example": "43612",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "extension": {
+            "default": null,
+            "description": "Optional extension to dial after call is answered using DTMF digits. Valid digits are 0-9, A-D, *, and #. Pauses can be added using w (0.5s) and W (1s).",
+            "example": "1www2WABCDw9",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "phone_number": {
+            "description": "+E164 formatted phone number.",
+            "example": "+13035551234",
+            "type": "string"
+          },
+          "timeout_secs": {
+            "description": "The number of seconds the verification code is valid for.",
+            "example": 300,
+            "type": "integer"
+          },
+          "verify_profile_id": {
+            "description": "The identifier of the associated Verify profile.",
+            "example": "12ade33a-21c0-473b-b055-b3c836e1c292",
+            "format": "uuid",
+            "type": "string"
+          }
+        },
+        "required": [
+          "phone_number",
+          "verify_profile_id"
+        ],
+        "title": "CreateVerificationRequestCall",
+        "type": "object"
+      },
+      "CreateVerificationRequestSMS": {
+        "description": "The request body when creating a verification.",
+        "properties": {
+          "custom_code": {
+            "default": null,
+            "description": "Send a self-generated numeric code to the end-user",
+            "example": "43612",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "phone_number": {
+            "description": "+E164 formatted phone number.",
+            "example": "+13035551234",
+            "type": "string"
+          },
+          "timeout_secs": {
+            "description": "The number of seconds the verification code is valid for.",
+            "example": 300,
+            "type": "integer"
+          },
+          "verify_profile_id": {
+            "description": "The identifier of the associated Verify profile.",
+            "example": "12ade33a-21c0-473b-b055-b3c836e1c292",
+            "format": "uuid",
+            "type": "string"
+          }
+        },
+        "required": [
+          "phone_number",
+          "verify_profile_id"
+        ],
+        "title": "CreateVerificationRequestSMS",
+        "type": "object"
+      },
+      "CreateVerificationRequestWhatsapp": {
+        "description": "The request body when creating a WhatsApp verification.",
+        "properties": {
+          "custom_code": {
+            "default": null,
+            "description": "Send a self-generated numeric code to the end-user",
+            "example": "43612",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "phone_number": {
+            "description": "+E164 formatted phone number.",
+            "example": "+13035551234",
+            "type": "string"
+          },
+          "timeout_secs": {
+            "description": "The number of seconds the verification code is valid for.",
+            "example": 300,
+            "type": "integer"
+          },
+          "verify_profile_id": {
+            "description": "The identifier of the associated Verify profile.",
+            "example": "12ade33a-21c0-473b-b055-b3c836e1c292",
+            "format": "uuid",
+            "type": "string"
+          }
+        },
+        "required": [
+          "phone_number",
+          "verify_profile_id"
+        ],
+        "title": "CreateVerificationRequestWhatsapp",
+        "type": "object"
+      },
+      "CreateVerificationResponse": {
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/Verification"
+          }
+        },
+        "required": [
+          "data"
+        ],
+        "title": "CreateVerifyVerificationResponse",
+        "type": "object"
+      },
+      "CreateVerifyProfileCallRequest": {
+        "properties": {
+          "app_name": {
+            "description": "The name that identifies the application requesting 2fa in the verification message.",
+            "example": "Example Secure App",
+            "pattern": "^[A-Za-z0-9 -]{1,30}$",
+            "type": "string"
+          },
+          "code_length": {
+            "default": 5,
+            "description": "The length of the verify code to generate.",
+            "example": 6,
+            "type": "integer"
+          },
+          "default_verification_timeout_secs": {
+            "default": 300,
+            "description": "For every request that is initiated via this Verify profile, this sets the number of seconds before a verification request code expires. Once the verification request expires, the user cannot use the code to verify their identity.",
+            "example": 300,
+            "type": "integer"
+          },
+          "messaging_template_id": {
+            "description": "The message template identifier selected from /verify_profiles/templates",
+            "example": "0abb5b4f-459f-445a-bfcd-488998b7572d",
+            "format": "uuid",
+            "type": "string"
+          },
+          "whitelisted_destinations": {
+            "description": "Enabled country destinations to send verification codes. The elements in the list must be valid ISO 3166-1 alpha-2 country codes. If set to `[\"*\"]`, all destinations will be allowed. **Conditionally required:** this field must be provided when your organization is configured to require explicit whitelisted destinations; otherwise it is optional.",
+            "example": [
+              "US",
+              "CA"
+            ],
+            "items": {
+              "description": "ISO 3166-1 alpha-2 country code",
+              "pattern": "^[A-Z]{2}$",
+              "type": "string"
+            },
+            "type": "array"
+          }
+        },
+        "title": "CreateVerifyProfileCallRequest",
+        "type": "object"
+      },
+      "CreateVerifyProfileSMSRequest": {
+        "properties": {
+          "alpha_sender": {
+            "default": "Telnyx",
+            "description": "The alphanumeric sender ID to use when sending to destinations that require an alphanumeric sender ID.",
+            "pattern": "^[A-Za-z0-9 ]{1,11}$",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "app_name": {
+            "description": "The name that identifies the application requesting 2fa in the verification message.",
+            "example": "Example Secure App",
+            "pattern": "^[A-Za-z0-9 -]{1,30}$",
+            "type": "string"
+          },
+          "code_length": {
+            "default": 5,
+            "description": "The length of the verify code to generate.",
+            "example": 6,
+            "type": "integer"
+          },
+          "default_verification_timeout_secs": {
+            "default": 300,
+            "description": "For every request that is initiated via this Verify profile, this sets the number of seconds before a verification request code expires. Once the verification request expires, the user cannot use the code to verify their identity.",
+            "example": 300,
+            "type": "integer"
+          },
+          "messaging_template_id": {
+            "description": "The message template identifier selected from /verify_profiles/templates",
+            "example": "0abb5b4f-459f-445a-bfcd-488998b7572d",
+            "format": "uuid",
+            "type": "string"
+          },
+          "whitelisted_destinations": {
+            "description": "Enabled country destinations to send verification codes. The elements in the list must be valid ISO 3166-1 alpha-2 country codes. If set to `[\"*\"]`, all destinations will be allowed. **Conditionally required:** this field must be provided when your organization is configured to require explicit whitelisted destinations; otherwise it is optional.",
+            "example": [
+              "US",
+              "CA"
+            ],
+            "items": {
+              "description": "ISO 3166-1 alpha-2 country code",
+              "pattern": "^[A-Z]{2}$",
+              "type": "string"
+            },
+            "type": "array"
+          }
+        },
+        "title": "CreateVerifyProfileSMSRequest",
+        "type": "object"
+      },
+      "CreateVerifyProfileSettingsRequest": {
+        "properties": {
+          "app_name": {
+            "description": "The name that identifies the application requesting 2fa in the verification message.",
+            "example": "Example Secure App",
+            "pattern": "^[A-Za-z0-9 -]{1,30}$",
+            "type": "string"
+          },
+          "default_verification_timeout_secs": {
+            "default": 300,
+            "description": "For every request that is initiated via this Verify profile, this sets the number of seconds before a verification request code expires. Once the verification request expires, the user cannot use the code to verify their identity.",
+            "example": 300,
+            "type": "integer"
+          },
+          "whitelisted_destinations": {
+            "description": "Enabled country destinations to send verification codes. The elements in the list must be valid ISO 3166-1 alpha-2 country codes. If set to `[\"*\"]`, all destinations will be allowed. **Conditionally required:** this field must be provided when your organization is configured to require explicit whitelisted destinations; otherwise it is optional.",
+            "example": [
+              "US",
+              "CA"
+            ],
+            "items": {
+              "description": "ISO 3166-1 alpha-2 country code",
+              "pattern": "^[A-Z]{2}$",
+              "type": "string"
+            },
+            "type": "array"
+          }
+        },
+        "title": "CreateVerifyProfileSettingsRequest",
+        "type": "object"
+      },
+      "CreateVerifyProfileSettingsWhatsAppRequest": {
+        "properties": {
+          "default_verification_timeout_secs": {
+            "default": 300,
+            "description": "For every request that is initiated via this Verify profile, this sets the number of seconds before a verification request code expires. Once the verification request expires, the user cannot use the code to verify their identity.",
+            "example": 300,
+            "type": "integer"
+          },
+          "sender_phone_number": {
+            "default": null,
+            "description": "Phone number registered on the customer WABA to send OTPs from",
+            "example": "+13035551234",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "template_id": {
+            "default": null,
+            "description": "Customer pre-approved authentication template ID registered on Meta",
+            "example": "authentication_template_id",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "waba_id": {
+            "default": null,
+            "description": "Customer Meta WABA ID for Bring-Your-Own-WABA sending",
+            "example": "1234567890",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "whitelisted_destinations": {
+            "description": "Enabled country destinations to send verification codes. The elements in the list must be valid ISO 3166-1 alpha-2 country codes. If set to `[\"*\"]`, all destinations will be allowed. **Conditionally required:** this field must be provided when your organization is configured to require explicit whitelisted destinations; otherwise it is optional.",
+            "example": [
+              "US",
+              "CA"
+            ],
+            "items": {
+              "description": "ISO 3166-1 alpha-2 country code",
+              "pattern": "^[A-Z]{2}$",
+              "type": "string"
+            },
+            "type": "array"
+          }
+        },
+        "title": "CreateVerifyProfileSettingsWhatsAppRequest",
+        "type": "object"
+      },
+      "Error": {
+        "example": {
+          "code": "20207",
+          "description": "The street address provided is invalid.",
+          "source": {
+            "pointer": "/street_address"
+          },
+          "title": "Invalid street address"
+        },
+        "properties": {
+          "code": {
+            "type": "string",
+            "x-format": "int64"
+          },
+          "description": {
+            "type": "string"
+          },
+          "detail": {
+            "description": "A human-readable explanation of the error.",
+            "type": "string"
+          },
+          "meta": {
+            "additionalProperties": true,
+            "type": "object"
+          },
+          "source": {
+            "properties": {
+              "parameter": {
+                "description": "Indicates which query parameter caused the error.",
+                "type": "string"
+              },
+              "pointer": {
+                "description": "JSON pointer (RFC6901) to the offending entity.",
+                "format": "json-pointer",
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
+          "title": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "title"
+        ],
+        "type": "object"
+      },
+      "Errors": {
+        "properties": {
+          "errors": {
+            "items": {
+              "$ref": "#/components/schemas/Error"
+            },
+            "type": "array"
+          }
+        },
+        "type": "object"
+      },
+      "ListVerificationsResponse": {
+        "properties": {
+          "data": {
+            "items": {
+              "$ref": "#/components/schemas/Verification"
+            },
+            "type": "array"
+          },
+          "meta": {
+            "$ref": "#/components/schemas/verify_Meta"
+          }
+        },
+        "required": [
+          "data",
+          "meta"
+        ],
+        "title": "ListVerificationsResponse",
+        "type": "object"
+      },
+      "ListVerifyProfileMessageTemplateResponse": {
+        "description": "A list of Verify profile message templates",
+        "properties": {
+          "data": {
+            "items": {
+              "$ref": "#/components/schemas/VerifyProfileMessageTemplateResponse"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "data"
+        ],
+        "title": "ListVerifyProfileMessageTemplateResponse",
+        "type": "object"
+      },
+      "ListVerifyProfilesResponse": {
+        "description": "A paginated list of Verify profiles",
+        "properties": {
+          "data": {
+            "items": {
+              "$ref": "#/components/schemas/VerifyProfileResponse"
+            },
+            "type": "array"
+          },
+          "meta": {
+            "$ref": "#/components/schemas/verify_Meta"
+          }
+        },
+        "required": [
+          "data",
+          "meta"
+        ],
+        "title": "ListVerifyProfilesResponse",
+        "type": "object"
+      },
+      "MessageTemplateResponseDataWrapper": {
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/VerifyProfileMessageTemplateResponse"
+          }
+        },
+        "title": "MessageTemplateResponseDataWrapper",
+        "type": "object"
+      },
+      "RetrieveVerificationResponse": {
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/Verification"
+          }
+        },
+        "required": [
+          "data"
+        ],
+        "title": "RetrieveVerificationResponse",
+        "type": "object"
+      },
+      "UpdateMessageTemplateRequest": {
+        "description": "The request body when updating a message template.",
+        "properties": {
+          "text": {
+            "description": "The text content of the message template.",
+            "example": "Your {{app_name}} verification code is: {{code}}.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "text"
+        ],
+        "title": "UpdateMessageTemplateRequest",
+        "type": "object"
+      },
+      "UpdateVerifyProfileCallRequest": {
+        "properties": {
+          "app_name": {
+            "description": "The name that identifies the application requesting 2fa in the verification message.",
+            "example": "Example Secure App",
+            "pattern": "^[A-Za-z0-9 -]{1,30}$",
+            "type": "string"
+          },
+          "code_length": {
+            "default": 5,
+            "description": "The length of the verify code to generate.",
+            "example": 6,
+            "type": "integer"
+          },
+          "default_verification_timeout_secs": {
+            "default": 300,
+            "description": "For every request that is initiated via this Verify profile, this sets the number of seconds before a verification request code expires. Once the verification request expires, the user cannot use the code to verify their identity.",
+            "example": 300,
+            "type": "integer"
+          },
+          "messaging_template_id": {
+            "description": "The message template identifier selected from /verify_profiles/templates",
+            "example": "0abb5b4f-459f-445a-bfcd-488998b7572d",
+            "format": "uuid",
+            "type": "string"
+          },
+          "whitelisted_destinations": {
+            "description": "Enabled country destinations to send verification codes. The elements in the list must be valid ISO 3166-1 alpha-2 country codes. If set to `[\"*\"]`, all destinations will be allowed. **Conditionally required:** this field must be provided when your organization is configured to require explicit whitelisted destinations; otherwise it is optional.",
+            "example": [
+              "US",
+              "CA"
+            ],
+            "items": {
+              "description": "ISO 3166-1 alpha-2 country code",
+              "pattern": "^[A-Z]{2}$",
+              "type": "string"
+            },
+            "type": "array"
+          }
+        },
+        "title": "UpdateVerifyProfileCallRequest",
+        "type": "object"
+      },
+      "UpdateVerifyProfileSMSRequest": {
+        "properties": {
+          "alpha_sender": {
+            "default": "Telnyx",
+            "description": "The alphanumeric sender ID to use when sending to destinations that require an alphanumeric sender ID.",
+            "pattern": "^[A-Za-z0-9 ]{1,11}$",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "app_name": {
+            "description": "The name that identifies the application requesting 2fa in the verification message.",
+            "example": "Example Secure App",
+            "pattern": "^[A-Za-z0-9 -]{1,30}$",
+            "type": "string"
+          },
+          "code_length": {
+            "default": 5,
+            "description": "The length of the verify code to generate.",
+            "example": 6,
+            "type": "integer"
+          },
+          "default_verification_timeout_secs": {
+            "default": 300,
+            "description": "For every request that is initiated via this Verify profile, this sets the number of seconds before a verification request code expires. Once the verification request expires, the user cannot use the code to verify their identity.",
+            "example": 300,
+            "type": "integer"
+          },
+          "messaging_template_id": {
+            "description": "The message template identifier selected from /verify_profiles/templates",
+            "example": "0abb5b4f-459f-445a-bfcd-488998b7572d",
+            "format": "uuid",
+            "type": "string"
+          },
+          "whitelisted_destinations": {
+            "description": "Enabled country destinations to send verification codes. The elements in the list must be valid ISO 3166-1 alpha-2 country codes. If set to `[\"*\"]`, all destinations will be allowed. **Conditionally required:** this field must be provided when your organization is configured to require explicit whitelisted destinations; otherwise it is optional.",
+            "example": [
+              "US",
+              "CA"
+            ],
+            "items": {
+              "description": "ISO 3166-1 alpha-2 country code",
+              "pattern": "^[A-Z]{2}$",
+              "type": "string"
+            },
+            "type": "array"
+          }
+        },
+        "title": "UpdateVerifyProfileSMSRequest",
+        "type": "object"
+      },
+      "UpdateVerifyProfileSettingsWhatsAppRequest": {
+        "properties": {
+          "default_verification_timeout_secs": {
+            "default": 300,
+            "description": "For every request that is initiated via this Verify profile, this sets the number of seconds before a verification request code expires. Once the verification request expires, the user cannot use the code to verify their identity.",
+            "example": 300,
+            "type": "integer"
+          },
+          "sender_phone_number": {
+            "default": null,
+            "description": "Phone number registered on the customer WABA to send OTPs from",
+            "example": "+13035551234",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "template_id": {
+            "default": null,
+            "description": "Customer pre-approved authentication template ID registered on Meta",
+            "example": "authentication_template_id",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "waba_id": {
+            "default": null,
+            "description": "Customer Meta WABA ID for Bring-Your-Own-WABA sending",
+            "example": "1234567890",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "whitelisted_destinations": {
+            "description": "Enabled country destinations to send verification codes. The elements in the list must be valid ISO 3166-1 alpha-2 country codes. If set to `[\"*\"]`, all destinations will be allowed. **Conditionally required:** this field must be provided when your organization is configured to require explicit whitelisted destinations; otherwise it is optional.",
+            "example": [
+              "US",
+              "CA"
+            ],
+            "items": {
+              "description": "ISO 3166-1 alpha-2 country code",
+              "pattern": "^[A-Z]{2}$",
+              "type": "string"
+            },
+            "type": "array"
+          }
+        },
+        "title": "UpdateVerifyProfileSettingsWhatsAppRequest",
+        "type": "object"
+      },
+      "Verification": {
+        "properties": {
+          "created_at": {
+            "example": "2020-09-14T17:03:32.965812",
+            "type": "string"
+          },
+          "custom_code": {
+            "default": null,
+            "description": "Send a self-generated numeric code to the end-user",
+            "example": "43612",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "id": {
+            "example": "12ade33a-21c0-473b-b055-b3c836e1c292",
+            "format": "uuid",
+            "type": "string"
+          },
+          "phone_number": {
+            "description": "+E164 formatted phone number.",
+            "example": "+13035551234",
+            "type": "string"
+          },
+          "record_type": {
+            "$ref": "#/components/schemas/VerificationRecordType"
+          },
+          "status": {
+            "$ref": "#/components/schemas/VerificationStatus"
+          },
+          "timeout_secs": {
+            "description": "This is the number of seconds before the code of the request is expired. Once this request has expired, the code will no longer verify the user. Note: this will override the `default_verification_timeout_secs` on the Verify profile.",
+            "example": 300,
+            "type": "integer"
+          },
+          "type": {
+            "$ref": "#/components/schemas/VerificationType"
+          },
+          "updated_at": {
+            "example": "2020-09-14T17:03:32.965812",
+            "type": "string"
+          },
+          "verify_profile_id": {
+            "description": "The identifier of the associated Verify profile.",
+            "example": "12ade33a-21c0-473b-b055-b3c836e1c292",
+            "format": "uuid",
+            "type": "string"
+          }
+        },
+        "title": "Verification",
+        "type": "object"
+      },
+      "VerificationProfileRecordType": {
+        "description": "The possible verification profile record types.",
+        "enum": [
+          "verification_profile"
+        ],
+        "example": "verification_profile",
+        "title": "VerificationProfileRecordType",
+        "type": "string"
+      },
+      "VerificationRecordType": {
+        "description": "The possible verification record types.",
+        "enum": [
+          "verification"
+        ],
+        "example": "verification",
+        "title": "VerificationRecordType",
+        "type": "string"
+      },
+      "VerificationStatus": {
+        "description": "The possible statuses of the verification request.",
+        "enum": [
+          "pending",
+          "accepted",
+          "invalid",
+          "expired",
+          "error"
+        ],
+        "example": "accepted",
+        "title": "VerificationStatus",
+        "type": "string"
+      },
+      "VerificationType": {
+        "description": "The possible types of verification.",
+        "enum": [
+          "sms",
+          "call",
+          "flashcall",
+          "whatsapp"
+        ],
+        "example": "sms",
+        "title": "VerificationType",
+        "type": "string"
+      },
+      "VerifyProfileCallResponse": {
+        "properties": {
+          "app_name": {
+            "description": "The name that identifies the application requesting 2fa in the verification message.",
+            "example": "Example Secure App",
+            "pattern": "^[A-Za-z0-9 -]{1,30}$",
+            "type": "string"
+          },
+          "code_length": {
+            "default": 5,
+            "description": "The length of the verify code to generate.",
+            "example": 6,
+            "type": "integer"
+          },
+          "default_verification_timeout_secs": {
+            "default": 300,
+            "description": "For every request that is initiated via this Verify profile, this sets the number of seconds before a verification request code expires. Once the verification request expires, the user cannot use the code to verify their identity.",
+            "example": 300,
+            "type": "integer"
+          },
+          "messaging_template_id": {
+            "description": "The message template identifier selected from /verify_profiles/templates",
+            "example": "0abb5b4f-459f-445a-bfcd-488998b7572d",
+            "format": "uuid",
+            "type": "string"
+          },
+          "whitelisted_destinations": {
+            "description": "Enabled country destinations to send verification codes. The elements in the list must be valid ISO 3166-1 alpha-2 country codes. If set to `[\"*\"]`, all destinations will be allowed. **Conditionally required:** this field must be provided when your organization is configured to require explicit whitelisted destinations; otherwise it is optional.",
+            "example": [
+              "US",
+              "CA"
+            ],
+            "items": {
+              "description": "ISO 3166-1 alpha-2 country code",
+              "pattern": "^[A-Z]{2}$",
+              "type": "string"
+            },
+            "type": "array"
+          }
+        },
+        "title": "VerifyProfileCallResponse",
+        "type": "object"
+      },
+      "VerifyProfileFlashcallResponse": {
+        "properties": {
+          "app_name": {
+            "description": "The name that identifies the application requesting 2fa in the verification message.",
+            "example": "Example Secure App",
+            "pattern": "^[A-Za-z0-9 -]{1,30}$",
+            "type": "string"
+          },
+          "default_verification_timeout_secs": {
+            "default": 300,
+            "description": "For every request that is initiated via this Verify profile, this sets the number of seconds before a verification request code expires. Once the verification request expires, the user cannot use the code to verify their identity.",
+            "example": 300,
+            "type": "integer"
+          }
+        },
+        "title": "VerifyProfileFlashcallResponse",
+        "type": "object"
+      },
+      "VerifyProfileMessageTemplateResponse": {
+        "properties": {
+          "id": {
+            "example": "0abb5b4f-459f-445a-bfcd-488998b7572d",
+            "format": "uuid",
+            "type": "string"
+          },
+          "text": {
+            "example": "Your {{app_name}} verification code is: {{code}}.",
+            "type": "string"
+          }
+        },
+        "title": "VerifyProfileResponse",
+        "type": "object"
+      },
+      "VerifyProfileResponse": {
+        "properties": {
+          "call": {
+            "$ref": "#/components/schemas/VerifyProfileCallResponse",
+            "additionalProperties": true,
+            "type": "object"
+          },
+          "created_at": {
+            "example": "2020-09-14T17:03:32.965812",
+            "type": "string"
+          },
+          "daily_spend_limit": {
+            "description": "The maximum daily spend allowed on this verify profile, in USD.",
+            "example": 100,
+            "minimum": 0,
+            "type": "number"
+          },
+          "daily_spend_limit_enabled": {
+            "default": false,
+            "description": "Whether the daily spend limit is enforced for this verify profile.",
+            "example": true,
+            "type": "boolean"
+          },
+          "flashcall": {
+            "$ref": "#/components/schemas/VerifyProfileFlashcallResponse",
+            "additionalProperties": true,
+            "type": "object"
+          },
+          "id": {
+            "example": "12ade33a-21c0-473b-b055-b3c836e1c292",
+            "format": "uuid",
+            "type": "string"
+          },
+          "language": {
+            "example": "en-US",
+            "type": "string"
+          },
+          "name": {
+            "example": "Test Profile",
+            "type": "string"
+          },
+          "record_type": {
+            "$ref": "#/components/schemas/VerificationProfileRecordType"
+          },
+          "sms": {
+            "$ref": "#/components/schemas/VerifyProfileSMSResponse",
+            "additionalProperties": true,
+            "type": "object"
+          },
+          "updated_at": {
+            "example": "2020-09-14T17:03:32.965812",
+            "type": "string"
+          },
+          "webhook_failover_url": {
+            "example": "http://example.com/webhook/failover",
+            "type": "string"
+          },
+          "webhook_url": {
+            "example": "http://example.com/webhook",
+            "type": "string"
+          },
+          "whatsapp": {
+            "$ref": "#/components/schemas/VerifyProfileWhatsAppResponse",
+            "additionalProperties": true,
+            "type": "object"
+          }
+        },
+        "title": "VerifyProfileResponse",
+        "type": "object"
+      },
+      "VerifyProfileResponseDataWrapper": {
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/VerifyProfileResponse",
+            "additionalProperties": true,
+            "type": "object"
+          }
+        },
+        "title": "VerifyProfileResponseDataWrapper",
+        "type": "object"
+      },
+      "VerifyProfileSMSResponse": {
+        "properties": {
+          "alpha_sender": {
+            "default": "Telnyx",
+            "description": "The alphanumeric sender ID to use when sending to destinations that require an alphanumeric sender ID.",
+            "pattern": "^[A-Za-z0-9 ]{1,11}$",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "app_name": {
+            "description": "The name that identifies the application requesting 2fa in the verification message.",
+            "example": "Example Secure App",
+            "pattern": "^[A-Za-z0-9 -]{1,30}$",
+            "type": "string"
+          },
+          "code_length": {
+            "default": 5,
+            "description": "The length of the verify code to generate.",
+            "example": 6,
+            "type": "integer"
+          },
+          "default_verification_timeout_secs": {
+            "default": 300,
+            "description": "For every request that is initiated via this Verify profile, this sets the number of seconds before a verification request code expires. Once the verification request expires, the user cannot use the code to verify their identity.",
+            "example": 300,
+            "type": "integer"
+          },
+          "messaging_template_id": {
+            "description": "The message template identifier selected from /verify_profiles/templates",
+            "example": "0abb5b4f-459f-445a-bfcd-488998b7572d",
+            "format": "uuid",
+            "type": "string"
+          },
+          "whitelisted_destinations": {
+            "description": "Enabled country destinations to send verification codes. The elements in the list must be valid ISO 3166-1 alpha-2 country codes. If set to `[\"*\"]`, all destinations will be allowed. **Conditionally required:** this field must be provided when your organization is configured to require explicit whitelisted destinations; otherwise it is optional.",
+            "example": [
+              "US",
+              "CA"
+            ],
+            "items": {
+              "description": "ISO 3166-1 alpha-2 country code",
+              "pattern": "^[A-Z]{2}$",
+              "type": "string"
+            },
+            "type": "array"
+          }
+        },
+        "title": "VerifyProfileSMSResponse",
+        "type": "object"
+      },
+      "VerifyProfileWhatsAppResponse": {
+        "properties": {
+          "app_name": {
+            "description": "The name that identifies the application requesting 2fa in the verification message.",
+            "example": "Example Secure App",
+            "pattern": "^[A-Za-z0-9 -]{1,30}$",
+            "type": "string"
+          },
+          "code_length": {
+            "default": 5,
+            "description": "The length of the verify code to generate.",
+            "example": 6,
+            "type": "integer"
+          },
+          "default_verification_timeout_secs": {
+            "default": 300,
+            "description": "For every request that is initiated via this Verify profile, this sets the number of seconds before a verification request code expires. Once the verification request expires, the user cannot use the code to verify their identity.",
+            "example": 300,
+            "type": "integer"
+          },
+          "messaging_template_id": {
+            "description": "The message template identifier selected from /verify_profiles/templates",
+            "example": "0abb5b4f-459f-445a-bfcd-488998b7572d",
+            "format": "uuid",
+            "type": "string"
+          },
+          "sender_phone_number": {
+            "default": null,
+            "description": "Phone number registered on the customer WABA to send OTPs from",
+            "example": "+13035551234",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "template_id": {
+            "default": null,
+            "description": "Customer pre-approved authentication template ID registered on Meta",
+            "example": "authentication_template_id",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "waba_id": {
+            "default": null,
+            "description": "Customer Meta WABA ID for Bring-Your-Own-WABA sending",
+            "example": "1234567890",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "whitelisted_destinations": {
+            "description": "Enabled country destinations to send verification codes. The elements in the list must be valid ISO 3166-1 alpha-2 country codes. If set to `[\"*\"]`, all destinations will be allowed. **Conditionally required:** this field must be provided when your organization is configured to require explicit whitelisted destinations; otherwise it is optional.",
+            "example": [
+              "US",
+              "CA"
+            ],
+            "items": {
+              "description": "ISO 3166-1 alpha-2 country code",
+              "pattern": "^[A-Z]{2}$",
+              "type": "string"
+            },
+            "type": "array"
+          }
+        },
+        "title": "VerifyProfileWhatsAppResponse",
+        "type": "object"
+      },
+      "VerifyVerificationCodeRequestById": {
+        "properties": {
+          "code": {
+            "description": "This is the code the user submits for verification.",
+            "example": "17686",
+            "type": "string"
+          },
+          "status": {
+            "description": "Identifies if the verification code has been accepted or rejected. Only permitted if custom_code was used for the verification.",
+            "enum": [
+              "accepted",
+              "rejected"
+            ],
+            "example": "accepted",
+            "type": "string"
+          }
+        },
+        "title": "VerifyVerificationCodeRequestById",
+        "type": "object"
+      },
+      "VerifyVerificationCodeRequestByPhoneNumber": {
+        "properties": {
+          "code": {
+            "description": "This is the code the user submits for verification.",
+            "example": "17686",
+            "type": "string"
+          },
+          "verify_profile_id": {
+            "description": "The identifier of the associated Verify profile.",
+            "example": "12ade33a-21c0-473b-b055-b3c836e1c292",
+            "format": "uuid",
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "verify_profile_id"
+        ],
+        "title": "VerifyVerificationCodeRequestByPhoneNumber",
+        "type": "object"
+      },
+      "VerifyVerificationCodeResponse": {
+        "properties": {
+          "data": {
+            "properties": {
+              "phone_number": {
+                "description": "+E164 formatted phone number.",
+                "example": "+13035551234",
+                "type": "string"
+              },
+              "response_code": {
+                "description": "Identifies if the verification code has been accepted or rejected.",
+                "enum": [
+                  "accepted",
+                  "rejected"
+                ],
+                "example": "accepted",
+                "type": "string"
+              }
+            },
+            "required": [
+              "phone_number",
+              "response_code"
+            ],
+            "type": "object"
+          }
+        },
+        "required": [
+          "data"
+        ],
+        "title": "VerifyVerificationCodeResponse",
+        "type": "object"
+      },
+      "verify_Meta": {
+        "properties": {
+          "page_number": {
+            "example": 2,
+            "type": "integer"
+          },
+          "page_size": {
+            "example": 25,
+            "type": "integer"
+          },
+          "total_pages": {
+            "example": 3,
+            "type": "integer"
+          },
+          "total_results": {
+            "example": 55,
+            "type": "integer"
+          }
+        },
+        "required": [
+          "total_pages",
+          "total_results",
+          "page_size",
+          "page_number"
+        ],
+        "type": "object"
+      }
+    },
+    "securitySchemes": {
+      "BearerAuth": {
+        "bearerFormat": "API key",
+        "description": "Telnyx API key supplied as `Authorization: Bearer \u003ctoken\u003e`. In production, auth may be validated by the API gateway and forwarded via Telnyx auth headers.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "Payment": {
+        "description": "Machine Payment Protocol credential used on paid retries, sent as `Authorization: Payment ...`. Obtained by paying a challenge returned in the `WWW-Authenticate` header of a 402 response. This is not a Telnyx API key; initial challenge requests use standard bearer authentication instead.",
+        "in": "header",
+        "name": "Authorization",
+        "type": "apiKey"
+      },
+      "agent-memory_bearerAuth": {
+        "description": "Telnyx API key",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "bearerAuth": {
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "branded-calling_bearerAuth": {
+        "description": "Telnyx API key. Generate one at https://portal.telnyx.com/#/app/api-keys.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "collections_bearerAuth": {
+        "description": "Telnyx API key. Collections and results are automatically scoped to the authenticated user's organization.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "number-reputation_bearerAuth": {
+        "description": "Telnyx API key. Generate one at https://portal.telnyx.com/#/app/api-keys.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "oauthClientAuth": {
+        "description": "OAuth 2.0 authentication for Telnyx API and MCP integrations",
+        "flows": {
+          "authorizationCode": {
+            "authorizationUrl": "https://api.telnyx.com/v2/oauth/authorize",
+            "refreshUrl": "https://api.telnyx.com/v2/oauth/token",
+            "scopes": {
+              "admin": "Administrative access to Telnyx resources"
+            },
+            "tokenUrl": "https://api.telnyx.com/v2/oauth/token"
+          },
+          "clientCredentials": {
+            "scopes": {
+              "admin": "Administrative access to Telnyx resources"
+            },
+            "tokenUrl": "https://api.telnyx.com/v2/oauth/token"
+          }
+        },
+        "type": "oauth2"
+      },
+      "outbound-voice-profiles_bearerAuth": {
+        "bearerFormat": "JWT",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "pay-connectors_bearerAuth": {
+        "description": "Telnyx API key, not the processor bearer token.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "pronunciation-dicts_bearerAuth": {
+        "description": "Telnyx API v2 key. Obtain from https://portal.telnyx.com",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "rcs-registration_bearerAuth": {
+        "bearerFormat": "API key",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "stored-payment-transactions_bearerAuth": {
+        "bearerFormat": "JWT",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "telnyxApiKey": {
+        "description": "Management-only Telnyx account credential.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "transcriptions-search_bearerAuth": {
+        "description": "Telnyx API key. Results are automatically scoped to the authenticated user's organization.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "web-search_bearerAuth": {
+        "description": "Telnyx API key",
+        "scheme": "bearer",
+        "type": "http"
+      }
+    }
+  },
+  "info": {
+    "contact": {
+      "email": "support@telnyx.com"
+    },
+    "description": "SIP trunking, SMS, MMS, Call Control and Telephony Data Services.",
+    "title": "Telnyx API",
+    "version": "2.0.0",
+    "x-endpoint-cost": "light",
+    "x-latency-category": "responsive"
+  },
+  "openapi": "3.1.0",
+  "paths": {
+    "/verifications/by_phone_number/{phone_number}": {
+      "get": {
+        "description": "Returns a paginated list of verifications associated with the specified phone number.",
+        "operationId": "ListVerifications",
+        "parameters": [
+          {
+            "description": "The phone number associated with the verifications to retrieve.",
+            "in": "path",
+            "name": "phone_number",
+            "required": true,
+            "schema": {
+              "description": "+E164 formatted phone number.",
+              "example": "+13035551234",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ListVerificationsResponse"
+                }
+              }
+            },
+            "description": "Expected verifications response to a valid request."
+          },
+          "400": {
+            "$ref": "#/components/responses/verify_GenericErrorResponse"
+          }
+        },
+        "summary": "List verifications by phone number",
+        "tags": [
+          "Verify"
+        ]
+      }
+    },
+    "/verifications/by_phone_number/{phone_number}/actions/verify": {
+      "post": {
+        "description": "Submits a verification code for the specified phone number and Verify profile. The response indicates whether the code was accepted or rejected.",
+        "operationId": "VerifyVerificationCodeByPhoneNumber",
+        "parameters": [
+          {
+            "description": "The phone number associated with the verification code being verified.",
+            "in": "path",
+            "name": "phone_number",
+            "required": true,
+            "schema": {
+              "description": "+E164 formatted phone number.",
+              "example": "+13035551234",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/VerifyVerificationCodeRequestByPhoneNumber"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/VerifyVerificationCodeResponse"
+                }
+              }
+            },
+            "description": "Expected verify response to a valid request."
+          },
+          "400": {
+            "$ref": "#/components/responses/verify_GenericErrorResponse"
+          }
+        },
+        "summary": "Verify verification code by phone number",
+        "tags": [
+          "Verify"
+        ]
+      }
+    },
+    "/verifications/call": {
+      "post": {
+        "description": "Starts a verification for the specified phone number and delivers its code in a voice call using the selected Verify profile. Returns the pending verification record.",
+        "operationId": "CreateVerificationCall",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateVerificationRequestCall"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "data": {
+                    "created_at": "2020-09-14T17:03:32.965812",
+                    "id": "12ade33a-21c0-473b-b055-b3c836e1c292",
+                    "phone_number": "+13035551234",
+                    "record_type": "verification",
+                    "status": "pending",
+                    "timeout_secs": 300,
+                    "type": "call",
+                    "updated_at": "2020-09-14T17:03:32.965812",
+                    "verify_profile_id": "12ade33a-21c0-473b-b055-b3c836e1c292"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/CreateVerificationResponse"
+                }
+              }
+            },
+            "description": "Expected verifications response to a valid request."
+          },
+          "400": {
+            "$ref": "#/components/responses/verify_GenericErrorResponse"
+          }
+        },
+        "summary": "Trigger Call verification",
+        "tags": [
+          "Verify"
+        ]
+      }
+    },
+    "/verifications/flashcall": {
+      "post": {
+        "description": "Starts a verification for the specified phone number and places a brief call with the code embedded in the caller ID. Returns the pending verification record.",
+        "operationId": "CreateFlashcallVerification",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateVerificationRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "data": {
+                    "created_at": "2020-09-14T17:03:32.965812",
+                    "id": "12ade33a-21c0-473b-b055-b3c836e1c292",
+                    "phone_number": "+13035551234",
+                    "record_type": "verification",
+                    "status": "pending",
+                    "timeout_secs": 300,
+                    "type": "flashcall",
+                    "updated_at": "2020-09-14T17:03:32.965812",
+                    "verify_profile_id": "12ade33a-21c0-473b-b055-b3c836e1c292"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/CreateVerificationResponse"
+                }
+              }
+            },
+            "description": "Expected verifications response to a valid request."
+          },
+          "400": {
+            "$ref": "#/components/responses/verify_GenericErrorResponse"
+          }
+        },
+        "summary": "Trigger Flash call verification",
+        "tags": [
+          "Verify"
+        ]
+      }
+    },
+    "/verifications/sms": {
+      "post": {
+        "description": "Starts a verification for the specified phone number and sends its code by SMS using the selected Verify profile. Returns the pending verification record.",
+        "operationId": "CreateVerificationSms",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateVerificationRequestSMS"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CreateVerificationResponse"
+                }
+              }
+            },
+            "description": "Expected verifications response to a valid request."
+          },
+          "400": {
+            "$ref": "#/components/responses/verify_GenericErrorResponse"
+          }
+        },
+        "summary": "Trigger SMS verification",
+        "tags": [
+          "Verify"
+        ]
+      }
+    },
+    "/verifications/whatsapp": {
+      "post": {
+        "description": "Starts a verification for the specified phone number and sends its code over WhatsApp using the selected Verify profile. Returns the pending verification record.",
+        "operationId": "CreateWhatsappVerification",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateVerificationRequestWhatsapp"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "data": {
+                    "created_at": "2020-09-14T17:03:32.965812",
+                    "custom_code": "43612",
+                    "id": "12ade33a-21c0-473b-b055-b3c836e1c292",
+                    "phone_number": "+13035551234",
+                    "record_type": "verification",
+                    "status": "pending",
+                    "timeout_secs": 300,
+                    "type": "whatsapp",
+                    "updated_at": "2020-09-14T17:03:32.965812",
+                    "verify_profile_id": "12ade33a-21c0-473b-b055-b3c836e1c292"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/CreateVerificationResponse"
+                }
+              }
+            },
+            "description": "Expected verifications response to a valid request."
+          },
+          "400": {
+            "$ref": "#/components/responses/verify_GenericErrorResponse"
+          }
+        },
+        "summary": "Trigger WhatsApp verification",
+        "tags": [
+          "Verify"
+        ]
+      }
+    },
+    "/verifications/{verification_id}": {
+      "get": {
+        "description": "Returns the verification identified by ID, including its channel, phone number, Verify profile, timeout, and current status.",
+        "operationId": "RetrieveVerification",
+        "parameters": [
+          {
+            "description": "The identifier of the verification to retrieve.",
+            "in": "path",
+            "name": "verification_id",
+            "required": true,
+            "schema": {
+              "example": "12ade33a-21c0-473b-b055-b3c836e1c292",
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RetrieveVerificationResponse"
+                }
+              }
+            },
+            "description": "Expected verifications response to a valid request."
+          },
+          "400": {
+            "$ref": "#/components/responses/verify_GenericErrorResponse"
+          }
+        },
+        "summary": "Retrieve verification",
+        "tags": [
+          "Verify"
+        ]
+      }
+    },
+    "/verifications/{verification_id}/actions/verify": {
+      "post": {
+        "description": "Checks the supplied code, or the supplied status for a custom-code verification, against the verification identified by ID. The response indicates whether the verification was accepted or rejected.",
+        "operationId": "VerifyVerificationCodeById",
+        "parameters": [
+          {
+            "description": "The identifier of the verification to retrieve.",
+            "in": "path",
+            "name": "verification_id",
+            "required": true,
+            "schema": {
+              "example": "12ade33a-21c0-473b-b055-b3c836e1c292",
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/VerifyVerificationCodeRequestById"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/VerifyVerificationCodeResponse"
+                }
+              }
+            },
+            "description": "Expected verify response to a valid request."
+          },
+          "400": {
+            "$ref": "#/components/responses/verify_GenericErrorResponse"
+          }
+        },
+        "summary": "Verify verification code by ID",
+        "tags": [
+          "Verify"
+        ]
+      }
+    },
+    "/verify_profiles": {
+      "get": {
+        "description": "Gets a paginated list of Verify profiles.",
+        "operationId": "ListProfiles",
+        "parameters": [
+          {
+            "description": "Consolidated filter parameter (deepObject style). Originally: filter[name]",
+            "explode": true,
+            "in": "query",
+            "name": "filter",
+            "required": false,
+            "schema": {
+              "properties": {
+                "name": {
+                  "description": "Optional filter for profile names.",
+                  "title": "filter[name]",
+                  "type": "string"
+                }
+              },
+              "type": "object"
+            },
+            "style": "deepObject"
+          },
+          {
+            "description": "Consolidated page parameter (deepObject style). Originally: page[size], page[number]",
+            "explode": true,
+            "in": "query",
+            "name": "page",
+            "required": false,
+            "schema": {
+              "properties": {
+                "number": {
+                  "default": 1,
+                  "title": "page[number]",
+                  "type": "integer"
+                },
+                "size": {
+                  "default": 25,
+                  "title": "page[size]",
+                  "type": "integer"
+                }
+              },
+              "type": "object"
+            },
+            "style": "deepObject"
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ListVerifyProfilesResponse"
+                }
+              }
+            },
+            "description": "Expected Verify profile response to a valid request."
+          },
+          "400": {
+            "$ref": "#/components/responses/verify_GenericErrorResponse"
+          }
+        },
+        "summary": "List all Verify profiles",
+        "tags": [
+          "Verify"
+        ],
+        "x-group-parameters": "true"
+      },
+      "post": {
+        "description": "Creates a new Verify profile to associate verifications with.",
+        "operationId": "CreateVerifyProfile",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "call": {
+                    "$ref": "#/components/schemas/CreateVerifyProfileCallRequest",
+                    "additionalProperties": true,
+                    "type": "object"
+                  },
+                  "daily_spend_limit": {
+                    "description": "The maximum daily spend allowed on this verify profile, in USD.",
+                    "example": 100,
+                    "minimum": 0,
+                    "type": "number"
+                  },
+                  "daily_spend_limit_enabled": {
+                    "default": false,
+                    "description": "Whether the daily spend limit is enforced for this verify profile.",
+                    "example": true,
+                    "type": "boolean"
+                  },
+                  "flashcall": {
+                    "$ref": "#/components/schemas/CreateVerifyProfileSettingsRequest",
+                    "additionalProperties": true,
+                    "type": "object"
+                  },
+                  "language": {
+                    "example": "en-US",
+                    "type": "string"
+                  },
+                  "name": {
+                    "example": "Test Profile",
+                    "type": "string"
+                  },
+                  "sms": {
+                    "$ref": "#/components/schemas/CreateVerifyProfileSMSRequest",
+                    "additionalProperties": true,
+                    "type": "object"
+                  },
+                  "webhook_failover_url": {
+                    "example": "http://example.com/webhook/failover",
+                    "type": "string"
+                  },
+                  "webhook_url": {
+                    "example": "http://example.com/webhook",
+                    "type": "string"
+                  },
+                  "whatsapp": {
+                    "$ref": "#/components/schemas/CreateVerifyProfileSettingsWhatsAppRequest",
+                    "additionalProperties": true,
+                    "type": "object"
+                  }
+                },
+                "required": [
+                  "name"
+                ],
+                "title": "Create Verify Profile Request",
+                "type": "object"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/VerifyProfileResponseDataWrapper"
+                }
+              }
+            },
+            "description": "Expected Verify profile response to a valid request."
+          },
+          "400": {
+            "$ref": "#/components/responses/verify_GenericErrorResponse"
+          }
+        },
+        "summary": "Create a Verify profile",
+        "tags": [
+          "Verify"
+        ]
+      }
+    },
+    "/verify_profiles/templates": {
+      "get": {
+        "description": "List all Verify profile message templates.",
+        "operationId": "ListProfileMessageTemplates",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ListVerifyProfileMessageTemplateResponse"
+                }
+              }
+            },
+            "description": "Expected Verify profile message template response to a valid request."
+          },
+          "400": {
+            "$ref": "#/components/responses/verify_GenericErrorResponse"
+          },
+          "500": {
+            "$ref": "#/components/responses/verify_GenericErrorResponse"
+          }
+        },
+        "summary": "Retrieve Verify profile message templates",
+        "tags": [
+          "Verify"
+        ]
+      },
+      "post": {
+        "description": "Create a new Verify profile message template.",
+        "operationId": "CreateMessageTemplate",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateMessageTemplateRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MessageTemplateResponseDataWrapper"
+                }
+              }
+            },
+            "description": "Expected message template response to a valid request."
+          },
+          "400": {
+            "$ref": "#/components/responses/verify_GenericErrorResponse"
+          }
+        },
+        "summary": "Create message template",
+        "tags": [
+          "Verify"
+        ]
+      }
+    },
+    "/verify_profiles/templates/{template_id}": {
+      "patch": {
+        "description": "Update an existing Verify profile message template.",
+        "operationId": "UpdateMessageTemplate",
+        "parameters": [
+          {
+            "description": "The identifier of the message template to update.",
+            "in": "path",
+            "name": "template_id",
+            "required": true,
+            "schema": {
+              "example": "12ade33a-21c0-473b-b055-b3c836e1c292",
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateMessageTemplateRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MessageTemplateResponseDataWrapper"
+                }
+              }
+            },
+            "description": "Expected message template response to a valid request."
+          },
+          "400": {
+            "$ref": "#/components/responses/verify_GenericErrorResponse"
+          }
+        },
+        "summary": "Update message template",
+        "tags": [
+          "Verify"
+        ]
+      }
+    },
+    "/verify_profiles/{verify_profile_id}": {
+      "delete": {
+        "description": "Deletes the specified Verify profile and returns the deleted profile record.",
+        "operationId": "DeleteProfile",
+        "parameters": [
+          {
+            "description": "The identifier of the Verify profile to delete.",
+            "in": "path",
+            "name": "verify_profile_id",
+            "required": true,
+            "schema": {
+              "example": "12ade33a-21c0-473b-b055-b3c836e1c292",
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/VerifyProfileResponseDataWrapper"
+                }
+              }
+            },
+            "description": "Expected Verify profile response to a valid request."
+          },
+          "400": {
+            "$ref": "#/components/responses/verify_GenericErrorResponse"
+          }
+        },
+        "summary": "Delete Verify profile",
+        "tags": [
+          "Verify"
+        ]
+      },
+      "get": {
+        "description": "Returns the details of a single Verify profile by its ID, including its verification channel configuration.",
+        "operationId": "GetVerifyProfile",
+        "parameters": [
+          {
+            "description": "The identifier of the Verify profile to retrieve.",
+            "in": "path",
+            "name": "verify_profile_id",
+            "required": true,
+            "schema": {
+              "example": "12ade33a-21c0-473b-b055-b3c836e1c292",
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/VerifyProfileResponseDataWrapper"
+                }
+              }
+            },
+            "description": "Expected Verify profile response to a valid request."
+          },
+          "400": {
+            "$ref": "#/components/responses/verify_GenericErrorResponse"
+          }
+        },
+        "summary": "Retrieve Verify profile",
+        "tags": [
+          "Verify"
+        ]
+      },
+      "patch": {
+        "description": "Updates the specified Verify profile's name, webhook destinations, language, daily spend limits, or channel-specific settings. Returns the updated profile.",
+        "operationId": "UpdateVerifyProfile",
+        "parameters": [
+          {
+            "description": "The identifier of the Verify profile to update.",
+            "in": "path",
+            "name": "verify_profile_id",
+            "required": true,
+            "schema": {
+              "example": "12ade33a-21c0-473b-b055-b3c836e1c292",
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "call": {
+                    "$ref": "#/components/schemas/UpdateVerifyProfileCallRequest",
+                    "additionalProperties": true,
+                    "type": "object"
+                  },
+                  "daily_spend_limit": {
+                    "description": "The maximum daily spend allowed on this verify profile, in USD.",
+                    "example": 100,
+                    "minimum": 0,
+                    "type": "number"
+                  },
+                  "daily_spend_limit_enabled": {
+                    "description": "Whether the daily spend limit is enforced for this verify profile.",
+                    "example": true,
+                    "type": "boolean"
+                  },
+                  "language": {
+                    "example": "en-US",
+                    "type": "string"
+                  },
+                  "name": {
+                    "example": "Test Profile",
+                    "type": "string"
+                  },
+                  "sms": {
+                    "$ref": "#/components/schemas/UpdateVerifyProfileSMSRequest",
+                    "additionalProperties": true,
+                    "type": "object"
+                  },
+                  "webhook_failover_url": {
+                    "example": "http://example.com/webhook/failover",
+                    "type": "string"
+                  },
+                  "webhook_url": {
+                    "example": "http://example.com/webhook",
+                    "type": "string"
+                  },
+                  "whatsapp": {
+                    "$ref": "#/components/schemas/UpdateVerifyProfileSettingsWhatsAppRequest",
+                    "additionalProperties": true,
+                    "type": "object"
+                  }
+                },
+                "title": "Update Verify Profile Request",
+                "type": "object"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/VerifyProfileResponseDataWrapper"
+                }
+              }
+            },
+            "description": "Expected Verify profile response to a valid request."
+          },
+          "400": {
+            "$ref": "#/components/responses/verify_GenericErrorResponse"
+          }
+        },
+        "summary": "Update Verify profile",
+        "tags": [
+          "Verify"
+        ]
+      }
+    }
+  },
+  "security": [
+    {
+      "bearerAuth": []
+    }
+  ],
+  "servers": [
+    {
+      "description": "Version 2.0.0 of the Telnyx API",
+      "url": "https://api.telnyx.com/v2"
+    }
+  ]
+}

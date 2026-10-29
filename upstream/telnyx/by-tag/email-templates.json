@@ -1,0 +1,1289 @@
+{
+  "components": {
+    "headers": {
+      "IdempotentReplayed": {
+        "description": "Present with value `true` when Edge replayed a stored successful response for the supplied Idempotency-Key. Omitted for first-time requests and error responses.",
+        "schema": {
+          "enum": [
+            true
+          ],
+          "example": true,
+          "type": "boolean"
+        }
+      }
+    },
+    "parameters": {
+      "IdempotencyKey": {
+        "description": "Optional opaque, unquoted key for safely retrying the same logical request. Keys must contain 1 to 255 letters, numbers, hyphens, or underscores. Generate a unique UUID v4 for each operation and reuse it only when retrying that operation with the same request. Invalid headers—including duplicate, empty, malformed, or overlong values—return 400 with error code 10015. A request already in progress with the same key returns 409; reusing the key with a different request returns 422. Only successful responses are replayed, for up to 24 hours. Do not include sensitive data in the key.",
+        "example": "8e03978e-40d5-43e8-bc93-6894a57f9326",
+        "in": "header",
+        "name": "Idempotency-Key",
+        "required": false,
+        "schema": {
+          "maxLength": 255,
+          "minLength": 1,
+          "pattern": "^[A-Za-z0-9_-]{1,255}$",
+          "type": "string"
+        }
+      },
+      "PageCursor": {
+        "description": "Opaque URL-safe Base64 cursor returned by a previous list response.",
+        "example": "eyJpbnNlcnRlZF9hdCI6IjIwMjQtMDEtMDEifQ",
+        "in": "query",
+        "name": "page_cursor",
+        "required": false,
+        "schema": {
+          "type": "string"
+        }
+      },
+      "TemplateAutoescapeFilter": {
+        "description": "Exact match on the template's `autoescape` option. Only the exact query strings `true` and `false` are accepted; other values, including blank, return 400.",
+        "in": "query",
+        "name": "filter[autoescape]",
+        "required": false,
+        "schema": {
+          "enum": [
+            "true",
+            "false"
+          ],
+          "type": "string"
+        }
+      },
+      "TemplateContentTypeFilter": {
+        "description": "Matches templates by stored body presence. `html_and_text` requires both an HTML and text body; `html_only` requires HTML and no text body; `text_only` requires text and no HTML body; `no_body` requires neither. `null` and exactly `\"\"` count as absent; whitespace-only strings count as content. An empty or unsupported value returns a 400 response.",
+        "in": "query",
+        "name": "filter[content_type]",
+        "required": false,
+        "schema": {
+          "enum": [
+            "html_and_text",
+            "html_only",
+            "text_only",
+            "no_body"
+          ],
+          "type": "string"
+        }
+      },
+      "TemplateId": {
+        "description": "Email template UUID.",
+        "in": "path",
+        "name": "id",
+        "required": true,
+        "schema": {
+          "format": "uuid",
+          "type": "string"
+        }
+      },
+      "TemplateQueryFilter": {
+        "description": "Case-insensitive literal substring match over the template `name` or stored `subject` only; bodies are never searched. `%`, `_`, and `\\` are literal characters with no wildcard meaning. A blank value is treated as omitted.",
+        "example": "welcome",
+        "in": "query",
+        "name": "filter[query]",
+        "required": false,
+        "schema": {
+          "type": "string"
+        }
+      },
+      "TemplateStrictVariablesFilter": {
+        "description": "Exact match on the template's `strict_variables` option. Only the exact query strings `true` and `false` are accepted; other values, including blank, return 400.",
+        "in": "query",
+        "name": "filter[strict_variables]",
+        "required": false,
+        "schema": {
+          "enum": [
+            "true",
+            "false"
+          ],
+          "type": "string"
+        }
+      },
+      "email_PageSize": {
+        "description": "Number of results to return. Defaults to 25; maximum is 100. Invalid values are clamped to the valid range.",
+        "in": "query",
+        "name": "page_size",
+        "required": false,
+        "schema": {
+          "default": 25,
+          "maximum": 100,
+          "minimum": 1,
+          "type": "integer"
+        }
+      }
+    },
+    "responses": {
+      "IdempotencyConflictResponse": {
+        "content": {
+          "application/json": {
+            "example": {
+              "errors": [
+                {
+                  "code": "10036",
+                  "detail": "A request with this Idempotency-Key is already being processed.",
+                  "source": {
+                    "pointer": "/header/Idempotency-Key"
+                  },
+                  "title": "Resource is being processed"
+                }
+              ]
+            },
+            "schema": {
+              "$ref": "#/components/schemas/email_ErrorResponse"
+            }
+          }
+        },
+        "description": "A request with the same Idempotency-Key is still being processed (10036). Retry later with the same key and request."
+      },
+      "PayloadTooLargeResponse": {
+        "content": {
+          "application/json": {
+            "example": {
+              "errors": [
+                {
+                  "code": "10007",
+                  "detail": "An unexpected error occured.",
+                  "title": "Unexpected error"
+                }
+              ]
+            },
+            "schema": {
+              "$ref": "#/components/schemas/email_ErrorResponse"
+            }
+          }
+        },
+        "description": "Request body exceeds the 8,000,000-byte limit for this endpoint."
+      },
+      "TemplateRenderFailedResponse": {
+        "content": {
+          "application/json": {
+            "example": {
+              "errors": [
+                {
+                  "code": "10015",
+                  "detail": "Liquid parse error",
+                  "title": "Template Render Failed"
+                }
+              ]
+            },
+            "schema": {
+              "$ref": "#/components/schemas/email_ErrorResponse"
+            }
+          }
+        },
+        "description": "Standalone template render failure (10015)."
+      },
+      "ValidationErrorResponse": {
+        "content": {
+          "application/json": {
+            "example": {
+              "errors": [
+                {
+                  "code": "10015",
+                  "detail": "subject can't be blank",
+                  "source": {
+                    "pointer": "/data/attributes/subject"
+                  },
+                  "title": "Validation Failed"
+                }
+              ]
+            },
+            "schema": {
+              "$ref": "#/components/schemas/email_ErrorResponse"
+            }
+          }
+        },
+        "description": "Validation Failed (10015) or changeset validation error."
+      },
+      "email_BadRequestResponse": {
+        "content": {
+          "application/json": {
+            "example": {
+              "errors": [
+                {
+                  "code": "10015",
+                  "detail": "email is required",
+                  "title": "Bad Request"
+                }
+              ]
+            },
+            "schema": {
+              "$ref": "#/components/schemas/email_ErrorResponse"
+            }
+          }
+        },
+        "description": "Bad Request / Validation Failed (10015)."
+      },
+      "email_NotFoundResponse": {
+        "content": {
+          "application/json": {
+            "example": {
+              "errors": [
+                {
+                  "code": "10001",
+                  "detail": "The requested resource was not found",
+                  "title": "Not Found"
+                }
+              ]
+            },
+            "schema": {
+              "$ref": "#/components/schemas/email_ErrorResponse"
+            }
+          }
+        },
+        "description": "Resource not found (10001)."
+      },
+      "email_ServiceUnavailableResponse": {
+        "content": {
+          "application/json": {
+            "example": {
+              "errors": [
+                {
+                  "code": "10016",
+                  "detail": "The email domain service is temporarily unavailable. Please try again later.",
+                  "title": "Service Unavailable"
+                }
+              ]
+            },
+            "schema": {
+              "$ref": "#/components/schemas/email_ErrorResponse"
+            }
+          }
+        },
+        "description": "Service unavailable (10016), including an unavailable upstream dependency or unavailable Edge idempotency protection for a keyed request."
+      },
+      "email_UnauthorizedResponse": {
+        "content": {
+          "application/json": {
+            "example": {
+              "errors": [
+                {
+                  "code": "10006",
+                  "detail": "Invalid API key",
+                  "meta": {
+                    "url": "https://developers.telnyx.com/docs/overview/errors/10006"
+                  },
+                  "title": "Not authorized"
+                }
+              ]
+            },
+            "schema": {
+              "$ref": "#/components/schemas/email_ErrorResponse"
+            }
+          }
+        },
+        "description": "Not authorized (10006)."
+      }
+    },
+    "schemas": {
+      "CreateEmailTemplateRequest": {
+        "properties": {
+          "autoescape": {
+            "default": false,
+            "description": "Per-template HTML autoescaping setting. Defaults to `false` for backward compatibility. When `true`, the rendered `html_body` HTML-escapes each Liquid expression's output at the output boundary (after its filters run, before concatenation with literal template markup). Input values are never mutated and `subject`/`text_body` are never autoescaped. The boundary escape is idempotent: HTML entities already present in the output (e.g. from an explicit `escape` filter) are preserved, so an explicit `escape`/`escape_once` is never double-escaped, and markup introduced by any later filter in the chain is still escaped.",
+            "type": "boolean"
+          },
+          "html_body": {
+            "description": "Liquid template HTML body.",
+            "nullable": true,
+            "type": "string"
+          },
+          "name": {
+            "description": "Letters, numbers, spaces, hyphens, and underscores only.",
+            "maxLength": 255,
+            "pattern": "^[A-Za-z0-9 _-]+$",
+            "type": "string"
+          },
+          "strict_variables": {
+            "default": false,
+            "description": "Per-template strict variable-validation setting. Defaults to `false` for backward compatibility. When `true`, a send or render that is missing a variable marked `required: true` in `variable_schema` fails with 422 naming the variable. Missing optional variables never fail; their schema `default` (when set) is applied to the render.",
+            "type": "boolean"
+          },
+          "subject": {
+            "description": "Liquid template subject.",
+            "maxLength": 255,
+            "nullable": true,
+            "type": "string"
+          },
+          "text_body": {
+            "description": "Liquid template text body.",
+            "nullable": true,
+            "type": "string"
+          },
+          "variable_schema": {
+            "additionalProperties": {
+              "$ref": "#/components/schemas/VariableSchemaEntry"
+            },
+            "description": "Structured variable requirements. Required variables cannot define defaults; invalid combinations return 422. This is independent of the legacy `variables` array. On render with `strict_variables` enabled: `required` variables must be supplied as non-empty values — absent, `null`, empty string, empty object `{}`, and empty array `[]` all fail with 422 naming the variable, while present values such as `false` and `0` pass (they are present, not empty). Optional variables fall back to their `default` when absent.",
+            "nullable": true,
+            "type": "object"
+          },
+          "variables": {
+            "description": "Persisted variable names. In `automatic` mode a non-null array is rejected; in `explicit` mode this is the exact manual array and each item is limited to 255 Unicode code points.",
+            "items": {
+              "maxLength": 255,
+              "type": "string"
+            },
+            "nullable": true,
+            "type": "array"
+          },
+          "variables_mode": {
+            "description": "Controls how `variables` is maintained. If both fields are omitted (or `variables` is null), the template uses `automatic` mode and extracts variable names from the effective subject, HTML body, and text body. A non-null `variables` array with no mode selects `explicit`. `automatic` rejects a simultaneous non-null array; `explicit` requires a non-null array, including valid `[]`, and preserves its exact order, duplicates, and string contents.",
+            "enum": [
+              "automatic",
+              "explicit"
+            ],
+            "type": "string"
+          }
+        },
+        "required": [
+          "name"
+        ],
+        "type": "object"
+      },
+      "EmailTemplate": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/EmailTemplateCommon"
+          },
+          {
+            "properties": {
+              "subject": {
+                "maxLength": 255,
+                "nullable": true,
+                "type": "string"
+              }
+            },
+            "required": [
+              "subject"
+            ],
+            "type": "object"
+          }
+        ]
+      },
+      "EmailTemplateCommon": {
+        "properties": {
+          "autoescape": {
+            "description": "Whether HTML autoescaping is enabled for this template. When `true`, only rendered `html_body` expression output is HTML-escaped at the output boundary; `subject` and `text_body` are never autoescaped.",
+            "type": "boolean"
+          },
+          "created_at": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "html_body": {
+            "nullable": true,
+            "type": "string"
+          },
+          "id": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "name": {
+            "maxLength": 255,
+            "type": "string"
+          },
+          "record_type": {
+            "enum": [
+              "email_template"
+            ],
+            "type": "string"
+          },
+          "strict_variables": {
+            "description": "Whether strict variable validation is enabled for this template. When `true`, sends and renders that are missing a variable marked `required: true` in `variable_schema` fail with 422 naming the variable.",
+            "type": "boolean"
+          },
+          "text_body": {
+            "nullable": true,
+            "type": "string"
+          },
+          "updated_at": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "variable_schema": {
+            "additionalProperties": {
+              "$ref": "#/components/schemas/VariableSchemaEntry"
+            },
+            "description": "Structured variable requirements, or `null` when the template uses only the legacy `variables` array.",
+            "nullable": true,
+            "type": "object"
+          },
+          "variables": {
+            "description": "Persisted variable names. In `explicit` mode this array preserves the exact provided order, duplicates, and string contents; in `automatic` mode it is derived from the stored subject and bodies.",
+            "items": {
+              "maxLength": 255,
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "variables_mode": {
+            "description": "`automatic` when variable names are derived from template content; `explicit` when `variables` is the exact manually managed array.",
+            "enum": [
+              "automatic",
+              "explicit"
+            ],
+            "type": "string"
+          }
+        },
+        "required": [
+          "record_type",
+          "id",
+          "name",
+          "html_body",
+          "text_body",
+          "variables",
+          "variables_mode",
+          "strict_variables",
+          "autoescape",
+          "variable_schema",
+          "created_at",
+          "updated_at"
+        ],
+        "type": "object"
+      },
+      "EmailTemplateListResponse": {
+        "properties": {
+          "data": {
+            "items": {
+              "$ref": "#/components/schemas/EmailTemplate"
+            },
+            "type": "array"
+          },
+          "meta": {
+            "$ref": "#/components/schemas/email_PaginationMeta"
+          }
+        },
+        "required": [
+          "data",
+          "meta"
+        ],
+        "type": "object"
+      },
+      "EmailTemplateResponse": {
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/EmailTemplate"
+          }
+        },
+        "required": [
+          "data"
+        ],
+        "type": "object"
+      },
+      "ErrorObject": {
+        "properties": {
+          "code": {
+            "description": "Telnyx error code. Send admission errors include account daily quota 10011 and sender-domain ramp code domain_graduation_limit_exceeded. Edge idempotency errors use 10027 or 10036. Fallback 404/500 responses from the framework may use string status codes ('404', '500') instead.",
+            "enum": [
+              "10001",
+              "10006",
+              "10007",
+              "10011",
+              "10015",
+              "10016",
+              "10019",
+              "domain_graduation_limit_exceeded",
+              "recipient_suppressed",
+              "reputation_suspended",
+              "404",
+              "500",
+              "10027",
+              "10036"
+            ],
+            "type": "string"
+          },
+          "detail": {
+            "description": "Human-readable error detail. Changeset responses may return a structured object.",
+            "oneOf": [
+              {
+                "type": "string"
+              },
+              {
+                "additionalProperties": true,
+                "type": "object"
+              }
+            ]
+          },
+          "meta": {
+            "additionalProperties": true,
+            "description": "Additional metadata. Present on 401 errors with a documentation URL.",
+            "nullable": true,
+            "type": "object"
+          },
+          "source": {
+            "additionalProperties": true,
+            "nullable": true,
+            "type": "object"
+          },
+          "title": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "title",
+          "detail"
+        ],
+        "type": "object"
+      },
+      "RenderEmailTemplateRequest": {
+        "properties": {
+          "template_variables": {
+            "additionalProperties": true,
+            "default": {},
+            "description": "Variables for Liquid template rendering. Non-object values are silently treated as an empty object.",
+            "type": "object"
+          }
+        },
+        "type": "object"
+      },
+      "RenderedEmailTemplate": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/EmailTemplateCommon"
+          },
+          {
+            "description": "Template object with `subject`, `html_body`, and `text_body` replaced by their Liquid-rendered values. Rendered content is not limited by the stored template-field lengths. All other template fields remain unchanged.",
+            "properties": {
+              "subject": {
+                "nullable": true,
+                "type": "string"
+              }
+            },
+            "required": [
+              "subject"
+            ],
+            "type": "object"
+          }
+        ]
+      },
+      "RenderedEmailTemplateResponse": {
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/RenderedEmailTemplate"
+          }
+        },
+        "required": [
+          "data"
+        ],
+        "type": "object"
+      },
+      "SuppressedRecipient": {
+        "properties": {
+          "override_allowed": {
+            "description": "Whether an authorized send may override this suppression.",
+            "type": "boolean"
+          },
+          "reason": {
+            "description": "Suppression reason returned by the recipient suppression service.",
+            "type": "string"
+          },
+          "scope": {
+            "description": "Scope at which the suppression applies.",
+            "type": "string"
+          },
+          "to": {
+            "description": "Suppressed recipient email address.",
+            "format": "email",
+            "type": "string"
+          }
+        },
+        "required": [
+          "to",
+          "reason",
+          "scope",
+          "override_allowed"
+        ],
+        "type": "object"
+      },
+      "UpdateEmailTemplateRequest": {
+        "properties": {
+          "autoescape": {
+            "description": "Per-template HTML autoescaping setting.",
+            "type": "boolean"
+          },
+          "html_body": {
+            "description": "Liquid template HTML body.",
+            "nullable": true,
+            "type": "string"
+          },
+          "name": {
+            "maxLength": 255,
+            "pattern": "^[A-Za-z0-9 _-]+$",
+            "type": "string"
+          },
+          "strict_variables": {
+            "description": "Per-template strict variable-validation setting.",
+            "type": "boolean"
+          },
+          "subject": {
+            "description": "Liquid template subject.",
+            "maxLength": 255,
+            "nullable": true,
+            "type": "string"
+          },
+          "text_body": {
+            "description": "Liquid template text body.",
+            "nullable": true,
+            "type": "string"
+          },
+          "variable_schema": {
+            "additionalProperties": {
+              "$ref": "#/components/schemas/VariableSchemaEntry"
+            },
+            "description": "Structured variable requirements. Required variables cannot define defaults; invalid combinations return 422. Set to `null` to clear the schema.",
+            "nullable": true,
+            "type": "object"
+          },
+          "variables": {
+            "description": "Persisted variable names. In `automatic` mode a non-null array is rejected; in `explicit` mode this is the exact manual array and each item is limited to 255 Unicode code points.",
+            "items": {
+              "maxLength": 255,
+              "type": "string"
+            },
+            "nullable": true,
+            "type": "array"
+          },
+          "variables_mode": {
+            "description": "Controls how `variables` is maintained. Setting `automatic` re-extracts immediately from the effective subject, HTML body, and text body and rejects a simultaneous non-null array. Setting `explicit` requires the exact non-null array, including valid `[]`. With the mode omitted, a non-null array selects explicit mode, null selects automatic mode, and omitting both fields preserves the current mode. Source-content changes re-extract only in automatic mode.",
+            "enum": [
+              "automatic",
+              "explicit"
+            ],
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "VariableSchemaEntry": {
+        "additionalProperties": false,
+        "properties": {
+          "default": {
+            "description": "Default value for an optional variable. Rejected when `required` is `true`.",
+            "type": "string"
+          },
+          "required": {
+            "description": "Whether the variable must be supplied when strict variable validation is enabled.",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "required"
+        ],
+        "type": "object"
+      },
+      "email_ErrorResponse": {
+        "properties": {
+          "errors": {
+            "items": {
+              "$ref": "#/components/schemas/ErrorObject"
+            },
+            "type": "array"
+          },
+          "suppressed": {
+            "description": "Present when every recipient is suppressed, so the request is rejected and no message is created.",
+            "items": {
+              "$ref": "#/components/schemas/SuppressedRecipient"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "errors"
+        ],
+        "type": "object"
+      },
+      "email_PaginationMeta": {
+        "properties": {
+          "page_cursor": {
+            "description": "Cursor for the next page, when more results are available.",
+            "type": "string"
+          },
+          "page_size": {
+            "maximum": 100,
+            "minimum": 1,
+            "type": "integer"
+          }
+        },
+        "required": [
+          "page_size"
+        ],
+        "type": "object"
+      }
+    },
+    "securitySchemes": {
+      "BearerAuth": {
+        "bearerFormat": "API key",
+        "description": "Telnyx API key supplied as `Authorization: Bearer \u003ctoken\u003e`. In production, auth may be validated by the API gateway and forwarded via Telnyx auth headers.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "Payment": {
+        "description": "Machine Payment Protocol credential used on paid retries, sent as `Authorization: Payment ...`. Obtained by paying a challenge returned in the `WWW-Authenticate` header of a 402 response. This is not a Telnyx API key; initial challenge requests use standard bearer authentication instead.",
+        "in": "header",
+        "name": "Authorization",
+        "type": "apiKey"
+      },
+      "agent-memory_bearerAuth": {
+        "description": "Telnyx API key",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "bearerAuth": {
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "branded-calling_bearerAuth": {
+        "description": "Telnyx API key. Generate one at https://portal.telnyx.com/#/app/api-keys.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "collections_bearerAuth": {
+        "description": "Telnyx API key. Collections and results are automatically scoped to the authenticated user's organization.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "number-reputation_bearerAuth": {
+        "description": "Telnyx API key. Generate one at https://portal.telnyx.com/#/app/api-keys.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "oauthClientAuth": {
+        "description": "OAuth 2.0 authentication for Telnyx API and MCP integrations",
+        "flows": {
+          "authorizationCode": {
+            "authorizationUrl": "https://api.telnyx.com/v2/oauth/authorize",
+            "refreshUrl": "https://api.telnyx.com/v2/oauth/token",
+            "scopes": {
+              "admin": "Administrative access to Telnyx resources"
+            },
+            "tokenUrl": "https://api.telnyx.com/v2/oauth/token"
+          },
+          "clientCredentials": {
+            "scopes": {
+              "admin": "Administrative access to Telnyx resources"
+            },
+            "tokenUrl": "https://api.telnyx.com/v2/oauth/token"
+          }
+        },
+        "type": "oauth2"
+      },
+      "outbound-voice-profiles_bearerAuth": {
+        "bearerFormat": "JWT",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "pay-connectors_bearerAuth": {
+        "description": "Telnyx API key, not the processor bearer token.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "pronunciation-dicts_bearerAuth": {
+        "description": "Telnyx API v2 key. Obtain from https://portal.telnyx.com",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "rcs-registration_bearerAuth": {
+        "bearerFormat": "API key",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "stored-payment-transactions_bearerAuth": {
+        "bearerFormat": "JWT",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "telnyxApiKey": {
+        "description": "Management-only Telnyx account credential.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "transcriptions-search_bearerAuth": {
+        "description": "Telnyx API key. Results are automatically scoped to the authenticated user's organization.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "web-search_bearerAuth": {
+        "description": "Telnyx API key",
+        "scheme": "bearer",
+        "type": "http"
+      }
+    }
+  },
+  "info": {
+    "contact": {
+      "email": "support@telnyx.com"
+    },
+    "description": "SIP trunking, SMS, MMS, Call Control and Telephony Data Services.",
+    "title": "Telnyx API",
+    "version": "2.0.0",
+    "x-endpoint-cost": "light",
+    "x-latency-category": "responsive"
+  },
+  "openapi": "3.1.0",
+  "paths": {
+    "/email_templates": {
+      "get": {
+        "description": "Lists templates sorted newest first by `created_at desc, id desc`. Optional filters match a case-insensitive literal name/subject query, stored body presence, and the `strict_variables` and `autoescape` settings. Filters intersect, remain scoped to the authenticated account, and apply before cursor pagination. Invalid filter names or values return 400.",
+        "operationId": "ListEmailTemplates",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/email_PageSize"
+          },
+          {
+            "$ref": "#/components/parameters/PageCursor"
+          },
+          {
+            "$ref": "#/components/parameters/TemplateQueryFilter"
+          },
+          {
+            "$ref": "#/components/parameters/TemplateContentTypeFilter"
+          },
+          {
+            "$ref": "#/components/parameters/TemplateStrictVariablesFilter"
+          },
+          {
+            "$ref": "#/components/parameters/TemplateAutoescapeFilter"
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "data": [
+                    {
+                      "autoescape": false,
+                      "created_at": "2024-01-23T18:10:02.574Z",
+                      "html_body": "string",
+                      "id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+                      "name": "string",
+                      "record_type": "email_template",
+                      "strict_variables": false,
+                      "subject": "string",
+                      "text_body": "string",
+                      "updated_at": "2024-01-23T18:10:02.574Z",
+                      "variable_schema": null,
+                      "variables": [
+                        "string"
+                      ],
+                      "variables_mode": "automatic"
+                    }
+                  ],
+                  "meta": {
+                    "page_cursor": "string",
+                    "page_size": 1
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/EmailTemplateListResponse"
+                }
+              }
+            },
+            "description": "Paginated list of templates."
+          },
+          "400": {
+            "$ref": "#/components/responses/email_BadRequestResponse"
+          },
+          "401": {
+            "$ref": "#/components/responses/email_UnauthorizedResponse"
+          }
+        },
+        "summary": "List email templates",
+        "tags": [
+          "Email Templates"
+        ]
+      },
+      "post": {
+        "description": "Creates a Liquid email template. Variables are auto-extracted when omitted.",
+        "operationId": "CreateEmailTemplate",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/IdempotencyKey"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "example": {
+                "html_body": "\u003ch1\u003eHello {{ first_name }}\u003c/h1\u003e",
+                "name": "Welcome Email",
+                "subject": "Welcome, {{ first_name }}!",
+                "text_body": "Hello {{ first_name }}"
+              },
+              "schema": {
+                "$ref": "#/components/schemas/CreateEmailTemplateRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EmailTemplateResponse"
+                }
+              }
+            },
+            "description": "Template created.",
+            "headers": {
+              "Idempotent-Replayed": {
+                "$ref": "#/components/headers/IdempotentReplayed"
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "errors": [
+                    {
+                      "code": "10015",
+                      "detail": "email is required",
+                      "title": "Bad Request"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/email_ErrorResponse"
+                }
+              }
+            },
+            "description": "Bad Request / Validation Failed (10015). Invalid, duplicate, empty, malformed, or overlong Idempotency-Key headers are rejected by Edge with HTTP 400 and error code 10015."
+          },
+          "401": {
+            "$ref": "#/components/responses/email_UnauthorizedResponse"
+          },
+          "409": {
+            "$ref": "#/components/responses/IdempotencyConflictResponse"
+          },
+          "413": {
+            "$ref": "#/components/responses/PayloadTooLargeResponse"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "errors": [
+                    {
+                      "code": "10015",
+                      "detail": "subject can't be blank",
+                      "source": {
+                        "pointer": "/data/attributes/subject"
+                      },
+                      "title": "Validation Failed"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/email_ErrorResponse"
+                }
+              }
+            },
+            "description": "Validation Failed (10015) or changeset validation error. Reusing an Idempotency-Key with a different request also returns 422 (10027)."
+          },
+          "503": {
+            "$ref": "#/components/responses/email_ServiceUnavailableResponse"
+          }
+        },
+        "summary": "Create an email template",
+        "tags": [
+          "Email Templates"
+        ]
+      }
+    },
+    "/email_templates/{id}": {
+      "delete": {
+        "description": "Deletes the account-owned template. The operation returns `204` with no body and prevents future sends or renders from using the deleted template ID.",
+        "operationId": "DeleteEmailTemplate",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/TemplateId"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Template deleted. Empty response body."
+          },
+          "401": {
+            "$ref": "#/components/responses/email_UnauthorizedResponse"
+          },
+          "404": {
+            "$ref": "#/components/responses/email_NotFoundResponse"
+          },
+          "422": {
+            "$ref": "#/components/responses/ValidationErrorResponse"
+          }
+        },
+        "summary": "Delete an email template",
+        "tags": [
+          "Email Templates"
+        ]
+      },
+      "get": {
+        "description": "Returns the account-owned template identified by ID, including its Liquid subject and bodies, declared variables, and timestamps.",
+        "operationId": "GetEmailTemplate",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/TemplateId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "data": {
+                    "autoescape": false,
+                    "created_at": "2024-01-23T18:10:02.574Z",
+                    "html_body": "string",
+                    "id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+                    "name": "string",
+                    "record_type": "email_template",
+                    "strict_variables": false,
+                    "subject": "string",
+                    "text_body": "string",
+                    "updated_at": "2024-01-23T18:10:02.574Z",
+                    "variable_schema": null,
+                    "variables": [
+                      "string"
+                    ],
+                    "variables_mode": "automatic"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/EmailTemplateResponse"
+                }
+              }
+            },
+            "description": "Template details."
+          },
+          "401": {
+            "$ref": "#/components/responses/email_UnauthorizedResponse"
+          },
+          "404": {
+            "$ref": "#/components/responses/email_NotFoundResponse"
+          }
+        },
+        "summary": "Get an email template",
+        "tags": [
+          "Email Templates"
+        ]
+      },
+      "patch": {
+        "description": "Updates one or more fields of the specified email template and returns the updated template.",
+        "operationId": "UpdateEmailTemplate",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/TemplateId"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "example": {
+                "subject": "Welcome aboard, {{first_name}}!"
+              },
+              "schema": {
+                "$ref": "#/components/schemas/UpdateEmailTemplateRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "data": {
+                    "autoescape": false,
+                    "created_at": "2024-01-23T18:10:02.574Z",
+                    "html_body": "string",
+                    "id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+                    "name": "string",
+                    "record_type": "email_template",
+                    "strict_variables": false,
+                    "subject": "string",
+                    "text_body": "string",
+                    "updated_at": "2024-01-23T18:10:02.574Z",
+                    "variable_schema": null,
+                    "variables": [
+                      "string"
+                    ],
+                    "variables_mode": "automatic"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/EmailTemplateResponse"
+                }
+              }
+            },
+            "description": "Template updated."
+          },
+          "401": {
+            "$ref": "#/components/responses/email_UnauthorizedResponse"
+          },
+          "404": {
+            "$ref": "#/components/responses/email_NotFoundResponse"
+          },
+          "422": {
+            "$ref": "#/components/responses/ValidationErrorResponse"
+          }
+        },
+        "summary": "Update an email template",
+        "tags": [
+          "Email Templates"
+        ]
+      },
+      "put": {
+        "description": "Replaces template fields. Behaves identically to PATCH; provided for compatibility with Phoenix resource routes.",
+        "operationId": "ReplaceEmailTemplate",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/TemplateId"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "example": {
+                "subject": "Welcome aboard, {{first_name}}!"
+              },
+              "schema": {
+                "$ref": "#/components/schemas/UpdateEmailTemplateRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "data": {
+                    "autoescape": false,
+                    "created_at": "2024-01-23T18:10:02.574Z",
+                    "html_body": "string",
+                    "id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+                    "name": "string",
+                    "record_type": "email_template",
+                    "strict_variables": false,
+                    "subject": "string",
+                    "text_body": "string",
+                    "updated_at": "2024-01-23T18:10:02.574Z",
+                    "variable_schema": null,
+                    "variables": [
+                      "string"
+                    ],
+                    "variables_mode": "automatic"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/EmailTemplateResponse"
+                }
+              }
+            },
+            "description": "Template updated."
+          },
+          "401": {
+            "$ref": "#/components/responses/email_UnauthorizedResponse"
+          },
+          "404": {
+            "$ref": "#/components/responses/email_NotFoundResponse"
+          },
+          "422": {
+            "$ref": "#/components/responses/ValidationErrorResponse"
+          }
+        },
+        "summary": "Replace an email template",
+        "tags": [
+          "Email Templates"
+        ]
+      }
+    },
+    "/email_templates/{id}/render": {
+      "post": {
+        "description": "Renders a template using the provided Liquid variables. Missing `template_variables` defaults to `{}`.\n\nWhen the template has `strict_variables` enabled and a required variable (per `variable_schema`) is missing, returns 422 naming the variable. When the template has `autoescape` enabled, the rendered `html_body` expression output is HTML-escaped at the output boundary; `subject` and `text_body` are not autoescaped.",
+        "operationId": "RenderEmailTemplate",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/TemplateId"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "example": {
+                "template_variables": {
+                  "first_name": "Ada"
+                }
+              },
+              "schema": {
+                "$ref": "#/components/schemas/RenderEmailTemplateRequest"
+              }
+            }
+          },
+          "required": false
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "data": {
+                    "autoescape": false,
+                    "created_at": "2024-01-23T18:10:02.574Z",
+                    "html_body": "string",
+                    "id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+                    "name": "string",
+                    "record_type": "email_template",
+                    "strict_variables": false,
+                    "subject": "string",
+                    "text_body": "string",
+                    "updated_at": "2024-01-23T18:10:02.574Z",
+                    "variable_schema": null,
+                    "variables": [
+                      "string"
+                    ],
+                    "variables_mode": "automatic"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/RenderedEmailTemplateResponse"
+                }
+              }
+            },
+            "description": "Rendered template content."
+          },
+          "401": {
+            "$ref": "#/components/responses/email_UnauthorizedResponse"
+          },
+          "404": {
+            "$ref": "#/components/responses/email_NotFoundResponse"
+          },
+          "422": {
+            "$ref": "#/components/responses/TemplateRenderFailedResponse"
+          }
+        },
+        "summary": "Render an email template",
+        "tags": [
+          "Email Templates"
+        ]
+      }
+    }
+  },
+  "security": [
+    {
+      "bearerAuth": []
+    }
+  ],
+  "servers": [
+    {
+      "description": "Version 2.0.0 of the Telnyx API",
+      "url": "https://api.telnyx.com/v2"
+    }
+  ]
+}

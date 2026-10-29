@@ -1,0 +1,1133 @@
+{
+  "components": {
+    "parameters": {
+      "PageConsolidated": {
+        "description": "Consolidated page parameter (deepObject style). Originally: page[number], page[size]",
+        "explode": true,
+        "in": "query",
+        "name": "page",
+        "schema": {
+          "properties": {
+            "number": {
+              "default": 1,
+              "description": "The page number to load",
+              "minimum": 1,
+              "type": "integer"
+            },
+            "size": {
+              "default": 20,
+              "description": "The size of the page",
+              "maximum": 250,
+              "minimum": 1,
+              "type": "integer"
+            }
+          },
+          "type": "object"
+        },
+        "style": "deepObject"
+      },
+      "id": {
+        "description": "Identifies the resource.",
+        "in": "path",
+        "name": "id",
+        "required": true,
+        "schema": {
+          "example": "1293384261075731499",
+          "type": "string"
+        }
+      },
+      "programmable-fax_FilterConsolidated": {
+        "description": "Consolidated filter parameter (deepObject style). Originally: filter[application_name][contains], filter[outbound_voice_profile_id]",
+        "explode": true,
+        "in": "query",
+        "name": "filter",
+        "schema": {
+          "properties": {
+            "application_name": {
+              "description": "Application name filtering operations",
+              "properties": {
+                "contains": {
+                  "description": "If present, applications with \u003ccode\u003eapplication_name\u003c/code\u003e containing the given value will be returned. Matching is not case-sensitive. Requires at least three characters.",
+                  "example": "fax-app",
+                  "type": "string"
+                }
+              },
+              "type": "object"
+            },
+            "outbound_voice_profile_id": {
+              "description": "Identifies the associated outbound voice profile.",
+              "example": "1293384261075731499",
+              "type": "string"
+            }
+          },
+          "type": "object"
+        },
+        "style": "deepObject"
+      },
+      "programmable-fax_SortApplication": {
+        "description": "Specifies the sort order for results. By default sorting direction is ascending. To have the results sorted in descending order add the \u003ccode\u003e -\u003c/code\u003e prefix.\u003cbr/\u003e\u003cbr/\u003e\nThat is: \u003cul\u003e\n  \u003cli\u003e\n    \u003ccode\u003eapplication_name\u003c/code\u003e: sorts the result by the\n    \u003ccode\u003eapplication_name\u003c/code\u003e field in ascending order.\n  \u003c/li\u003e\n\n  \u003cli\u003e\n    \u003ccode\u003e-application_name\u003c/code\u003e: sorts the result by the\n    \u003ccode\u003eapplication_name\u003c/code\u003e field in descending order.\n  \u003c/li\u003e\n\u003c/ul\u003e \u003cbr/\u003e If not given, results are sorted by \u003ccode\u003ecreated_at\u003c/code\u003e in descending order.",
+        "in": "query",
+        "name": "sort",
+        "schema": {
+          "default": "created_at",
+          "enum": [
+            "created_at",
+            "application_name",
+            "active"
+          ],
+          "example": "application_name",
+          "type": "string"
+        }
+      }
+    },
+    "responses": {
+      "UnauthenticatedResponse": {
+        "content": {
+          "application/json": {
+            "examples": {
+              "Authentication Failed": {
+                "value": {
+                  "errors": [
+                    {
+                      "code": "10009",
+                      "detail": "Could not understand the provided credentials.",
+                      "meta": {
+                        "url": "https://developers.telnyx.com/docs/overview/errors/10009"
+                      },
+                      "title": "Authentication failed"
+                    }
+                  ]
+                }
+              }
+            },
+            "schema": {
+              "$ref": "#/components/schemas/call-scripting_ErrorResponse"
+            }
+          }
+        },
+        "description": "Unauthorized"
+      },
+      "programmable-fax_BadRequestResponse": {
+        "content": {
+          "application/json": {
+            "examples": {
+              "missingParameter": {
+                "value": {
+                  "errors": [
+                    {
+                      "code": "10015",
+                      "detail": "The request failed because it was not well-formed.",
+                      "meta": {
+                        "url": "https://developers.telnyx.com/docs/overview/errors/10015"
+                      },
+                      "source": {
+                        "pointer": "/"
+                      },
+                      "title": "Bad Request"
+                    }
+                  ]
+                }
+              }
+            },
+            "schema": {
+              "$ref": "#/components/schemas/programmable-fax_ErrorResponse"
+            }
+          }
+        },
+        "description": "Bad request, the request was unacceptable, often due to missing a required parameter."
+      },
+      "programmable-fax_NotFoundResponse": {
+        "content": {
+          "application/json": {
+            "example": {
+              "errors": [
+                {
+                  "code": "404",
+                  "detail": "The requested resource does not exist",
+                  "title": "Not Found"
+                }
+              ]
+            },
+            "schema": {
+              "$ref": "#/components/schemas/Errors"
+            }
+          }
+        },
+        "description": "The requested resource does not exist"
+      },
+      "programmable-fax_UnauthorizedResponse": {
+        "description": "Unauthorized"
+      },
+      "programmable-fax_UnprocessableEntityResponse": {
+        "content": {
+          "application/json": {
+            "example": {
+              "errors": [
+                {
+                  "code": "422",
+                  "detail": "The request parameters failed validation",
+                  "title": "Unprocessable Entity"
+                }
+              ]
+            },
+            "schema": {
+              "$ref": "#/components/schemas/Errors"
+            }
+          }
+        },
+        "description": "Unprocessable entity. The request was well-formed but contains semantic errors."
+      }
+    },
+    "schemas": {
+      "AnchorsiteOverride": {
+        "default": "Latency",
+        "description": "`Latency` directs Telnyx to route media through the site with the lowest round-trip time to the user's connection. Telnyx calculates this time using ICMP ping messages. This can be disabled by specifying a site to handle all media.",
+        "enum": [
+          "Latency",
+          "Chicago, IL",
+          "Ashburn, VA",
+          "San Jose, CA",
+          "Sydney, Australia",
+          "Amsterdam, Netherlands",
+          "London, UK",
+          "Toronto, Canada",
+          "Vancouver, Canada",
+          "Frankfurt, Germany"
+        ],
+        "example": "Amsterdam, Netherlands",
+        "title": "Anchorsite Override",
+        "type": "string"
+      },
+      "ApplicationName": {
+        "description": "A user-assigned name to help manage the application.",
+        "example": "call-router",
+        "title": "Application Name",
+        "type": "string"
+      },
+      "ConnectionActive": {
+        "default": true,
+        "description": "Specifies whether the connection can be used.",
+        "example": false,
+        "title": "Connection Active",
+        "type": "boolean"
+      },
+      "CreateFaxApplicationRequest": {
+        "example": {
+          "active": false,
+          "anchorsite_override": "Amsterdam, Netherlands",
+          "application_name": "fax-router",
+          "inbound": {
+            "channel_limit": 10,
+            "sip_subdomain": "example",
+            "sip_subdomain_receive_settings": "only_my_connections"
+          },
+          "outbound": {
+            "channel_limit": 10,
+            "outbound_voice_profile_id": "1293384261075731499"
+          },
+          "tags": [
+            "tag1",
+            "tag2"
+          ],
+          "webhook_event_failover_url": "https://failover.example.com",
+          "webhook_event_url": "https://example.com",
+          "webhook_timeout_secs": 25
+        },
+        "properties": {
+          "active": {
+            "$ref": "#/components/schemas/ConnectionActive"
+          },
+          "anchorsite_override": {
+            "$ref": "#/components/schemas/AnchorsiteOverride"
+          },
+          "application_name": {
+            "$ref": "#/components/schemas/ApplicationName"
+          },
+          "inbound": {
+            "properties": {
+              "channel_limit": {
+                "default": null,
+                "description": "When set, this will limit the number of concurrent inbound calls to phone numbers associated with this connection.",
+                "example": 10,
+                "type": "integer"
+              },
+              "sip_subdomain": {
+                "default": null,
+                "description": "Specifies a subdomain that can be used to receive Inbound calls to a Connection, in the same way a phone number is used, from a SIP endpoint. Example: the subdomain \"example.sip.telnyx.com\" can be called from any SIP endpoint by using the SIP URI \"sip:@example.sip.telnyx.com\" where the user part can be any alphanumeric value. TLS signaling is supported. SRTP media encryption requires TLS transport.",
+                "example": "example",
+                "type": "string"
+              },
+              "sip_subdomain_receive_settings": {
+                "default": "from_anyone",
+                "description": "This option can be enabled to receive calls from: \"Anyone\" (any SIP endpoint in the public Internet) or \"Only my connections\" (any connection assigned to the same Telnyx user).",
+                "enum": [
+                  "only_my_connections",
+                  "from_anyone"
+                ],
+                "example": "only_my_connections",
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
+          "outbound": {
+            "properties": {
+              "channel_limit": {
+                "default": null,
+                "description": "When set, this will limit the number of concurrent outbound calls to phone numbers associated with this connection.",
+                "example": 10,
+                "type": "integer"
+              },
+              "outbound_voice_profile_id": {
+                "$ref": "#/components/schemas/OutboundVoiceProfileId"
+              }
+            },
+            "type": "object"
+          },
+          "tags": {
+            "default": [],
+            "description": "Tags associated with the Fax Application.",
+            "example": [
+              "tag1",
+              "tag2"
+            ],
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "webhook_event_failover_url": {
+            "$ref": "#/components/schemas/WebhookEventFailoverUrl"
+          },
+          "webhook_event_url": {
+            "$ref": "#/components/schemas/WebhookEventUrl"
+          },
+          "webhook_timeout_secs": {
+            "$ref": "#/components/schemas/WebhookTimeoutSecs"
+          }
+        },
+        "required": [
+          "application_name",
+          "webhook_event_url"
+        ],
+        "title": "Create Fax Application Request",
+        "type": "object"
+      },
+      "Error": {
+        "example": {
+          "code": "20207",
+          "description": "The street address provided is invalid.",
+          "source": {
+            "pointer": "/street_address"
+          },
+          "title": "Invalid street address"
+        },
+        "properties": {
+          "code": {
+            "type": "string",
+            "x-format": "int64"
+          },
+          "description": {
+            "type": "string"
+          },
+          "detail": {
+            "description": "A human-readable explanation of the error.",
+            "type": "string"
+          },
+          "meta": {
+            "additionalProperties": true,
+            "type": "object"
+          },
+          "source": {
+            "properties": {
+              "parameter": {
+                "description": "Indicates which query parameter caused the error.",
+                "type": "string"
+              },
+              "pointer": {
+                "description": "JSON pointer (RFC6901) to the offending entity.",
+                "format": "json-pointer",
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
+          "title": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "title"
+        ],
+        "type": "object"
+      },
+      "Errors": {
+        "properties": {
+          "errors": {
+            "items": {
+              "$ref": "#/components/schemas/Error"
+            },
+            "type": "array"
+          }
+        },
+        "type": "object"
+      },
+      "FaxApplication": {
+        "example": {
+          "active": false,
+          "anchorsite_override": "Amsterdam, Netherlands",
+          "application_name": "fax-router",
+          "created_at": "2018-02-02T22:25:27.521Z",
+          "id": "1293384261075731499",
+          "inbound": {
+            "channel_limit": 10,
+            "sip_subdomain": "example",
+            "sip_subdomain_receive_settings": "only_my_connections"
+          },
+          "outbound": {
+            "channel_limit": 10,
+            "outbound_voice_profile_id": "1293384261075731499"
+          },
+          "record_type": "fax_application",
+          "updated_at": "2018-02-02T22:25:27.521Z",
+          "webhook_event_failover_url": "https://failover.example.com",
+          "webhook_event_url": "https://example.com",
+          "webhook_timeout_secs": 25
+        },
+        "properties": {
+          "active": {
+            "$ref": "#/components/schemas/ConnectionActive"
+          },
+          "anchorsite_override": {
+            "$ref": "#/components/schemas/AnchorsiteOverride"
+          },
+          "application_name": {
+            "$ref": "#/components/schemas/ApplicationName"
+          },
+          "created_at": {
+            "description": "ISO 8601 formatted date indicating when the resource was created.",
+            "example": "2018-02-02T22:25:27.521Z",
+            "type": "string"
+          },
+          "id": {
+            "$ref": "#/components/schemas/IntId"
+          },
+          "inbound": {
+            "properties": {
+              "channel_limit": {
+                "default": null,
+                "description": "When set, this will limit the number of concurrent inbound calls to phone numbers associated with this connection.",
+                "example": 10,
+                "type": "integer"
+              },
+              "sip_subdomain": {
+                "default": null,
+                "description": "Specifies a subdomain that can be used to receive Inbound calls to a Connection, in the same way a phone number is used, from a SIP endpoint. Example: the subdomain \"example.sip.telnyx.com\" can be called from any SIP endpoint by using the SIP URI \"sip:@example.sip.telnyx.com\" where the user part can be any alphanumeric value. TLS signaling is supported. SRTP media encryption requires TLS transport.",
+                "example": "example",
+                "type": "string"
+              },
+              "sip_subdomain_receive_settings": {
+                "default": "from_anyone",
+                "description": "This option can be enabled to receive calls from: \"Anyone\" (any SIP endpoint in the public Internet) or \"Only my connections\" (any connection assigned to the same Telnyx user).",
+                "enum": [
+                  "only_my_connections",
+                  "from_anyone"
+                ],
+                "example": "only_my_connections",
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
+          "outbound": {
+            "properties": {
+              "channel_limit": {
+                "default": null,
+                "description": "When set, this will limit the number of concurrent outbound calls to phone numbers associated with this connection.",
+                "example": 10,
+                "type": "integer"
+              },
+              "outbound_voice_profile_id": {
+                "$ref": "#/components/schemas/OutboundVoiceProfileId"
+              }
+            },
+            "type": "object"
+          },
+          "record_type": {
+            "description": "Identifies the type of the resource.",
+            "example": "fax_application",
+            "type": "string"
+          },
+          "tags": {
+            "default": [],
+            "description": "Tags associated with the Fax Application.",
+            "example": [
+              "tag1",
+              "tag2"
+            ],
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "updated_at": {
+            "description": "ISO 8601 formatted date indicating when the resource was updated.",
+            "example": "2018-02-02T22:25:27.521Z",
+            "type": "string"
+          },
+          "webhook_event_failover_url": {
+            "$ref": "#/components/schemas/WebhookEventFailoverUrl"
+          },
+          "webhook_event_url": {
+            "$ref": "#/components/schemas/WebhookEventUrl"
+          },
+          "webhook_timeout_secs": {
+            "$ref": "#/components/schemas/WebhookTimeoutSecs"
+          }
+        },
+        "title": "Fax Application",
+        "type": "object"
+      },
+      "FaxEmailRecipient": {
+        "default": null,
+        "description": "Specifies an email address where faxes sent to this application will be forwarded to (as pdf or tiff attachments)",
+        "example": "user@example.com",
+        "title": "Fax Email Recipient",
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "IntId": {
+        "description": "Uniquely identifies the resource.",
+        "example": "1293384261075731499",
+        "title": "Int ID",
+        "type": "string"
+      },
+      "OutboundVoiceProfileId": {
+        "description": "Identifies the associated outbound voice profile.",
+        "example": "1293384261075731499",
+        "title": "Outbound Voice Profile ID",
+        "type": "string"
+      },
+      "PaginationMeta": {
+        "properties": {
+          "page_number": {
+            "example": 2,
+            "type": "integer"
+          },
+          "page_size": {
+            "example": 25,
+            "type": "integer"
+          },
+          "total_pages": {
+            "example": 3,
+            "type": "integer"
+          },
+          "total_results": {
+            "example": 55,
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "UpdateFaxApplicationRequest": {
+        "example": {
+          "active": false,
+          "anchorsite_override": "Amsterdam, Netherlands",
+          "application_name": "fax-router",
+          "inbound": {
+            "channel_limit": 10,
+            "sip_subdomain": "example",
+            "sip_subdomain_receive_settings": "only_my_connections"
+          },
+          "outbound": {
+            "channel_limit": 10,
+            "outbound_voice_profile_id": "1293384261075731499"
+          },
+          "tags": [
+            "tag1",
+            "tag2"
+          ],
+          "webhook_event_failover_url": "https://failover.example.com",
+          "webhook_event_url": "https://example.com",
+          "webhook_timeout_secs": 25
+        },
+        "properties": {
+          "active": {
+            "$ref": "#/components/schemas/ConnectionActive"
+          },
+          "anchorsite_override": {
+            "$ref": "#/components/schemas/AnchorsiteOverride"
+          },
+          "application_name": {
+            "$ref": "#/components/schemas/ApplicationName"
+          },
+          "fax_email_recipient": {
+            "$ref": "#/components/schemas/FaxEmailRecipient"
+          },
+          "inbound": {
+            "properties": {
+              "channel_limit": {
+                "default": null,
+                "description": "When set, this will limit the number of concurrent inbound calls to phone numbers associated with this connection.",
+                "example": 10,
+                "type": "integer"
+              },
+              "sip_subdomain": {
+                "default": null,
+                "description": "Specifies a subdomain that can be used to receive Inbound calls to a Connection, in the same way a phone number is used, from a SIP endpoint. Example: the subdomain \"example.sip.telnyx.com\" can be called from any SIP endpoint by using the SIP URI \"sip:@example.sip.telnyx.com\" where the user part can be any alphanumeric value. TLS signaling is supported. SRTP media encryption requires TLS transport.",
+                "example": "example",
+                "type": "string"
+              },
+              "sip_subdomain_receive_settings": {
+                "default": "from_anyone",
+                "description": "This option can be enabled to receive calls from: \"Anyone\" (any SIP endpoint in the public Internet) or \"Only my connections\" (any connection assigned to the same Telnyx user).",
+                "enum": [
+                  "only_my_connections",
+                  "from_anyone"
+                ],
+                "example": "only_my_connections",
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
+          "outbound": {
+            "properties": {
+              "channel_limit": {
+                "default": null,
+                "description": "When set, this will limit the number of concurrent outbound calls to phone numbers associated with this connection.",
+                "example": 10,
+                "type": "integer"
+              },
+              "outbound_voice_profile_id": {
+                "$ref": "#/components/schemas/OutboundVoiceProfileId"
+              }
+            },
+            "type": "object"
+          },
+          "tags": {
+            "description": "Tags associated with the Fax Application.",
+            "example": [
+              "tag1",
+              "tag2"
+            ],
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "webhook_event_failover_url": {
+            "$ref": "#/components/schemas/WebhookEventFailoverUrl"
+          },
+          "webhook_event_url": {
+            "$ref": "#/components/schemas/WebhookEventUrl"
+          },
+          "webhook_timeout_secs": {
+            "$ref": "#/components/schemas/WebhookTimeoutSecs"
+          }
+        },
+        "required": [
+          "application_name",
+          "webhook_event_url"
+        ],
+        "title": "Update Fax Application Request",
+        "type": "object"
+      },
+      "WebhookEventFailoverUrl": {
+        "default": "",
+        "description": "The failover URL where webhooks related to this connection will be sent if sending to the primary URL fails. Must include a scheme, such as 'https'.",
+        "example": "https://failover.example.com",
+        "format": "uri",
+        "title": "Webhook Event Failover URL",
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "WebhookEventUrl": {
+        "description": "The URL where webhooks related to this connection will be sent. Must include a scheme, such as 'https'.",
+        "example": "https://example.com",
+        "format": "uri",
+        "title": "Webhook Event URL",
+        "type": "string"
+      },
+      "WebhookTimeoutSecs": {
+        "default": null,
+        "description": "Specifies how many seconds to wait before timing out a webhook.",
+        "example": 25,
+        "maximum": 30,
+        "minimum": 0,
+        "title": "Webhook Timeout Secs",
+        "type": [
+          "integer",
+          "null"
+        ]
+      },
+      "call-scripting_ErrorResponse": {
+        "properties": {
+          "errors": {
+            "items": {
+              "properties": {
+                "code": {
+                  "type": "string"
+                },
+                "detail": {
+                  "type": "string"
+                },
+                "meta": {
+                  "properties": {
+                    "url": {
+                      "format": "uri",
+                      "type": "string"
+                    }
+                  },
+                  "type": "object"
+                },
+                "source": {
+                  "properties": {
+                    "pointer": {
+                      "type": "string"
+                    }
+                  },
+                  "type": "object"
+                },
+                "title": {
+                  "type": "string"
+                }
+              },
+              "type": "object"
+            },
+            "type": "array"
+          }
+        },
+        "type": "object"
+      },
+      "programmable-fax_ErrorResponse": {
+        "properties": {
+          "errors": {
+            "items": {
+              "properties": {
+                "code": {
+                  "type": "string"
+                },
+                "detail": {
+                  "type": "string"
+                },
+                "meta": {
+                  "properties": {
+                    "url": {
+                      "format": "uri",
+                      "type": "string"
+                    }
+                  },
+                  "type": "object"
+                },
+                "source": {
+                  "properties": {
+                    "pointer": {
+                      "type": "string"
+                    }
+                  },
+                  "type": "object"
+                },
+                "title": {
+                  "type": "string"
+                }
+              },
+              "type": "object"
+            },
+            "type": "array"
+          }
+        },
+        "type": "object"
+      }
+    },
+    "securitySchemes": {
+      "BearerAuth": {
+        "bearerFormat": "API key",
+        "description": "Telnyx API key supplied as `Authorization: Bearer \u003ctoken\u003e`. In production, auth may be validated by the API gateway and forwarded via Telnyx auth headers.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "Payment": {
+        "description": "Machine Payment Protocol credential used on paid retries, sent as `Authorization: Payment ...`. Obtained by paying a challenge returned in the `WWW-Authenticate` header of a 402 response. This is not a Telnyx API key; initial challenge requests use standard bearer authentication instead.",
+        "in": "header",
+        "name": "Authorization",
+        "type": "apiKey"
+      },
+      "agent-memory_bearerAuth": {
+        "description": "Telnyx API key",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "bearerAuth": {
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "branded-calling_bearerAuth": {
+        "description": "Telnyx API key. Generate one at https://portal.telnyx.com/#/app/api-keys.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "collections_bearerAuth": {
+        "description": "Telnyx API key. Collections and results are automatically scoped to the authenticated user's organization.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "number-reputation_bearerAuth": {
+        "description": "Telnyx API key. Generate one at https://portal.telnyx.com/#/app/api-keys.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "oauthClientAuth": {
+        "description": "OAuth 2.0 authentication for Telnyx API and MCP integrations",
+        "flows": {
+          "authorizationCode": {
+            "authorizationUrl": "https://api.telnyx.com/v2/oauth/authorize",
+            "refreshUrl": "https://api.telnyx.com/v2/oauth/token",
+            "scopes": {
+              "admin": "Administrative access to Telnyx resources"
+            },
+            "tokenUrl": "https://api.telnyx.com/v2/oauth/token"
+          },
+          "clientCredentials": {
+            "scopes": {
+              "admin": "Administrative access to Telnyx resources"
+            },
+            "tokenUrl": "https://api.telnyx.com/v2/oauth/token"
+          }
+        },
+        "type": "oauth2"
+      },
+      "outbound-voice-profiles_bearerAuth": {
+        "bearerFormat": "JWT",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "pay-connectors_bearerAuth": {
+        "description": "Telnyx API key, not the processor bearer token.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "pronunciation-dicts_bearerAuth": {
+        "description": "Telnyx API v2 key. Obtain from https://portal.telnyx.com",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "rcs-registration_bearerAuth": {
+        "bearerFormat": "API key",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "stored-payment-transactions_bearerAuth": {
+        "bearerFormat": "JWT",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "telnyxApiKey": {
+        "description": "Management-only Telnyx account credential.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "transcriptions-search_bearerAuth": {
+        "description": "Telnyx API key. Results are automatically scoped to the authenticated user's organization.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "web-search_bearerAuth": {
+        "description": "Telnyx API key",
+        "scheme": "bearer",
+        "type": "http"
+      }
+    }
+  },
+  "info": {
+    "contact": {
+      "email": "support@telnyx.com"
+    },
+    "description": "SIP trunking, SMS, MMS, Call Control and Telephony Data Services.",
+    "title": "Telnyx API",
+    "version": "2.0.0",
+    "x-endpoint-cost": "light",
+    "x-latency-category": "responsive"
+  },
+  "openapi": "3.1.0",
+  "paths": {
+    "/fax_applications": {
+      "get": {
+        "description": "This endpoint returns a list of your Fax Applications inside the 'data' attribute of the response. You can adjust which applications are listed by using filters. Fax Applications are used to configure how you send and receive faxes using the Programmable Fax API with Telnyx.",
+        "operationId": "ListFaxApplications",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/PageConsolidated"
+          },
+          {
+            "$ref": "#/components/parameters/programmable-fax_FilterConsolidated"
+          },
+          {
+            "$ref": "#/components/parameters/programmable-fax_SortApplication"
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "items": {
+                        "$ref": "#/components/schemas/FaxApplication"
+                      },
+                      "type": "array"
+                    },
+                    "meta": {
+                      "$ref": "#/components/schemas/PaginationMeta"
+                    }
+                  },
+                  "title": "Get All Fax Applications Response",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful response"
+          },
+          "400": {
+            "$ref": "#/components/responses/programmable-fax_BadRequestResponse"
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthenticatedResponse"
+          },
+          "403": {
+            "$ref": "#/components/responses/programmable-fax_UnauthorizedResponse"
+          }
+        },
+        "summary": "List all Fax Applications",
+        "tags": [
+          "Programmable Fax Applications"
+        ],
+        "x-endpoint-cost": "medium"
+      },
+      "post": {
+        "description": "Creates a new Fax Application based on the parameters sent in the request. The application name and webhook URL are required. Once created, you can assign phone numbers to your application using the `/phone_numbers` endpoint.",
+        "operationId": "CreateFaxApplication",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateFaxApplicationRequest"
+              }
+            }
+          },
+          "description": "Parameters that can be set when creating a Fax Application",
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/FaxApplication"
+                    }
+                  },
+                  "title": "Fax Application Response",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful response"
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthenticatedResponse"
+          },
+          "403": {
+            "$ref": "#/components/responses/programmable-fax_UnauthorizedResponse"
+          },
+          "422": {
+            "$ref": "#/components/responses/programmable-fax_UnprocessableEntityResponse"
+          }
+        },
+        "summary": "Creates a Fax Application",
+        "tags": [
+          "Programmable Fax Applications"
+        ],
+        "x-endpoint-cost": "medium"
+      }
+    },
+    "/fax_applications/{id}": {
+      "delete": {
+        "description": "Permanently deletes a Fax Application. Deletion may be prevented if the application is in use by phone numbers.",
+        "operationId": "DeleteFaxApplication",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/id"
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/FaxApplication"
+                    }
+                  },
+                  "title": "Fax Application Response",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful response"
+          },
+          "400": {
+            "$ref": "#/components/responses/programmable-fax_BadRequestResponse"
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthenticatedResponse"
+          },
+          "403": {
+            "$ref": "#/components/responses/programmable-fax_UnauthorizedResponse"
+          },
+          "404": {
+            "$ref": "#/components/responses/programmable-fax_NotFoundResponse"
+          }
+        },
+        "summary": "Deletes a Fax Application",
+        "tags": [
+          "Programmable Fax Applications"
+        ]
+      },
+      "get": {
+        "description": "Return the details of an existing Fax Application inside the 'data' attribute of the response.",
+        "operationId": "GetFaxApplication",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/id"
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/FaxApplication"
+                    }
+                  },
+                  "title": "Fax Application Response",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful response"
+          },
+          "400": {
+            "$ref": "#/components/responses/programmable-fax_BadRequestResponse"
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthenticatedResponse"
+          },
+          "403": {
+            "$ref": "#/components/responses/programmable-fax_UnauthorizedResponse"
+          },
+          "404": {
+            "$ref": "#/components/responses/programmable-fax_NotFoundResponse"
+          }
+        },
+        "summary": "Retrieve a Fax Application",
+        "tags": [
+          "Programmable Fax Applications"
+        ]
+      },
+      "patch": {
+        "description": "Updates settings of an existing Fax Application based on the parameters of the request.",
+        "operationId": "UpdateFaxApplication",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/id"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateFaxApplicationRequest"
+              }
+            }
+          },
+          "description": "Parameters to be updated for the Fax Application",
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/FaxApplication"
+                    }
+                  },
+                  "title": "Fax Application Response",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful response"
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthenticatedResponse"
+          },
+          "403": {
+            "$ref": "#/components/responses/programmable-fax_UnauthorizedResponse"
+          },
+          "404": {
+            "$ref": "#/components/responses/programmable-fax_NotFoundResponse"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "errors": [
+                    {
+                      "detail": "A previous update to this connection is still in progress. Please try again later."
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/programmable-fax_ErrorResponse"
+                }
+              }
+            },
+            "description": "Conflict. Another update to this application is still in progress. Wait and retry the request later."
+          },
+          "422": {
+            "$ref": "#/components/responses/programmable-fax_UnprocessableEntityResponse"
+          }
+        },
+        "summary": "Update a Fax Application",
+        "tags": [
+          "Programmable Fax Applications"
+        ]
+      }
+    }
+  },
+  "security": [
+    {
+      "bearerAuth": []
+    }
+  ],
+  "servers": [
+    {
+      "description": "Version 2.0.0 of the Telnyx API",
+      "url": "https://api.telnyx.com/v2"
+    }
+  ]
+}

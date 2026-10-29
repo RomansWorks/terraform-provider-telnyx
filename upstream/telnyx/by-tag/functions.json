@@ -1,0 +1,1824 @@
+{
+  "components": {
+    "schemas": {
+      "ComputeBinding": {
+        "description": "A function-scoped binding persisted at ship time. For binding_type=actor, actor_type is the referenced Stateful Actor type and env_name is the binding name exposed to the function.",
+        "properties": {
+          "actor_type": {
+            "example": "Counter",
+            "type": "string"
+          },
+          "binding_id": {
+            "type": "string"
+          },
+          "binding_type": {
+            "example": "actor",
+            "type": "string"
+          },
+          "bucket_id": {
+            "type": "string"
+          },
+          "created_at": {
+            "type": "string"
+          },
+          "env_name": {
+            "example": "COUNTER",
+            "type": "string"
+          },
+          "func_id": {
+            "type": "string"
+          },
+          "kv_id": {
+            "type": "string"
+          },
+          "record_type": {
+            "example": "compute_binding",
+            "type": "string"
+          },
+          "secret_name": {
+            "type": "string"
+          },
+          "sqldb_id": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "updated_at": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "ComputeFunction": {
+        "properties": {
+          "bindings": {
+            "description": "Always present; empty when the function has no bindings.",
+            "items": {
+              "$ref": "#/components/schemas/ComputeBinding"
+            },
+            "type": "array"
+          },
+          "created_at": {
+            "type": "string"
+          },
+          "id": {
+            "type": "string"
+          },
+          "invoke_url": {
+            "type": "string"
+          },
+          "message": {
+            "example": "Function deployed successfully",
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "record_type": {
+            "example": "compute_func",
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "status_detail": {
+            "type": "string"
+          },
+          "updated_at": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "ComputeFunctionListResponse": {
+        "properties": {
+          "data": {
+            "items": {
+              "$ref": "#/components/schemas/ComputeFunction"
+            },
+            "type": "array"
+          },
+          "meta": {
+            "$ref": "#/components/schemas/edge-compute_PaginationMeta"
+          }
+        },
+        "type": "object"
+      },
+      "Error": {
+        "example": {
+          "code": "20207",
+          "description": "The street address provided is invalid.",
+          "source": {
+            "pointer": "/street_address"
+          },
+          "title": "Invalid street address"
+        },
+        "properties": {
+          "code": {
+            "type": "string",
+            "x-format": "int64"
+          },
+          "description": {
+            "type": "string"
+          },
+          "detail": {
+            "description": "A human-readable explanation of the error.",
+            "type": "string"
+          },
+          "meta": {
+            "additionalProperties": true,
+            "type": "object"
+          },
+          "source": {
+            "properties": {
+              "parameter": {
+                "description": "Indicates which query parameter caused the error.",
+                "type": "string"
+              },
+              "pointer": {
+                "description": "JSON pointer (RFC6901) to the offending entity.",
+                "format": "json-pointer",
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
+          "title": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "title"
+        ],
+        "type": "object"
+      },
+      "ErrorMeta": {
+        "properties": {
+          "url": {
+            "example": "https://docs.telnyx.com/api/errors/10005",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "ErrorSource": {
+        "properties": {
+          "parameter": {
+            "example": "id",
+            "type": "string"
+          },
+          "pointer": {
+            "example": "/id",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "Errors": {
+        "properties": {
+          "errors": {
+            "items": {
+              "$ref": "#/components/schemas/Error"
+            },
+            "type": "array"
+          }
+        },
+        "type": "object"
+      },
+      "FuncInvocationLog": {
+        "properties": {
+          "duration_ms": {
+            "type": "number"
+          },
+          "method": {
+            "type": "string"
+          },
+          "path": {
+            "type": "string"
+          },
+          "record_type": {
+            "const": "compute_func_invocation_log",
+            "type": "string"
+          },
+          "region": {
+            "type": "string"
+          },
+          "request_size_bytes": {
+            "type": "integer"
+          },
+          "response_size_bytes": {
+            "type": "integer"
+          },
+          "status_code": {
+            "type": "integer"
+          },
+          "timestamp": {
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "FuncInvocationLogsResponse": {
+        "properties": {
+          "data": {
+            "items": {
+              "$ref": "#/components/schemas/FuncInvocationLog"
+            },
+            "type": "array"
+          },
+          "meta": {
+            "$ref": "#/components/schemas/LogsMeta"
+          }
+        },
+        "type": "object"
+      },
+      "FuncLogExportConfig": {
+        "description": "Metadata-only view of a function's log export destination. Header values are write-only (encrypted server-side) and never appear in any response.",
+        "properties": {
+          "created_at": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "enabled": {
+            "description": "Whether export is enabled for this function",
+            "type": "boolean"
+          },
+          "endpoint": {
+            "description": "HTTPS OTLP endpoint URL logs are pushed to",
+            "format": "uri",
+            "type": "string"
+          },
+          "func_id": {
+            "description": "Function ID this configuration belongs to",
+            "type": "string"
+          },
+          "id": {
+            "description": "Configuration record ID",
+            "type": "string"
+          },
+          "invocation_export_enabled": {
+            "description": "Whether invocation records (one per HTTP request) are exported",
+            "type": "boolean"
+          },
+          "record_type": {
+            "enum": [
+              "compute_func_log_export_config"
+            ],
+            "type": "string"
+          },
+          "runtime_export_enabled": {
+            "description": "Whether runtime logs (function stdout/stderr) are exported",
+            "type": "boolean"
+          },
+          "updated_at": {
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "FuncLogExportConfigResponse": {
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/FuncLogExportConfig"
+          }
+        },
+        "type": "object"
+      },
+      "FuncLogExportConfigSetRequest": {
+        "description": "Full-replace configuration body. All fields are required on every call: the API treats PUT as a replace (RFC 7231), so omitting any field is a 422, not \"keep the current value\".",
+        "properties": {
+          "endpoint": {
+            "description": "HTTPS URL to push logs to",
+            "format": "uri",
+            "type": "string"
+          },
+          "headers": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "description": "Headers attached to every export push, as key-value pairs (e.g. an auth token the collector expects). Required even when empty — {} means \"no headers\". Encrypted at rest; never returned.",
+            "type": "object"
+          },
+          "invocation_export_enabled": {
+            "description": "Export invocation records (one per HTTP request) to this destination",
+            "type": "boolean"
+          },
+          "runtime_export_enabled": {
+            "description": "Export runtime logs (function stdout/stderr) to this destination",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "endpoint",
+          "headers",
+          "runtime_export_enabled",
+          "invocation_export_enabled"
+        ],
+        "type": "object"
+      },
+      "FuncRuntimeLog": {
+        "properties": {
+          "level": {
+            "type": "string"
+          },
+          "message": {
+            "type": "string"
+          },
+          "record_type": {
+            "const": "compute_func_runtime_log",
+            "type": "string"
+          },
+          "timestamp": {
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "FuncRuntimeLogsResponse": {
+        "properties": {
+          "data": {
+            "items": {
+              "$ref": "#/components/schemas/FuncRuntimeLog"
+            },
+            "type": "array"
+          },
+          "meta": {
+            "$ref": "#/components/schemas/LogsMeta"
+          }
+        },
+        "type": "object"
+      },
+      "FunctionMetricAggregate": {
+        "properties": {
+          "cpu_used_cores_avg": {
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "cpu_used_cores_max": {
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "end_time": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "function_id": {
+            "type": "string"
+          },
+          "function_name": {
+            "type": "string"
+          },
+          "memory_used_bytes_avg": {
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "memory_used_bytes_max": {
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "product": {
+            "type": "string"
+          },
+          "record_type": {
+            "type": "string"
+          },
+          "request_client_error_rate": {
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "request_count": {
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "request_error_rate": {
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "request_latency_avg_ms": {
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "request_latency_p50_ms": {
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "request_latency_p95_ms": {
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "request_latency_p99_ms": {
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "request_success_rate": {
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "start_time": {
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "FunctionMetricAggregateListResponse": {
+        "properties": {
+          "data": {
+            "items": {
+              "$ref": "#/components/schemas/FunctionMetricAggregate"
+            },
+            "type": "array"
+          },
+          "meta": {
+            "$ref": "#/components/schemas/functions-observability_PaginationMeta"
+          }
+        },
+        "type": "object"
+      },
+      "GenericErrorResponse": {
+        "properties": {
+          "errors": {
+            "items": {
+              "$ref": "#/components/schemas/edge-compute_Error"
+            },
+            "type": "array"
+          }
+        },
+        "type": "object"
+      },
+      "LogsMeta": {
+        "properties": {
+          "has_more": {
+            "type": "boolean"
+          },
+          "partial": {
+            "type": "boolean"
+          }
+        },
+        "type": "object"
+      },
+      "Revision": {
+        "properties": {
+          "active": {
+            "type": "boolean"
+          },
+          "build_ok_at": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "build_status": {
+            "type": "string"
+          },
+          "commit_sha": {
+            "type": "string"
+          },
+          "deploy_status": {
+            "type": "string"
+          },
+          "failure_reason": {
+            "type": "string"
+          },
+          "failure_stage": {
+            "type": "string"
+          },
+          "image": {
+            "type": "string"
+          },
+          "record_type": {
+            "type": "string"
+          },
+          "revision_id": {
+            "type": "string"
+          },
+          "shipped_at": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "shipped_by": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "RevisionListResponse": {
+        "properties": {
+          "data": {
+            "items": {
+              "$ref": "#/components/schemas/Revision"
+            },
+            "type": "array"
+          },
+          "meta": {
+            "$ref": "#/components/schemas/functions-observability_PaginationMeta"
+          }
+        },
+        "type": "object"
+      },
+      "ShipInspection": {
+        "properties": {
+          "created_at": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "reason": {
+            "type": "string"
+          },
+          "record_type": {
+            "const": "build_log_inspection",
+            "description": "Stable record type retained by both inspection path aliases.",
+            "type": "string"
+          },
+          "runtime": {
+            "type": "string"
+          },
+          "snippet": {
+            "type": "string"
+          },
+          "stage": {
+            "enum": [
+              "build",
+              "platform",
+              "pre_build",
+              "deploy",
+              "security_review",
+              "none",
+              "pending"
+            ],
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "ShipInspectionResponseWrapper": {
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/ShipInspection"
+          }
+        },
+        "type": "object"
+      },
+      "edge-compute_Error": {
+        "properties": {
+          "code": {
+            "example": "10005",
+            "type": "string"
+          },
+          "detail": {
+            "example": "The requested function does not exist or you don't have access to it",
+            "type": "string"
+          },
+          "meta": {
+            "$ref": "#/components/schemas/ErrorMeta"
+          },
+          "source": {
+            "$ref": "#/components/schemas/ErrorSource"
+          },
+          "title": {
+            "example": "Function not found",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "edge-compute_PaginationMeta": {
+        "properties": {
+          "page_number": {
+            "example": 1,
+            "type": "integer"
+          },
+          "page_size": {
+            "example": 20,
+            "type": "integer"
+          },
+          "total_pages": {
+            "example": 3,
+            "type": "integer"
+          },
+          "total_results": {
+            "example": 52,
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "functions-observability_PaginationMeta": {
+        "properties": {
+          "page_number": {
+            "type": "integer"
+          },
+          "page_size": {
+            "type": "integer"
+          },
+          "total_pages": {
+            "type": "integer"
+          },
+          "total_results": {
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      }
+    },
+    "securitySchemes": {
+      "BearerAuth": {
+        "bearerFormat": "API key",
+        "description": "Telnyx API key supplied as `Authorization: Bearer \u003ctoken\u003e`. In production, auth may be validated by the API gateway and forwarded via Telnyx auth headers.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "Payment": {
+        "description": "Machine Payment Protocol credential used on paid retries, sent as `Authorization: Payment ...`. Obtained by paying a challenge returned in the `WWW-Authenticate` header of a 402 response. This is not a Telnyx API key; initial challenge requests use standard bearer authentication instead.",
+        "in": "header",
+        "name": "Authorization",
+        "type": "apiKey"
+      },
+      "agent-memory_bearerAuth": {
+        "description": "Telnyx API key",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "bearerAuth": {
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "branded-calling_bearerAuth": {
+        "description": "Telnyx API key. Generate one at https://portal.telnyx.com/#/app/api-keys.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "collections_bearerAuth": {
+        "description": "Telnyx API key. Collections and results are automatically scoped to the authenticated user's organization.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "number-reputation_bearerAuth": {
+        "description": "Telnyx API key. Generate one at https://portal.telnyx.com/#/app/api-keys.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "oauthClientAuth": {
+        "description": "OAuth 2.0 authentication for Telnyx API and MCP integrations",
+        "flows": {
+          "authorizationCode": {
+            "authorizationUrl": "https://api.telnyx.com/v2/oauth/authorize",
+            "refreshUrl": "https://api.telnyx.com/v2/oauth/token",
+            "scopes": {
+              "admin": "Administrative access to Telnyx resources"
+            },
+            "tokenUrl": "https://api.telnyx.com/v2/oauth/token"
+          },
+          "clientCredentials": {
+            "scopes": {
+              "admin": "Administrative access to Telnyx resources"
+            },
+            "tokenUrl": "https://api.telnyx.com/v2/oauth/token"
+          }
+        },
+        "type": "oauth2"
+      },
+      "outbound-voice-profiles_bearerAuth": {
+        "bearerFormat": "JWT",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "pay-connectors_bearerAuth": {
+        "description": "Telnyx API key, not the processor bearer token.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "pronunciation-dicts_bearerAuth": {
+        "description": "Telnyx API v2 key. Obtain from https://portal.telnyx.com",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "rcs-registration_bearerAuth": {
+        "bearerFormat": "API key",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "stored-payment-transactions_bearerAuth": {
+        "bearerFormat": "JWT",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "telnyxApiKey": {
+        "description": "Management-only Telnyx account credential.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "transcriptions-search_bearerAuth": {
+        "description": "Telnyx API key. Results are automatically scoped to the authenticated user's organization.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "web-search_bearerAuth": {
+        "description": "Telnyx API key",
+        "scheme": "bearer",
+        "type": "http"
+      }
+    }
+  },
+  "info": {
+    "contact": {
+      "email": "support@telnyx.com"
+    },
+    "description": "SIP trunking, SMS, MMS, Call Control and Telephony Data Services.",
+    "title": "Telnyx API",
+    "version": "2.0.0",
+    "x-endpoint-cost": "light",
+    "x-latency-category": "responsive"
+  },
+  "openapi": "3.1.0",
+  "paths": {
+    "/compute/funcs": {
+      "get": {
+        "description": "List functions for the authenticated organization. Each function includes its persisted function-scoped bindings. Actor bindings expose actor_type and env_name, allowing clients to identify every function attached to a Stateful Actor type.",
+        "operationId": "ListComputeFunctions",
+        "parameters": [
+          {
+            "description": "Page number",
+            "in": "query",
+            "name": "page[number]",
+            "schema": {
+              "default": 1,
+              "minimum": 1,
+              "type": "integer"
+            }
+          },
+          {
+            "description": "Page size (maximum 250)",
+            "in": "query",
+            "name": "page[size]",
+            "schema": {
+              "default": 20,
+              "maximum": 250,
+              "minimum": 1,
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ComputeFunctionListResponse"
+                }
+              }
+            },
+            "description": "Functions retrieved successfully"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Errors"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GenericErrorResponse"
+                }
+              }
+            },
+            "description": "Internal server error"
+          }
+        },
+        "summary": "List functions",
+        "tags": [
+          "functions"
+        ]
+      }
+    },
+    "/compute/funcs/{id}/logs": {
+      "get": {
+        "description": "Returns logs oldest first. `type=runtime` (default) returns function stdout/stderr. `type=invocations` returns one platform-generated record per HTTP request served.",
+        "operationId": "GetComputeFunctionLogs",
+        "parameters": [
+          {
+            "description": "Function ID",
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Log stream to return.",
+            "in": "query",
+            "name": "type",
+            "required": false,
+            "schema": {
+              "default": "runtime",
+              "enum": [
+                "runtime",
+                "invocations"
+              ],
+              "type": "string"
+            }
+          },
+          {
+            "description": "Return records at or after this RFC 3339 timestamp.",
+            "in": "query",
+            "name": "start_time",
+            "required": false,
+            "schema": {
+              "format": "date-time",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Return records at or before this RFC 3339 timestamp.",
+            "in": "query",
+            "name": "end_time",
+            "required": false,
+            "schema": {
+              "format": "date-time",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Maximum records to return.",
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "schema": {
+              "maximum": 250,
+              "minimum": 1,
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "invocations": {
+                    "value": {
+                      "data": [
+                        {
+                          "duration_ms": 2.276,
+                          "method": "GET",
+                          "path": "/health",
+                          "record_type": "compute_func_invocation_log",
+                          "region": "us-east-1",
+                          "request_size_bytes": 0,
+                          "response_size_bytes": 19,
+                          "status_code": 200,
+                          "timestamp": "2026-09-09T16:00:01.000Z"
+                        }
+                      ],
+                      "meta": {
+                        "has_more": false,
+                        "partial": false
+                      }
+                    }
+                  },
+                  "runtime": {
+                    "value": {
+                      "data": [
+                        {
+                          "level": "log",
+                          "message": "Hello from Edge Compute!",
+                          "record_type": "compute_func_runtime_log",
+                          "timestamp": "2026-09-09T16:00:00.000Z"
+                        }
+                      ],
+                      "meta": {
+                        "has_more": false,
+                        "partial": false
+                      }
+                    }
+                  }
+                },
+                "schema": {
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/FuncRuntimeLogsResponse"
+                    },
+                    {
+                      "$ref": "#/components/schemas/FuncInvocationLogsResponse"
+                    }
+                  ]
+                }
+              }
+            },
+            "description": "Logs retrieved successfully"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Errors"
+                }
+              }
+            },
+            "description": "Invalid query parameter"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Errors"
+                }
+              }
+            },
+            "description": "Function not found"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Errors"
+                }
+              }
+            },
+            "description": "Invalid function ID"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Errors"
+                }
+              }
+            },
+            "description": "Internal server error"
+          }
+        },
+        "summary": "Get function logs",
+        "tags": [
+          "functions"
+        ]
+      }
+    },
+    "/compute/funcs/{id}/logs/export": {
+      "delete": {
+        "description": "Stops exporting a function's logs and removes its destination configuration. Idempotent: deleting when nothing is configured succeeds.",
+        "operationId": "DeleteComputeFunctionLogExport",
+        "parameters": [
+          {
+            "description": "Function ID",
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Log export configuration deleted, or none was configured (idempotent). No content is returned."
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "error": {
+                    "value": {
+                      "errors": [
+                        {
+                          "code": "10020",
+                          "detail": "Request could not be processed.",
+                          "title": "Unprocessable entity"
+                        }
+                      ]
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/Errors"
+                }
+              }
+            },
+            "description": "Invalid request"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "error": {
+                    "value": {
+                      "errors": [
+                        {
+                          "code": "10001",
+                          "detail": "Invalid or missing API key.",
+                          "title": "Unauthorized"
+                        }
+                      ]
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/Errors"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "error": {
+                    "value": {
+                      "errors": [
+                        {
+                          "code": "10005",
+                          "detail": "The requested resource or URL could not be found.",
+                          "title": "Resource not found"
+                        }
+                      ]
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/Errors"
+                }
+              }
+            },
+            "description": "Function not found"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "error": {
+                    "value": {
+                      "errors": [
+                        {
+                          "code": "10020",
+                          "detail": "Request could not be processed.",
+                          "title": "Unprocessable entity"
+                        }
+                      ]
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/Errors"
+                }
+              }
+            },
+            "description": "Invalid function ID"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "error": {
+                    "value": {
+                      "errors": [
+                        {
+                          "code": "10010",
+                          "detail": "An unexpected error occurred.",
+                          "title": "Internal server error"
+                        }
+                      ]
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/Errors"
+                }
+              }
+            },
+            "description": "Internal server error"
+          }
+        },
+        "summary": "Delete log export configuration",
+        "tags": [
+          "functions"
+        ]
+      },
+      "get": {
+        "description": "Returns the function's configured log export destination and which log types are exported. Headers are never returned. Returns 404 (error code 10005) when no destination is configured for the function.",
+        "operationId": "GetComputeFunctionLogExport",
+        "parameters": [
+          {
+            "description": "Function ID",
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "configured": {
+                    "value": {
+                      "data": {
+                        "created_at": "2026-09-18T14:30:00.000Z",
+                        "enabled": true,
+                        "endpoint": "https://api.honeycomb.io/v1/logs",
+                        "func_id": "6b7e8f9a-1c2d-3e4f-5a6b-7c8d9e0f1a2b",
+                        "id": "cfg-1",
+                        "invocation_export_enabled": true,
+                        "record_type": "compute_func_log_export_config",
+                        "runtime_export_enabled": true,
+                        "updated_at": "2026-09-21T18:00:00.000Z"
+                      }
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/FuncLogExportConfigResponse"
+                }
+              }
+            },
+            "description": "Log export configuration retrieved successfully"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "error": {
+                    "value": {
+                      "errors": [
+                        {
+                          "code": "10020",
+                          "detail": "Request could not be processed.",
+                          "title": "Unprocessable entity"
+                        }
+                      ]
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/Errors"
+                }
+              }
+            },
+            "description": "Invalid query parameter"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "error": {
+                    "value": {
+                      "errors": [
+                        {
+                          "code": "10001",
+                          "detail": "Invalid or missing API key.",
+                          "title": "Unauthorized"
+                        }
+                      ]
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/Errors"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "error": {
+                    "value": {
+                      "errors": [
+                        {
+                          "code": "10005",
+                          "detail": "The requested resource or URL could not be found.",
+                          "title": "Resource not found"
+                        }
+                      ]
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/Errors"
+                }
+              }
+            },
+            "description": "Function not found, or no log export destination configured for this function (both return error code 10005)"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "error": {
+                    "value": {
+                      "errors": [
+                        {
+                          "code": "10020",
+                          "detail": "Request could not be processed.",
+                          "title": "Unprocessable entity"
+                        }
+                      ]
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/Errors"
+                }
+              }
+            },
+            "description": "Invalid function ID"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "error": {
+                    "value": {
+                      "errors": [
+                        {
+                          "code": "10010",
+                          "detail": "An unexpected error occurred.",
+                          "title": "Internal server error"
+                        }
+                      ]
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/Errors"
+                }
+              }
+            },
+            "description": "Internal server error"
+          }
+        },
+        "summary": "Get log export configuration",
+        "tags": [
+          "functions"
+        ]
+      },
+      "put": {
+        "description": "Configures the external OTLP endpoint a function's runtime and/or invocation logs are pushed to as they happen. This operation is a **full replace, not a patch**: `endpoint`, `headers`, `runtime_export_enabled`, and `invocation_export_enabled` are all required on every call — omitting any of them is a 422, not \"keep the current value\". Headers are encrypted at rest and never returned in any response.\n\nThe endpoint must be an HTTPS URL. When export is configured, new log records are converted to OTLP log records and delivered continuously; export never bypasses platform log storage, and delivery retries with a bounded policy while the destination is unreachable. Only logs generated after configuration are exported — there is no historical replay.",
+        "operationId": "SetComputeFunctionLogExport",
+        "parameters": [
+          {
+            "description": "Function ID",
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "examples": {
+                "honeycomb": {
+                  "summary": "Export both log types to Honeycomb",
+                  "value": {
+                    "endpoint": "https://api.honeycomb.io/v1/logs",
+                    "headers": {
+                      "x-honeycomb-team": "abc123"
+                    },
+                    "invocation_export_enabled": true,
+                    "runtime_export_enabled": true
+                  }
+                },
+                "invocations_only": {
+                  "summary": "Export invocation records only",
+                  "value": {
+                    "endpoint": "https://collector.example.com/v1/logs",
+                    "headers": {},
+                    "invocation_export_enabled": true,
+                    "runtime_export_enabled": false
+                  }
+                }
+              },
+              "schema": {
+                "$ref": "#/components/schemas/FuncLogExportConfigSetRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "replaced": {
+                    "value": {
+                      "data": {
+                        "created_at": "2026-09-18T14:30:00.000Z",
+                        "enabled": true,
+                        "endpoint": "https://api.honeycomb.io/v1/logs",
+                        "func_id": "6b7e8f9a-1c2d-3e4f-5a6b-7c8d9e0f1a2b",
+                        "id": "cfg-1",
+                        "invocation_export_enabled": true,
+                        "record_type": "compute_func_log_export_config",
+                        "runtime_export_enabled": true,
+                        "updated_at": "2026-09-21T18:00:00.000Z"
+                      }
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/FuncLogExportConfigResponse"
+                }
+              }
+            },
+            "description": "Log export configuration replaced successfully"
+          },
+          "201": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "created": {
+                    "value": {
+                      "data": {
+                        "created_at": "2026-09-21T18:00:00.000Z",
+                        "enabled": true,
+                        "endpoint": "https://api.honeycomb.io/v1/logs",
+                        "func_id": "6b7e8f9a-1c2d-3e4f-5a6b-7c8d9e0f1a2b",
+                        "id": "cfg-1",
+                        "invocation_export_enabled": true,
+                        "record_type": "compute_func_log_export_config",
+                        "runtime_export_enabled": true,
+                        "updated_at": "2026-09-21T18:00:00.000Z"
+                      }
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/FuncLogExportConfigResponse"
+                }
+              }
+            },
+            "description": "Log export configuration created"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "error": {
+                    "value": {
+                      "errors": [
+                        {
+                          "code": "10020",
+                          "detail": "Request could not be processed.",
+                          "title": "Unprocessable entity"
+                        }
+                      ]
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/Errors"
+                }
+              }
+            },
+            "description": "Invalid request body"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "error": {
+                    "value": {
+                      "errors": [
+                        {
+                          "code": "10001",
+                          "detail": "Invalid or missing API key.",
+                          "title": "Unauthorized"
+                        }
+                      ]
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/Errors"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "error": {
+                    "value": {
+                      "errors": [
+                        {
+                          "code": "10005",
+                          "detail": "The requested resource or URL could not be found.",
+                          "title": "Resource not found"
+                        }
+                      ]
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/Errors"
+                }
+              }
+            },
+            "description": "Function not found"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "missing_required_field": {
+                    "value": {
+                      "errors": [
+                        {
+                          "code": "10020",
+                          "detail": "Request could not be processed: this endpoint is a full replace — endpoint, headers, runtime_export_enabled, and invocation_export_enabled are all required on every call.",
+                          "title": "Unprocessable entity"
+                        }
+                      ]
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/Errors"
+                }
+              }
+            },
+            "description": "Invalid function ID, or a required request field was omitted (full replace — no partial updates)"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "error": {
+                    "value": {
+                      "errors": [
+                        {
+                          "code": "10010",
+                          "detail": "An unexpected error occurred.",
+                          "title": "Internal server error"
+                        }
+                      ]
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/Errors"
+                }
+              }
+            },
+            "description": "Internal server error"
+          }
+        },
+        "summary": "Configure log export destination",
+        "tags": [
+          "functions"
+        ]
+      }
+    },
+    "/compute/funcs/{id}/metric_aggregates": {
+      "get": {
+        "description": "Returns aggregate request, latency, CPU, memory, and resource-limit metrics for a function over the requested window.",
+        "operationId": "GetComputeFunctionMetricAggregates",
+        "parameters": [
+          {
+            "description": "Function ID",
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Inclusive window start, UTC ISO 8601 with milliseconds",
+            "in": "query",
+            "name": "start_time",
+            "required": true,
+            "schema": {
+              "format": "date-time",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Exclusive window end, UTC ISO 8601 with milliseconds",
+            "in": "query",
+            "name": "end_time",
+            "required": true,
+            "schema": {
+              "format": "date-time",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Edge site filter",
+            "in": "query",
+            "name": "filter[edge_site]",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Kubernetes namespace filter",
+            "in": "query",
+            "name": "filter[namespace]",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "page[number]",
+            "required": false,
+            "schema": {
+              "default": 1,
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "page[size]",
+            "required": false,
+            "schema": {
+              "default": 20,
+              "maximum": 250,
+              "minimum": 1,
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "data": [
+                    {
+                      "cpu_used_cores_avg": 0.03,
+                      "cpu_used_cores_max": 0.18,
+                      "end_time": "2026-09-09T16:00:00.000Z",
+                      "function_id": "01998f0a-1111-7777-8888-123456789abc",
+                      "function_name": "my-func",
+                      "memory_used_bytes_avg": 67108864,
+                      "memory_used_bytes_max": 94371840,
+                      "product": "edge_compute",
+                      "record_type": "edge_compute_function_metric_aggregate",
+                      "request_client_error_rate": 0.012,
+                      "request_count": 1250,
+                      "request_error_rate": 0.006,
+                      "request_latency_avg_ms": 10.1,
+                      "request_latency_p50_ms": 8.4,
+                      "request_latency_p95_ms": 21.7,
+                      "request_latency_p99_ms": 44.2,
+                      "request_success_rate": 0.982,
+                      "start_time": "2026-09-08T16:00:00.000Z"
+                    }
+                  ],
+                  "meta": {
+                    "page_number": 1,
+                    "page_size": 20,
+                    "total_pages": 1,
+                    "total_results": 1
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/FunctionMetricAggregateListResponse"
+                }
+              }
+            },
+            "description": "Metric aggregates retrieved successfully"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Function not found"
+          },
+          "422": {
+            "description": "Invalid function ID or query parameter"
+          },
+          "500": {
+            "description": "Internal server error"
+          },
+          "502": {
+            "description": "Metrics backend query failed"
+          },
+          "503": {
+            "description": "Metrics backend unavailable"
+          },
+          "504": {
+            "description": "Metrics backend timed out"
+          }
+        },
+        "summary": "Get function metric aggregates",
+        "tags": [
+          "functions"
+        ]
+      }
+    },
+    "/compute/funcs/{id}/revisions": {
+      "get": {
+        "description": "Lists a function's ship history newest first, including per-ship failure stage and reason when recorded.",
+        "operationId": "ListComputeFunctionRevisions",
+        "parameters": [
+          {
+            "description": "Function ID",
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "page[number]",
+            "required": false,
+            "schema": {
+              "default": 1,
+              "minimum": 1,
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "page[size]",
+            "required": false,
+            "schema": {
+              "default": 10,
+              "maximum": 250,
+              "minimum": 1,
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "data": [
+                    {
+                      "active": true,
+                      "build_ok_at": "2026-09-09T15:44:41.000Z",
+                      "build_status": "build_ok",
+                      "commit_sha": "3f8a1c2",
+                      "deploy_status": "deploy_ok",
+                      "image": "registry.example/function@sha256:abc",
+                      "record_type": "compute_func_revision",
+                      "revision_id": "rev-01998f0a",
+                      "shipped_at": "2026-09-09T15:45:00.000Z",
+                      "shipped_by": "user@example.com"
+                    },
+                    {
+                      "active": false,
+                      "build_status": "build_failed",
+                      "commit_sha": "0d9c123",
+                      "deploy_status": "pending",
+                      "failure_reason": "TypeScript compilation failed.",
+                      "failure_stage": "build",
+                      "image": "",
+                      "record_type": "compute_func_revision",
+                      "revision_id": "",
+                      "shipped_at": "2026-09-09T14:30:00.000Z",
+                      "shipped_by": "user@example.com"
+                    }
+                  ],
+                  "meta": {
+                    "page_number": 1,
+                    "page_size": 10,
+                    "total_pages": 1,
+                    "total_results": 2
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/RevisionListResponse"
+                }
+              }
+            },
+            "description": "Function revisions retrieved successfully"
+          },
+          "400": {
+            "description": "Invalid function ID"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Function not found"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        },
+        "summary": "List function revisions",
+        "tags": [
+          "functions"
+        ]
+      }
+    },
+    "/compute/funcs/{id}/ship_inspection": {
+      "get": {
+        "description": "Returns the latest ship outcome. The stage is `none` on success, `pending` while building, or a failure stage such as `build`, `platform`, `pre_build`, `deploy`, or `security_review`. This stage-neutral customer-facing path is an alias over the same inspection resource as `build_log_inspection`.",
+        "operationId": "GetComputeFunctionShipInspection",
+        "parameters": [
+          {
+            "description": "Function ID",
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "data": {
+                    "created_at": "2026-09-09T15:30:00.000Z",
+                    "reason": "index.ts(8,7): error TS2322: Type 'string' is not assignable to type 'number'.",
+                    "record_type": "build_log_inspection",
+                    "runtime": "node",
+                    "snippet": "index.ts(8,7): error TS2322",
+                    "stage": "build"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ShipInspectionResponseWrapper"
+                }
+              }
+            },
+            "description": "Latest ship inspection"
+          },
+          "404": {
+            "description": "Function or inspectable ship outcome not found"
+          },
+          "422": {
+            "description": "Invalid function ID"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        },
+        "summary": "Inspect latest function ship",
+        "tags": [
+          "functions"
+        ]
+      }
+    }
+  },
+  "security": [
+    {
+      "bearerAuth": []
+    }
+  ],
+  "servers": [
+    {
+      "description": "Version 2.0.0 of the Telnyx API",
+      "url": "https://api.telnyx.com/v2"
+    }
+  ]
+}

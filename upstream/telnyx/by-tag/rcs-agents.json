@@ -1,0 +1,1895 @@
+{
+  "components": {
+    "parameters": {
+      "AgentId": {
+        "description": "The Telnyx-assigned agent identifier.",
+        "in": "path",
+        "name": "id",
+        "required": true,
+        "schema": {
+          "format": "uuid",
+          "type": "string"
+        }
+      },
+      "TestDeviceId": {
+        "description": "The Telnyx-assigned test device identifier.",
+        "in": "path",
+        "name": "test_device_id",
+        "required": true,
+        "schema": {
+          "format": "uuid",
+          "type": "string"
+        }
+      },
+      "rcs-registration_IdempotencyKey": {
+        "description": "A caller-generated key containing letters, numbers, underscores, or hyphens. Reuse the same key and request body when retrying the same logical agent creation.",
+        "in": "header",
+        "name": "Idempotency-Key",
+        "required": true,
+        "schema": {
+          "maxLength": 255,
+          "minLength": 1,
+          "pattern": "^[A-Za-z0-9_-]+$",
+          "type": "string"
+        }
+      }
+    },
+    "responses": {
+      "DependencyUnavailable": {
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/rcs-registration_ErrorResponse"
+            }
+          }
+        },
+        "description": "A registration dependency is temporarily unavailable."
+      },
+      "ProviderError": {
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/rcs-registration_ErrorResponse"
+            }
+          }
+        },
+        "description": "The RCS provider rejected or could not complete the request."
+      },
+      "ValidationError": {
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/ValidationErrorResponse"
+            }
+          }
+        },
+        "description": "The request body or parameters failed validation."
+      },
+      "rcs-registration_BadRequest": {
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/rcs-registration_ErrorResponse"
+            }
+          }
+        },
+        "description": "The request or idempotency header is malformed."
+      },
+      "rcs-registration_Conflict": {
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/rcs-registration_ErrorResponse"
+            }
+          }
+        },
+        "description": "The operation is not allowed in the current lifecycle state or the idempotency key was used for a different request."
+      },
+      "rcs-registration_NotFound": {
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/rcs-registration_ErrorResponse"
+            }
+          }
+        },
+        "description": "The resource does not exist, is not owned by the organization, or the provider does not support the requested capability."
+      },
+      "rcs-registration_Unauthorized": {
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/rcs-registration_ErrorResponse"
+            }
+          }
+        },
+        "description": "The request is not authenticated."
+      }
+    },
+    "schemas": {
+      "AgentBasicsConfiguration": {
+        "additionalProperties": false,
+        "anyOf": [
+          {
+            "properties": {
+              "phone_number": {
+                "$ref": "#/components/schemas/AgentPhoneContact"
+              }
+            },
+            "required": [
+              "phone_number"
+            ]
+          },
+          {
+            "properties": {
+              "website": {
+                "$ref": "#/components/schemas/AgentWebsiteContact"
+              }
+            },
+            "required": [
+              "website"
+            ]
+          },
+          {
+            "properties": {
+              "email": {
+                "$ref": "#/components/schemas/AgentEmailContact"
+              }
+            },
+            "required": [
+              "email"
+            ]
+          }
+        ],
+        "description": "Basic agent identity and contact information. At least one complete phone, website, or email contact is required.",
+        "properties": {
+          "brand_color": {
+            "pattern": "^#(?:[0-9A-Fa-f]{3}|[0-9A-Fa-f]{6})$",
+            "type": "string"
+          },
+          "description": {
+            "maxLength": 100,
+            "minLength": 1,
+            "type": "string"
+          },
+          "email": {
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/AgentEmailContact"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "hero_url": {
+            "$ref": "#/components/schemas/HttpUrl"
+          },
+          "logo_url": {
+            "$ref": "#/components/schemas/HttpUrl"
+          },
+          "phone_number": {
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/AgentPhoneContact"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "privacy_policy_url": {
+            "$ref": "#/components/schemas/HttpUrl"
+          },
+          "terms_and_conditions_url": {
+            "$ref": "#/components/schemas/HttpUrl"
+          },
+          "website": {
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/AgentWebsiteContact"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "description",
+          "logo_url",
+          "hero_url",
+          "brand_color",
+          "privacy_policy_url",
+          "terms_and_conditions_url"
+        ],
+        "type": "object"
+      },
+      "AgentCampaignConfiguration": {
+        "additionalProperties": false,
+        "properties": {
+          "additional_information": {
+            "maxLength": 2000,
+            "minLength": 1,
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "agent_overview": {
+            "maxLength": 2000,
+            "minLength": 1,
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "company_overview": {
+            "maxLength": 2000,
+            "minLength": 1,
+            "type": "string"
+          },
+          "consent_settings": {
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/AgentConsentConfiguration"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "interactions": {
+            "items": {
+              "$ref": "#/components/schemas/AgentInteraction"
+            },
+            "type": "array"
+          },
+          "message_examples": {
+            "items": {
+              "maxLength": 2000,
+              "minLength": 1,
+              "type": "string"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "company_overview"
+        ],
+        "type": "object"
+      },
+      "AgentConfiguration": {
+        "additionalProperties": false,
+        "properties": {
+          "basics": {
+            "$ref": "#/components/schemas/AgentBasicsConfiguration"
+          },
+          "campaign": {
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/AgentCampaignConfiguration"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "testing": {
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/AgentTestingConfiguration"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "basics"
+        ],
+        "type": "object"
+      },
+      "AgentConsentConfiguration": {
+        "not": {
+          "anyOf": [
+            {
+              "anyOf": [
+                {
+                  "not": {
+                    "properties": {
+                      "call_to_action_url": {}
+                    },
+                    "required": [
+                      "call_to_action_url"
+                    ]
+                  }
+                },
+                {
+                  "properties": {
+                    "call_to_action_url": {
+                      "type": "null"
+                    }
+                  }
+                },
+                {
+                  "not": {
+                    "properties": {
+                      "call_to_action_media_url": {}
+                    },
+                    "required": [
+                      "call_to_action_media_url"
+                    ]
+                  }
+                },
+                {
+                  "properties": {
+                    "call_to_action_media_url": {
+                      "type": "null"
+                    }
+                  }
+                }
+              ],
+              "properties": {
+                "opt_in_methods": {
+                  "contains": {
+                    "properties": {
+                      "method_type": {
+                        "const": "WEBSITE"
+                      }
+                    },
+                    "required": [
+                      "method_type"
+                    ]
+                  }
+                }
+              },
+              "required": [
+                "opt_in_methods"
+              ]
+            },
+            {
+              "anyOf": [
+                {
+                  "not": {
+                    "properties": {
+                      "call_to_action_media_url": {}
+                    },
+                    "required": [
+                      "call_to_action_media_url"
+                    ]
+                  }
+                },
+                {
+                  "properties": {
+                    "call_to_action_media_url": {
+                      "type": "null"
+                    }
+                  }
+                }
+              ],
+              "properties": {
+                "opt_in_methods": {
+                  "contains": {
+                    "properties": {
+                      "method_type": {
+                        "const": "MOBILE_APP"
+                      }
+                    },
+                    "required": [
+                      "method_type"
+                    ]
+                  }
+                }
+              },
+              "required": [
+                "opt_in_methods"
+              ]
+            },
+            {
+              "anyOf": [
+                {
+                  "not": {
+                    "properties": {
+                      "double_opt_in_message": {}
+                    },
+                    "required": [
+                      "double_opt_in_message"
+                    ]
+                  }
+                },
+                {
+                  "properties": {
+                    "double_opt_in_message": {
+                      "type": "null"
+                    }
+                  }
+                }
+              ],
+              "properties": {
+                "double_opt_in": {
+                  "const": true
+                }
+              },
+              "required": [
+                "double_opt_in"
+              ]
+            }
+          ]
+        },
+        "properties": {
+          "call_to_action": {
+            "maxLength": 2000,
+            "minLength": 1,
+            "type": "string"
+          },
+          "call_to_action_media_url": {
+            "description": "Required when an opt-in method is `WEBSITE` or `MOBILE_APP`.",
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/HttpUrl"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "call_to_action_url": {
+            "description": "Required when an opt-in method is `WEBSITE`.",
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/HttpUrl"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "double_opt_in": {
+            "type": "boolean"
+          },
+          "double_opt_in_message": {
+            "description": "Required when double_opt_in is true.",
+            "maxLength": 2000,
+            "minLength": 1,
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "help_response": {
+            "maxLength": 2000,
+            "minLength": 1,
+            "type": "string"
+          },
+          "opt_in_message": {
+            "maxLength": 2000,
+            "minLength": 1,
+            "type": "string"
+          },
+          "opt_in_methods": {
+            "items": {
+              "$ref": "#/components/schemas/AgentOptInMethod"
+            },
+            "minItems": 1,
+            "type": "array"
+          },
+          "opt_out_response": {
+            "maxLength": 2000,
+            "minLength": 1,
+            "type": "string"
+          }
+        },
+        "propertyNames": {
+          "enum": [
+            "opt_in_methods",
+            "call_to_action",
+            "call_to_action_url",
+            "call_to_action_media_url",
+            "double_opt_in",
+            "double_opt_in_message",
+            "opt_in_message",
+            "help_response",
+            "opt_out_response"
+          ]
+        },
+        "required": [
+          "opt_in_methods",
+          "call_to_action",
+          "double_opt_in",
+          "opt_in_message",
+          "help_response",
+          "opt_out_response"
+        ],
+        "type": "object"
+      },
+      "AgentCreateRequest": {
+        "additionalProperties": false,
+        "example": {
+          "brand_id": "11111111-1111-4111-8111-111111111111",
+          "configuration": {
+            "basics": {
+              "brand_color": "#123456",
+              "description": "Order confirmations and delivery updates",
+              "email": {
+                "address": "support@example.com",
+                "label": "Support"
+              },
+              "hero_url": "https://www.example.com/rcs/hero.png",
+              "logo_url": "https://www.example.com/rcs/logo.png",
+              "privacy_policy_url": "https://www.example.com/privacy",
+              "terms_and_conditions_url": "https://www.example.com/terms"
+            }
+          },
+          "display_name": "Acme Order Updates",
+          "use_case": "TRANSACTIONAL"
+        },
+        "properties": {
+          "brand_id": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "configuration": {
+            "$ref": "#/components/schemas/AgentConfiguration"
+          },
+          "display_name": {
+            "maxLength": 40,
+            "minLength": 1,
+            "type": "string"
+          },
+          "hosting_region": {
+            "maxLength": 32,
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "profile_id": {
+            "description": "A Messaging Profile owned by the authenticated organization. When omitted, the agent inherits the brand profile.",
+            "maxLength": 36,
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "use_case": {
+            "$ref": "#/components/schemas/AgentUseCase"
+          }
+        },
+        "required": [
+          "brand_id",
+          "display_name",
+          "use_case",
+          "configuration"
+        ],
+        "type": "object"
+      },
+      "AgentEmailContact": {
+        "additionalProperties": false,
+        "properties": {
+          "address": {
+            "format": "email",
+            "maxLength": 254,
+            "minLength": 3,
+            "pattern": "^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$",
+            "type": "string"
+          },
+          "label": {
+            "maxLength": 25,
+            "minLength": 1,
+            "type": "string"
+          }
+        },
+        "required": [
+          "address",
+          "label"
+        ],
+        "type": "object"
+      },
+      "AgentInteraction": {
+        "allOf": [
+          {
+            "if": {
+              "properties": {
+                "interaction_type": {
+                  "const": "OTHER"
+                }
+              },
+              "required": [
+                "interaction_type"
+              ]
+            },
+            "then": {
+              "properties": {
+                "description": {
+                  "maxLength": 2000,
+                  "minLength": 1,
+                  "type": "string"
+                }
+              },
+              "required": [
+                "description"
+              ]
+            }
+          }
+        ],
+        "properties": {
+          "description": {
+            "description": "Required when interaction_type is `OTHER`.",
+            "maxLength": 2000,
+            "minLength": 1,
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "interaction_type": {
+            "$ref": "#/components/schemas/AgentInteractionType"
+          }
+        },
+        "propertyNames": {
+          "enum": [
+            "interaction_type",
+            "description"
+          ]
+        },
+        "required": [
+          "interaction_type"
+        ],
+        "type": "object"
+      },
+      "AgentInteractionType": {
+        "enum": [
+          "TRANSACTIONAL_UPDATES",
+          "CUSTOMER_SUPPORT",
+          "LOYALTY_OR_REWARD",
+          "MARKETING_OR_PROMOTIONAL",
+          "ACCOUNT_ALERTS",
+          "TWO_WAY_CONVERSATION",
+          "OTHER"
+        ],
+        "type": "string"
+      },
+      "AgentLaunchCampaignConfiguration": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/AgentCampaignConfiguration"
+          },
+          {
+            "properties": {
+              "agent_overview": {
+                "maxLength": 2000,
+                "minLength": 1,
+                "type": "string"
+              },
+              "consent_settings": {
+                "$ref": "#/components/schemas/AgentConsentConfiguration"
+              },
+              "interactions": {
+                "items": {
+                  "$ref": "#/components/schemas/AgentInteraction"
+                },
+                "minItems": 1,
+                "type": "array"
+              },
+              "message_examples": {
+                "items": {
+                  "maxLength": 2000,
+                  "minLength": 1,
+                  "type": "string"
+                },
+                "minItems": 3,
+                "type": "array"
+              }
+            },
+            "required": [
+              "agent_overview",
+              "interactions",
+              "message_examples",
+              "consent_settings"
+            ],
+            "type": "object"
+          }
+        ]
+      },
+      "AgentLaunchRequest": {
+        "additionalProperties": false,
+        "example": {
+          "campaign": {
+            "agent_overview": "The agent sends order confirmations and delivery updates.",
+            "company_overview": "Acme provides online retail services.",
+            "consent_settings": {
+              "call_to_action": "Select RCS updates during checkout.",
+              "call_to_action_media_url": "https://www.example.com/rcs/opt-in.png",
+              "call_to_action_url": "https://www.example.com/checkout",
+              "double_opt_in": false,
+              "help_response": "Contact support@example.com for help.",
+              "opt_in_message": "You are subscribed to Acme order updates.",
+              "opt_in_methods": [
+                {
+                  "method_type": "WEBSITE"
+                }
+              ],
+              "opt_out_response": "You will receive no more messages."
+            },
+            "interactions": [
+              {
+                "interaction_type": "TRANSACTIONAL_UPDATES"
+              }
+            ],
+            "message_examples": [
+              "Your Acme order is confirmed.",
+              "Your Acme order has shipped.",
+              "Your Acme order was delivered."
+            ]
+          },
+          "testing": {
+            "additional_information": "Demonstrates START, STOP, HELP, and an order-status interaction.",
+            "test_url": "https://www.example.com/rcs/test-video"
+          }
+        },
+        "properties": {
+          "campaign": {
+            "$ref": "#/components/schemas/AgentLaunchCampaignConfiguration"
+          },
+          "testing": {
+            "$ref": "#/components/schemas/AgentTestingConfiguration"
+          }
+        },
+        "required": [
+          "campaign",
+          "testing"
+        ],
+        "type": "object"
+      },
+      "AgentOptInMethod": {
+        "allOf": [
+          {
+            "if": {
+              "properties": {
+                "method_type": {
+                  "const": "OTHER"
+                }
+              },
+              "required": [
+                "method_type"
+              ]
+            },
+            "then": {
+              "properties": {
+                "description": {
+                  "maxLength": 2000,
+                  "minLength": 1,
+                  "type": "string"
+                }
+              },
+              "required": [
+                "description"
+              ]
+            }
+          }
+        ],
+        "properties": {
+          "description": {
+            "description": "Required when method_type is `OTHER`.",
+            "maxLength": 2000,
+            "minLength": 1,
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "method_type": {
+            "$ref": "#/components/schemas/AgentOptInMethodType"
+          }
+        },
+        "propertyNames": {
+          "enum": [
+            "method_type",
+            "description"
+          ]
+        },
+        "required": [
+          "method_type"
+        ],
+        "type": "object"
+      },
+      "AgentOptInMethodType": {
+        "enum": [
+          "SMS",
+          "WEBSITE",
+          "MOBILE_APP",
+          "QR_CODE",
+          "SALE_POINT",
+          "OTHER"
+        ],
+        "type": "string"
+      },
+      "AgentPhoneContact": {
+        "additionalProperties": false,
+        "properties": {
+          "label": {
+            "maxLength": 25,
+            "minLength": 1,
+            "type": "string"
+          },
+          "number": {
+            "maxLength": 16,
+            "pattern": "^\\+[1-9][0-9]{1,14}$",
+            "type": "string"
+          }
+        },
+        "required": [
+          "number",
+          "label"
+        ],
+        "type": "object"
+      },
+      "AgentResponse": {
+        "additionalProperties": false,
+        "example": {
+          "agent_id": "22222222-2222-4222-8222-222222222222",
+          "basics_status": "SUBMITTED",
+          "billing_category": "NON_CONVERSATIONAL",
+          "brand_id": "11111111-1111-4111-8111-111111111111",
+          "campaign_status": null,
+          "capabilities": {
+            "brand_entity": true,
+            "brand_verification": true,
+            "campaigns": false,
+            "distinct_launch_phase": false,
+            "invite_test_devices": false,
+            "per_carrier_approval": false,
+            "submission_sections": true,
+            "templates": false,
+            "vendor_webhooks": false
+          },
+          "carrier_approvals": [],
+          "configuration": {
+            "basics": {
+              "brand_color": "#123456",
+              "description": "Order confirmations and delivery updates",
+              "email": {
+                "address": "support@example.com",
+                "label": "Support"
+              },
+              "hero_url": "https://www.example.com/rcs/hero.png",
+              "logo_url": "https://www.example.com/rcs/logo.png",
+              "privacy_policy_url": "https://www.example.com/privacy",
+              "terms_and_conditions_url": "https://www.example.com/terms"
+            },
+            "campaign": null,
+            "testing": null
+          },
+          "display_name": "Acme Order Updates",
+          "hosting_region": null,
+          "profile_id": "40000000-0000-0000-0000-000000000001",
+          "status": "SUBMITTED",
+          "test_devices": [],
+          "testing_status": null,
+          "use_case": "TRANSACTIONAL"
+        },
+        "properties": {
+          "agent_id": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "basics_status": {
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/AgentSubmissionStatus"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "billing_category": {
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/BillingCategory"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "brand_id": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "campaign_status": {
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/AgentSubmissionStatus"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "capabilities": {
+            "$ref": "#/components/schemas/CapabilitiesResponse"
+          },
+          "carrier_approvals": {
+            "items": {
+              "$ref": "#/components/schemas/CarrierApprovalResponse"
+            },
+            "type": "array"
+          },
+          "configuration": {
+            "$ref": "#/components/schemas/AgentConfiguration"
+          },
+          "display_name": {
+            "type": "string"
+          },
+          "hosting_region": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "profile_id": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "status": {
+            "$ref": "#/components/schemas/AgentState"
+          },
+          "test_devices": {
+            "items": {
+              "$ref": "#/components/schemas/TestDeviceResponse"
+            },
+            "type": "array"
+          },
+          "testing_status": {
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/AgentSubmissionStatus"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "use_case": {
+            "$ref": "#/components/schemas/AgentUseCase"
+          }
+        },
+        "required": [
+          "agent_id",
+          "brand_id",
+          "display_name",
+          "use_case",
+          "status",
+          "profile_id",
+          "basics_status",
+          "campaign_status",
+          "testing_status",
+          "billing_category",
+          "hosting_region",
+          "configuration",
+          "carrier_approvals",
+          "test_devices",
+          "capabilities"
+        ],
+        "type": "object"
+      },
+      "AgentState": {
+        "enum": [
+          "CREATED",
+          "SUBMITTED",
+          "VERIFYING",
+          "VERIFIED",
+          "LAUNCHING",
+          "LAUNCHED",
+          "LIVE",
+          "REJECTED",
+          "FAILED"
+        ],
+        "type": "string"
+      },
+      "AgentSubmissionStatus": {
+        "enum": [
+          "SUBMITTED",
+          "APPROVED",
+          "REJECTED"
+        ],
+        "type": "string"
+      },
+      "AgentTestingConfiguration": {
+        "additionalProperties": false,
+        "properties": {
+          "additional_information": {
+            "maxLength": 2000,
+            "minLength": 1,
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "message_id": {
+            "maxLength": 255,
+            "minLength": 1,
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "test_url": {
+            "$ref": "#/components/schemas/HttpUrl",
+            "description": "A publicly accessible test video or evidence URL."
+          }
+        },
+        "required": [
+          "test_url"
+        ],
+        "type": "object"
+      },
+      "AgentUpdateRequest": {
+        "additionalProperties": false,
+        "example": {
+          "display_name": "Acme Delivery Updates"
+        },
+        "minProperties": 1,
+        "properties": {
+          "configuration": {
+            "$ref": "#/components/schemas/AgentConfiguration"
+          },
+          "display_name": {
+            "maxLength": 40,
+            "minLength": 1,
+            "type": "string"
+          },
+          "hosting_region": {
+            "maxLength": 32,
+            "type": "string"
+          },
+          "profile_id": {
+            "maxLength": 36,
+            "type": "string"
+          },
+          "use_case": {
+            "$ref": "#/components/schemas/AgentUseCase"
+          }
+        },
+        "type": "object"
+      },
+      "AgentUseCase": {
+        "enum": [
+          "MULTI_USE",
+          "PROMOTIONAL",
+          "TRANSACTIONAL",
+          "OTP"
+        ],
+        "type": "string"
+      },
+      "AgentWebsiteContact": {
+        "additionalProperties": false,
+        "properties": {
+          "label": {
+            "maxLength": 25,
+            "minLength": 1,
+            "type": "string"
+          },
+          "url": {
+            "$ref": "#/components/schemas/HttpUrl"
+          }
+        },
+        "required": [
+          "url",
+          "label"
+        ],
+        "type": "object"
+      },
+      "BillingCategory": {
+        "enum": [
+          "NON_CONVERSATIONAL",
+          "CONVERSATIONAL"
+        ],
+        "type": "string"
+      },
+      "CapabilitiesResponse": {
+        "additionalProperties": false,
+        "properties": {
+          "brand_entity": {
+            "type": "boolean"
+          },
+          "brand_verification": {
+            "type": "boolean"
+          },
+          "campaigns": {
+            "type": "boolean"
+          },
+          "distinct_launch_phase": {
+            "type": "boolean"
+          },
+          "invite_test_devices": {
+            "type": "boolean"
+          },
+          "per_carrier_approval": {
+            "type": "boolean"
+          },
+          "submission_sections": {
+            "type": "boolean"
+          },
+          "templates": {
+            "type": "boolean"
+          },
+          "vendor_webhooks": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "brand_entity",
+          "brand_verification",
+          "submission_sections",
+          "distinct_launch_phase",
+          "per_carrier_approval",
+          "templates",
+          "campaigns",
+          "vendor_webhooks",
+          "invite_test_devices"
+        ],
+        "type": "object"
+      },
+      "CarrierApprovalResponse": {
+        "additionalProperties": false,
+        "example": {
+          "approval_id": "33333333-3333-4333-8333-333333333333",
+          "approved_at": null,
+          "carrier": null,
+          "rejected_reason": null,
+          "scope_type": "hub",
+          "status": "SUBMITTED",
+          "submitted_at": "2026-08-10T12:00:00Z"
+        },
+        "properties": {
+          "approval_id": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "approved_at": {
+            "format": "date-time",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "carrier": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "rejected_reason": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "scope_type": {
+            "$ref": "#/components/schemas/CarrierApprovalScope"
+          },
+          "status": {
+            "$ref": "#/components/schemas/CarrierApprovalStatus"
+          },
+          "submitted_at": {
+            "format": "date-time",
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "approval_id",
+          "scope_type",
+          "status",
+          "carrier",
+          "submitted_at",
+          "approved_at",
+          "rejected_reason"
+        ],
+        "type": "object"
+      },
+      "CarrierApprovalScope": {
+        "enum": [
+          "carrier",
+          "hub",
+          "bot"
+        ],
+        "type": "string"
+      },
+      "CarrierApprovalStatus": {
+        "enum": [
+          "PENDING",
+          "SUBMITTED",
+          "APPROVED",
+          "REJECTED"
+        ],
+        "type": "string"
+      },
+      "HttpUrl": {
+        "format": "uri",
+        "minLength": 1,
+        "pattern": "^[Hh][Tt][Tt][Pp][Ss]?://",
+        "type": "string"
+      },
+      "TestDeviceCreateRequest": {
+        "additionalProperties": false,
+        "example": {
+          "phone_number": "+13125550123"
+        },
+        "properties": {
+          "phone_number": {
+            "maxLength": 16,
+            "pattern": "^\\+[1-9][0-9]{1,14}$",
+            "type": "string"
+          }
+        },
+        "required": [
+          "phone_number"
+        ],
+        "type": "object"
+      },
+      "TestDeviceInviteStatus": {
+        "enum": [
+          "PENDING",
+          "ACCEPTED",
+          "DECLINED"
+        ],
+        "type": "string"
+      },
+      "TestDeviceResponse": {
+        "additionalProperties": false,
+        "example": {
+          "invite_status": "ACCEPTED",
+          "phone_number": "+13125550123",
+          "test_device_id": "44444444-4444-4444-8444-444444444444"
+        },
+        "properties": {
+          "invite_status": {
+            "$ref": "#/components/schemas/TestDeviceInviteStatus"
+          },
+          "phone_number": {
+            "type": "string"
+          },
+          "test_device_id": {
+            "format": "uuid",
+            "type": "string"
+          }
+        },
+        "required": [
+          "test_device_id",
+          "phone_number",
+          "invite_status"
+        ],
+        "type": "object"
+      },
+      "ValidationErrorResponse": {
+        "additionalProperties": true,
+        "example": {
+          "detail": [
+            {
+              "loc": [
+                "body",
+                "display_name"
+              ],
+              "msg": "Field required",
+              "type": "missing"
+            }
+          ]
+        },
+        "properties": {
+          "detail": {
+            "items": {
+              "properties": {
+                "loc": {
+                  "items": {
+                    "oneOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "integer"
+                      }
+                    ]
+                  },
+                  "type": "array"
+                },
+                "msg": {
+                  "type": "string"
+                },
+                "type": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "loc",
+                "msg",
+                "type"
+              ],
+              "type": "object"
+            },
+            "type": "array"
+          }
+        },
+        "type": "object"
+      },
+      "rcs-registration_ErrorResponse": {
+        "additionalProperties": true,
+        "example": {
+          "detail": "The requested RCS resource was not found."
+        },
+        "properties": {
+          "detail": {
+            "type": "string"
+          },
+          "errors": {
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "type": "array"
+          }
+        },
+        "type": "object"
+      }
+    },
+    "securitySchemes": {
+      "BearerAuth": {
+        "bearerFormat": "API key",
+        "description": "Telnyx API key supplied as `Authorization: Bearer \u003ctoken\u003e`. In production, auth may be validated by the API gateway and forwarded via Telnyx auth headers.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "Payment": {
+        "description": "Machine Payment Protocol credential used on paid retries, sent as `Authorization: Payment ...`. Obtained by paying a challenge returned in the `WWW-Authenticate` header of a 402 response. This is not a Telnyx API key; initial challenge requests use standard bearer authentication instead.",
+        "in": "header",
+        "name": "Authorization",
+        "type": "apiKey"
+      },
+      "agent-memory_bearerAuth": {
+        "description": "Telnyx API key",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "bearerAuth": {
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "branded-calling_bearerAuth": {
+        "description": "Telnyx API key. Generate one at https://portal.telnyx.com/#/app/api-keys.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "collections_bearerAuth": {
+        "description": "Telnyx API key. Collections and results are automatically scoped to the authenticated user's organization.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "number-reputation_bearerAuth": {
+        "description": "Telnyx API key. Generate one at https://portal.telnyx.com/#/app/api-keys.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "oauthClientAuth": {
+        "description": "OAuth 2.0 authentication for Telnyx API and MCP integrations",
+        "flows": {
+          "authorizationCode": {
+            "authorizationUrl": "https://api.telnyx.com/v2/oauth/authorize",
+            "refreshUrl": "https://api.telnyx.com/v2/oauth/token",
+            "scopes": {
+              "admin": "Administrative access to Telnyx resources"
+            },
+            "tokenUrl": "https://api.telnyx.com/v2/oauth/token"
+          },
+          "clientCredentials": {
+            "scopes": {
+              "admin": "Administrative access to Telnyx resources"
+            },
+            "tokenUrl": "https://api.telnyx.com/v2/oauth/token"
+          }
+        },
+        "type": "oauth2"
+      },
+      "outbound-voice-profiles_bearerAuth": {
+        "bearerFormat": "JWT",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "pay-connectors_bearerAuth": {
+        "description": "Telnyx API key, not the processor bearer token.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "pronunciation-dicts_bearerAuth": {
+        "description": "Telnyx API v2 key. Obtain from https://portal.telnyx.com",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "rcs-registration_bearerAuth": {
+        "bearerFormat": "API key",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "stored-payment-transactions_bearerAuth": {
+        "bearerFormat": "JWT",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "telnyxApiKey": {
+        "description": "Management-only Telnyx account credential.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "transcriptions-search_bearerAuth": {
+        "description": "Telnyx API key. Results are automatically scoped to the authenticated user's organization.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "web-search_bearerAuth": {
+        "description": "Telnyx API key",
+        "scheme": "bearer",
+        "type": "http"
+      }
+    }
+  },
+  "info": {
+    "contact": {
+      "email": "support@telnyx.com"
+    },
+    "description": "SIP trunking, SMS, MMS, Call Control and Telephony Data Services.",
+    "title": "Telnyx API",
+    "version": "2.0.0",
+    "x-endpoint-cost": "light",
+    "x-latency-category": "responsive"
+  },
+  "openapi": "3.1.0",
+  "paths": {
+    "/rcs/agents": {
+      "get": {
+        "description": "Lists RCS agents owned by the authenticated organization, optionally filtered by brand.",
+        "operationId": "ListRcsAgents",
+        "parameters": [
+          {
+            "description": "Only return agents belonging to this brand.",
+            "in": "query",
+            "name": "brand_id",
+            "required": false,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/AgentResponse"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": "RCS agents owned by the organization."
+          },
+          "401": {
+            "$ref": "#/components/responses/rcs-registration_Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/rcs-registration_NotFound"
+          },
+          "422": {
+            "$ref": "#/components/responses/ValidationError"
+          }
+        },
+        "summary": "List RCS agents",
+        "tags": [
+          "RCS Agents"
+        ]
+      },
+      "post": {
+        "description": "Creates an editable RCS agent draft under a brand. The `Idempotency-Key` is scoped to the authenticated organization. Reusing the key with the same request returns the original agent, while reusing it with a different request returns a conflict.",
+        "operationId": "CreateRcsAgent",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/rcs-registration_IdempotencyKey"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AgentCreateRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AgentResponse"
+                }
+              }
+            },
+            "description": "The agent draft was created or replayed from the idempotency record.",
+            "headers": {
+              "Idempotent-Replayed": {
+                "description": "Present with value `true` when a successful response was replayed for the supplied idempotency key.",
+                "schema": {
+                  "type": "boolean"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/rcs-registration_BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/rcs-registration_Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/rcs-registration_NotFound"
+          },
+          "409": {
+            "$ref": "#/components/responses/rcs-registration_Conflict"
+          },
+          "422": {
+            "$ref": "#/components/responses/ValidationError"
+          },
+          "503": {
+            "$ref": "#/components/responses/DependencyUnavailable"
+          }
+        },
+        "summary": "Create an RCS agent",
+        "tags": [
+          "RCS Agents"
+        ]
+      }
+    },
+    "/rcs/agents/{id}": {
+      "get": {
+        "description": "Retrieves an RCS agent, section statuses, test devices, carrier approvals, and provider capabilities.",
+        "operationId": "RetrieveRcsAgent",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/AgentId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AgentResponse"
+                }
+              }
+            },
+            "description": "The requested RCS agent."
+          },
+          "401": {
+            "$ref": "#/components/responses/rcs-registration_Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/rcs-registration_NotFound"
+          }
+        },
+        "summary": "Retrieve an RCS agent",
+        "tags": [
+          "RCS Agents"
+        ]
+      },
+      "patch": {
+        "description": "Updates one or more fields on an agent while its status is `CREATED`. Submitted agents cannot be changed through this endpoint.",
+        "operationId": "UpdateRcsAgent",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/AgentId"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AgentUpdateRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AgentResponse"
+                }
+              }
+            },
+            "description": "The updated RCS agent."
+          },
+          "401": {
+            "$ref": "#/components/responses/rcs-registration_Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/rcs-registration_NotFound"
+          },
+          "409": {
+            "$ref": "#/components/responses/rcs-registration_Conflict"
+          },
+          "422": {
+            "$ref": "#/components/responses/ValidationError"
+          },
+          "503": {
+            "$ref": "#/components/responses/DependencyUnavailable"
+          }
+        },
+        "summary": "Update an RCS agent",
+        "tags": [
+          "RCS Agents"
+        ]
+      }
+    },
+    "/rcs/agents/{id}/carrier_approvals": {
+      "get": {
+        "description": "Lists carrier approval records for an RCS agent. The provider may expose per-carrier, hub-level, or bot-level approval status.",
+        "operationId": "ListRcsAgentCarrierApprovals",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/AgentId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/CarrierApprovalResponse"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Carrier approval records for the agent."
+          },
+          "401": {
+            "$ref": "#/components/responses/rcs-registration_Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/rcs-registration_NotFound"
+          }
+        },
+        "summary": "List RCS agent carrier approvals",
+        "tags": [
+          "RCS Agents"
+        ]
+      }
+    },
+    "/rcs/agents/{id}/launch": {
+      "post": {
+        "description": "Adds the campaign and testing configuration, then starts asynchronous carrier launch. Agent basics must already be submitted. Repeating a launch that is already in progress returns the current agent without creating new work.",
+        "operationId": "LaunchRcsAgent",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/AgentId"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AgentLaunchRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "202": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AgentResponse"
+                }
+              }
+            },
+            "description": "The launch submission was accepted."
+          },
+          "401": {
+            "$ref": "#/components/responses/rcs-registration_Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/rcs-registration_NotFound"
+          },
+          "409": {
+            "$ref": "#/components/responses/rcs-registration_Conflict"
+          },
+          "422": {
+            "$ref": "#/components/responses/ValidationError"
+          }
+        },
+        "summary": "Submit an RCS agent for launch",
+        "tags": [
+          "RCS Agents"
+        ]
+      }
+    },
+    "/rcs/agents/{id}/submit": {
+      "post": {
+        "description": "Starts asynchronous provider provisioning and submits the agent's basic configuration. The brand must be `VERIFIED`. Repeating this request for an in-progress agent returns its current state without creating new work.",
+        "operationId": "SubmitRcsAgent",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/AgentId"
+          }
+        ],
+        "responses": {
+          "202": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AgentResponse"
+                }
+              }
+            },
+            "description": "The basic agent submission was accepted."
+          },
+          "401": {
+            "$ref": "#/components/responses/rcs-registration_Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/rcs-registration_NotFound"
+          },
+          "409": {
+            "$ref": "#/components/responses/rcs-registration_Conflict"
+          }
+        },
+        "summary": "Submit RCS agent basics",
+        "tags": [
+          "RCS Agents"
+        ]
+      }
+    },
+    "/rcs/agents/{id}/test_devices": {
+      "get": {
+        "description": "Lists test devices attached to an RCS agent.",
+        "operationId": "ListRcsAgentTestDevices",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/AgentId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/TestDeviceResponse"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Test devices attached to the agent."
+          },
+          "401": {
+            "$ref": "#/components/responses/rcs-registration_Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/rcs-registration_NotFound"
+          }
+        },
+        "summary": "List RCS agent test devices",
+        "tags": [
+          "RCS Agents"
+        ]
+      },
+      "post": {
+        "description": "Adds an RCS-capable test number after provider agent creation. Repeating the request for a number already attached to the agent returns the existing test device.",
+        "operationId": "AddRcsAgentTestDevice",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/AgentId"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TestDeviceCreateRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TestDeviceResponse"
+                }
+              }
+            },
+            "description": "The test device was added or already existed."
+          },
+          "401": {
+            "$ref": "#/components/responses/rcs-registration_Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/rcs-registration_NotFound"
+          },
+          "409": {
+            "$ref": "#/components/responses/rcs-registration_Conflict"
+          },
+          "422": {
+            "$ref": "#/components/responses/ValidationError"
+          },
+          "502": {
+            "$ref": "#/components/responses/ProviderError"
+          }
+        },
+        "summary": "Add an RCS agent test device",
+        "tags": [
+          "RCS Agents"
+        ]
+      }
+    },
+    "/rcs/agents/{id}/test_devices/{test_device_id}": {
+      "delete": {
+        "description": "Removes a test device from an RCS agent and its provider registration.",
+        "operationId": "RemoveRcsAgentTestDevice",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/AgentId"
+          },
+          {
+            "$ref": "#/components/parameters/TestDeviceId"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "The test device was removed."
+          },
+          "401": {
+            "$ref": "#/components/responses/rcs-registration_Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/rcs-registration_NotFound"
+          },
+          "502": {
+            "$ref": "#/components/responses/ProviderError"
+          }
+        },
+        "summary": "Remove an RCS agent test device",
+        "tags": [
+          "RCS Agents"
+        ]
+      }
+    }
+  },
+  "security": [
+    {
+      "bearerAuth": []
+    }
+  ],
+  "servers": [
+    {
+      "description": "Version 2.0.0 of the Telnyx API",
+      "url": "https://api.telnyx.com/v2"
+    }
+  ]
+}

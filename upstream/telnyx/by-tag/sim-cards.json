@@ -1,0 +1,2908 @@
+{
+  "components": {
+    "parameters": {
+      "FilterSIMCardConsolidated": {
+        "description": "Consolidated filter parameter for SIM cards (deepObject style). Originally: filter[iccid], filter[msisdn], filter[status], filter[tags]",
+        "explode": true,
+        "in": "query",
+        "name": "filter",
+        "schema": {
+          "properties": {
+            "iccid": {
+              "description": "A search string to partially match for the SIM card's ICCID.",
+              "example": "89310410106543789301",
+              "type": "string"
+            },
+            "msisdn": {
+              "description": "A search string to match for the SIM card's MSISDN.",
+              "example": "+13109976224",
+              "type": "string"
+            },
+            "status": {
+              "description": "Filter by a SIM card's status.",
+              "items": {
+                "enum": [
+                  "enabled",
+                  "disabled",
+                  "standby",
+                  "data_limit_exceeded",
+                  "unauthorized_imei"
+                ],
+                "type": "string"
+              },
+              "type": "array"
+            },
+            "tags": {
+              "description": "A list of SIM card tags to filter on.\u003cbr/\u003e\u003cbr/\u003e\n If the SIM card contains \u003cb\u003e\u003ci\u003eall\u003c/i\u003e\u003c/b\u003e of the given \u003ccode\u003etags\u003c/code\u003e they will be found.\u003cbr/\u003e\u003cbr/\u003e\nFor example, if the SIM cards have the following tags: \u003cul\u003e\n  \u003cli\u003e\u003ccode\u003e['customers', 'staff', 'test']\u003c/code\u003e\n  \u003cli\u003e\u003ccode\u003e['test']\u003c/code\u003e\u003c/li\u003e\n  \u003cli\u003e\u003ccode\u003e['customers']\u003c/code\u003e\u003c/li\u003e\n\u003c/ul\u003e\nSearching for \u003ccode\u003e['customers', 'test']\u003c/code\u003e returns only the first because it's the only one with both tags.\u003cbr/\u003e Searching for \u003ccode\u003etest\u003c/code\u003e returns the first two SIMs, because both of them have such tag.\u003cbr/\u003e Searching for \u003ccode\u003ecustomers\u003c/code\u003e returns the first and last SIMs.\u003cbr/\u003e\n",
+              "example": [
+                "personal",
+                "customers",
+                "active-customers"
+              ],
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            }
+          },
+          "type": "object"
+        }
+      },
+      "FilterSIMCardGroupId": {
+        "description": "A valid SIM card group ID.",
+        "in": "query",
+        "name": "filter[sim_card_group_id]",
+        "schema": {
+          "example": "47a1c2b0-cc7b-4ab1-bb98-b33fb0fc61b9",
+          "format": "uuid",
+          "type": "string"
+        }
+      },
+      "FilterSIMCardId": {
+        "description": "A valid SIM card ID.",
+        "in": "query",
+        "name": "filter[sim_card_id]",
+        "schema": {
+          "example": "47a1c2b0-cc7b-4ab1-bb98-b33fb0fc61b9",
+          "format": "uuid",
+          "type": "string"
+        }
+      },
+      "IncludeSIMCardGroup": {
+        "description": "It includes the associated SIM card group object in the response when present.",
+        "in": "query",
+        "name": "include_sim_card_group",
+        "schema": {
+          "default": false,
+          "example": true,
+          "type": "boolean"
+        }
+      },
+      "ResourceId": {
+        "description": "Identifies the resource.",
+        "in": "path",
+        "name": "id",
+        "required": true,
+        "schema": {
+          "example": "6a09cdc3-8948-47f0-aa62-74ac943d6c58",
+          "format": "uuid",
+          "type": "string"
+        }
+      },
+      "SIMCardId": {
+        "description": "Identifies the SIM.",
+        "in": "path",
+        "name": "id",
+        "required": true,
+        "schema": {
+          "example": "6a09cdc3-8948-47f0-aa62-74ac943d6c58",
+          "format": "uuid",
+          "type": "string"
+        }
+      },
+      "wireless_PageConsolidated_c5290d5308": {
+        "description": "Consolidated pagination parameter (deepObject style). Originally: page[number], page[size]",
+        "explode": true,
+        "in": "query",
+        "name": "page",
+        "schema": {
+          "properties": {
+            "number": {
+              "default": 1,
+              "description": "The page number to load.",
+              "minimum": 1,
+              "type": "integer"
+            },
+            "size": {
+              "default": 20,
+              "description": "The size of the page.",
+              "maximum": 250,
+              "minimum": 1,
+              "type": "integer"
+            }
+          },
+          "type": "object"
+        }
+      },
+      "wireless_PageNumber_c5290d5308": {
+        "description": "The page number to load.",
+        "in": "query",
+        "name": "page[number]",
+        "schema": {
+          "default": 1,
+          "minimum": 1,
+          "type": "integer"
+        }
+      },
+      "wireless_PageSize_c5290d5308": {
+        "description": "The size of the page.",
+        "in": "query",
+        "name": "page[size]",
+        "schema": {
+          "default": 20,
+          "maximum": 250,
+          "minimum": 1,
+          "type": "integer"
+        }
+      }
+    },
+    "responses": {
+      "ResourceNotFound": {
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/documents_Error"
+            }
+          }
+        },
+        "description": "Resource not found"
+      },
+      "wireless_GenericErrorResponse_c5290d5308": {
+        "content": {
+          "application/json": {
+            "examples": {
+              "unexpectedError": {
+                "summary": "Unexpected API error",
+                "value": {
+                  "errors": [
+                    {
+                      "code": "10007",
+                      "detail": "An unexpected error occured.",
+                      "title": "Unexpected error"
+                    }
+                  ]
+                }
+              }
+            },
+            "schema": {
+              "$ref": "#/components/schemas/Errors"
+            }
+          }
+        },
+        "description": "Unexpected error"
+      },
+      "wireless_Unauthorized": {
+        "content": {
+          "application/json": {
+            "examples": {
+              "authenticationFailed": {
+                "summary": "Authentication failed",
+                "value": {
+                  "errors": [
+                    {
+                      "code": "10009",
+                      "detail": "The required authentication headers were either invalid or not included in the request.",
+                      "title": "Authentication failed"
+                    }
+                  ]
+                }
+              }
+            },
+            "schema": {
+              "$ref": "#/components/schemas/Errors"
+            }
+          }
+        },
+        "description": "Unauthorized"
+      },
+      "wireless_UnprocessableEntity_c5290d5308": {
+        "content": {
+          "application/json": {
+            "examples": {
+              "unprocessableEntity": {
+                "summary": "Request could not be processed",
+                "value": {
+                  "errors": [
+                    {
+                      "code": "10027",
+                      "detail": "The server understood the syntax of the request but was unable to process the instructions.",
+                      "title": "Unprocessable Entity"
+                    }
+                  ]
+                }
+              }
+            },
+            "schema": {
+              "$ref": "#/components/schemas/Errors"
+            }
+          }
+        },
+        "description": "Unprocessable entity. Check the 'detail' field in response for details."
+      }
+    },
+    "schemas": {
+      "BulkSIMCardAction": {
+        "description": "This object represents a bulk SIM card action. It groups SIM card actions created through a bulk endpoint under a single resource for further lookup.",
+        "properties": {
+          "action_type": {
+            "description": "The action type. It can be one of the following: \u003cbr/\u003e\n\u003cul\u003e\n\u003cli\u003e\u003ccode\u003ebulk_disable_voice\u003c/code\u003e - disable voice for every SIM Card in a SIM Card Group.\u003c/li\u003e\n\u003cli\u003e\u003ccode\u003ebulk_enable_voice\u003c/code\u003e - enable voice for every SIM Card in a SIM Card Group.\u003c/li\u003e\n\u003cli\u003e\u003ccode\u003ebulk_set_public_ips\u003c/code\u003e - set a public IP for each specified SIM Card.\u003c/li\u003e\n\u003c/ul\u003e",
+            "enum": [
+              "bulk_disable_voice",
+              "bulk_enable_voice",
+              "bulk_set_public_ips"
+            ],
+            "example": "bulk_set_public_ips",
+            "readOnly": true,
+            "type": "string"
+          },
+          "created_at": {
+            "$ref": "#/components/schemas/wireless_CreatedAt_c5290d5308"
+          },
+          "id": {
+            "$ref": "#/components/schemas/wireless_Id_c5290d5308"
+          },
+          "record_type": {
+            "example": "bulk_sim_card_action",
+            "readOnly": true,
+            "type": "string"
+          },
+          "settings": {
+            "additionalProperties": true,
+            "description": "A JSON object representation of the bulk action payload.",
+            "example": {},
+            "readOnly": true,
+            "type": "object"
+          },
+          "updated_at": {
+            "$ref": "#/components/schemas/wireless_UpdatedAt_c5290d5308"
+          }
+        },
+        "type": "object"
+      },
+      "ESimPurchase": {
+        "properties": {
+          "amount": {
+            "description": "The amount of eSIMs to be purchased.",
+            "example": 10,
+            "minimum": 1,
+            "type": "integer"
+          },
+          "product": {
+            "description": "Type of product to be purchased, specify \"whitelabel\" to use a custom SPN",
+            "example": "whitelabel",
+            "type": "string"
+          },
+          "sim_card_group_id": {
+            "description": "The group SIMCardGroup identification. This attribute can be \u003ccode\u003enull\u003c/code\u003e when it's present in an associated resource.",
+            "example": "6a09cdc3-8948-47f0-aa62-74ac943d6c58",
+            "format": "uuid",
+            "type": "string"
+          },
+          "status": {
+            "default": "enabled",
+            "description": "Status on which the SIM cards will be set after being successfully registered.",
+            "enum": [
+              "enabled",
+              "disabled",
+              "standby"
+            ],
+            "example": "standby",
+            "type": "string"
+          },
+          "tags": {
+            "description": "Searchable tags associated with the SIM cards",
+            "example": [
+              "personal",
+              "customers",
+              "active-customers"
+            ],
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "whitelabel_name": {
+            "description": "Service Provider Name (SPN) for the Whitelabel eSIM product. It will be displayed as the mobile service name by operating systems of smartphones. This parameter must only contain letters, numbers and whitespaces.",
+            "example": "Custom SPN",
+            "type": "string"
+          }
+        },
+        "required": [
+          "amount"
+        ],
+        "title": "SIMCardRegistration",
+        "type": "object"
+      },
+      "Error": {
+        "example": {
+          "code": "20207",
+          "description": "The street address provided is invalid.",
+          "source": {
+            "pointer": "/street_address"
+          },
+          "title": "Invalid street address"
+        },
+        "properties": {
+          "code": {
+            "type": "string",
+            "x-format": "int64"
+          },
+          "description": {
+            "type": "string"
+          },
+          "detail": {
+            "description": "A human-readable explanation of the error.",
+            "type": "string"
+          },
+          "meta": {
+            "additionalProperties": true,
+            "type": "object"
+          },
+          "source": {
+            "properties": {
+              "parameter": {
+                "description": "Indicates which query parameter caused the error.",
+                "type": "string"
+              },
+              "pointer": {
+                "description": "JSON pointer (RFC6901) to the offending entity.",
+                "format": "json-pointer",
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
+          "title": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "title"
+        ],
+        "type": "object"
+      },
+      "Errors": {
+        "properties": {
+          "errors": {
+            "items": {
+              "$ref": "#/components/schemas/Error"
+            },
+            "type": "array"
+          }
+        },
+        "type": "object"
+      },
+      "PaginationMeta": {
+        "properties": {
+          "page_number": {
+            "example": 2,
+            "type": "integer"
+          },
+          "page_size": {
+            "example": 25,
+            "type": "integer"
+          },
+          "total_pages": {
+            "example": 3,
+            "type": "integer"
+          },
+          "total_results": {
+            "example": 55,
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "SIMCard": {
+        "properties": {
+          "actions_in_progress": {
+            "default": false,
+            "description": "Indicate whether the SIM card has any pending (in-progress) actions.",
+            "example": true,
+            "readOnly": true,
+            "type": "boolean"
+          },
+          "authorized_imeis": {
+            "description": "List of IMEIs authorized to use a given SIM card.",
+            "example": [
+              "106516771852751",
+              "534051870479563",
+              "508821468377961"
+            ],
+            "items": {
+              "type": "string"
+            },
+            "type": [
+              "array",
+              "null"
+            ]
+          },
+          "created_at": {
+            "description": "ISO 8601 formatted date-time indicating when the resource was created.",
+            "example": "2018-02-02T22:25:27.521Z",
+            "readOnly": true,
+            "type": "string"
+          },
+          "current_billing_period_consumed_data": {
+            "description": "The SIM card consumption so far in the current billing cycle.",
+            "properties": {
+              "amount": {
+                "example": "2049.0",
+                "type": "string"
+              },
+              "unit": {
+                "default": "MB",
+                "example": "MB",
+                "type": "string"
+              }
+            },
+            "readOnly": true,
+            "type": "object"
+          },
+          "current_device_location": {
+            "description": "Current physical location data of a given SIM card. Accuracy is given in meters.",
+            "properties": {
+              "accuracy": {
+                "example": 1250,
+                "type": "integer"
+              },
+              "accuracy_unit": {
+                "default": "m",
+                "example": "m",
+                "type": "string"
+              },
+              "latitude": {
+                "example": "41.143",
+                "type": "string"
+              },
+              "longitude": {
+                "example": "-8.605",
+                "type": "string"
+              }
+            },
+            "readOnly": true,
+            "type": "object"
+          },
+          "current_imei": {
+            "description": "IMEI of the device where a given SIM card is currently being used.",
+            "example": "457032284023794",
+            "readOnly": true,
+            "type": "string"
+          },
+          "current_mcc": {
+            "description": "Mobile Country Code of the current network to which the SIM card is connected. It's a three decimal digit that identifies a country.\u003cbr/\u003e\u003cbr/\u003e\nThis code is commonly seen joined with a Mobile Network Code (MNC) in a tuple that allows identifying a carrier known as PLMN (Public Land Mobile Network) code.",
+            "example": "410",
+            "readOnly": true,
+            "type": "string"
+          },
+          "current_mnc": {
+            "description": "Mobile Network Code of the current network to which the SIM card is connected. It's a two to three decimal digits that identify a network.\u003cbr/\u003e\u003cbr/\u003e\n This code is commonly seen joined with a Mobile Country Code (MCC) in a tuple that allows identifying a carrier known as PLMN (Public Land Mobile Network) code.",
+            "example": "260",
+            "readOnly": true,
+            "type": "string"
+          },
+          "data_limit": {
+            "description": "The SIM card individual data limit configuration.",
+            "properties": {
+              "amount": {
+                "example": "2048.1",
+                "type": "string"
+              },
+              "unit": {
+                "enum": [
+                  "MB",
+                  "GB"
+                ],
+                "example": "MB",
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
+          "eid": {
+            "description": "The Embedded Identity Document (eID) for eSIM cards.",
+            "example": null,
+            "readOnly": true,
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "esim_installation_status": {
+            "description": "The installation status of the eSIM. Only applicable for eSIM cards.",
+            "enum": [
+              "released",
+              "disabled"
+            ],
+            "example": "released",
+            "readOnly": true,
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "iccid": {
+            "description": "The ICCID is the identifier of the specific SIM card/chip. Each SIM is internationally identified by its integrated circuit card identifier (ICCID). ICCIDs are stored in the SIM card's memory and are also engraved or printed on the SIM card body during a process called personalization.\n",
+            "example": "89310410106543789301",
+            "readOnly": true,
+            "type": "string"
+          },
+          "id": {
+            "description": "Identifies the resource.",
+            "example": "6a09cdc3-8948-47f0-aa62-74ac943d6c58",
+            "format": "uuid",
+            "readOnly": true,
+            "type": "string"
+          },
+          "imsi": {
+            "description": "SIM cards are identified on their individual network operators by a unique International Mobile Subscriber Identity (IMSI). \u003cbr/\u003e\nMobile network operators connect mobile phone calls and communicate with their market SIM cards using their IMSIs. The IMSI is stored in the Subscriber  Identity Module (SIM) inside the device and is sent by the device to the appropriate network. It is used to acquire the details of the device in the Home  Location Register (HLR) or the Visitor Location Register (VLR).\n",
+            "example": "081932214823362973",
+            "readOnly": true,
+            "type": "string"
+          },
+          "ipv4": {
+            "description": "The SIM's address in the currently connected network. This IPv4 address is usually obtained dynamically, so it may vary according to the location or new connections.\n",
+            "example": "192.168.0.0",
+            "readOnly": true,
+            "type": "string"
+          },
+          "ipv6": {
+            "description": "The SIM's address in the currently connected network. This IPv6 address is usually obtained dynamically, so it may vary according to the location or new connections.\n",
+            "example": "2001:cdba:0000:0000:0000:0000:3257:9652",
+            "readOnly": true,
+            "type": "string"
+          },
+          "live_data_session": {
+            "description": "Indicates whether the device is actively connected to a network and able to run data.",
+            "enum": [
+              "connected",
+              "disconnected",
+              "unknown"
+            ],
+            "example": "connected",
+            "readOnly": true,
+            "type": "string"
+          },
+          "msisdn": {
+            "description": "Mobile Station International Subscriber Directory Number (MSISDN) is a number used to identify a mobile phone number internationally. \u003cbr/\u003e\nMSISDN is defined by the E.164 numbering plan. It includes a country code and a National Destination Code which identifies the subscriber's operator.\n",
+            "example": "+13109976224",
+            "readOnly": true,
+            "type": "string"
+          },
+          "pin_puk_codes": {
+            "description": "PIN and PUK codes for the SIM card. Only available when include_pin_puk_codes=true is set in the request.",
+            "properties": {
+              "pin1": {
+                "description": "The primary Personal Identification Number (PIN) for the SIM card. This is a 4-digit code used to protect the SIM card from unauthorized use.",
+                "example": "1234",
+                "readOnly": true,
+                "type": "string"
+              },
+              "pin2": {
+                "description": "The secondary Personal Identification Number (PIN2) for the SIM card. This is a 4-digit code used for additional security features.",
+                "example": "5678",
+                "readOnly": true,
+                "type": "string"
+              },
+              "puk1": {
+                "description": "The primary Personal Unblocking Key (PUK1) for the SIM card. This is an 8-digit code used to unlock the SIM card if PIN1 is entered incorrectly multiple times.",
+                "example": "12345678",
+                "readOnly": true,
+                "type": "string"
+              },
+              "puk2": {
+                "description": "The secondary Personal Unblocking Key (PUK2) for the SIM card. This is an 8-digit code used to unlock the SIM card if PIN2 is entered incorrectly multiple times.",
+                "example": "87654321",
+                "readOnly": true,
+                "type": "string"
+              }
+            },
+            "readOnly": true,
+            "type": "object"
+          },
+          "record_type": {
+            "example": "sim_card",
+            "readOnly": true,
+            "type": "string"
+          },
+          "resources_with_in_progress_actions": {
+            "description": "List of resources with actions in progress.",
+            "example": [],
+            "items": {
+              "type": "object"
+            },
+            "readOnly": true,
+            "type": "array"
+          },
+          "sim_card_group_id": {
+            "description": "The group SIMCardGroup identification. This attribute can be \u003ccode\u003enull\u003c/code\u003e when it's present in an associated resource.",
+            "example": "6a09cdc3-8948-47f0-aa62-74ac943d6c58",
+            "format": "uuid",
+            "type": "string"
+          },
+          "status": {
+            "$ref": "#/components/schemas/SIMCardStatus"
+          },
+          "tags": {
+            "description": "Searchable tags associated with the SIM card",
+            "example": [
+              "personal",
+              "customers",
+              "active-customers"
+            ],
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "type": {
+            "description": "The type of SIM card",
+            "enum": [
+              "physical",
+              "esim"
+            ],
+            "example": "physical",
+            "readOnly": true,
+            "type": "string"
+          },
+          "updated_at": {
+            "description": "ISO 8601 formatted date-time indicating when the resource was updated.",
+            "example": "2018-02-02T22:25:27.521Z",
+            "readOnly": true,
+            "type": "string"
+          },
+          "version": {
+            "description": "The version of the SIM card.",
+            "example": "4.3",
+            "readOnly": true,
+            "type": "string"
+          },
+          "voice_enabled": {
+            "default": false,
+            "description": "Indicates whether voice services are enabled for the SIM card.",
+            "example": false,
+            "readOnly": true,
+            "type": "boolean"
+          }
+        },
+        "title": "SIMCard",
+        "type": "object"
+      },
+      "SIMCardActivationCode": {
+        "properties": {
+          "activation_code": {
+            "description": "Contents of the eSIM activation QR code.",
+            "example": "LPA:1$....",
+            "readOnly": true,
+            "type": "string"
+          },
+          "record_type": {
+            "example": "sim_card_activation_code",
+            "readOnly": true,
+            "type": "string"
+          }
+        },
+        "title": "SIMCardActivationCode",
+        "type": "object"
+      },
+      "SIMCardDeviceDetails": {
+        "properties": {
+          "brand_name": {
+            "description": "Brand of the device where the SIM card is being used in.",
+            "example": "Apple",
+            "readOnly": true,
+            "type": "string"
+          },
+          "device_type": {
+            "description": "Type of the device where the SIM card is being used in.",
+            "example": "Tablet",
+            "readOnly": true,
+            "type": "string"
+          },
+          "imei": {
+            "description": "IMEI of the device where the SIM card is being used in.",
+            "example": "457032284023794",
+            "readOnly": true,
+            "type": "string"
+          },
+          "model_name": {
+            "description": "Brand of the device where the SIM card is being used in.",
+            "example": "iPad Pro 11 2020 Cellular",
+            "readOnly": true,
+            "type": "string"
+          },
+          "operating_system": {
+            "description": "Operating system of the device where the SIM card is being used in.",
+            "example": "iOS 12",
+            "readOnly": true,
+            "type": "string"
+          },
+          "record_type": {
+            "example": "device_details",
+            "readOnly": true,
+            "type": "string"
+          }
+        },
+        "title": "SIMCardDeviceDetails",
+        "type": "object"
+      },
+      "SIMCardPublicIP": {
+        "properties": {
+          "created_at": {
+            "description": "ISO 8601 formatted date-time indicating when the resource was created.",
+            "example": "2018-02-02T22:25:27.521Z",
+            "readOnly": true,
+            "type": "string"
+          },
+          "ip": {
+            "default": null,
+            "description": "The provisioned IP address. This attribute will only be available when underlying resource status is in a \"provisioned\" status.",
+            "example": "192.168.0.0",
+            "readOnly": true,
+            "type": "string"
+          },
+          "record_type": {
+            "example": "sim_card_public_ip",
+            "readOnly": true,
+            "type": "string"
+          },
+          "region_code": {
+            "example": "dc2",
+            "readOnly": true,
+            "type": "string"
+          },
+          "sim_card_id": {
+            "example": "6b14e151-8493-4fa1-8664-1cc4e6d14158",
+            "format": "uuid",
+            "type": "string"
+          },
+          "type": {
+            "default": "ipv4",
+            "enum": [
+              "ipv4"
+            ],
+            "example": "ipv4",
+            "readOnly": true,
+            "type": "string"
+          },
+          "updated_at": {
+            "description": "ISO 8601 formatted date-time indicating when the resource was updated.",
+            "example": "2018-02-02T22:25:27.521Z",
+            "readOnly": true,
+            "type": "string"
+          }
+        },
+        "title": "SIMCardPublicIP",
+        "type": "object"
+      },
+      "SIMCardRegistration": {
+        "properties": {
+          "registration_codes": {
+            "example": [
+              "0000000001",
+              "0000000002",
+              "0000000003"
+            ],
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "sim_card_group_id": {
+            "description": "The group SIMCardGroup identification. This attribute can be \u003ccode\u003enull\u003c/code\u003e when it's present in an associated resource.",
+            "example": "6a09cdc3-8948-47f0-aa62-74ac943d6c58",
+            "format": "uuid",
+            "type": "string"
+          },
+          "status": {
+            "default": "enabled",
+            "description": "Status on which the SIM card will be set after being successful registered.",
+            "enum": [
+              "enabled",
+              "disabled",
+              "standby"
+            ],
+            "example": "standby",
+            "type": "string"
+          },
+          "tags": {
+            "description": "Searchable tags associated with the SIM card",
+            "example": [
+              "personal",
+              "customers",
+              "active-customers"
+            ],
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "registration_codes"
+        ],
+        "title": "SIMCardRegistration",
+        "type": "object"
+      },
+      "SIMCardRegistrationCodeValidation": {
+        "properties": {
+          "invalid_detail": {
+            "description": "The validation message",
+            "example": "This code has already been used.",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "record_type": {
+            "example": "sim_card_registration_code_validation",
+            "type": "string"
+          },
+          "registration_code": {
+            "description": "The 10-digit SIM card registration code",
+            "example": "0123456789",
+            "type": "string"
+          },
+          "valid": {
+            "description": "The attribute that denotes whether the code is valid or not",
+            "example": false,
+            "type": "boolean"
+          }
+        },
+        "type": "object"
+      },
+      "SIMCardRegistrationCodeValidations": {
+        "properties": {
+          "data": {
+            "items": {
+              "$ref": "#/components/schemas/SIMCardRegistrationCodeValidation"
+            },
+            "type": "array"
+          }
+        },
+        "type": "object"
+      },
+      "SIMCardStatus": {
+        "properties": {
+          "reason": {
+            "description": "It describes why the SIM card is in the current status.",
+            "example": "The SIM card is active, ready to connect to networks and consume data.",
+            "readOnly": true,
+            "type": "string"
+          },
+          "value": {
+            "description": "The current status of the SIM card. It will be one of the following: \u003cbr/\u003e\n\u003cul\u003e\n \u003cli\u003e\u003ccode\u003eregistering\u003c/code\u003e - the card is being registered\u003c/li\u003e\n \u003cli\u003e\u003ccode\u003eenabling\u003c/code\u003e - the card is being enabled\u003c/li\u003e\n \u003cli\u003e\u003ccode\u003eenabled\u003c/code\u003e - the card is enabled and ready for use\u003c/li\u003e\n \u003cli\u003e\u003ccode\u003edisabling\u003c/code\u003e - the card is being disabled\u003c/li\u003e\n \u003cli\u003e\u003ccode\u003edisabled\u003c/code\u003e - the card has been disabled and cannot be used\u003c/li\u003e\n \u003cli\u003e\u003ccode\u003edata_limit_exceeded\u003c/code\u003e - the card has exceeded its data consumption limit\u003c/li\u003e\n \u003cli\u003e\u003ccode\u003esetting_standby\u003c/code\u003e - the process to set the card in stand by is in progress\u003c/li\u003e\n \u003cli\u003e\u003ccode\u003estandby\u003c/code\u003e - the card is in stand by\u003c/li\u003e\n\u003c/ul\u003e\nTransitioning between the enabled and disabled states may take a period of time.\n",
+            "enum": [
+              "registering",
+              "enabling",
+              "enabled",
+              "disabling",
+              "disabled",
+              "data_limit_exceeded",
+              "setting_standby",
+              "standby"
+            ],
+            "example": "enabled",
+            "readOnly": true,
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "SimCardDataUsageNotification": {
+        "description": "The SIM card individual data usage notification information.",
+        "example": {
+          "created_at": "2018-02-02T22:25:27.521Z",
+          "id": "79228acc-3f08-4e70-ac68-cb5aae8b537a",
+          "sim_card_id": "b34c1683-cd85-4493-b9a5-315eb4bc5e19",
+          "threshold": {
+            "amount": "2048.0",
+            "unit": "MB"
+          },
+          "updated_at": "2018-02-02T22:25:27.521Z"
+        },
+        "properties": {
+          "created_at": {
+            "description": "ISO 8601 formatted date-time indicating when the resource was created.",
+            "example": "2018-02-02T22:25:27.521Z",
+            "readOnly": true,
+            "type": "string"
+          },
+          "id": {
+            "description": "Identifies the resource.",
+            "example": "79228acc-3f08-4e70-ac68-cb5aae8b537a",
+            "format": "uuid",
+            "readOnly": true,
+            "type": "string"
+          },
+          "record_type": {
+            "example": "sim_card_data_usage_notification",
+            "readOnly": true,
+            "type": "string"
+          },
+          "sim_card_id": {
+            "description": "The identification UUID of the related SIM card resource.",
+            "example": "b34c1683-cd85-4493-b9a5-315eb4bc5e19",
+            "format": "uuid",
+            "type": "string"
+          },
+          "threshold": {
+            "description": "Data usage threshold that will trigger the notification.",
+            "properties": {
+              "amount": {
+                "example": "2048.1",
+                "type": "string"
+              },
+              "unit": {
+                "enum": [
+                  "MB",
+                  "GB"
+                ],
+                "example": "MB",
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
+          "updated_at": {
+            "description": "ISO 8601 formatted date-time indicating when the resource was updated.",
+            "example": "2018-02-02T22:25:27.521Z",
+            "readOnly": true,
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "SimpleSIMCard": {
+        "properties": {
+          "actions_in_progress": {
+            "default": false,
+            "description": "Indicate whether the SIM card has any pending (in-progress) actions.",
+            "example": true,
+            "readOnly": true,
+            "type": "boolean"
+          },
+          "authorized_imeis": {
+            "description": "List of IMEIs authorized to use a given SIM card.",
+            "example": [
+              "106516771852751",
+              "534051870479563",
+              "508821468377961"
+            ],
+            "items": {
+              "type": "string"
+            },
+            "type": [
+              "array",
+              "null"
+            ]
+          },
+          "created_at": {
+            "description": "ISO 8601 formatted date-time indicating when the resource was created.",
+            "example": "2018-02-02T22:25:27.521Z",
+            "readOnly": true,
+            "type": "string"
+          },
+          "current_billing_period_consumed_data": {
+            "description": "The SIM card consumption so far in the current billing cycle.",
+            "properties": {
+              "amount": {
+                "example": "2049.0",
+                "type": "string"
+              },
+              "unit": {
+                "default": "MB",
+                "example": "MB",
+                "type": "string"
+              }
+            },
+            "readOnly": true,
+            "type": "object"
+          },
+          "data_limit": {
+            "description": "The SIM card individual data limit configuration.",
+            "properties": {
+              "amount": {
+                "example": "2048.0",
+                "type": "string"
+              },
+              "unit": {
+                "enum": [
+                  "MB",
+                  "GB"
+                ],
+                "example": "MB",
+                "type": "string"
+              }
+            },
+            "readOnly": true,
+            "type": "object"
+          },
+          "eid": {
+            "description": "The Embedded Identity Document (eID) for eSIM cards.",
+            "example": null,
+            "readOnly": true,
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "esim_installation_status": {
+            "description": "The installation status of the eSIM. Only applicable for eSIM cards.",
+            "enum": [
+              "released",
+              "disabled"
+            ],
+            "example": "released",
+            "readOnly": true,
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "iccid": {
+            "description": "The ICCID is the identifier of the specific SIM card/chip. Each SIM is internationally identified by its integrated circuit card identifier (ICCID). ICCIDs are stored in the SIM card's memory and are also engraved or printed on the SIM card body during a process called personalization.\n",
+            "example": "89310410106543789301",
+            "readOnly": true,
+            "type": "string"
+          },
+          "id": {
+            "description": "Identifies the resource.",
+            "example": "6a09cdc3-8948-47f0-aa62-74ac943d6c58",
+            "format": "uuid",
+            "readOnly": true,
+            "type": "string"
+          },
+          "imsi": {
+            "description": "SIM cards are identified on their individual network operators by a unique International Mobile Subscriber Identity (IMSI). \u003cbr/\u003e\nMobile network operators connect mobile phone calls and communicate with their market SIM cards using their IMSIs. The IMSI is stored in the Subscriber  Identity Module (SIM) inside the device and is sent by the device to the appropriate network. It is used to acquire the details of the device in the Home  Location Register (HLR) or the Visitor Location Register (VLR).\n",
+            "example": "081932214823362973",
+            "readOnly": true,
+            "type": "string"
+          },
+          "msisdn": {
+            "description": "Mobile Station International Subscriber Directory Number (MSISDN) is a number used to identify a mobile phone number internationally. \u003cbr/\u003e\nMSISDN is defined by the E.164 numbering plan. It includes a country code and a National Destination Code which identifies the subscriber's operator.\n",
+            "example": "+13109976224",
+            "readOnly": true,
+            "type": "string"
+          },
+          "record_type": {
+            "example": "sim_card",
+            "readOnly": true,
+            "type": "string"
+          },
+          "resources_with_in_progress_actions": {
+            "description": "List of resources with actions in progress.",
+            "example": [],
+            "items": {
+              "type": "object"
+            },
+            "readOnly": true,
+            "type": "array"
+          },
+          "sim_card_group_id": {
+            "description": "The group SIMCardGroup identification. This attribute can be \u003ccode\u003enull\u003c/code\u003e when it's present in an associated resource.",
+            "example": "6a09cdc3-8948-47f0-aa62-74ac943d6c58",
+            "format": "uuid",
+            "type": "string"
+          },
+          "status": {
+            "$ref": "#/components/schemas/SIMCardStatus"
+          },
+          "tags": {
+            "description": "Searchable tags associated with the SIM card",
+            "example": [
+              "personal",
+              "customers",
+              "active-customers"
+            ],
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "type": {
+            "description": "The type of SIM card",
+            "enum": [
+              "physical",
+              "esim"
+            ],
+            "example": "physical",
+            "readOnly": true,
+            "type": "string"
+          },
+          "updated_at": {
+            "description": "ISO 8601 formatted date-time indicating when the resource was updated.",
+            "example": "2018-02-02T22:25:27.521Z",
+            "readOnly": true,
+            "type": "string"
+          },
+          "version": {
+            "description": "The version of the SIM card.",
+            "example": "4.3",
+            "readOnly": true,
+            "type": "string"
+          },
+          "voice_enabled": {
+            "default": false,
+            "description": "Indicates whether voice services are enabled for the SIM card.",
+            "example": false,
+            "readOnly": true,
+            "type": "boolean"
+          }
+        },
+        "title": "SIMCard",
+        "type": "object"
+      },
+      "WirelessConnectivityLog": {
+        "description": "This object represents a wireless connectivity session log that happened through a SIM card. It aids in finding out potential problems when the SIM is not able to attach properly.",
+        "properties": {
+          "apn": {
+            "description": "The Access Point Name (APN) identifies the packet data network that a mobile data user wants to communicate with.",
+            "example": "data00.telnyx",
+            "readOnly": true,
+            "type": "string"
+          },
+          "cell_id": {
+            "description": "The cell ID to which the SIM connected.",
+            "example": "311210-6813",
+            "readOnly": true,
+            "type": "string"
+          },
+          "created_at": {
+            "description": "ISO 8601 formatted date-time indicating when the record was created.",
+            "example": "2018-02-02T22:25:27.521Z",
+            "readOnly": true,
+            "type": "string"
+          },
+          "id": {
+            "description": "Uniquely identifies the session.",
+            "example": 137509451,
+            "readOnly": true,
+            "type": "integer"
+          },
+          "imei": {
+            "description": "The International Mobile Equipment Identity (or IMEI) is a number, usually unique, that identifies the device currently being used connect to the network.",
+            "example": "490154203237518",
+            "readOnly": true,
+            "type": "string"
+          },
+          "imsi": {
+            "description": "SIM cards are identified on their individual network operators by a unique International Mobile Subscriber Identity (IMSI). \u003cbr/\u003e\nMobile network operators connect mobile phone calls and communicate with their market SIM cards using their IMSIs. The IMSI is stored in the Subscriber  Identity Module (SIM) inside the device and is sent by the device to the appropriate network. It is used to acquire the details of the device in the Home  Location Register (HLR) or the Visitor Location Register (VLR).\n",
+            "example": "081932214823362973",
+            "readOnly": true,
+            "type": "string"
+          },
+          "ipv4": {
+            "description": "The SIM's address in the currently connected network. This IPv4 address is usually obtained dynamically, so it may vary according to the location or new connections.\n",
+            "example": "192.168.0.0",
+            "readOnly": true,
+            "type": "string"
+          },
+          "ipv6": {
+            "description": "The SIM's address in the currently connected network. This IPv6 address is usually obtained dynamically, so it may vary according to the location or new connections.\n",
+            "example": "2001:cdba:0000:0000:0000:0000:3257:9652",
+            "readOnly": true,
+            "type": "string"
+          },
+          "last_seen": {
+            "description": "ISO 8601 formatted date-time indicating when the last heartbeat to the device was successfully recorded.",
+            "example": "2018-02-02T22:25:27.521Z",
+            "readOnly": true,
+            "type": "string"
+          },
+          "log_type": {
+            "description": "The type of the session, 'registration' being the initial authentication session and 'data' the actual data transfer sessions.",
+            "enum": [
+              "registration",
+              "data"
+            ],
+            "example": "registration",
+            "readOnly": true,
+            "type": "string"
+          },
+          "mobile_country_code": {
+            "description": "It's a three decimal digit that identifies a country.\u003cbr/\u003e\u003cbr/\u003e\nThis code is commonly seen joined with a Mobile Network Code (MNC) in a tuple that allows identifying a carrier known as PLMN (Public Land Mobile Network) code.",
+            "example": "310",
+            "readOnly": true,
+            "type": "string"
+          },
+          "mobile_network_code": {
+            "description": "It's a two to three decimal digits that identify a network.\u003cbr/\u003e\u003cbr/\u003e\n This code is commonly seen joined with a Mobile Country Code (MCC) in a tuple that allows identifying a carrier known as PLMN (Public Land Mobile Network) code.",
+            "example": "410",
+            "readOnly": true,
+            "type": "string"
+          },
+          "radio_access_technology": {
+            "description": "The radio technology the SIM card used during the session.",
+            "example": "LTE",
+            "readOnly": true,
+            "type": "string"
+          },
+          "record_type": {
+            "example": "wireless_connectivity_log",
+            "readOnly": true,
+            "type": "string"
+          },
+          "sim_card_id": {
+            "description": "The identification UUID of the related SIM card resource.",
+            "example": "6a09cdc3-8948-47f0-aa62-74ac943d6c58",
+            "format": "uuid",
+            "type": "string"
+          },
+          "start_time": {
+            "description": "ISO 8601 formatted date-time indicating when the session started.",
+            "example": "2018-02-02T22:25:27.521Z",
+            "readOnly": true,
+            "type": "string"
+          },
+          "state": {
+            "description": "The state of the SIM card after when the session happened.",
+            "example": "provisioned",
+            "readOnly": true,
+            "type": "string"
+          },
+          "stop_time": {
+            "description": "ISO 8601 formatted date-time indicating when the session ended.",
+            "example": "2018-02-02T22:25:27.521Z",
+            "readOnly": true,
+            "type": "string"
+          }
+        },
+        "title": "WirelessConnectivityLog",
+        "type": "object"
+      },
+      "documents_Error": {
+        "properties": {
+          "code": {
+            "type": "string"
+          },
+          "detail": {
+            "type": "string"
+          },
+          "meta": {
+            "additionalProperties": true,
+            "type": "object"
+          },
+          "source": {
+            "properties": {
+              "parameter": {
+                "description": "Indicates which query parameter caused the error.",
+                "type": "string"
+              },
+              "pointer": {
+                "description": "JSON pointer (RFC6901) to the offending entity.",
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
+          "title": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "title"
+        ],
+        "type": "object"
+      },
+      "wireless_CreatedAt_c5290d5308": {
+        "description": "ISO 8601 formatted date-time indicating when the resource was created.",
+        "example": "2018-02-02T22:25:27.521Z",
+        "readOnly": true,
+        "type": "string"
+      },
+      "wireless_Error_c5290d5308": {
+        "properties": {
+          "code": {
+            "type": "string"
+          },
+          "detail": {
+            "type": "string"
+          },
+          "meta": {
+            "additionalProperties": true,
+            "type": "object"
+          },
+          "source": {
+            "properties": {
+              "parameter": {
+                "description": "Indicates which query parameter caused the error.",
+                "type": "string"
+              },
+              "pointer": {
+                "description": "JSON pointer (RFC6901) to the offending entity.",
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
+          "title": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "title"
+        ],
+        "type": "object"
+      },
+      "wireless_Id_c5290d5308": {
+        "description": "Identifies the resource.",
+        "example": "6a09cdc3-8948-47f0-aa62-74ac943d6c58",
+        "format": "uuid",
+        "readOnly": true,
+        "type": "string"
+      },
+      "wireless_SIMCardAction": {
+        "description": "This object represents a SIM card action. It allows tracking the current status of an operation that impacts the SIM card.",
+        "properties": {
+          "action_type": {
+            "description": "The operation type. It can be one of the following: \u003cbr/\u003e\n\u003cul\u003e\n \u003cli\u003e\u003ccode\u003eenable\u003c/code\u003e - move the SIM card to the \u003ccode\u003eenabled\u003c/code\u003e status\u003c/li\u003e\n \u003cli\u003e\u003ccode\u003eenable_standby_sim_card\u003c/code\u003e - move a SIM card previously on the \u003ccode\u003estandby\u003c/code\u003e status to the \u003ccode\u003eenabled\u003c/code\u003e status after it consumes data.\u003c/li\u003e\n \u003cli\u003e\u003ccode\u003edisable\u003c/code\u003e - move the SIM card to the \u003ccode\u003edisabled\u003c/code\u003e status\u003c/li\u003e\n \u003cli\u003e\u003ccode\u003eset_standby\u003c/code\u003e - move the SIM card to the \u003ccode\u003estandby\u003c/code\u003e status\u003c/li\u003e\n \u003cli\u003e\u003ccode\u003eenable_voice\u003c/code\u003e - enable voice calling on the SIM card\u003c/li\u003e\n \u003cli\u003e\u003ccode\u003edisable_voice\u003c/code\u003e - disable voice calling on the SIM card\u003c/li\u003e\n \u003c/ul\u003e",
+            "enum": [
+              "enable",
+              "enable_standby_sim_card",
+              "disable",
+              "set_standby",
+              "enable_voice",
+              "disable_voice"
+            ],
+            "example": "enable",
+            "readOnly": true,
+            "type": "string"
+          },
+          "created_at": {
+            "$ref": "#/components/schemas/wireless_CreatedAt_c5290d5308"
+          },
+          "id": {
+            "$ref": "#/components/schemas/wireless_Id_c5290d5308"
+          },
+          "record_type": {
+            "example": "sim_card_action",
+            "readOnly": true,
+            "type": "string"
+          },
+          "settings": {
+            "additionalProperties": true,
+            "description": "A JSON object representation of the action params.",
+            "example": {},
+            "readOnly": true,
+            "type": [
+              "object",
+              "null"
+            ]
+          },
+          "sim_card_id": {
+            "description": "The related SIM card identifier.",
+            "example": "6a09cdc3-8948-47f0-aa62-74ac943d6c58",
+            "format": "uuid",
+            "readOnly": true,
+            "type": "string"
+          },
+          "status": {
+            "properties": {
+              "reason": {
+                "description": "It describes why the SIM card action is in the current status. This will be \u003ccode\u003enull\u003c/code\u003e for self-explanatory statuses, such as \u003ccode\u003ein-progress\u003c/code\u003e and \u003ccode\u003ecompleted\u003c/code\u003e but will include further information on statuses like \u003ccode\u003einterrupted\u003c/code\u003e and \u003ccode\u003efailed\u003c/code\u003e.",
+                "example": "The data limit was exceeded.",
+                "readOnly": true,
+                "type": "string"
+              },
+              "value": {
+                "description": "The current status of the SIM card action.",
+                "enum": [
+                  "in-progress",
+                  "completed",
+                  "failed",
+                  "interrupted"
+                ],
+                "example": "completed",
+                "readOnly": true,
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
+          "updated_at": {
+            "$ref": "#/components/schemas/wireless_UpdatedAt_c5290d5308"
+          }
+        },
+        "title": "SIMCardAction",
+        "type": "object"
+      },
+      "wireless_UpdatedAt_c5290d5308": {
+        "description": "ISO 8601 formatted date-time indicating when the resource was updated.",
+        "example": "2018-02-02T22:25:27.521Z",
+        "readOnly": true,
+        "type": "string"
+      }
+    },
+    "securitySchemes": {
+      "BearerAuth": {
+        "bearerFormat": "API key",
+        "description": "Telnyx API key supplied as `Authorization: Bearer \u003ctoken\u003e`. In production, auth may be validated by the API gateway and forwarded via Telnyx auth headers.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "Payment": {
+        "description": "Machine Payment Protocol credential used on paid retries, sent as `Authorization: Payment ...`. Obtained by paying a challenge returned in the `WWW-Authenticate` header of a 402 response. This is not a Telnyx API key; initial challenge requests use standard bearer authentication instead.",
+        "in": "header",
+        "name": "Authorization",
+        "type": "apiKey"
+      },
+      "agent-memory_bearerAuth": {
+        "description": "Telnyx API key",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "bearerAuth": {
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "branded-calling_bearerAuth": {
+        "description": "Telnyx API key. Generate one at https://portal.telnyx.com/#/app/api-keys.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "collections_bearerAuth": {
+        "description": "Telnyx API key. Collections and results are automatically scoped to the authenticated user's organization.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "number-reputation_bearerAuth": {
+        "description": "Telnyx API key. Generate one at https://portal.telnyx.com/#/app/api-keys.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "oauthClientAuth": {
+        "description": "OAuth 2.0 authentication for Telnyx API and MCP integrations",
+        "flows": {
+          "authorizationCode": {
+            "authorizationUrl": "https://api.telnyx.com/v2/oauth/authorize",
+            "refreshUrl": "https://api.telnyx.com/v2/oauth/token",
+            "scopes": {
+              "admin": "Administrative access to Telnyx resources"
+            },
+            "tokenUrl": "https://api.telnyx.com/v2/oauth/token"
+          },
+          "clientCredentials": {
+            "scopes": {
+              "admin": "Administrative access to Telnyx resources"
+            },
+            "tokenUrl": "https://api.telnyx.com/v2/oauth/token"
+          }
+        },
+        "type": "oauth2"
+      },
+      "outbound-voice-profiles_bearerAuth": {
+        "bearerFormat": "JWT",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "pay-connectors_bearerAuth": {
+        "description": "Telnyx API key, not the processor bearer token.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "pronunciation-dicts_bearerAuth": {
+        "description": "Telnyx API v2 key. Obtain from https://portal.telnyx.com",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "rcs-registration_bearerAuth": {
+        "bearerFormat": "API key",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "stored-payment-transactions_bearerAuth": {
+        "bearerFormat": "JWT",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "telnyxApiKey": {
+        "description": "Management-only Telnyx account credential.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "transcriptions-search_bearerAuth": {
+        "description": "Telnyx API key. Results are automatically scoped to the authenticated user's organization.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "web-search_bearerAuth": {
+        "description": "Telnyx API key",
+        "scheme": "bearer",
+        "type": "http"
+      }
+    }
+  },
+  "info": {
+    "contact": {
+      "email": "support@telnyx.com"
+    },
+    "description": "SIP trunking, SMS, MMS, Call Control and Telephony Data Services.",
+    "title": "Telnyx API",
+    "version": "2.0.0",
+    "x-endpoint-cost": "light",
+    "x-latency-category": "responsive"
+  },
+  "openapi": "3.1.0",
+  "paths": {
+    "/actions/purchase/esims": {
+      "post": {
+        "description": "Purchases and registers the specified amount of eSIMs to the current user's account.\u003cbr/\u003e\u003cbr/\u003e\nIf \u003ccode\u003esim_card_group_id\u003c/code\u003e is provided, the eSIMs will be associated with that group. Otherwise, the default group for the current user will be used.\u003cbr/\u003e\u003cbr/\u003e\n",
+        "operationId": "PurchaseESim",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ESimPurchase"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "202": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "description": "Successfully registered SIM cards.",
+                      "items": {
+                        "$ref": "#/components/schemas/SimpleSIMCard"
+                      },
+                      "type": "array"
+                    },
+                    "errors": {
+                      "items": {
+                        "$ref": "#/components/schemas/wireless_Error_c5290d5308"
+                      },
+                      "type": "array"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful response"
+          },
+          "401": {
+            "$ref": "#/components/responses/wireless_Unauthorized"
+          }
+        },
+        "summary": "Purchase eSIMs",
+        "tags": [
+          "SIM Cards"
+        ],
+        "x-latency-category": "background"
+      }
+    },
+    "/actions/register/sim_cards": {
+      "post": {
+        "description": "Register the SIM cards associated with the provided registration codes to the current user's account.\u003cbr/\u003e\u003cbr/\u003e\nIf \u003ccode\u003esim_card_group_id\u003c/code\u003e is provided, the SIM cards will be associated with that group. Otherwise, the default group for the current user will be used.\u003cbr/\u003e\u003cbr/\u003e\n",
+        "operationId": "RegisterSimCards",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SIMCardRegistration"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "202": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "description": "Successfully registered SIM cards.",
+                      "items": {
+                        "$ref": "#/components/schemas/SimpleSIMCard"
+                      },
+                      "type": "array"
+                    },
+                    "errors": {
+                      "items": {
+                        "$ref": "#/components/schemas/wireless_Error_c5290d5308"
+                      },
+                      "type": "array"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful response"
+          },
+          "401": {
+            "$ref": "#/components/responses/wireless_Unauthorized"
+          }
+        },
+        "summary": "Register SIM cards",
+        "tags": [
+          "SIM Cards"
+        ],
+        "x-latency-category": "background"
+      }
+    },
+    "/sim_card_data_usage_notifications": {
+      "get": {
+        "description": "Lists a paginated collection of SIM card data usage notifications. It enables exploring the collection using specific filters.",
+        "operationId": "ListDataUsageNotifications",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/wireless_PageNumber_c5290d5308"
+          },
+          {
+            "$ref": "#/components/parameters/wireless_PageSize_c5290d5308"
+          },
+          {
+            "$ref": "#/components/parameters/FilterSIMCardId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "items": {
+                        "$ref": "#/components/schemas/SimCardDataUsageNotification"
+                      },
+                      "type": "array"
+                    },
+                    "meta": {
+                      "$ref": "#/components/schemas/PaginationMeta"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "default": {
+            "$ref": "#/components/responses/wireless_GenericErrorResponse_c5290d5308"
+          }
+        },
+        "summary": "List SIM card data usage notifications",
+        "tags": [
+          "SIM Cards"
+        ],
+        "x-latency-category": "background"
+      },
+      "post": {
+        "description": "Creates a new SIM card data usage notification.",
+        "operationId": "PostSimCardDataUsageNotification",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "sim_card_id": {
+                    "description": "The identification UUID of the related SIM card resource.",
+                    "example": "6a09cdc3-8948-47f0-aa62-74ac943d6c58",
+                    "format": "uuid",
+                    "type": "string"
+                  },
+                  "threshold": {
+                    "description": "Data usage threshold that will trigger the notification.",
+                    "properties": {
+                      "amount": {
+                        "example": "2048.1",
+                        "type": "string"
+                      },
+                      "unit": {
+                        "enum": [
+                          "MB",
+                          "GB"
+                        ],
+                        "example": "MB",
+                        "type": "string"
+                      }
+                    },
+                    "type": "object"
+                  }
+                },
+                "required": [
+                  "sim_card_id",
+                  "threshold"
+                ],
+                "type": "object"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/SimCardDataUsageNotification"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "default": {
+            "$ref": "#/components/responses/wireless_GenericErrorResponse_c5290d5308"
+          }
+        },
+        "summary": "Create a new SIM card data usage notification",
+        "tags": [
+          "SIM Cards"
+        ]
+      }
+    },
+    "/sim_card_data_usage_notifications/{id}": {
+      "delete": {
+        "description": "Delete the SIM Card Data Usage Notification.",
+        "operationId": "DeleteSimCardDataUsageNotifications",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/ResourceId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/SimCardDataUsageNotification"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "default": {
+            "$ref": "#/components/responses/wireless_GenericErrorResponse_c5290d5308"
+          }
+        },
+        "summary": "Delete SIM card data usage notifications",
+        "tags": [
+          "SIM Cards"
+        ]
+      },
+      "get": {
+        "description": "Get a single SIM Card Data Usage Notification.",
+        "operationId": "GetSimCardDataUsageNotification",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/ResourceId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/SimCardDataUsageNotification"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "404": {
+            "$ref": "#/components/responses/ResourceNotFound"
+          },
+          "default": {
+            "$ref": "#/components/responses/wireless_GenericErrorResponse_c5290d5308"
+          }
+        },
+        "summary": "Get a single SIM card data usage notification",
+        "tags": [
+          "SIM Cards"
+        ],
+        "x-latency-category": "background"
+      },
+      "patch": {
+        "description": "Updates information for a SIM Card Data Usage Notification.",
+        "operationId": "PatchSimCardDataUsageNotification",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/ResourceId"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SimCardDataUsageNotification"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/SimCardDataUsageNotification"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "default": {
+            "$ref": "#/components/responses/wireless_GenericErrorResponse_c5290d5308"
+          }
+        },
+        "summary": "Updates information for a SIM Card Data Usage Notification",
+        "tags": [
+          "SIM Cards"
+        ]
+      }
+    },
+    "/sim_cards": {
+      "get": {
+        "description": "Get all SIM cards belonging to the user that match the given filters.",
+        "operationId": "GetSimCards",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/FilterSIMCardConsolidated"
+          },
+          {
+            "$ref": "#/components/parameters/wireless_PageConsolidated_c5290d5308"
+          },
+          {
+            "$ref": "#/components/parameters/IncludeSIMCardGroup"
+          },
+          {
+            "$ref": "#/components/parameters/FilterSIMCardGroupId"
+          },
+          {
+            "description": "Sorts SIM cards by the given field. Defaults to ascending order unless field is prefixed with a minus sign.",
+            "example": "-current_billing_period_consumed_data.amount",
+            "in": "query",
+            "name": "sort",
+            "required": false,
+            "schema": {
+              "enum": [
+                "current_billing_period_consumed_data.amount",
+                "-current_billing_period_consumed_data.amount"
+              ],
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "items": {
+                        "$ref": "#/components/schemas/SimpleSIMCard"
+                      },
+                      "type": "array"
+                    },
+                    "meta": {
+                      "$ref": "#/components/schemas/PaginationMeta"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful response"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "default": {
+            "$ref": "#/components/responses/wireless_GenericErrorResponse_c5290d5308"
+          }
+        },
+        "summary": "Get all SIM cards",
+        "tags": [
+          "SIM Cards"
+        ]
+      }
+    },
+    "/sim_cards/actions/bulk_disable_voice": {
+      "post": {
+        "description": "This API triggers an asynchronous operation to disable voice on SIM cards belonging to a specified SIM Card Group.\u003cbr/\u003e\nFor each SIM Card a SIM Card Action will be generated. The status of the SIM Card Actions can be followed through the [List SIM Card Action](https://developers.telnyx.com/api-reference/sim-card-actions/list-sim-card-actions) API.\n\nThe overall status of the Bulk SIM Card Action can be followed through the [List Bulk SIM Card Action](https://developers.telnyx.com/api-reference/sim-card-actions/list-bulk-sim-card-actions) API.\n",
+        "operationId": "DisableVoiceBulk",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "sim_card_group_id": {
+                    "example": "6b14e151-8493-4fa1-8664-1cc4e6d14158",
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "sim_card_group_id"
+                ],
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "202": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/BulkSIMCardAction"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Bulk action accepted. Poll GET /bulk_sim_card_actions/{id} with the returned bulk action id to track progress."
+          },
+          "422": {
+            "$ref": "#/components/responses/wireless_UnprocessableEntity_c5290d5308"
+          }
+        },
+        "summary": "Request bulk disabling voice on SIM cards.",
+        "tags": [
+          "SIM Cards"
+        ],
+        "x-latency-category": "background"
+      }
+    },
+    "/sim_cards/actions/bulk_enable_voice": {
+      "post": {
+        "description": "This API triggers an asynchronous operation to enable voice on SIM cards belonging to a specified SIM Card Group.\u003cbr/\u003e\nFor each SIM Card a SIM Card Action will be generated. The status of the SIM Card Actions can be followed through the [List SIM Card Action](https://developers.telnyx.com/api-reference/sim-card-actions/list-sim-card-actions) API.\n\nThe overall status of the Bulk SIM Card Action can be followed through the [List Bulk SIM Card Action](https://developers.telnyx.com/api-reference/sim-card-actions/list-bulk-sim-card-actions) API.\n",
+        "operationId": "EnableVoiceBulk",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "connection_id": {
+                    "description": "The identifier of the Mobile Voice Connection to associate with the SIM cards. The connection must be owned by the same user and of type \u003ccode\u003emobile_voice\u003c/code\u003e. If omitted, voice is enabled without a connection association.",
+                    "example": "123456789",
+                    "type": "string"
+                  },
+                  "sim_card_group_id": {
+                    "example": "6b14e151-8493-4fa1-8664-1cc4e6d14158",
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "sim_card_group_id"
+                ],
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "202": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/BulkSIMCardAction"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Bulk action accepted. Poll GET /bulk_sim_card_actions/{id} with the returned bulk action id to track progress."
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "Invalid connection_id format": {
+                    "value": {
+                      "errors": [
+                        {
+                          "code": "10015",
+                          "detail": "The provided connection_id is not a valid connection ID.",
+                          "meta": {
+                            "url": "https://developers.telnyx.com/docs/overview/errors/10015"
+                          },
+                          "source": {
+                            "pointer": "/connection_id"
+                          },
+                          "title": "Invalid connection_id"
+                        }
+                      ]
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/Errors"
+                }
+              }
+            },
+            "description": "Bad Request — invalid connection_id format"
+          },
+          "422": {
+            "$ref": "#/components/responses/wireless_UnprocessableEntity_c5290d5308"
+          }
+        },
+        "summary": "Request bulk enabling voice on SIM cards.",
+        "tags": [
+          "SIM Cards"
+        ],
+        "x-latency-category": "background"
+      }
+    },
+    "/sim_cards/actions/bulk_set_public_ips": {
+      "post": {
+        "description": "This API triggers an asynchronous operation to set a public IP for each of the specified SIM cards.\u003cbr/\u003e\nFor each SIM Card a SIM Card Action will be generated. The status of the SIM Card Action can be followed through the [List SIM Card Action](https://developers.telnyx.com/api-reference/sim-card-actions/list-sim-card-actions) API.\n",
+        "operationId": "SetPublicIPsBulk",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "sim_card_ids": {
+                    "example": [
+                      "6b14e151-8493-4fa1-8664-1cc4e6d14158"
+                    ],
+                    "items": {
+                      "$ref": "#/components/schemas/wireless_Id_c5290d5308"
+                    },
+                    "type": "array"
+                  }
+                },
+                "required": [
+                  "sim_card_ids"
+                ],
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "202": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/BulkSIMCardAction"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Bulk action accepted. Poll GET /bulk_sim_card_actions/{id} with the returned bulk action id to track progress."
+          },
+          "422": {
+            "$ref": "#/components/responses/wireless_UnprocessableEntity_c5290d5308"
+          }
+        },
+        "summary": "Request bulk setting SIM card public IPs.",
+        "tags": [
+          "SIM Cards"
+        ],
+        "x-latency-category": "background"
+      }
+    },
+    "/sim_cards/actions/validate_registration_codes": {
+      "post": {
+        "description": "It validates whether SIM card registration codes are valid or not.",
+        "operationId": "ValidateRegistrationCodes",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "description": "The object containing the Array of SIM card registration codes.",
+                "example": {
+                  "registration_codes": [
+                    "123456780",
+                    "1231231230"
+                  ]
+                },
+                "properties": {
+                  "registration_codes": {
+                    "items": {
+                      "type": "string"
+                    },
+                    "type": "array"
+                  }
+                },
+                "type": "object"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SIMCardRegistrationCodeValidations"
+                }
+              }
+            },
+            "description": "Successful"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "default": {
+            "$ref": "#/components/responses/wireless_GenericErrorResponse_c5290d5308"
+          }
+        },
+        "summary": "Validate SIM cards registration codes",
+        "tags": [
+          "SIM Cards"
+        ]
+      }
+    },
+    "/sim_cards/{id}": {
+      "delete": {
+        "description": "The SIM card will be decommissioned, removed from your account and you will stop being charged.\u003cbr /\u003eThe SIM card won't be able to connect to the network after the deletion is completed, thus making it impossible to consume data.\u003cbr/\u003e\nTransitioning to the disabled state may take a period of time.\nUntil the transition is completed, the SIM card status will be disabling \u003ccode\u003edisabling\u003c/code\u003e.\u003cbr /\u003eIn order to re-enable the SIM card, you will need to re-register it.",
+        "operationId": "DeleteSimCard",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/SIMCardId"
+          },
+          {
+            "description": "Enables deletion of disabled eSIMs that can't be uninstalled from a device. This is irreversible and the eSIM cannot be re-registered.",
+            "in": "query",
+            "name": "report_lost",
+            "required": false,
+            "schema": {
+              "default": false,
+              "type": "boolean"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/SIMCard"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful response"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "default": {
+            "$ref": "#/components/responses/wireless_GenericErrorResponse_c5290d5308"
+          }
+        },
+        "summary": "Deletes a SIM card",
+        "tags": [
+          "SIM Cards"
+        ]
+      },
+      "get": {
+        "description": "Returns the details regarding a specific SIM card.",
+        "operationId": "GetSimCard",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/SIMCardId"
+          },
+          {
+            "$ref": "#/components/parameters/IncludeSIMCardGroup"
+          },
+          {
+            "description": "When set to true, includes the PIN and PUK codes in the response. These codes are used for SIM card security and unlocking purposes. Available for both physical SIM cards and eSIMs.",
+            "in": "query",
+            "name": "include_pin_puk_codes",
+            "required": false,
+            "schema": {
+              "default": false,
+              "type": "boolean"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/SIMCard"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful response"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "default": {
+            "$ref": "#/components/responses/wireless_GenericErrorResponse_c5290d5308"
+          }
+        },
+        "summary": "Get SIM card",
+        "tags": [
+          "SIM Cards"
+        ]
+      },
+      "patch": {
+        "description": "Updates the specified SIM card's attributes and returns the updated SIM card.",
+        "operationId": "UpdateSimCard",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/SIMCardId"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SIMCard"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/SIMCard"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful response"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "default": {
+            "$ref": "#/components/responses/wireless_GenericErrorResponse_c5290d5308"
+          }
+        },
+        "summary": "Update a SIM card",
+        "tags": [
+          "SIM Cards"
+        ]
+      }
+    },
+    "/sim_cards/{id}/actions/disable": {
+      "post": {
+        "description": "This API disables a SIM card, disconnecting it from the network and making it impossible to consume data.\u003cbr/\u003e\nThe API will trigger an asynchronous operation called a SIM Card Action. Transitioning to the disabled state may take a period of time. The status of the SIM Card Action can be followed through the [List SIM Card Action](https://developers.telnyx.com/api-reference/sim-card-actions/list-sim-card-actions) API.\n",
+        "operationId": "DisableSimCard",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/SIMCardId"
+          }
+        ],
+        "responses": {
+          "202": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/wireless_SIMCardAction"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Action accepted. The response contains a SIM card action; poll GET /sim_card_actions/{id} with the action id to track progress."
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "default": {
+            "$ref": "#/components/responses/wireless_GenericErrorResponse_c5290d5308"
+          }
+        },
+        "summary": "Request a SIM card disable",
+        "tags": [
+          "SIM Cards"
+        ],
+        "x-latency-category": "background"
+      }
+    },
+    "/sim_cards/{id}/actions/disable_voice": {
+      "post": {
+        "description": "This API disables voice calling on a SIM card. The SIM card will no longer be able to make or receive calls.\u003cbr/\u003e\nThe API will trigger an asynchronous operation called a SIM Card Action. The status of the SIM Card Action can be followed through the [List SIM Card Action](https://developers.telnyx.com/api-reference/sim-card-actions/list-sim-card-actions) API.\n",
+        "operationId": "DisableVoiceSimCard",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/SIMCardId"
+          }
+        ],
+        "responses": {
+          "202": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/wireless_SIMCardAction"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Action accepted. The response contains a SIM card action; poll GET /sim_card_actions/{id} with the action id to track progress."
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "SIM card not found": {
+                    "value": {
+                      "errors": [
+                        {
+                          "code": "404",
+                          "detail": "The SIM card was not found.",
+                          "meta": {
+                            "url": "https://developers.telnyx.com/docs/overview/errors/404"
+                          },
+                          "source": {
+                            "pointer": "/id"
+                          },
+                          "title": "Resource not found"
+                        }
+                      ]
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/Errors"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          },
+          "default": {
+            "$ref": "#/components/responses/wireless_GenericErrorResponse_c5290d5308"
+          }
+        },
+        "summary": "Request disabling voice on a SIM card",
+        "tags": [
+          "SIM Cards"
+        ],
+        "x-latency-category": "background"
+      }
+    },
+    "/sim_cards/{id}/actions/enable": {
+      "post": {
+        "description": "This API enables a SIM card, connecting it to the network and making it possible to consume data.\u003cbr/\u003e\nTo enable a SIM card, it must be associated with a SIM card group.\u003cbr/\u003e\nThe API will trigger an asynchronous operation called a SIM Card Action. Transitioning to the enabled state may take a period of time. The status of the SIM Card Action can be followed through the [List SIM Card Action](https://developers.telnyx.com/api-reference/sim-card-actions/list-sim-card-actions) API.\n",
+        "operationId": "EnableSimCard",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/SIMCardId"
+          }
+        ],
+        "responses": {
+          "202": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/wireless_SIMCardAction"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Action accepted. The response contains a SIM card action; poll GET /sim_card_actions/{id} with the action id to track progress."
+          },
+          "422": {
+            "$ref": "#/components/responses/wireless_UnprocessableEntity_c5290d5308"
+          },
+          "default": {
+            "$ref": "#/components/responses/wireless_GenericErrorResponse_c5290d5308"
+          }
+        },
+        "summary": "Request a SIM card enable",
+        "tags": [
+          "SIM Cards"
+        ],
+        "x-latency-category": "background"
+      }
+    },
+    "/sim_cards/{id}/actions/enable_voice": {
+      "post": {
+        "description": "This API enables voice calling on a SIM card. When a \u003ccode\u003econnection_id\u003c/code\u003e is provided, the SIM is associated with the specified Mobile Voice Connection. The connection must be owned by the same user and of type \u003ccode\u003emobile_voice\u003c/code\u003e.\u003cbr/\u003e\nThe API will trigger an asynchronous operation called a SIM Card Action. The status of the SIM Card Action can be followed through the [List SIM Card Action](https://developers.telnyx.com/api-reference/sim-card-actions/list-sim-card-actions) API.\n",
+        "operationId": "EnableVoiceSimCard",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/SIMCardId"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "connection_id": {
+                    "description": "The identifier of the Mobile Voice Connection to associate with this SIM card. The connection must be owned by the same user and of type \u003ccode\u003emobile_voice\u003c/code\u003e. If omitted, voice is enabled without a connection association.",
+                    "example": "123456789",
+                    "type": "string"
+                  }
+                },
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "202": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/wireless_SIMCardAction"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Action accepted. The response contains a SIM card action; poll GET /sim_card_actions/{id} with the action id to track progress."
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "Invalid connection_id format": {
+                    "value": {
+                      "errors": [
+                        {
+                          "code": "10015",
+                          "detail": "The provided connection_id is not a valid connection ID.",
+                          "meta": {
+                            "url": "https://developers.telnyx.com/docs/overview/errors/10015"
+                          },
+                          "source": {
+                            "pointer": "/connection_id"
+                          },
+                          "title": "Invalid connection_id"
+                        }
+                      ]
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/Errors"
+                }
+              }
+            },
+            "description": "Bad Request — invalid connection_id format"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "Connection does not belong to SIM card": {
+                    "value": {
+                      "errors": [
+                        {
+                          "code": "10015",
+                          "detail": "The provided connection_id does not belong to this SIM card or is not a mobile voice connection.",
+                          "meta": {
+                            "url": "https://developers.telnyx.com/docs/overview/errors/10015"
+                          },
+                          "source": {
+                            "pointer": "/connection_id"
+                          },
+                          "title": "Invalid connection"
+                        }
+                      ]
+                    }
+                  },
+                  "SIM card not found": {
+                    "value": {
+                      "errors": [
+                        {
+                          "code": "404",
+                          "detail": "The SIM card was not found.",
+                          "meta": {
+                            "url": "https://developers.telnyx.com/docs/overview/errors/404"
+                          },
+                          "source": {
+                            "pointer": "/id"
+                          },
+                          "title": "Resource not found"
+                        }
+                      ]
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/Errors"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          },
+          "default": {
+            "$ref": "#/components/responses/wireless_GenericErrorResponse_c5290d5308"
+          }
+        },
+        "summary": "Request enabling voice on a SIM card",
+        "tags": [
+          "SIM Cards"
+        ],
+        "x-latency-category": "background"
+      }
+    },
+    "/sim_cards/{id}/actions/remove_public_ip": {
+      "post": {
+        "description": "This API removes an existing public IP from a SIM card. \u003cbr/\u003e\u003cbr/\u003e\n The API will trigger an asynchronous operation called a SIM Card Action. The status of the SIM Card Action can be followed through the [List SIM Card Action](https://developers.telnyx.com/api-reference/sim-card-actions/list-sim-card-actions) API.",
+        "operationId": "RemoveSimCardPublicIp",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/SIMCardId"
+          }
+        ],
+        "responses": {
+          "202": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/wireless_SIMCardAction"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Action accepted. The response contains a SIM card action; poll GET /sim_card_actions/{id} with the action id to track progress."
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "default": {
+            "$ref": "#/components/responses/wireless_GenericErrorResponse_c5290d5308"
+          }
+        },
+        "summary": "Request removing a SIM card public IP",
+        "tags": [
+          "SIM Cards"
+        ],
+        "x-latency-category": "background"
+      }
+    },
+    "/sim_cards/{id}/actions/set_public_ip": {
+      "post": {
+        "description": "This API makes a SIM card reachable on the public internet by mapping a random public IP to the SIM card. \u003cbr/\u003e\u003cbr/\u003e\n The API will trigger an asynchronous operation called a SIM Card Action. The status of the SIM Card Action can be followed through the [List SIM Card Action](https://developers.telnyx.com/api-reference/sim-card-actions/list-sim-card-actions) API. \u003cbr/\u003e\u003cbr/\u003e\n Setting a Public IP to a SIM Card incurs a charge and will only succeed if the account has sufficient funds.",
+        "operationId": "SetSimCardPublicIp",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/SIMCardId"
+          },
+          {
+            "description": "The code of the region where the public IP should be assigned. A list of available regions can be found at the regions endpoint",
+            "in": "query",
+            "name": "region_code",
+            "required": false,
+            "schema": {
+              "example": "dc2",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "202": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/wireless_SIMCardAction"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Action accepted. The response contains a SIM card action; poll GET /sim_card_actions/{id} with the action id to track progress."
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "default": {
+            "$ref": "#/components/responses/wireless_GenericErrorResponse_c5290d5308"
+          }
+        },
+        "summary": "Request setting a SIM card public IP",
+        "tags": [
+          "SIM Cards"
+        ],
+        "x-latency-category": "background"
+      }
+    },
+    "/sim_cards/{id}/actions/set_standby": {
+      "post": {
+        "description": "The SIM card will be able to connect to the network once the process to set it to standby has been completed, thus making it possible to consume data.\u003cbr/\u003e\nTo set a SIM card to standby, it must be associated with SIM card group.\u003cbr/\u003e\nThe API will trigger an asynchronous operation called a SIM Card Action. Transitioning to the standby state may take a period of time. The status of the SIM Card Action can be followed through the [List SIM Card Action](https://developers.telnyx.com/api-reference/sim-card-actions/list-sim-card-actions) API.\n",
+        "operationId": "SetSimCardStandby",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/SIMCardId"
+          }
+        ],
+        "responses": {
+          "202": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/wireless_SIMCardAction"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Action accepted. The response contains a SIM card action; poll GET /sim_card_actions/{id} with the action id to track progress."
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "default": {
+            "$ref": "#/components/responses/wireless_GenericErrorResponse_c5290d5308"
+          }
+        },
+        "summary": "Request setting a SIM card to standby",
+        "tags": [
+          "SIM Cards"
+        ],
+        "x-latency-category": "background"
+      }
+    },
+    "/sim_cards/{id}/activation_code": {
+      "get": {
+        "description": "It returns the activation code for an eSIM.\u003cbr/\u003e\u003cbr/\u003e\n This API is only available for eSIMs. If the given SIM is a physical SIM card, or has already been installed, an error will be returned.\n",
+        "operationId": "GetSimCardActivationCode",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/SIMCardId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/SIMCardActivationCode"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful response"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "default": {
+            "$ref": "#/components/responses/wireless_GenericErrorResponse_c5290d5308"
+          }
+        },
+        "summary": "Get activation code for an eSIM",
+        "tags": [
+          "SIM Cards"
+        ]
+      }
+    },
+    "/sim_cards/{id}/device_details": {
+      "get": {
+        "description": "It returns the device details where a SIM card is currently being used.\n",
+        "operationId": "GetSimCardDeviceDetails",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/SIMCardId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/SIMCardDeviceDetails"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful response"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "default": {
+            "$ref": "#/components/responses/wireless_GenericErrorResponse_c5290d5308"
+          }
+        },
+        "summary": "Get SIM card device details",
+        "tags": [
+          "SIM Cards"
+        ]
+      }
+    },
+    "/sim_cards/{id}/public_ip": {
+      "get": {
+        "description": "It returns the public IP requested for a SIM card.\n",
+        "operationId": "GetSimCardPublicIp",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/SIMCardId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/SIMCardPublicIP"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful response"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "default": {
+            "$ref": "#/components/responses/wireless_GenericErrorResponse_c5290d5308"
+          }
+        },
+        "summary": "Get SIM card public IP definition",
+        "tags": [
+          "SIM Cards"
+        ]
+      }
+    },
+    "/sim_cards/{id}/wireless_connectivity_logs": {
+      "get": {
+        "description": "This API allows listing a paginated collection of Wireless Connectivity Logs associated with a SIM Card, for troubleshooting purposes.",
+        "operationId": "GetWirelessConnectivityLogs",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/wireless_PageNumber_c5290d5308"
+          },
+          {
+            "$ref": "#/components/parameters/wireless_PageSize_c5290d5308"
+          },
+          {
+            "$ref": "#/components/parameters/SIMCardId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "items": {
+                        "$ref": "#/components/schemas/WirelessConnectivityLog"
+                      },
+                      "type": "array"
+                    },
+                    "meta": {
+                      "$ref": "#/components/schemas/PaginationMeta"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "default": {
+            "$ref": "#/components/responses/wireless_GenericErrorResponse_c5290d5308"
+          }
+        },
+        "summary": "List wireless connectivity logs",
+        "tags": [
+          "SIM Cards"
+        ]
+      }
+    }
+  },
+  "security": [
+    {
+      "bearerAuth": []
+    }
+  ],
+  "servers": [
+    {
+      "description": "Version 2.0.0 of the Telnyx API",
+      "url": "https://api.telnyx.com/v2"
+    }
+  ]
+}

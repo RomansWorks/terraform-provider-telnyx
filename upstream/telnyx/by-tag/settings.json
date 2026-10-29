@@ -1,0 +1,484 @@
+{
+  "components": {
+    "schemas": {
+      "NamespaceSettings": {
+        "description": "A namespace's settings, grouped by what they affect.",
+        "properties": {
+          "summary": {
+            "$ref": "#/components/schemas/SummarySettings",
+            "description": "Settings that shape this namespace's summaries."
+          }
+        },
+        "title": "NamespaceSettings",
+        "type": "object"
+      },
+      "NamespaceSettingsPatch": {
+        "properties": {
+          "summary": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/SummarySettingsPatch"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Summary settings to change. Omit to change nothing."
+          }
+        },
+        "title": "NamespaceSettingsPatch",
+        "type": "object"
+      },
+      "NamespaceSettingsResponse": {
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/NamespaceSettings"
+          }
+        },
+        "required": [
+          "data"
+        ],
+        "title": "NamespaceSettingsResponse",
+        "type": "object"
+      },
+      "SummarySettings": {
+        "description": "A namespace's summary settings, shared by every profile in it.",
+        "properties": {
+          "instructions": {
+            "anyOf": [
+              {
+                "maxLength": 2000,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Free-form instructions that influence how this namespace's summaries are written, shared by every profile in the namespace. How you use them is up to you -- they steer the outcome, so try a phrasing and see how the summary comes out. Advisory: they steer the summary but never override or deny a profile's own facts, and they do not affect recall. Null or empty means none are set, and summaries use the neutral default. A change reaches each summary the next time it is regenerated.",
+            "title": "Instructions"
+          }
+        },
+        "title": "SummarySettings",
+        "type": "object"
+      },
+      "SummarySettingsPatch": {
+        "description": "A partial update to a namespace's summary settings.\n\nOnly the fields present in the request are changed; the rest are left as\nthey are. Sending `instructions: null` (or empty) clears the instructions.",
+        "properties": {
+          "instructions": {
+            "anyOf": [
+              {
+                "maxLength": 2000,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Replace the namespace's summary instructions. Null or empty clears them and returns to the neutral default. Omit the field to leave the current instructions unchanged.",
+            "title": "Instructions"
+          }
+        },
+        "title": "SummarySettingsPatch",
+        "type": "object"
+      },
+      "TelnyxError": {
+        "properties": {
+          "code": {
+            "type": "string"
+          },
+          "detail": {
+            "type": "string"
+          },
+          "meta": {
+            "properties": {
+              "url": {
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
+          "source": {
+            "properties": {
+              "pointer": {
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
+          "title": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "TelnyxErrors": {
+        "properties": {
+          "errors": {
+            "items": {
+              "$ref": "#/components/schemas/TelnyxError"
+            },
+            "type": "array"
+          }
+        },
+        "type": "object"
+      }
+    },
+    "securitySchemes": {
+      "BearerAuth": {
+        "bearerFormat": "API key",
+        "description": "Telnyx API key supplied as `Authorization: Bearer \u003ctoken\u003e`. In production, auth may be validated by the API gateway and forwarded via Telnyx auth headers.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "Payment": {
+        "description": "Machine Payment Protocol credential used on paid retries, sent as `Authorization: Payment ...`. Obtained by paying a challenge returned in the `WWW-Authenticate` header of a 402 response. This is not a Telnyx API key; initial challenge requests use standard bearer authentication instead.",
+        "in": "header",
+        "name": "Authorization",
+        "type": "apiKey"
+      },
+      "agent-memory_bearerAuth": {
+        "description": "Telnyx API key",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "bearerAuth": {
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "branded-calling_bearerAuth": {
+        "description": "Telnyx API key. Generate one at https://portal.telnyx.com/#/app/api-keys.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "collections_bearerAuth": {
+        "description": "Telnyx API key. Collections and results are automatically scoped to the authenticated user's organization.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "number-reputation_bearerAuth": {
+        "description": "Telnyx API key. Generate one at https://portal.telnyx.com/#/app/api-keys.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "oauthClientAuth": {
+        "description": "OAuth 2.0 authentication for Telnyx API and MCP integrations",
+        "flows": {
+          "authorizationCode": {
+            "authorizationUrl": "https://api.telnyx.com/v2/oauth/authorize",
+            "refreshUrl": "https://api.telnyx.com/v2/oauth/token",
+            "scopes": {
+              "admin": "Administrative access to Telnyx resources"
+            },
+            "tokenUrl": "https://api.telnyx.com/v2/oauth/token"
+          },
+          "clientCredentials": {
+            "scopes": {
+              "admin": "Administrative access to Telnyx resources"
+            },
+            "tokenUrl": "https://api.telnyx.com/v2/oauth/token"
+          }
+        },
+        "type": "oauth2"
+      },
+      "outbound-voice-profiles_bearerAuth": {
+        "bearerFormat": "JWT",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "pay-connectors_bearerAuth": {
+        "description": "Telnyx API key, not the processor bearer token.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "pronunciation-dicts_bearerAuth": {
+        "description": "Telnyx API v2 key. Obtain from https://portal.telnyx.com",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "rcs-registration_bearerAuth": {
+        "bearerFormat": "API key",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "stored-payment-transactions_bearerAuth": {
+        "bearerFormat": "JWT",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "telnyxApiKey": {
+        "description": "Management-only Telnyx account credential.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "transcriptions-search_bearerAuth": {
+        "description": "Telnyx API key. Results are automatically scoped to the authenticated user's organization.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "web-search_bearerAuth": {
+        "description": "Telnyx API key",
+        "scheme": "bearer",
+        "type": "http"
+      }
+    }
+  },
+  "info": {
+    "contact": {
+      "email": "support@telnyx.com"
+    },
+    "description": "SIP trunking, SMS, MMS, Call Control and Telephony Data Services.",
+    "title": "Telnyx API",
+    "version": "2.0.0",
+    "x-endpoint-cost": "light",
+    "x-latency-category": "responsive"
+  },
+  "openapi": "3.1.0",
+  "paths": {
+    "/ai/memory/namespaces/{namespace}/settings": {
+      "get": {
+        "description": "What is currently set for this namespace. `instructions: null` means none are set and summaries use the neutral default.",
+        "operationId": "GetNamespaceSettings",
+        "parameters": [
+          {
+            "description": "The namespace. `default` exists for every organization.",
+            "in": "path",
+            "name": "namespace",
+            "required": true,
+            "schema": {
+              "description": "The namespace. `default` exists for every organization.",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "data": {
+                    "summary": {
+                      "instructions": null
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/NamespaceSettingsResponse"
+                }
+              }
+            },
+            "description": "The namespace's settings"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "errors": [
+                    {
+                      "code": "10009",
+                      "detail": "Could not find any usable credentials in the request.",
+                      "meta": {
+                        "url": "https://developers.telnyx.com/docs/overview/errors/10009"
+                      },
+                      "source": {
+                        "pointer": "/"
+                      },
+                      "title": "Authentication failed"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/TelnyxErrors"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "errors": [
+                    {
+                      "code": "namespace_not_found",
+                      "detail": "no such namespace"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/TelnyxErrors"
+                }
+              }
+            },
+            "description": "The namespace does not exist"
+          },
+          "502": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "errors": [
+                    {
+                      "code": "upstream_error",
+                      "detail": "the memory dataplane is unavailable"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/TelnyxErrors"
+                }
+              }
+            },
+            "description": "Upstream error"
+          }
+        },
+        "summary": "Get a namespace's settings",
+        "tags": [
+          "Settings"
+        ]
+      },
+      "patch": {
+        "description": "Only the fields you send are changed; anything omitted is left as it is, so `{}` changes nothing. Sending `instructions: null`, or an empty or whitespace-only string, clears them and returns summaries to the neutral default.\n\nInstructions are capped at 2000 characters. A longer note is refused rather than truncated, because a note cut mid-sentence is a worse steer than none. A change reaches each summary the next time that summary is regenerated, not immediately.",
+        "operationId": "UpdateNamespaceSettings",
+        "parameters": [
+          {
+            "description": "The namespace. `default` exists for every organization.",
+            "in": "path",
+            "name": "namespace",
+            "required": true,
+            "schema": {
+              "description": "The namespace. `default` exists for every organization.",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "example": {
+                "summary": {
+                  "instructions": "Lead with the customer's plan tier. Keep it under 100 words."
+                }
+              },
+              "schema": {
+                "$ref": "#/components/schemas/NamespaceSettingsPatch"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "data": {
+                    "summary": {
+                      "instructions": "Lead with the customer's plan tier. Keep it under 100 words."
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/NamespaceSettingsResponse"
+                }
+              }
+            },
+            "description": "The settings as stored"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "errors": [
+                    {
+                      "code": "10009",
+                      "detail": "Could not find any usable credentials in the request.",
+                      "meta": {
+                        "url": "https://developers.telnyx.com/docs/overview/errors/10009"
+                      },
+                      "source": {
+                        "pointer": "/"
+                      },
+                      "title": "Authentication failed"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/TelnyxErrors"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "errors": [
+                    {
+                      "code": "namespace_not_found",
+                      "detail": "no such namespace"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/TelnyxErrors"
+                }
+              }
+            },
+            "description": "The namespace does not exist"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "errors": [
+                    {
+                      "code": "invalid_instructions",
+                      "detail": "instructions must be at most 2000 characters"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/TelnyxErrors"
+                }
+              }
+            },
+            "description": "Invalid request"
+          },
+          "502": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "errors": [
+                    {
+                      "code": "upstream_error",
+                      "detail": "the memory dataplane is unavailable"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/TelnyxErrors"
+                }
+              }
+            },
+            "description": "Upstream error"
+          }
+        },
+        "summary": "Change a namespace's settings",
+        "tags": [
+          "Settings"
+        ]
+      }
+    }
+  },
+  "security": [
+    {
+      "bearerAuth": []
+    }
+  ],
+  "servers": [
+    {
+      "description": "Version 2.0.0 of the Telnyx API",
+      "url": "https://api.telnyx.com/v2"
+    }
+  ]
+}

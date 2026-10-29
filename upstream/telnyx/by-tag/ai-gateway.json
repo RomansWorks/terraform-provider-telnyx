@@ -1,0 +1,5909 @@
+{
+  "components": {
+    "parameters": {
+      "IfMatch": {
+        "description": "Exact quoted resource-version ETag; an exact intermediary-weakened echo W/\"n\" is accepted. Wildcard, combined and malformed validators are rejected; stale 412; missing 428. HTTP field names are case-insensitive. Replayed idempotent result is checked first.",
+        "in": "header",
+        "name": "If-Match",
+        "required": true,
+        "schema": {
+          "maxLength": 256,
+          "minLength": 1,
+          "pattern": "^[^\\u0000-\\u001f\\u007f]+$",
+          "type": "string"
+        }
+      },
+      "Snapshot": {
+        "description": "Required after page 1; account/filter-bound 15-minute stable snapshot; expired/mismatch 409.",
+        "in": "query",
+        "name": "page[snapshot]",
+        "required": false,
+        "schema": {
+          "maxLength": 256,
+          "minLength": 1,
+          "pattern": "^[^\\u0000-\\u001f\\u007f]+$",
+          "type": "string"
+        }
+      },
+      "ai-gateway-resources_IdempotencyKey": {
+        "description": "24h, scoped by account+method+path. Same key/body returns same outcome; changed body 409; in-progress 409 with Retry-After. Token-create replay returns 200 metadata WITHOUT secret.",
+        "in": "header",
+        "name": "Idempotency-Key",
+        "required": true,
+        "schema": {
+          "maxLength": 128,
+          "minLength": 1,
+          "pattern": "^[A-Za-z0-9_-]+$",
+          "type": "string"
+        }
+      },
+      "ai-gateway-resources_PageNumber": {
+        "description": "",
+        "in": "query",
+        "name": "page[number]",
+        "required": false,
+        "schema": {
+          "default": 1,
+          "minimum": 1,
+          "type": "integer"
+        }
+      },
+      "ai-gateway-resources_PageSize": {
+        "description": "",
+        "in": "query",
+        "name": "page[size]",
+        "required": false,
+        "schema": {
+          "default": 20,
+          "maximum": 100,
+          "minimum": 1,
+          "type": "integer"
+        }
+      },
+      "ai-gateway-spend_PageNumber": {
+        "description": "",
+        "in": "query",
+        "name": "page[number]",
+        "required": false,
+        "schema": {
+          "default": 1,
+          "minimum": 1,
+          "type": "integer"
+        }
+      },
+      "ai-gateway-spend_PageSize": {
+        "description": "",
+        "in": "query",
+        "name": "page[size]",
+        "required": false,
+        "schema": {
+          "default": 20,
+          "maximum": 100,
+          "minimum": 1,
+          "type": "integer"
+        }
+      }
+    },
+    "responses": {
+      "GatewayError400": {
+        "content": {
+          "application/json": {
+            "example": {
+              "errors": [
+                {
+                  "code": "invalid_request",
+                  "detail": "Check the request and the documented handling for this error.",
+                  "meta": {
+                    "request_id": "11111111-1111-4111-8111-111111111111"
+                  },
+                  "title": "Request could not be completed"
+                }
+              ]
+            },
+            "schema": {
+              "$ref": "#/components/schemas/ai-gateway-resources_Error"
+            }
+          }
+        },
+        "description": "Invalid fields or values (invalid_request), or token-key budget/rate limits outside their supported range (limit_out_of_range).",
+        "headers": {
+          "Cache-Control": {
+            "description": "All API responses; application cache is server-side only.",
+            "schema": {
+              "const": "no-store"
+            }
+          },
+          "X-Request-ID": {
+            "description": "Server-generated correlation ID.",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        }
+      },
+      "GatewayError401": {
+        "content": {
+          "application/json": {
+            "example": {
+              "errors": [
+                {
+                  "code": "unauthorized",
+                  "detail": "Check the request and the documented handling for this error.",
+                  "meta": {
+                    "request_id": "11111111-1111-4111-8111-111111111111"
+                  },
+                  "title": "Request could not be completed"
+                }
+              ]
+            },
+            "schema": {
+              "$ref": "#/components/schemas/ai-gateway-resources_Error"
+            }
+          }
+        },
+        "description": "Wrong/missing credential for this plane.",
+        "headers": {
+          "Cache-Control": {
+            "description": "All API responses; application cache is server-side only.",
+            "schema": {
+              "const": "no-store"
+            }
+          },
+          "WWW-Authenticate": {
+            "description": "Bearer challenge for this plane; no provider/master credential disclosure.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          "X-Request-ID": {
+            "description": "Server-generated correlation ID.",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        }
+      },
+      "GatewayError403": {
+        "content": {
+          "application/json": {
+            "example": {
+              "errors": [
+                {
+                  "code": "unauthorized",
+                  "detail": "Check the request and the documented handling for this error.",
+                  "meta": {
+                    "request_id": "11111111-1111-4111-8111-111111111111"
+                  },
+                  "title": "Request could not be completed"
+                }
+              ]
+            },
+            "schema": {
+              "$ref": "#/components/schemas/ai-gateway-resources_Error"
+            }
+          }
+        },
+        "description": "Blocked/expired, exhausted budget or disallowed model; scope identifies exhausted level.",
+        "headers": {
+          "Cache-Control": {
+            "description": "All API responses; application cache is server-side only.",
+            "schema": {
+              "const": "no-store"
+            }
+          },
+          "X-Request-ID": {
+            "description": "Server-generated correlation ID.",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        }
+      },
+      "GatewayError404": {
+        "content": {
+          "application/json": {
+            "example": {
+              "errors": [
+                {
+                  "code": "not_found",
+                  "detail": "Check the request and the documented handling for this error.",
+                  "meta": {
+                    "request_id": "11111111-1111-4111-8111-111111111111"
+                  },
+                  "title": "Request could not be completed"
+                }
+              ]
+            },
+            "schema": {
+              "$ref": "#/components/schemas/ai-gateway-resources_Error"
+            }
+          }
+        },
+        "description": "Absent or foreign-account resource (indistinguishable).",
+        "headers": {
+          "Cache-Control": {
+            "description": "All API responses; application cache is server-side only.",
+            "schema": {
+              "const": "no-store"
+            }
+          },
+          "X-Request-ID": {
+            "description": "Server-generated correlation ID.",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        }
+      },
+      "GatewayError409": {
+        "content": {
+          "application/json": {
+            "example": {
+              "errors": [
+                {
+                  "code": "idempotency_conflict",
+                  "detail": "Check the request and the documented handling for this error.",
+                  "meta": {
+                    "request_id": "11111111-1111-4111-8111-111111111111"
+                  },
+                  "title": "Request could not be completed"
+                }
+              ]
+            },
+            "schema": {
+              "$ref": "#/components/schemas/ai-gateway-resources_Error"
+            }
+          }
+        },
+        "description": "Membership, idempotency or snapshot conflict.",
+        "headers": {
+          "Cache-Control": {
+            "description": "All API responses; application cache is server-side only.",
+            "schema": {
+              "const": "no-store"
+            }
+          },
+          "Retry-After": {
+            "description": "Seconds; retrying inference is not idempotent.",
+            "schema": {
+              "minimum": 1,
+              "type": "integer"
+            }
+          },
+          "X-Request-ID": {
+            "description": "Server-generated correlation ID.",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        }
+      },
+      "GatewayError40911": {
+        "content": {
+          "application/json": {
+            "example": {
+              "errors": [
+                {
+                  "code": "cursor_expired",
+                  "detail": "Restart from start_time within the retained window and deduplicate records by id.",
+                  "meta": {
+                    "request_id": "11111111-1111-4111-8111-111111111111"
+                  },
+                  "title": "Request could not be completed"
+                }
+              ]
+            },
+            "schema": {
+              "$ref": "#/components/schemas/ai-gateway_Error"
+            }
+          }
+        },
+        "description": "Expired or invalidated export cursor (cursor_expired). Restart from start_time within the retained window and deduplicate records by id. Waiting and retrying the same cursor cannot recover; this response has no Retry-After header.",
+        "headers": {
+          "Cache-Control": {
+            "description": "All API responses; application cache is server-side only.",
+            "schema": {
+              "const": "no-store"
+            }
+          },
+          "X-Request-ID": {
+            "description": "Server-generated correlation ID.",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        }
+      },
+      "GatewayError412": {
+        "content": {
+          "application/json": {
+            "example": {
+              "errors": [
+                {
+                  "code": "precondition_failed",
+                  "detail": "Check the request and the documented handling for this error.",
+                  "meta": {
+                    "request_id": "11111111-1111-4111-8111-111111111111"
+                  },
+                  "title": "Request could not be completed"
+                }
+              ]
+            },
+            "schema": {
+              "$ref": "#/components/schemas/ai-gateway-resources_Error"
+            }
+          }
+        },
+        "description": "ETag mismatch.",
+        "headers": {
+          "Cache-Control": {
+            "description": "All API responses; application cache is server-side only.",
+            "schema": {
+              "const": "no-store"
+            }
+          },
+          "X-Request-ID": {
+            "description": "Server-generated correlation ID.",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        }
+      },
+      "GatewayError428": {
+        "content": {
+          "application/json": {
+            "example": {
+              "errors": [
+                {
+                  "code": "precondition_required",
+                  "detail": "Check the request and the documented handling for this error.",
+                  "meta": {
+                    "request_id": "11111111-1111-4111-8111-111111111111"
+                  },
+                  "title": "Request could not be completed"
+                }
+              ]
+            },
+            "schema": {
+              "$ref": "#/components/schemas/ai-gateway-resources_Error"
+            }
+          }
+        },
+        "description": "If-Match required.",
+        "headers": {
+          "Cache-Control": {
+            "description": "All API responses; application cache is server-side only.",
+            "schema": {
+              "const": "no-store"
+            }
+          },
+          "X-Request-ID": {
+            "description": "Server-generated correlation ID.",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        }
+      },
+      "GatewayError429": {
+        "content": {
+          "application/json": {
+            "example": {
+              "errors": [
+                {
+                  "code": "rate_limit_exceeded",
+                  "detail": "Check the request and the documented handling for this error.",
+                  "meta": {
+                    "request_id": "11111111-1111-4111-8111-111111111111"
+                  },
+                  "title": "Request could not be completed"
+                }
+              ]
+            },
+            "schema": {
+              "$ref": "#/components/schemas/ai-gateway-resources_Error"
+            }
+          }
+        },
+        "description": "Rate limited.",
+        "headers": {
+          "Cache-Control": {
+            "description": "All API responses; application cache is server-side only.",
+            "schema": {
+              "const": "no-store"
+            }
+          },
+          "Retry-After": {
+            "description": "Seconds; retrying inference is not idempotent.",
+            "schema": {
+              "minimum": 1,
+              "type": "integer"
+            }
+          },
+          "X-Request-ID": {
+            "description": "Server-generated correlation ID.",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        }
+      },
+      "GatewayError502": {
+        "content": {
+          "application/json": {
+            "example": {
+              "errors": [
+                {
+                  "code": "invalid_request",
+                  "detail": "Check the request and the documented handling for this error.",
+                  "meta": {
+                    "request_id": "11111111-1111-4111-8111-111111111111"
+                  },
+                  "title": "Request could not be completed"
+                }
+              ]
+            },
+            "schema": {
+              "$ref": "#/components/schemas/ai-gateway-resources_Error"
+            }
+          }
+        },
+        "description": "upstream_error: every admitted provider attempt, including configured group retries and fallbacks, failed before the first provider event; streams return this real status instead of 200 plus an SSE error. Retrying is not idempotent.",
+        "headers": {
+          "Cache-Control": {
+            "description": "All API responses; application cache is server-side only.",
+            "schema": {
+              "const": "no-store"
+            }
+          },
+          "Retry-After": {
+            "description": "Seconds; retrying inference is not idempotent.",
+            "schema": {
+              "minimum": 1,
+              "type": "integer"
+            }
+          },
+          "X-Request-ID": {
+            "description": "Server-generated correlation ID.",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        }
+      },
+      "GatewayError503": {
+        "content": {
+          "application/json": {
+            "example": {
+              "errors": [
+                {
+                  "code": "enforcement_unavailable",
+                  "detail": "Check the request and the documented handling for this error.",
+                  "meta": {
+                    "request_id": "11111111-1111-4111-8111-111111111111"
+                  },
+                  "title": "Request could not be completed"
+                }
+              ]
+            },
+            "schema": {
+              "$ref": "#/components/schemas/ai-gateway-resources_Error"
+            }
+          }
+        },
+        "description": "Enforcement/secret/managed route unavailable; fail closed.",
+        "headers": {
+          "Cache-Control": {
+            "description": "All API responses; application cache is server-side only.",
+            "schema": {
+              "const": "no-store"
+            }
+          },
+          "Retry-After": {
+            "description": "Seconds; retrying inference is not idempotent.",
+            "schema": {
+              "minimum": 1,
+              "type": "integer"
+            }
+          },
+          "X-Request-ID": {
+            "description": "Server-generated correlation ID.",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        }
+      },
+      "GatewayError504": {
+        "content": {
+          "application/json": {
+            "example": {
+              "errors": [
+                {
+                  "code": "invalid_request",
+                  "detail": "Check the request and the documented handling for this error.",
+                  "meta": {
+                    "request_id": "11111111-1111-4111-8111-111111111111"
+                  },
+                  "title": "Request could not be completed"
+                }
+              ]
+            },
+            "schema": {
+              "$ref": "#/components/schemas/ai-gateway-resources_Error"
+            }
+          }
+        },
+        "description": "upstream_timeout: as 502 upstream_error, but the last admitted attempt timed out waiting for the provider (connect, read or write timeout, the attempt deadline, or x-ltg-request-timeout) before its first event. Retrying is not idempotent.",
+        "headers": {
+          "Cache-Control": {
+            "description": "All API responses; application cache is server-side only.",
+            "schema": {
+              "const": "no-store"
+            }
+          },
+          "Retry-After": {
+            "description": "Seconds; retrying inference is not idempotent.",
+            "schema": {
+              "minimum": 1,
+              "type": "integer"
+            }
+          },
+          "X-Request-ID": {
+            "description": "Server-generated correlation ID.",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        }
+      },
+      "UsageExportUnavailable": {
+        "content": {
+          "application/json": {
+            "example": {
+              "errors": [
+                {
+                  "code": "enforcement_unavailable",
+                  "detail": "The usage export page could not be completed.",
+                  "meta": {
+                    "request_id": "11111111-1111-4111-8111-111111111111"
+                  },
+                  "title": "Request could not be completed"
+                }
+              ]
+            },
+            "schema": {
+              "$ref": "#/components/schemas/ai-gateway_Error"
+            }
+          }
+        },
+        "description": "The usage export is unavailable or its bounded read timed out. No partial or truncated page is returned. Preserve the current cursor and retry the same read after Retry-After; on the first page, preserve start_time and types. Do not advance the checkpoint on this error.",
+        "headers": {
+          "Cache-Control": {
+            "description": "All API responses; application cache is server-side only.",
+            "schema": {
+              "const": "no-store"
+            }
+          },
+          "Retry-After": {
+            "description": "Seconds to wait before retrying the same export read with its existing cursor or first-page parameters.",
+            "schema": {
+              "minimum": 1,
+              "type": "integer"
+            }
+          },
+          "X-Request-ID": {
+            "description": "Server-generated correlation ID.",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        }
+      },
+      "UsageSummaryUnavailable": {
+        "content": {
+          "application/json": {
+            "example": {
+              "errors": [
+                {
+                  "code": "enforcement_unavailable",
+                  "detail": "The usage report could not be completed.",
+                  "meta": {
+                    "request_id": "11111111-1111-4111-8111-111111111111"
+                  },
+                  "title": "Request could not be completed"
+                }
+              ]
+            },
+            "schema": {
+              "$ref": "#/components/schemas/ai-gateway_Error"
+            }
+          }
+        },
+        "description": "The usage report is unavailable, its query timed out, or it exceeds the 1,000-model-row limit. No partial or truncated report is returned. Honor Retry-After for a temporary failure. If the report exceeds its limits, narrow the UTC date range or add metadata filters before retrying. Treat unavailable totals as unknown, not zero.",
+        "headers": {
+          "Cache-Control": {
+            "description": "All API responses; application cache is server-side only.",
+            "schema": {
+              "const": "no-store"
+            }
+          },
+          "Retry-After": {
+            "description": "Seconds to wait before retrying an unavailable report. Narrow the date range or add metadata filters if the report exceeds its limits.",
+            "schema": {
+              "minimum": 1,
+              "type": "integer"
+            }
+          },
+          "X-Request-ID": {
+            "description": "Server-generated correlation ID.",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        }
+      },
+      "ai-gateway-spend_GatewayError400": {
+        "content": {
+          "application/json": {
+            "example": {
+              "errors": [
+                {
+                  "code": "invalid_request",
+                  "detail": "Check the request and the documented handling for this error.",
+                  "meta": {
+                    "request_id": "11111111-1111-4111-8111-111111111111"
+                  },
+                  "title": "Request could not be completed"
+                }
+              ]
+            },
+            "schema": {
+              "$ref": "#/components/schemas/ai-gateway-spend_Error"
+            }
+          }
+        },
+        "description": "Invalid fields, unsupported protocol options, bad page/date range (invalid_request); a well-formed token key limit of 0 or above its maximum (limit_out_of_range). prompt_blocked / response_blocked: the group guardrail policy blocked the prompt or the generated response. invalid_metadata: an authenticated inference request's x-ltg-metadata header is not a valid RequestMetadata object; the response never echoes the header.",
+        "headers": {
+          "Cache-Control": {
+            "description": "All API responses; application cache is server-side only.",
+            "schema": {
+              "const": "no-store"
+            }
+          },
+          "X-Request-ID": {
+            "description": "Server-generated correlation ID.",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        }
+      },
+      "ai-gateway-spend_GatewayError409": {
+        "content": {
+          "application/json": {
+            "example": {
+              "errors": [
+                {
+                  "code": "conflict",
+                  "detail": "Correct the parameters to match a valid snapshot, or restart at page[number]=1 without page[snapshot].",
+                  "meta": {
+                    "request_id": "11111111-1111-4111-8111-111111111111"
+                  },
+                  "title": "Snapshot conflict"
+                }
+              ]
+            },
+            "schema": {
+              "$ref": "#/components/schemas/ai-gateway-spend_Error"
+            }
+          }
+        },
+        "description": "The snapshot is missing, invalid, expired or does not match the account, range, filters or page size. Correct the parameters to match a valid snapshot, or restart at page[number]=1 without page[snapshot] to obtain a new snapshot.",
+        "headers": {
+          "Cache-Control": {
+            "description": "All API responses; application cache is server-side only.",
+            "schema": {
+              "const": "no-store"
+            }
+          },
+          "Retry-After": {
+            "description": "Advisory delay in seconds. Waiting does not repair a missing, invalid, expired or mismatched snapshot. Correct the parameters to match a valid snapshot, or restart at page[number]=1 without page[snapshot]; do not replay an unchanged invalid snapshot request.",
+            "schema": {
+              "minimum": 1,
+              "type": "integer"
+            }
+          },
+          "X-Request-ID": {
+            "description": "Server-generated correlation ID.",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        }
+      },
+      "ai-gateway-spend_GatewayError503": {
+        "content": {
+          "application/json": {
+            "example": {
+              "errors": [
+                {
+                  "code": "enforcement_unavailable",
+                  "detail": "The report is unavailable or exceeds 10,000 matching requests. Narrow the date range or resource filters if the capacity limit is exceeded.",
+                  "meta": {
+                    "request_id": "11111111-1111-4111-8111-111111111111"
+                  },
+                  "title": "Request could not be completed"
+                }
+              ]
+            },
+            "schema": {
+              "$ref": "#/components/schemas/ai-gateway-spend_Error"
+            }
+          }
+        },
+        "description": "The report is unavailable or exceeds its bounded snapshot capacity. The report snapshot supports at most 10,000 matching requests, independently of page size. Exceeding this bound returns HTTP 503 without partial results. Narrow the date range or resource filters before retrying. A failed report must not be interpreted as zero usage.",
+        "headers": {
+          "Cache-Control": {
+            "description": "All API responses; application cache is server-side only.",
+            "schema": {
+              "const": "no-store"
+            }
+          },
+          "Retry-After": {
+            "description": "Seconds to wait before retrying an unavailable report. Narrow filters when the report exceeds its limits.",
+            "schema": {
+              "minimum": 1,
+              "type": "integer"
+            }
+          },
+          "X-Request-ID": {
+            "description": "Server-generated correlation ID.",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        }
+      },
+      "ai-gateway_GatewayError400": {
+        "content": {
+          "application/json": {
+            "example": {
+              "errors": [
+                {
+                  "code": "invalid_request",
+                  "detail": "Check the request and the documented handling for this error.",
+                  "meta": {
+                    "request_id": "11111111-1111-4111-8111-111111111111"
+                  },
+                  "title": "Request could not be completed"
+                }
+              ]
+            },
+            "schema": {
+              "$ref": "#/components/schemas/ai-gateway_Error"
+            }
+          }
+        },
+        "description": "Invalid fields, unsupported protocol options, bad page/date range (invalid_request); a well-formed token key limit of 0 or above its maximum (limit_out_of_range). prompt_blocked / response_blocked: the group guardrail policy blocked the prompt or the generated response. invalid_metadata: an authenticated inference request's x-ltg-metadata header is not a valid RequestMetadata object; the response never echoes the header.",
+        "headers": {
+          "Cache-Control": {
+            "description": "All API responses; application cache is server-side only.",
+            "schema": {
+              "const": "no-store"
+            }
+          },
+          "X-Request-ID": {
+            "description": "Server-generated correlation ID.",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        }
+      }
+    },
+    "schemas": {
+      "BudgetDuration": {
+        "enum": [
+          "1d",
+          "7d",
+          "30d",
+          null
+        ],
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "ErrorItem": {
+        "additionalProperties": false,
+        "properties": {
+          "code": {
+            "enum": [
+              "invalid_request",
+              "invalid_token_key",
+              "unauthorized",
+              "token_key_blocked",
+              "resource_blocked",
+              "budget_exceeded",
+              "end_user_budget_exceeded",
+              "model_not_in_catalog",
+              "rate_limit_exceeded",
+              "concurrency_limit_exceeded",
+              "not_found",
+              "conflict",
+              "idempotency_conflict",
+              "precondition_failed",
+              "precondition_required",
+              "enforcement_unavailable",
+              "upstream_error",
+              "upstream_timeout",
+              "limit_out_of_range",
+              "prompt_blocked",
+              "response_blocked",
+              "invalid_metadata",
+              "cursor_expired"
+            ],
+            "type": "string"
+          },
+          "detail": {
+            "type": "string"
+          },
+          "meta": {
+            "additionalProperties": false,
+            "properties": {
+              "request_id": {
+                "format": "uuid",
+                "type": "string"
+              },
+              "resets_at": {
+                "anyOf": [
+                  {
+                    "format": "date-time",
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "scope": {
+                "$ref": "#/components/schemas/ai-gateway-resources_Scope"
+              }
+            },
+            "required": [
+              "request_id"
+            ],
+            "type": "object"
+          },
+          "title": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "title",
+          "detail",
+          "meta"
+        ],
+        "type": "object"
+      },
+      "GatewayUsage": {
+        "additionalProperties": false,
+        "properties": {
+          "data": {
+            "additionalProperties": false,
+            "properties": {
+              "by_day": {
+                "items": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "cache_hits": {
+                      "minimum": 0,
+                      "type": "integer"
+                    },
+                    "date": {
+                      "format": "date",
+                      "type": "string"
+                    },
+                    "failed_requests": {
+                      "minimum": 0,
+                      "type": "integer"
+                    },
+                    "input_tokens": {
+                      "minimum": 0,
+                      "type": "integer"
+                    },
+                    "output_tokens": {
+                      "minimum": 0,
+                      "type": "integer"
+                    },
+                    "partial_requests": {
+                      "minimum": 0,
+                      "type": "integer"
+                    },
+                    "requests": {
+                      "minimum": 0,
+                      "type": "integer"
+                    },
+                    "reserved_spend": {
+                      "$ref": "#/components/schemas/Money"
+                    },
+                    "spend": {
+                      "$ref": "#/components/schemas/Money"
+                    },
+                    "succeeded_requests": {
+                      "minimum": 0,
+                      "type": "integer"
+                    },
+                    "unknown_requests": {
+                      "minimum": 0,
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "requests",
+                    "input_tokens",
+                    "output_tokens",
+                    "unknown_requests",
+                    "cache_hits",
+                    "succeeded_requests",
+                    "failed_requests",
+                    "partial_requests",
+                    "spend",
+                    "reserved_spend",
+                    "date"
+                  ],
+                  "type": "object"
+                },
+                "maxItems": 31,
+                "type": "array"
+              },
+              "by_model": {
+                "items": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "cache_hits": {
+                      "minimum": 0,
+                      "type": "integer"
+                    },
+                    "failed_requests": {
+                      "minimum": 0,
+                      "type": "integer"
+                    },
+                    "input_tokens": {
+                      "minimum": 0,
+                      "type": "integer"
+                    },
+                    "model": {
+                      "maxLength": 256,
+                      "minLength": 1,
+                      "pattern": "^[^\\u0000-\\u001f\\u007f]+$",
+                      "type": "string"
+                    },
+                    "output_tokens": {
+                      "minimum": 0,
+                      "type": "integer"
+                    },
+                    "partial_requests": {
+                      "minimum": 0,
+                      "type": "integer"
+                    },
+                    "requests": {
+                      "minimum": 0,
+                      "type": "integer"
+                    },
+                    "reserved_spend": {
+                      "$ref": "#/components/schemas/Money"
+                    },
+                    "spend": {
+                      "$ref": "#/components/schemas/Money"
+                    },
+                    "succeeded_requests": {
+                      "minimum": 0,
+                      "type": "integer"
+                    },
+                    "unknown_requests": {
+                      "minimum": 0,
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "requests",
+                    "input_tokens",
+                    "output_tokens",
+                    "unknown_requests",
+                    "cache_hits",
+                    "succeeded_requests",
+                    "failed_requests",
+                    "partial_requests",
+                    "spend",
+                    "reserved_spend",
+                    "model"
+                  ],
+                  "type": "object"
+                },
+                "maxItems": 1000,
+                "type": "array"
+              },
+              "guardrails": {
+                "additionalProperties": false,
+                "properties": {
+                  "blocked_events": {
+                    "minimum": 0,
+                    "type": "integer"
+                  },
+                  "flagged_events": {
+                    "minimum": 0,
+                    "type": "integer"
+                  },
+                  "recent_events": {
+                    "items": {
+                      "$ref": "#/components/schemas/GuardrailEvent"
+                    },
+                    "maxItems": 20,
+                    "type": "array"
+                  }
+                },
+                "required": [
+                  "blocked_events",
+                  "flagged_events",
+                  "recent_events"
+                ],
+                "type": "object"
+              },
+              "totals": {
+                "$ref": "#/components/schemas/UsageMetrics"
+              }
+            },
+            "required": [
+              "totals",
+              "by_day",
+              "by_model",
+              "guardrails"
+            ],
+            "type": "object"
+          },
+          "meta": {
+            "additionalProperties": false,
+            "properties": {
+              "end_date": {
+                "format": "date",
+                "type": "string"
+              },
+              "metadata": {
+                "additionalProperties": {
+                  "maxLength": 256,
+                  "minLength": 1,
+                  "pattern": "^[^\\u0000-\\u001f\\u007f]+$",
+                  "type": "string"
+                },
+                "description": "The metadata[\u003ckey\u003e] filters applied to every section; {} when unfiltered.",
+                "maxProperties": 5,
+                "propertyNames": {
+                  "pattern": "^[A-Za-z0-9][A-Za-z0-9_.-]{0,63}$"
+                },
+                "type": "object"
+              },
+              "start_date": {
+                "format": "date",
+                "type": "string"
+              },
+              "token_group_id": {
+                "format": "uuid",
+                "type": "string"
+              }
+            },
+            "required": [
+              "token_group_id",
+              "start_date",
+              "end_date",
+              "metadata"
+            ],
+            "type": "object"
+          }
+        },
+        "required": [
+          "data",
+          "meta"
+        ],
+        "type": "object"
+      },
+      "GuardrailEvent": {
+        "additionalProperties": false,
+        "properties": {
+          "created_at": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "end_user_id": {
+            "anyOf": [
+              {
+                "maxLength": 256,
+                "minLength": 1,
+                "pattern": "^[^\\u0000-\\u001f\\u007f]+$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "evaluation_input_tokens": {
+            "anyOf": [
+              {
+                "minimum": 0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "evaluation_output_tokens": {
+            "anyOf": [
+              {
+                "minimum": 0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "findings": {
+            "items": {
+              "$ref": "#/components/schemas/GuardrailFinding"
+            },
+            "type": "array"
+          },
+          "id": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "metadata": {
+            "$ref": "#/components/schemas/RequestMetadata"
+          },
+          "model": {
+            "maxLength": 256,
+            "minLength": 1,
+            "pattern": "^[^\\u0000-\\u001f\\u007f]+$",
+            "type": "string"
+          },
+          "outcome": {
+            "enum": [
+              "evaluated",
+              "flagged",
+              "blocked",
+              "unevaluated"
+            ],
+            "type": "string"
+          },
+          "record_type": {
+            "const": "guardrail_event"
+          },
+          "request_id": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "stage": {
+            "enum": [
+              "prompt",
+              "response"
+            ],
+            "type": "string"
+          },
+          "token_group_id": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "token_key_id": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "token_user_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "record_type",
+          "id",
+          "request_id",
+          "created_at",
+          "token_group_id",
+          "token_user_id",
+          "token_key_id",
+          "end_user_id",
+          "model",
+          "stage",
+          "outcome",
+          "findings",
+          "evaluation_input_tokens",
+          "evaluation_output_tokens",
+          "metadata"
+        ],
+        "type": "object"
+      },
+      "GuardrailFinding": {
+        "additionalProperties": false,
+        "properties": {
+          "action": {
+            "enum": [
+              "flag",
+              "block"
+            ],
+            "type": "string"
+          },
+          "code": {
+            "maxLength": 256,
+            "minLength": 1,
+            "pattern": "^[^\\u0000-\\u001f\\u007f]+$",
+            "type": "string"
+          },
+          "count": {
+            "minimum": 0,
+            "type": "integer"
+          },
+          "detector": {
+            "enum": [
+              "secrets",
+              "dlp",
+              "safety"
+            ],
+            "type": "string"
+          }
+        },
+        "required": [
+          "detector",
+          "code",
+          "count",
+          "action"
+        ],
+        "type": "object"
+      },
+      "Money": {
+        "description": "USD, decimal precision at most 6 places; parse exactly to integer micro-USD, never binary float accounting.",
+        "maximum": 1000000000,
+        "minimum": 0,
+        "multipleOf": 0.000001,
+        "type": "number"
+      },
+      "RequestMetadata": {
+        "additionalProperties": {
+          "anyOf": [
+            {
+              "maxLength": 256,
+              "minLength": 1,
+              "pattern": "^[^\\u0000-\\u001f\\u007f-\\u009f]+$",
+              "type": "string"
+            },
+            {
+              "maximum": 9007199254740991,
+              "minimum": -9007199254740991,
+              "type": "integer"
+            },
+            {
+              "type": "boolean"
+            }
+          ]
+        },
+        "description": "Customer request tags from the x-ltg-metadata header: up to 5 entries. Keys are case-sensitive; keys starting with ltg_, telnyx_, litellm_ or cf_ (any case) are reserved. Values are strings (1-256 characters, no control or format characters), integers within +/-9007199254740991, or booleans; floats, null, objects and arrays are rejected. Values that look like credentials are rejected. Tags are attribution only: never forwarded upstream, never part of the response cache key, never used for budgets or routing. An untagged request reports {}.",
+        "maxProperties": 5,
+        "propertyNames": {
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.-]{0,63}$"
+        },
+        "type": "object"
+      },
+      "SpendEvent": {
+        "additionalProperties": false,
+        "properties": {
+          "attempts": {
+            "description": "Provider attempts begun for the request (fallbacks included); 0 for a cache hit. Token and cost totals sum every attempt.",
+            "minimum": 0,
+            "type": "integer"
+          },
+          "biller": {
+            "enum": [
+              "telnyx",
+              "provider",
+              "none"
+            ],
+            "type": "string"
+          },
+          "cache_hit": {
+            "type": "boolean"
+          },
+          "configuration_version": {
+            "minimum": 1,
+            "type": "integer"
+          },
+          "cost": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Money"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "created_at": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "end_user_id": {
+            "anyOf": [
+              {
+                "maxLength": 256,
+                "minLength": 1,
+                "pattern": "^[^\\u0000-\\u001f\\u007f]+$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "id": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "input_tokens": {
+            "anyOf": [
+              {
+                "minimum": 0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "metadata": {
+            "$ref": "#/components/schemas/RequestMetadata"
+          },
+          "model": {
+            "description": "Public alias that served (the last attempt); rate_version, biller and provider_key_id follow it.",
+            "maxLength": 256,
+            "minLength": 1,
+            "pattern": "^[^\\u0000-\\u001f\\u007f]+$",
+            "type": "string"
+          },
+          "output_tokens": {
+            "anyOf": [
+              {
+                "minimum": 0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "provider_key_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "rate_version": {
+            "maxLength": 256,
+            "minLength": 1,
+            "pattern": "^[^\\u0000-\\u001f\\u007f]+$",
+            "type": "string"
+          },
+          "request_id": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "requested_model": {
+            "description": "Public alias the caller requested; differs from model only when a group fallback served.",
+            "maxLength": 256,
+            "minLength": 1,
+            "pattern": "^[^\\u0000-\\u001f\\u007f]+$",
+            "type": "string"
+          },
+          "reservation_micro_usd": {
+            "minimum": 0,
+            "type": "integer"
+          },
+          "status": {
+            "enum": [
+              "succeeded",
+              "failed",
+              "partial",
+              "unknown"
+            ],
+            "type": "string"
+          },
+          "token_group_id": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "token_key_id": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "token_user_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "usage_status": {
+            "enum": [
+              "known",
+              "unknown",
+              "reconciled"
+            ],
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "request_id",
+          "created_at",
+          "token_group_id",
+          "token_user_id",
+          "token_key_id",
+          "end_user_id",
+          "model",
+          "requested_model",
+          "attempts",
+          "input_tokens",
+          "output_tokens",
+          "cost",
+          "status",
+          "cache_hit",
+          "usage_status",
+          "biller",
+          "configuration_version",
+          "rate_version",
+          "provider_key_id",
+          "reservation_micro_usd",
+          "metadata"
+        ],
+        "type": "object"
+      },
+      "SpendEvents": {
+        "additionalProperties": false,
+        "properties": {
+          "data": {
+            "items": {
+              "$ref": "#/components/schemas/SpendEvent"
+            },
+            "type": "array"
+          },
+          "meta": {
+            "$ref": "#/components/schemas/ai-gateway-spend_PageMeta"
+          }
+        },
+        "required": [
+          "data",
+          "meta"
+        ],
+        "type": "object"
+      },
+      "SpendGroupBy": {
+        "anyOf": [
+          {
+            "$ref": "#/components/schemas/ai-gateway-spend_Scope"
+          },
+          {
+            "description": "Group by one request tag key. Keys starting with ltg_, telnyx_, litellm_ or cf_ (any case) are rejected.",
+            "pattern": "^metadata:[A-Za-z0-9][A-Za-z0-9_.-]{0,63}$",
+            "type": "string"
+          }
+        ]
+      },
+      "SpendSummary": {
+        "additionalProperties": false,
+        "properties": {
+          "data": {
+            "items": {
+              "$ref": "#/components/schemas/SpendSummaryRow"
+            },
+            "type": "array"
+          },
+          "meta": {
+            "additionalProperties": false,
+            "properties": {
+              "end_date": {
+                "format": "date",
+                "type": "string"
+              },
+              "group_by": {
+                "$ref": "#/components/schemas/SpendGroupBy"
+              },
+              "has_more": {
+                "type": "boolean"
+              },
+              "page_number": {
+                "minimum": 1,
+                "type": "integer"
+              },
+              "page_size": {
+                "maximum": 100,
+                "minimum": 1,
+                "type": "integer"
+              },
+              "snapshot": {
+                "maxLength": 256,
+                "minLength": 1,
+                "pattern": "^[^\\u0000-\\u001f\\u007f]+$",
+                "type": "string"
+              },
+              "start_date": {
+                "format": "date",
+                "type": "string"
+              }
+            },
+            "required": [
+              "page_number",
+              "page_size",
+              "has_more",
+              "snapshot",
+              "start_date",
+              "end_date",
+              "group_by"
+            ],
+            "type": "object"
+          }
+        },
+        "required": [
+          "data",
+          "meta"
+        ],
+        "type": "object"
+      },
+      "SpendSummaryRow": {
+        "additionalProperties": false,
+        "properties": {
+          "dimension_id": {
+            "anyOf": [
+              {
+                "maxLength": 256,
+                "minLength": 1,
+                "pattern": "^[^\\u0000-\\u001f\\u007f]+$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "end_user_id": {
+            "anyOf": [
+              {
+                "maxLength": 256,
+                "minLength": 1,
+                "pattern": "^[^\\u0000-\\u001f\\u007f]+$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "input_tokens": {
+            "minimum": 0,
+            "type": "integer"
+          },
+          "metadata_key": {
+            "description": "Present only for group_by=metadata:\u003ckey\u003e: the tag key. dimension_id is then the tag value in text form (booleans as true/false, integers in decimal), or null for requests without the key; name is null.",
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9_.-]{0,63}$",
+            "type": "string"
+          },
+          "name": {
+            "anyOf": [
+              {
+                "maxLength": 256,
+                "minLength": 1,
+                "pattern": "^[^\\u0000-\\u001f\\u007f]+$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "output_tokens": {
+            "minimum": 0,
+            "type": "integer"
+          },
+          "requests": {
+            "minimum": 0,
+            "type": "integer"
+          },
+          "reserved_spend": {
+            "$ref": "#/components/schemas/Money"
+          },
+          "spend": {
+            "$ref": "#/components/schemas/Money"
+          },
+          "token_group_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "token_key_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "token_user_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "unknown_requests": {
+            "minimum": 0,
+            "type": "integer"
+          }
+        },
+        "required": [
+          "dimension_id",
+          "name",
+          "spend",
+          "requests",
+          "input_tokens",
+          "output_tokens",
+          "unknown_requests",
+          "reserved_spend"
+        ],
+        "type": "object"
+      },
+      "TokenGroup": {
+        "additionalProperties": false,
+        "properties": {
+          "allowed_models": {
+            "items": {
+              "maxLength": 256,
+              "minLength": 1,
+              "pattern": "^[^\\u0000-\\u001f\\u007f]+$",
+              "type": "string"
+            },
+            "maxItems": 1000,
+            "type": "array",
+            "uniqueItems": true
+          },
+          "blocked": {
+            "type": "boolean"
+          },
+          "budget_duration": {
+            "$ref": "#/components/schemas/BudgetDuration"
+          },
+          "budget_started_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "cache_ttl": {
+            "anyOf": [
+              {
+                "maximum": 86400,
+                "minimum": 1,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "created_at": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "fallbacks": {
+            "anyOf": [
+              {
+                "additionalProperties": {
+                  "items": {
+                    "maxLength": 256,
+                    "minLength": 1,
+                    "pattern": "^[^\\u0000-\\u001f\\u007f]+$",
+                    "type": "string"
+                  },
+                  "maxItems": 3,
+                  "minItems": 1,
+                  "type": "array",
+                  "uniqueItems": true
+                },
+                "description": "Per-group model fallbacks: primary alias -\u003e ordered list of 1..3 other aliases. Every key and listed alias must be in allowed_models (a PATCH removing a referenced alias is 400); a chain never lists its own key; wildcards are rejected. Chains are one level deep (a step's own chain is not expanded). Fallback is attempted only for managed routes, only before the first provider event is forwarded, and only to steps the key may use; each attempt is reserved and recorded. {} and null both disable fallbacks.",
+                "maxProperties": 1000,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "guardrails": {
+            "anyOf": [
+              {
+                "additionalProperties": false,
+                "description": "Per-group guardrail policy. Missing actions default to ignore. profiles may be listed with both dlp actions ignore (staged, inactive) but a non-ignore dlp action requires at least one profile. streaming defaults to buffered when any response action is block and passthrough otherwise; passthrough with a response block is 400. Findings are codes and counts only; content is never stored. The stored form is echoed back canonicalised (all actions explicit, profiles sorted); {} is stored as an all-ignore policy, null disables.",
+                "properties": {
+                  "dlp": {
+                    "additionalProperties": false,
+                    "properties": {
+                      "profiles": {
+                        "items": {
+                          "enum": [
+                            "financial",
+                            "government_id",
+                            "contact"
+                          ],
+                          "type": "string"
+                        },
+                        "type": "array",
+                        "uniqueItems": true
+                      },
+                      "prompt": {
+                        "enum": [
+                          "ignore",
+                          "flag",
+                          "block"
+                        ],
+                        "type": "string"
+                      },
+                      "response": {
+                        "enum": [
+                          "ignore",
+                          "flag",
+                          "block"
+                        ],
+                        "type": "string"
+                      }
+                    },
+                    "type": "object"
+                  },
+                  "secrets": {
+                    "additionalProperties": false,
+                    "properties": {
+                      "prompt": {
+                        "enum": [
+                          "ignore",
+                          "flag",
+                          "block"
+                        ],
+                        "type": "string"
+                      },
+                      "response": {
+                        "enum": [
+                          "ignore",
+                          "flag",
+                          "block"
+                        ],
+                        "type": "string"
+                      }
+                    },
+                    "type": "object"
+                  },
+                  "streaming": {
+                    "enum": [
+                      "buffered",
+                      "passthrough"
+                    ],
+                    "type": "string"
+                  }
+                },
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "id": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "max_budget": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Money"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "max_parallel_requests": {
+            "anyOf": [
+              {
+                "description": "Optional maximum concurrent reserved/dispatched cache misses across replicas. Null means no concurrency cap. Cache hits do not consume slots; unknown usage retains its budget hold without a slot.",
+                "maximum": 1000,
+                "minimum": 1,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "name": {
+            "maxLength": 256,
+            "minLength": 1,
+            "pattern": "^[^\\u0000-\\u001f\\u007f]+$",
+            "type": "string"
+          },
+          "provider_key_ids": {
+            "items": {
+              "format": "uuid",
+              "type": "string"
+            },
+            "maxItems": 1000,
+            "type": "array",
+            "uniqueItems": true
+          },
+          "record_type": {
+            "const": "token_group"
+          },
+          "reserved_spend": {
+            "$ref": "#/components/schemas/Money"
+          },
+          "resets_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "retries": {
+            "anyOf": [
+              {
+                "additionalProperties": false,
+                "description": "Per-group same-route retries. max_attempts counts the first try of each step (the primary and each fallback) and is the ceiling for the x-ltg-max-attempts request header. A step is retried only when its attempt definitely did no provider work (connection failure before dispatch, or 429/529) before the first provider event; an uncertain failure (timeout, 408/500/502/503/504) moves to the next fallback step instead. max_attempts x (1 + the longest fallback chain) must not exceed 8, else 400. The n-th retry waits retry_delay_ms (constant), retry_delay_ms*n (linear) or retry_delay_ms*2^(n-1) (exponential), at most 5 s and never past the request deadline, then jittered uniformly down to half that value so concurrent retries spread out; a provider Retry-After of at most 5 s is honoured and a longer one moves to the next step. request_timeout_ms applies to streaming requests only: it bounds each attempt's time to its first provider event and never applies after it. Non-stream requests keep the per-attempt hop and idle bounds (their headers arrive only with the finished completion). retry_delay_ms and backoff are floors for the request knobs. Each planned attempt is reserved (at most 8 per request); unused reservation is released at settlement. Managed routes only. The stored form is echoed back with defaults filled in; null disables retries.",
+                "properties": {
+                  "backoff": {
+                    "default": "exponential",
+                    "enum": [
+                      "constant",
+                      "linear",
+                      "exponential"
+                    ],
+                    "type": "string"
+                  },
+                  "max_attempts": {
+                    "maximum": 5,
+                    "minimum": 1,
+                    "type": "integer"
+                  },
+                  "request_timeout_ms": {
+                    "anyOf": [
+                      {
+                        "maximum": 60000,
+                        "minimum": 1000,
+                        "type": "integer"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "retry_delay_ms": {
+                    "default": 250,
+                    "maximum": 5000,
+                    "minimum": 0,
+                    "type": "integer"
+                  }
+                },
+                "required": [
+                  "max_attempts"
+                ],
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "rpm_limit": {
+            "anyOf": [
+              {
+                "minimum": 0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "spend": {
+            "$ref": "#/components/schemas/Money"
+          },
+          "tpm_limit": {
+            "anyOf": [
+              {
+                "minimum": 0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "updated_at": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "version": {
+            "minimum": 1,
+            "type": "integer"
+          }
+        },
+        "required": [
+          "record_type",
+          "id",
+          "created_at",
+          "updated_at",
+          "version",
+          "name",
+          "max_budget",
+          "budget_duration",
+          "tpm_limit",
+          "rpm_limit",
+          "allowed_models",
+          "cache_ttl",
+          "provider_key_ids",
+          "guardrails",
+          "fallbacks",
+          "retries",
+          "blocked",
+          "spend",
+          "reserved_spend",
+          "budget_started_at",
+          "resets_at"
+        ],
+        "type": "object"
+      },
+      "TokenGroupCreate": {
+        "additionalProperties": false,
+        "properties": {
+          "allowed_models": {
+            "items": {
+              "maxLength": 256,
+              "minLength": 1,
+              "pattern": "^[^\\u0000-\\u001f\\u007f]+$",
+              "type": "string"
+            },
+            "maxItems": 1000,
+            "type": "array",
+            "uniqueItems": true
+          },
+          "blocked": {
+            "type": "boolean"
+          },
+          "budget_duration": {
+            "$ref": "#/components/schemas/BudgetDuration"
+          },
+          "cache_ttl": {
+            "anyOf": [
+              {
+                "maximum": 86400,
+                "minimum": 1,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "fallbacks": {
+            "anyOf": [
+              {
+                "additionalProperties": {
+                  "items": {
+                    "maxLength": 256,
+                    "minLength": 1,
+                    "pattern": "^[^\\u0000-\\u001f\\u007f]+$",
+                    "type": "string"
+                  },
+                  "maxItems": 3,
+                  "minItems": 1,
+                  "type": "array",
+                  "uniqueItems": true
+                },
+                "description": "Per-group model fallbacks: primary alias -\u003e ordered list of 1..3 other aliases. Every key and listed alias must be in allowed_models (a PATCH removing a referenced alias is 400); a chain never lists its own key; wildcards are rejected. Chains are one level deep (a step's own chain is not expanded). Fallback is attempted only for managed routes, only before the first provider event is forwarded, and only to steps the key may use; each attempt is reserved and recorded. {} and null both disable fallbacks.",
+                "maxProperties": 1000,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "guardrails": {
+            "anyOf": [
+              {
+                "additionalProperties": false,
+                "description": "Per-group guardrail policy. Missing actions default to ignore. profiles may be listed with both dlp actions ignore (staged, inactive) but a non-ignore dlp action requires at least one profile. streaming defaults to buffered when any response action is block and passthrough otherwise; passthrough with a response block is 400. Findings are codes and counts only; content is never stored. The stored form is echoed back canonicalised (all actions explicit, profiles sorted); {} is stored as an all-ignore policy, null disables.",
+                "properties": {
+                  "dlp": {
+                    "additionalProperties": false,
+                    "properties": {
+                      "profiles": {
+                        "items": {
+                          "enum": [
+                            "financial",
+                            "government_id",
+                            "contact"
+                          ],
+                          "type": "string"
+                        },
+                        "type": "array",
+                        "uniqueItems": true
+                      },
+                      "prompt": {
+                        "enum": [
+                          "ignore",
+                          "flag",
+                          "block"
+                        ],
+                        "type": "string"
+                      },
+                      "response": {
+                        "enum": [
+                          "ignore",
+                          "flag",
+                          "block"
+                        ],
+                        "type": "string"
+                      }
+                    },
+                    "type": "object"
+                  },
+                  "secrets": {
+                    "additionalProperties": false,
+                    "properties": {
+                      "prompt": {
+                        "enum": [
+                          "ignore",
+                          "flag",
+                          "block"
+                        ],
+                        "type": "string"
+                      },
+                      "response": {
+                        "enum": [
+                          "ignore",
+                          "flag",
+                          "block"
+                        ],
+                        "type": "string"
+                      }
+                    },
+                    "type": "object"
+                  },
+                  "streaming": {
+                    "enum": [
+                      "buffered",
+                      "passthrough"
+                    ],
+                    "type": "string"
+                  }
+                },
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "max_budget": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Money"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "max_parallel_requests": {
+            "anyOf": [
+              {
+                "description": "Optional maximum concurrent reserved/dispatched cache misses across replicas. Null means no concurrency cap. Cache hits do not consume slots; unknown usage retains its budget hold without a slot.",
+                "maximum": 1000,
+                "minimum": 1,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "name": {
+            "maxLength": 256,
+            "minLength": 1,
+            "pattern": "^[^\\u0000-\\u001f\\u007f]+$",
+            "type": "string"
+          },
+          "provider_key_ids": {
+            "items": {
+              "format": "uuid",
+              "type": "string"
+            },
+            "maxItems": 1000,
+            "type": "array",
+            "uniqueItems": true
+          },
+          "retries": {
+            "anyOf": [
+              {
+                "additionalProperties": false,
+                "description": "Per-group same-route retries. max_attempts counts the first try of each step (the primary and each fallback) and is the ceiling for the x-ltg-max-attempts request header. A step is retried only when its attempt definitely did no provider work (connection failure before dispatch, or 429/529) before the first provider event; an uncertain failure (timeout, 408/500/502/503/504) moves to the next fallback step instead. max_attempts x (1 + the longest fallback chain) must not exceed 8, else 400. The n-th retry waits retry_delay_ms (constant), retry_delay_ms*n (linear) or retry_delay_ms*2^(n-1) (exponential), at most 5 s and never past the request deadline, then jittered uniformly down to half that value so concurrent retries spread out; a provider Retry-After of at most 5 s is honoured and a longer one moves to the next step. request_timeout_ms applies to streaming requests only: it bounds each attempt's time to its first provider event and never applies after it. Non-stream requests keep the per-attempt hop and idle bounds (their headers arrive only with the finished completion). retry_delay_ms and backoff are floors for the request knobs. Each planned attempt is reserved (at most 8 per request); unused reservation is released at settlement. Managed routes only. The stored form is echoed back with defaults filled in; null disables retries.",
+                "properties": {
+                  "backoff": {
+                    "default": "exponential",
+                    "enum": [
+                      "constant",
+                      "linear",
+                      "exponential"
+                    ],
+                    "type": "string"
+                  },
+                  "max_attempts": {
+                    "maximum": 5,
+                    "minimum": 1,
+                    "type": "integer"
+                  },
+                  "request_timeout_ms": {
+                    "anyOf": [
+                      {
+                        "maximum": 60000,
+                        "minimum": 1000,
+                        "type": "integer"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "retry_delay_ms": {
+                    "default": 250,
+                    "maximum": 5000,
+                    "minimum": 0,
+                    "type": "integer"
+                  }
+                },
+                "required": [
+                  "max_attempts"
+                ],
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "rpm_limit": {
+            "anyOf": [
+              {
+                "minimum": 0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "tpm_limit": {
+            "anyOf": [
+              {
+                "minimum": 0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "name",
+          "allowed_models"
+        ],
+        "type": "object"
+      },
+      "TokenGroupList": {
+        "additionalProperties": false,
+        "properties": {
+          "data": {
+            "items": {
+              "$ref": "#/components/schemas/TokenGroup"
+            },
+            "type": "array"
+          },
+          "meta": {
+            "$ref": "#/components/schemas/ai-gateway-resources_PageMeta"
+          }
+        },
+        "required": [
+          "data",
+          "meta"
+        ],
+        "type": "object"
+      },
+      "TokenGroupPatch": {
+        "additionalProperties": false,
+        "minProperties": 1,
+        "properties": {
+          "allowed_models": {
+            "items": {
+              "maxLength": 256,
+              "minLength": 1,
+              "pattern": "^[^\\u0000-\\u001f\\u007f]+$",
+              "type": "string"
+            },
+            "maxItems": 1000,
+            "type": "array",
+            "uniqueItems": true
+          },
+          "blocked": {
+            "type": "boolean"
+          },
+          "budget_duration": {
+            "$ref": "#/components/schemas/BudgetDuration"
+          },
+          "cache_ttl": {
+            "anyOf": [
+              {
+                "maximum": 86400,
+                "minimum": 1,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "fallbacks": {
+            "anyOf": [
+              {
+                "additionalProperties": {
+                  "items": {
+                    "maxLength": 256,
+                    "minLength": 1,
+                    "pattern": "^[^\\u0000-\\u001f\\u007f]+$",
+                    "type": "string"
+                  },
+                  "maxItems": 3,
+                  "minItems": 1,
+                  "type": "array",
+                  "uniqueItems": true
+                },
+                "description": "Per-group model fallbacks: primary alias -\u003e ordered list of 1..3 other aliases. Every key and listed alias must be in allowed_models (a PATCH removing a referenced alias is 400); a chain never lists its own key; wildcards are rejected. Chains are one level deep (a step's own chain is not expanded). Fallback is attempted only for managed routes, only before the first provider event is forwarded, and only to steps the key may use; each attempt is reserved and recorded. {} and null both disable fallbacks.",
+                "maxProperties": 1000,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "guardrails": {
+            "anyOf": [
+              {
+                "additionalProperties": false,
+                "description": "Per-group guardrail policy. Missing actions default to ignore. profiles may be listed with both dlp actions ignore (staged, inactive) but a non-ignore dlp action requires at least one profile. streaming defaults to buffered when any response action is block and passthrough otherwise; passthrough with a response block is 400. Findings are codes and counts only; content is never stored. The stored form is echoed back canonicalised (all actions explicit, profiles sorted); {} is stored as an all-ignore policy, null disables.",
+                "properties": {
+                  "dlp": {
+                    "additionalProperties": false,
+                    "properties": {
+                      "profiles": {
+                        "items": {
+                          "enum": [
+                            "financial",
+                            "government_id",
+                            "contact"
+                          ],
+                          "type": "string"
+                        },
+                        "type": "array",
+                        "uniqueItems": true
+                      },
+                      "prompt": {
+                        "enum": [
+                          "ignore",
+                          "flag",
+                          "block"
+                        ],
+                        "type": "string"
+                      },
+                      "response": {
+                        "enum": [
+                          "ignore",
+                          "flag",
+                          "block"
+                        ],
+                        "type": "string"
+                      }
+                    },
+                    "type": "object"
+                  },
+                  "secrets": {
+                    "additionalProperties": false,
+                    "properties": {
+                      "prompt": {
+                        "enum": [
+                          "ignore",
+                          "flag",
+                          "block"
+                        ],
+                        "type": "string"
+                      },
+                      "response": {
+                        "enum": [
+                          "ignore",
+                          "flag",
+                          "block"
+                        ],
+                        "type": "string"
+                      }
+                    },
+                    "type": "object"
+                  },
+                  "streaming": {
+                    "enum": [
+                      "buffered",
+                      "passthrough"
+                    ],
+                    "type": "string"
+                  }
+                },
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "max_budget": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Money"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "max_parallel_requests": {
+            "anyOf": [
+              {
+                "description": "Optional maximum concurrent reserved/dispatched cache misses across replicas. Null means no concurrency cap. Cache hits do not consume slots; unknown usage retains its budget hold without a slot.",
+                "maximum": 1000,
+                "minimum": 1,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "name": {
+            "maxLength": 256,
+            "minLength": 1,
+            "pattern": "^[^\\u0000-\\u001f\\u007f]+$",
+            "type": "string"
+          },
+          "provider_key_ids": {
+            "items": {
+              "format": "uuid",
+              "type": "string"
+            },
+            "maxItems": 1000,
+            "type": "array",
+            "uniqueItems": true
+          },
+          "retries": {
+            "anyOf": [
+              {
+                "additionalProperties": false,
+                "description": "Per-group same-route retries. max_attempts counts the first try of each step (the primary and each fallback) and is the ceiling for the x-ltg-max-attempts request header. A step is retried only when its attempt definitely did no provider work (connection failure before dispatch, or 429/529) before the first provider event; an uncertain failure (timeout, 408/500/502/503/504) moves to the next fallback step instead. max_attempts x (1 + the longest fallback chain) must not exceed 8, else 400. The n-th retry waits retry_delay_ms (constant), retry_delay_ms*n (linear) or retry_delay_ms*2^(n-1) (exponential), at most 5 s and never past the request deadline, then jittered uniformly down to half that value so concurrent retries spread out; a provider Retry-After of at most 5 s is honoured and a longer one moves to the next step. request_timeout_ms applies to streaming requests only: it bounds each attempt's time to its first provider event and never applies after it. Non-stream requests keep the per-attempt hop and idle bounds (their headers arrive only with the finished completion). retry_delay_ms and backoff are floors for the request knobs. Each planned attempt is reserved (at most 8 per request); unused reservation is released at settlement. Managed routes only. The stored form is echoed back with defaults filled in; null disables retries.",
+                "properties": {
+                  "backoff": {
+                    "default": "exponential",
+                    "enum": [
+                      "constant",
+                      "linear",
+                      "exponential"
+                    ],
+                    "type": "string"
+                  },
+                  "max_attempts": {
+                    "maximum": 5,
+                    "minimum": 1,
+                    "type": "integer"
+                  },
+                  "request_timeout_ms": {
+                    "anyOf": [
+                      {
+                        "maximum": 60000,
+                        "minimum": 1000,
+                        "type": "integer"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "retry_delay_ms": {
+                    "default": 250,
+                    "maximum": 5000,
+                    "minimum": 0,
+                    "type": "integer"
+                  }
+                },
+                "required": [
+                  "max_attempts"
+                ],
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "rpm_limit": {
+            "anyOf": [
+              {
+                "minimum": 0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "tpm_limit": {
+            "anyOf": [
+              {
+                "minimum": 0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "type": "object"
+      },
+      "TokenGroupResponse": {
+        "additionalProperties": false,
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/TokenGroup"
+          }
+        },
+        "required": [
+          "data"
+        ],
+        "type": "object"
+      },
+      "TokenKey": {
+        "additionalProperties": false,
+        "properties": {
+          "allowed_models": {
+            "anyOf": [
+              {
+                "items": {
+                  "maxLength": 256,
+                  "minLength": 1,
+                  "pattern": "^[^\\u0000-\\u001f\\u007f]+$",
+                  "type": "string"
+                },
+                "maxItems": 1000,
+                "type": "array",
+                "uniqueItems": true
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "blocked": {
+            "type": "boolean"
+          },
+          "budget_duration": {
+            "$ref": "#/components/schemas/BudgetDuration"
+          },
+          "budget_started_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "created_at": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "expires_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "id": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "max_budget": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Money"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Stored key limit; set to the maximum when the key was written without one (on a blocked key, null is kept until the key is unblocked)."
+          },
+          "max_parallel_requests": {
+            "anyOf": [
+              {
+                "description": "Optional maximum concurrent reserved/dispatched cache misses across replicas. Null means no concurrency cap. Cache hits do not consume slots; unknown usage retains its budget hold without a slot.",
+                "maximum": 1000,
+                "minimum": 1,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "name": {
+            "maxLength": 256,
+            "minLength": 1,
+            "pattern": "^[^\\u0000-\\u001f\\u007f]+$",
+            "type": "string"
+          },
+          "provisioning": {
+            "description": "Provisioning state of the key's current policy. `pending`: retry readiness with bounded backoff (treat `unknown` the same). `inactive` and `unsupported` are terminal until the key, group, user or catalog changes. `unavailable` means provisioning is stuck and is retried slowly; surface it. Absent while the gateway runs in compatibility mode.",
+            "enum": [
+              "ready",
+              "pending",
+              "unavailable",
+              "inactive",
+              "unsupported",
+              "unknown"
+            ],
+            "type": "string"
+          },
+          "record_type": {
+            "const": "token_key"
+          },
+          "required_end_user_id": {
+            "default": false,
+            "description": "Require a nonempty caller-asserted end-user ID; not proof of identity.",
+            "type": "boolean"
+          },
+          "reserved_spend": {
+            "$ref": "#/components/schemas/Money"
+          },
+          "resets_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "rpm_limit": {
+            "anyOf": [
+              {
+                "minimum": 0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Stored key limit; set to the maximum when the key was written without one (on a blocked key, null is kept until the key is unblocked)."
+          },
+          "spend": {
+            "$ref": "#/components/schemas/Money"
+          },
+          "token_group_id": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "token_user_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "tpm_limit": {
+            "anyOf": [
+              {
+                "minimum": 0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Stored key limit; set to the maximum when the key was written without one (on a blocked key, null is kept until the key is unblocked)."
+          },
+          "updated_at": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "version": {
+            "minimum": 1,
+            "type": "integer"
+          }
+        },
+        "required": [
+          "record_type",
+          "id",
+          "created_at",
+          "updated_at",
+          "version",
+          "name",
+          "token_group_id",
+          "token_user_id",
+          "max_budget",
+          "budget_duration",
+          "tpm_limit",
+          "rpm_limit",
+          "allowed_models",
+          "expires_at",
+          "blocked",
+          "required_end_user_id",
+          "spend",
+          "reserved_spend",
+          "budget_started_at",
+          "resets_at"
+        ],
+        "type": "object"
+      },
+      "TokenKeyCreate": {
+        "additionalProperties": false,
+        "properties": {
+          "allowed_models": {
+            "anyOf": [
+              {
+                "items": {
+                  "maxLength": 256,
+                  "minLength": 1,
+                  "pattern": "^[^\\u0000-\\u001f\\u007f]+$",
+                  "type": "string"
+                },
+                "maxItems": 1000,
+                "type": "array",
+                "uniqueItems": true
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "blocked": {
+            "type": "boolean"
+          },
+          "budget_duration": {
+            "$ref": "#/components/schemas/BudgetDuration"
+          },
+          "expires_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "max_budget": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Money",
+                "maximum": 1000,
+                "minimum": 0.000001
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Omitted or null defaults to the maximum (1000 USD) (on a blocked key, null is kept until the key is unblocked); a value below the minimum (0.000001 USD) or above the maximum is rejected with 400 limit_out_of_range; a malformed value (negative, wrong type or precision) is 400 invalid_request. Block the key (blocked: true) to deny it; blocking is always accepted. The default budget is lifetime unless budget_duration is set. Budgets and spend are an enforcement guard computed at one flat placeholder rate for every Telnyx-hosted model (rate_version telnyx-reference-v1: 5 USD per million input and 15 USD per million output tokens), not the customer's bill; Telnyx Inference usage is billed separately at the model's actual price."
+          },
+          "max_parallel_requests": {
+            "anyOf": [
+              {
+                "description": "Optional maximum concurrent reserved/dispatched cache misses across replicas. Null means no concurrency cap. Cache hits do not consume slots; unknown usage retains its budget hold without a slot.",
+                "maximum": 1000,
+                "minimum": 1,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "name": {
+            "maxLength": 256,
+            "minLength": 1,
+            "pattern": "^[^\\u0000-\\u001f\\u007f]+$",
+            "type": "string"
+          },
+          "required_end_user_id": {
+            "default": false,
+            "description": "Require a nonempty caller-asserted end-user ID; not proof of identity.",
+            "type": "boolean"
+          },
+          "rpm_limit": {
+            "anyOf": [
+              {
+                "maximum": 6000,
+                "minimum": 1,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Omitted or null defaults to the maximum (6000) (on a blocked key, null is kept until the key is unblocked); a value below the minimum (1) or above the maximum is rejected with 400 limit_out_of_range; a malformed value (negative, wrong type or precision) is 400 invalid_request. Block the key (blocked: true) to deny it; blocking is always accepted."
+          },
+          "token_group_id": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "token_user_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "tpm_limit": {
+            "anyOf": [
+              {
+                "maximum": 10000000,
+                "minimum": 1,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Omitted or null defaults to the maximum (10000000) (on a blocked key, null is kept until the key is unblocked); a value below the minimum (1) or above the maximum is rejected with 400 limit_out_of_range; a malformed value (negative, wrong type or precision) is 400 invalid_request. Block the key (blocked: true) to deny it; blocking is always accepted."
+          }
+        },
+        "required": [
+          "name",
+          "token_group_id"
+        ],
+        "type": "object"
+      },
+      "TokenKeyCreated": {
+        "additionalProperties": false,
+        "properties": {
+          "allowed_models": {
+            "anyOf": [
+              {
+                "items": {
+                  "maxLength": 256,
+                  "minLength": 1,
+                  "pattern": "^[^\\u0000-\\u001f\\u007f]+$",
+                  "type": "string"
+                },
+                "maxItems": 1000,
+                "type": "array",
+                "uniqueItems": true
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "blocked": {
+            "type": "boolean"
+          },
+          "budget_duration": {
+            "$ref": "#/components/schemas/BudgetDuration"
+          },
+          "budget_started_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "created_at": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "expires_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "id": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "max_budget": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Money"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Stored key limit; set to the maximum when the key was written without one (on a blocked key, null is kept until the key is unblocked)."
+          },
+          "max_parallel_requests": {
+            "anyOf": [
+              {
+                "description": "Optional maximum concurrent reserved/dispatched cache misses across replicas. Null means no concurrency cap. Cache hits do not consume slots; unknown usage retains its budget hold without a slot.",
+                "maximum": 1000,
+                "minimum": 1,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "name": {
+            "maxLength": 256,
+            "minLength": 1,
+            "pattern": "^[^\\u0000-\\u001f\\u007f]+$",
+            "type": "string"
+          },
+          "provisioning": {
+            "description": "Provisioning state of the key's current policy. `pending`: retry readiness with bounded backoff (treat `unknown` the same). `inactive` and `unsupported` are terminal until the key, group, user or catalog changes. `unavailable` means provisioning is stuck and is retried slowly; surface it. Absent while the gateway runs in compatibility mode.",
+            "enum": [
+              "ready",
+              "pending",
+              "unavailable",
+              "inactive",
+              "unsupported",
+              "unknown"
+            ],
+            "type": "string"
+          },
+          "record_type": {
+            "const": "token_key"
+          },
+          "required_end_user_id": {
+            "default": false,
+            "description": "Require a nonempty caller-asserted end-user ID; not proof of identity.",
+            "type": "boolean"
+          },
+          "reserved_spend": {
+            "$ref": "#/components/schemas/Money"
+          },
+          "resets_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "rpm_limit": {
+            "anyOf": [
+              {
+                "minimum": 0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Stored key limit; set to the maximum when the key was written without one (on a blocked key, null is kept until the key is unblocked)."
+          },
+          "spend": {
+            "$ref": "#/components/schemas/Money"
+          },
+          "token": {
+            "pattern": "^ltg_sk_[A-Za-z0-9_-]+$",
+            "readOnly": true,
+            "type": "string"
+          },
+          "token_group_id": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "token_user_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "tpm_limit": {
+            "anyOf": [
+              {
+                "minimum": 0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Stored key limit; set to the maximum when the key was written without one (on a blocked key, null is kept until the key is unblocked)."
+          },
+          "updated_at": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "version": {
+            "minimum": 1,
+            "type": "integer"
+          }
+        },
+        "required": [
+          "record_type",
+          "id",
+          "created_at",
+          "updated_at",
+          "version",
+          "name",
+          "token_group_id",
+          "token_user_id",
+          "max_budget",
+          "budget_duration",
+          "tpm_limit",
+          "rpm_limit",
+          "allowed_models",
+          "expires_at",
+          "blocked",
+          "required_end_user_id",
+          "spend",
+          "reserved_spend",
+          "budget_started_at",
+          "resets_at",
+          "token"
+        ],
+        "type": "object"
+      },
+      "TokenKeyCreatedResponse": {
+        "additionalProperties": false,
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/TokenKeyCreated"
+          }
+        },
+        "required": [
+          "data"
+        ],
+        "type": "object"
+      },
+      "TokenKeyList": {
+        "additionalProperties": false,
+        "properties": {
+          "data": {
+            "items": {
+              "$ref": "#/components/schemas/TokenKey"
+            },
+            "type": "array"
+          },
+          "meta": {
+            "$ref": "#/components/schemas/ai-gateway-resources_PageMeta"
+          }
+        },
+        "required": [
+          "data",
+          "meta"
+        ],
+        "type": "object"
+      },
+      "TokenKeyPatch": {
+        "additionalProperties": false,
+        "minProperties": 1,
+        "properties": {
+          "allowed_models": {
+            "anyOf": [
+              {
+                "items": {
+                  "maxLength": 256,
+                  "minLength": 1,
+                  "pattern": "^[^\\u0000-\\u001f\\u007f]+$",
+                  "type": "string"
+                },
+                "maxItems": 1000,
+                "type": "array",
+                "uniqueItems": true
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "blocked": {
+            "type": "boolean"
+          },
+          "budget_duration": {
+            "$ref": "#/components/schemas/BudgetDuration"
+          },
+          "expires_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "max_budget": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Money",
+                "maximum": 1000,
+                "minimum": 0.000001
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Omitted or null defaults to the maximum (1000 USD) (on a blocked key, null is kept until the key is unblocked); a value below the minimum (0.000001 USD) or above the maximum is rejected with 400 limit_out_of_range; a malformed value (negative, wrong type or precision) is 400 invalid_request. Block the key (blocked: true) to deny it; blocking is always accepted. The default budget is lifetime unless budget_duration is set. Budgets and spend are an enforcement guard computed at one flat placeholder rate for every Telnyx-hosted model (rate_version telnyx-reference-v1: 5 USD per million input and 15 USD per million output tokens), not the customer's bill; Telnyx Inference usage is billed separately at the model's actual price."
+          },
+          "max_parallel_requests": {
+            "anyOf": [
+              {
+                "description": "Optional maximum concurrent reserved/dispatched cache misses across replicas. Null means no concurrency cap. Cache hits do not consume slots; unknown usage retains its budget hold without a slot.",
+                "maximum": 1000,
+                "minimum": 1,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "name": {
+            "maxLength": 256,
+            "minLength": 1,
+            "pattern": "^[^\\u0000-\\u001f\\u007f]+$",
+            "type": "string"
+          },
+          "required_end_user_id": {
+            "description": "Require a nonempty caller-asserted end-user ID; not proof of identity. Omission preserves the current requirement.",
+            "type": "boolean"
+          },
+          "rpm_limit": {
+            "anyOf": [
+              {
+                "maximum": 6000,
+                "minimum": 1,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Omitted or null defaults to the maximum (6000) (on a blocked key, null is kept until the key is unblocked); a value below the minimum (1) or above the maximum is rejected with 400 limit_out_of_range; a malformed value (negative, wrong type or precision) is 400 invalid_request. Block the key (blocked: true) to deny it; blocking is always accepted."
+          },
+          "tpm_limit": {
+            "anyOf": [
+              {
+                "maximum": 10000000,
+                "minimum": 1,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Omitted or null defaults to the maximum (10000000) (on a blocked key, null is kept until the key is unblocked); a value below the minimum (1) or above the maximum is rejected with 400 limit_out_of_range; a malformed value (negative, wrong type or precision) is 400 invalid_request. Block the key (blocked: true) to deny it; blocking is always accepted."
+          }
+        },
+        "type": "object"
+      },
+      "TokenKeyResponse": {
+        "additionalProperties": false,
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/TokenKey"
+          }
+        },
+        "required": [
+          "data"
+        ],
+        "type": "object"
+      },
+      "UsageExportGuardrailEvaluation": {
+        "additionalProperties": false,
+        "properties": {
+          "created_at": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "end_user_id": {
+            "anyOf": [
+              {
+                "maxLength": 256,
+                "minLength": 1,
+                "pattern": "^[^\\u0000-\\u001f\\u007f]+$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "evaluation_input_tokens": {
+            "anyOf": [
+              {
+                "minimum": 0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "evaluation_output_tokens": {
+            "anyOf": [
+              {
+                "minimum": 0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "findings": {
+            "items": {
+              "$ref": "#/components/schemas/GuardrailFinding"
+            },
+            "type": "array"
+          },
+          "id": {
+            "pattern": "^grd_[0-9a-f-]{36}$",
+            "type": "string"
+          },
+          "metadata": {
+            "$ref": "#/components/schemas/RequestMetadata"
+          },
+          "model": {
+            "maxLength": 256,
+            "minLength": 1,
+            "pattern": "^[^\\u0000-\\u001f\\u007f]+$",
+            "type": "string"
+          },
+          "outcome": {
+            "enum": [
+              "evaluated",
+              "flagged",
+              "blocked",
+              "unevaluated"
+            ],
+            "type": "string"
+          },
+          "request_id": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "schema_version": {
+            "const": 1
+          },
+          "stage": {
+            "enum": [
+              "prompt",
+              "response"
+            ],
+            "type": "string"
+          },
+          "token_group_id": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "token_key_id": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "token_user_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "type": {
+            "const": "guardrail.evaluation"
+          }
+        },
+        "required": [
+          "id",
+          "type",
+          "schema_version",
+          "request_id",
+          "created_at",
+          "token_group_id",
+          "token_user_id",
+          "token_key_id",
+          "end_user_id",
+          "model",
+          "stage",
+          "outcome",
+          "findings",
+          "evaluation_input_tokens",
+          "evaluation_output_tokens",
+          "metadata"
+        ],
+        "type": "object"
+      },
+      "UsageExportInferenceRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "attempts": {
+            "minimum": 0,
+            "type": "integer"
+          },
+          "biller": {
+            "enum": [
+              "telnyx",
+              "provider",
+              "none"
+            ],
+            "type": "string"
+          },
+          "cache_hit": {
+            "type": "boolean"
+          },
+          "configuration_version": {
+            "minimum": 1,
+            "type": "integer"
+          },
+          "cost": {
+            "anyOf": [
+              {
+                "description": "USD decimal string with exactly 6 places, 0 to 1000000000.000000 (the Money bound); enforcement basis, not invoice truth.",
+                "pattern": "^((0|[1-9][0-9]{0,8})\\.[0-9]{6}|1000000000\\.000000)$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "end_user_id": {
+            "anyOf": [
+              {
+                "maxLength": 256,
+                "minLength": 1,
+                "pattern": "^[^\\u0000-\\u001f\\u007f]+$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "id": {
+            "description": "Deterministic: req_{request_id}_r{revision}. Deduplicate on id.",
+            "pattern": "^req_[0-9a-f-]{36}_r[1-9][0-9]*$",
+            "type": "string"
+          },
+          "input_tokens": {
+            "anyOf": [
+              {
+                "minimum": 0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "metadata": {
+            "$ref": "#/components/schemas/RequestMetadata",
+            "description": "Customer request tags captured at admission; {} when untagged."
+          },
+          "model": {
+            "maxLength": 256,
+            "minLength": 1,
+            "pattern": "^[^\\u0000-\\u001f\\u007f]+$",
+            "type": "string"
+          },
+          "output_tokens": {
+            "anyOf": [
+              {
+                "minimum": 0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "protocol": {
+            "enum": [
+              "openai",
+              "anthropic"
+            ],
+            "type": "string"
+          },
+          "provider": {
+            "maxLength": 256,
+            "minLength": 1,
+            "pattern": "^[^\\u0000-\\u001f\\u007f]+$",
+            "type": "string"
+          },
+          "provider_key_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "provider_model": {
+            "maxLength": 256,
+            "minLength": 1,
+            "pattern": "^[^\\u0000-\\u001f\\u007f]+$",
+            "type": "string"
+          },
+          "rate_version": {
+            "maxLength": 256,
+            "minLength": 1,
+            "pattern": "^[^\\u0000-\\u001f\\u007f]+$",
+            "type": "string"
+          },
+          "request_id": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "revision": {
+            "minimum": 1,
+            "type": "integer"
+          },
+          "route_mode": {
+            "enum": [
+              "managed",
+              "byok",
+              "cache"
+            ],
+            "type": "string"
+          },
+          "schema_version": {
+            "const": 1
+          },
+          "status": {
+            "enum": [
+              "succeeded",
+              "failed",
+              "partial",
+              "unknown"
+            ],
+            "type": "string"
+          },
+          "stream": {
+            "type": "boolean"
+          },
+          "supersedes": {
+            "anyOf": [
+              {
+                "pattern": "^req_[0-9a-f-]{36}_r[1-9][0-9]*$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Previous revision id; keep the highest revision per request_id."
+          },
+          "timings": {
+            "additionalProperties": false,
+            "properties": {
+              "admitted_at": {
+                "format": "date-time",
+                "type": "string"
+              },
+              "completed_at": {
+                "anyOf": [
+                  {
+                    "format": "date-time",
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "first_attempt_at": {
+                "anyOf": [
+                  {
+                    "format": "date-time",
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "gateway_duration_ms": {
+                "anyOf": [
+                  {
+                    "minimum": 0,
+                    "type": "integer"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "description": "completed_at - admitted_at as recorded by the ledger; not time to first token."
+              },
+              "settled_at": {
+                "format": "date-time",
+                "type": "string"
+              }
+            },
+            "required": [
+              "admitted_at",
+              "first_attempt_at",
+              "completed_at",
+              "settled_at",
+              "gateway_duration_ms"
+            ],
+            "type": "object"
+          },
+          "token_group_id": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "token_key_id": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "token_user_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "type": {
+            "const": "inference.request"
+          },
+          "usage_source": {
+            "anyOf": [
+              {
+                "enum": [
+                  "provider",
+                  "gateway_tokenizer",
+                  "operator"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "usage_status": {
+            "enum": [
+              "known",
+              "unknown",
+              "reconciled"
+            ],
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "type",
+          "schema_version",
+          "request_id",
+          "revision",
+          "supersedes",
+          "timings",
+          "token_group_id",
+          "token_user_id",
+          "token_key_id",
+          "end_user_id",
+          "model",
+          "provider",
+          "provider_model",
+          "route_mode",
+          "protocol",
+          "stream",
+          "status",
+          "attempts",
+          "input_tokens",
+          "output_tokens",
+          "usage_source",
+          "usage_status",
+          "cost",
+          "biller",
+          "cache_hit",
+          "provider_key_id",
+          "configuration_version",
+          "rate_version",
+          "metadata"
+        ],
+        "type": "object"
+      },
+      "UsageExportPage": {
+        "additionalProperties": false,
+        "properties": {
+          "data": {
+            "items": {
+              "$ref": "#/components/schemas/UsageExportRecord"
+            },
+            "maxItems": 1000,
+            "type": "array"
+          },
+          "meta": {
+            "additionalProperties": false,
+            "properties": {
+              "has_more": {
+                "type": "boolean"
+              },
+              "horizon_lag_seconds": {
+                "minimum": 0,
+                "type": "integer"
+              },
+              "next_cursor": {
+                "maxLength": 512,
+                "minLength": 1,
+                "pattern": "^[A-Za-z0-9_-]+$",
+                "type": "string"
+              }
+            },
+            "required": [
+              "next_cursor",
+              "has_more",
+              "horizon_lag_seconds"
+            ],
+            "type": "object"
+          }
+        },
+        "required": [
+          "data",
+          "meta"
+        ],
+        "type": "object"
+      },
+      "UsageExportRecord": {
+        "discriminator": {
+          "mapping": {
+            "guardrail.evaluation": "#/components/schemas/UsageExportGuardrailEvaluation",
+            "inference.request": "#/components/schemas/UsageExportInferenceRequest"
+          },
+          "propertyName": "type"
+        },
+        "oneOf": [
+          {
+            "$ref": "#/components/schemas/UsageExportInferenceRequest"
+          },
+          {
+            "$ref": "#/components/schemas/UsageExportGuardrailEvaluation"
+          }
+        ]
+      },
+      "UsageMetrics": {
+        "additionalProperties": false,
+        "properties": {
+          "cache_hits": {
+            "minimum": 0,
+            "type": "integer"
+          },
+          "failed_requests": {
+            "minimum": 0,
+            "type": "integer"
+          },
+          "input_tokens": {
+            "minimum": 0,
+            "type": "integer"
+          },
+          "output_tokens": {
+            "minimum": 0,
+            "type": "integer"
+          },
+          "partial_requests": {
+            "minimum": 0,
+            "type": "integer"
+          },
+          "requests": {
+            "minimum": 0,
+            "type": "integer"
+          },
+          "reserved_spend": {
+            "$ref": "#/components/schemas/Money"
+          },
+          "spend": {
+            "$ref": "#/components/schemas/Money"
+          },
+          "succeeded_requests": {
+            "minimum": 0,
+            "type": "integer"
+          },
+          "unknown_requests": {
+            "minimum": 0,
+            "type": "integer"
+          }
+        },
+        "required": [
+          "requests",
+          "input_tokens",
+          "output_tokens",
+          "unknown_requests",
+          "cache_hits",
+          "succeeded_requests",
+          "failed_requests",
+          "partial_requests",
+          "spend",
+          "reserved_spend"
+        ],
+        "type": "object"
+      },
+      "ai-gateway-resources_Error": {
+        "additionalProperties": false,
+        "properties": {
+          "errors": {
+            "items": {
+              "$ref": "#/components/schemas/ErrorItem"
+            },
+            "minItems": 1,
+            "type": "array"
+          }
+        },
+        "required": [
+          "errors"
+        ],
+        "type": "object"
+      },
+      "ai-gateway-resources_PageMeta": {
+        "additionalProperties": false,
+        "properties": {
+          "has_more": {
+            "type": "boolean"
+          },
+          "page_number": {
+            "minimum": 1,
+            "type": "integer"
+          },
+          "page_size": {
+            "maximum": 100,
+            "minimum": 1,
+            "type": "integer"
+          },
+          "snapshot": {
+            "maxLength": 256,
+            "minLength": 1,
+            "pattern": "^[^\\u0000-\\u001f\\u007f]+$",
+            "type": "string"
+          }
+        },
+        "required": [
+          "page_number",
+          "page_size",
+          "has_more",
+          "snapshot"
+        ],
+        "type": "object"
+      },
+      "ai-gateway-resources_Scope": {
+        "enum": [
+          "token_group",
+          "token_user",
+          "token_key",
+          "end_user"
+        ],
+        "type": "string"
+      },
+      "ai-gateway-spend_Error": {
+        "additionalProperties": false,
+        "properties": {
+          "errors": {
+            "items": {
+              "$ref": "#/components/schemas/ErrorItem"
+            },
+            "minItems": 1,
+            "type": "array"
+          }
+        },
+        "required": [
+          "errors"
+        ],
+        "type": "object"
+      },
+      "ai-gateway-spend_PageMeta": {
+        "additionalProperties": false,
+        "properties": {
+          "has_more": {
+            "type": "boolean"
+          },
+          "page_number": {
+            "minimum": 1,
+            "type": "integer"
+          },
+          "page_size": {
+            "maximum": 100,
+            "minimum": 1,
+            "type": "integer"
+          },
+          "snapshot": {
+            "maxLength": 256,
+            "minLength": 1,
+            "pattern": "^[^\\u0000-\\u001f\\u007f]+$",
+            "type": "string"
+          }
+        },
+        "required": [
+          "page_number",
+          "page_size",
+          "has_more",
+          "snapshot"
+        ],
+        "type": "object"
+      },
+      "ai-gateway-spend_Scope": {
+        "enum": [
+          "token_group",
+          "token_user",
+          "token_key",
+          "end_user"
+        ],
+        "type": "string"
+      },
+      "ai-gateway_Error": {
+        "additionalProperties": false,
+        "properties": {
+          "errors": {
+            "items": {
+              "$ref": "#/components/schemas/ErrorItem"
+            },
+            "minItems": 1,
+            "type": "array"
+          }
+        },
+        "required": [
+          "errors"
+        ],
+        "type": "object"
+      }
+    },
+    "securitySchemes": {
+      "BearerAuth": {
+        "bearerFormat": "API key",
+        "description": "Telnyx API key supplied as `Authorization: Bearer \u003ctoken\u003e`. In production, auth may be validated by the API gateway and forwarded via Telnyx auth headers.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "Payment": {
+        "description": "Machine Payment Protocol credential used on paid retries, sent as `Authorization: Payment ...`. Obtained by paying a challenge returned in the `WWW-Authenticate` header of a 402 response. This is not a Telnyx API key; initial challenge requests use standard bearer authentication instead.",
+        "in": "header",
+        "name": "Authorization",
+        "type": "apiKey"
+      },
+      "agent-memory_bearerAuth": {
+        "description": "Telnyx API key",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "bearerAuth": {
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "branded-calling_bearerAuth": {
+        "description": "Telnyx API key. Generate one at https://portal.telnyx.com/#/app/api-keys.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "collections_bearerAuth": {
+        "description": "Telnyx API key. Collections and results are automatically scoped to the authenticated user's organization.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "number-reputation_bearerAuth": {
+        "description": "Telnyx API key. Generate one at https://portal.telnyx.com/#/app/api-keys.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "oauthClientAuth": {
+        "description": "OAuth 2.0 authentication for Telnyx API and MCP integrations",
+        "flows": {
+          "authorizationCode": {
+            "authorizationUrl": "https://api.telnyx.com/v2/oauth/authorize",
+            "refreshUrl": "https://api.telnyx.com/v2/oauth/token",
+            "scopes": {
+              "admin": "Administrative access to Telnyx resources"
+            },
+            "tokenUrl": "https://api.telnyx.com/v2/oauth/token"
+          },
+          "clientCredentials": {
+            "scopes": {
+              "admin": "Administrative access to Telnyx resources"
+            },
+            "tokenUrl": "https://api.telnyx.com/v2/oauth/token"
+          }
+        },
+        "type": "oauth2"
+      },
+      "outbound-voice-profiles_bearerAuth": {
+        "bearerFormat": "JWT",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "pay-connectors_bearerAuth": {
+        "description": "Telnyx API key, not the processor bearer token.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "pronunciation-dicts_bearerAuth": {
+        "description": "Telnyx API v2 key. Obtain from https://portal.telnyx.com",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "rcs-registration_bearerAuth": {
+        "bearerFormat": "API key",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "stored-payment-transactions_bearerAuth": {
+        "bearerFormat": "JWT",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "telnyxApiKey": {
+        "description": "Management-only Telnyx account credential.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "transcriptions-search_bearerAuth": {
+        "description": "Telnyx API key. Results are automatically scoped to the authenticated user's organization.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "web-search_bearerAuth": {
+        "description": "Telnyx API key",
+        "scheme": "bearer",
+        "type": "http"
+      }
+    }
+  },
+  "info": {
+    "contact": {
+      "email": "support@telnyx.com"
+    },
+    "description": "SIP trunking, SMS, MMS, Call Control and Telephony Data Services.",
+    "title": "Telnyx API",
+    "version": "2.0.0",
+    "x-endpoint-cost": "light",
+    "x-latency-category": "responsive"
+  },
+  "openapi": "3.1.0",
+  "paths": {
+    "/llm_token_gateway/spend/events": {
+      "get": {
+        "description": "Return request-level usage history for the authenticated account. Supply both UTC dates or neither; omitting both returns the previous full UTC day. Dates use a half-open range [start_date, end_date) of at most 31 days. Cost reflects budget reference rates, not invoice charges. Unknown spend is excluded and reported separately. The report snapshot supports at most 10,000 matching requests, independently of page size. Exceeding this bound returns HTTP 503 without partial results. Narrow the date range or resource filters before retrying. A failed report must not be interpreted as zero usage. Request tags can filter either report and metadata:\u003ckey\u003e can group the summary.",
+        "operationId": "get_ai_gateway_spend_events",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/ai-gateway-spend_PageNumber"
+          },
+          {
+            "$ref": "#/components/parameters/ai-gateway-spend_PageSize"
+          },
+          {
+            "$ref": "#/components/parameters/Snapshot"
+          },
+          {
+            "description": "",
+            "in": "query",
+            "name": "start_date",
+            "required": false,
+            "schema": {
+              "format": "date",
+              "type": "string"
+            }
+          },
+          {
+            "description": "",
+            "in": "query",
+            "name": "end_date",
+            "required": false,
+            "schema": {
+              "format": "date",
+              "type": "string"
+            }
+          },
+          {
+            "description": "",
+            "in": "query",
+            "name": "token_group_id",
+            "required": false,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "description": "",
+            "in": "query",
+            "name": "token_user_id",
+            "required": false,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "description": "",
+            "in": "query",
+            "name": "token_key_id",
+            "required": false,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "description": "",
+            "in": "query",
+            "name": "end_user_id",
+            "required": false,
+            "schema": {
+              "maxLength": 256,
+              "minLength": 1,
+              "pattern": "^[^\\u0000-\\u001f\\u007f]+$",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Request tag filters as metadata[\u003ckey\u003e]=\u003cvalue\u003e, at most 5, combined with AND. A value matches the tag's text form exactly (booleans as true/false, integers in decimal), so metadata[flag]=true matches both boolean true and the string \"true\". Keys are case-sensitive; reserved-prefix keys are rejected. Unindexed: bounded by the account, the date range and the report timeout.",
+            "explode": true,
+            "in": "query",
+            "name": "metadata",
+            "required": false,
+            "schema": {
+              "additionalProperties": {
+                "maxLength": 256,
+                "minLength": 1,
+                "pattern": "^[^\\u0000-\\u001f\\u007f]+$",
+                "type": "string"
+              },
+              "maxProperties": 5,
+              "propertyNames": {
+                "pattern": "^[A-Za-z0-9][A-Za-z0-9_.-]{0,63}$"
+              },
+              "type": "object"
+            },
+            "style": "deepObject"
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "data": [],
+                  "meta": {
+                    "has_more": false,
+                    "page_number": 1,
+                    "page_size": 20,
+                    "snapshot": "9b7e4a10-3c2d-4f5e-8a6b-1d2c3e4f5a60"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/SpendEvents"
+                }
+              }
+            },
+            "description": "OK",
+            "headers": {
+              "Cache-Control": {
+                "description": "All API responses; application cache is server-side only.",
+                "schema": {
+                  "const": "no-store"
+                }
+              },
+              "X-Request-ID": {
+                "description": "Server-generated correlation ID.",
+                "schema": {
+                  "format": "uuid",
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/ai-gateway-spend_GatewayError400"
+          },
+          "401": {
+            "$ref": "#/components/responses/GatewayError401"
+          },
+          "403": {
+            "$ref": "#/components/responses/GatewayError403"
+          },
+          "404": {
+            "$ref": "#/components/responses/GatewayError404"
+          },
+          "409": {
+            "$ref": "#/components/responses/ai-gateway-spend_GatewayError409"
+          },
+          "412": {
+            "$ref": "#/components/responses/GatewayError412"
+          },
+          "428": {
+            "$ref": "#/components/responses/GatewayError428"
+          },
+          "429": {
+            "$ref": "#/components/responses/GatewayError429"
+          },
+          "502": {
+            "$ref": "#/components/responses/GatewayError502"
+          },
+          "503": {
+            "$ref": "#/components/responses/ai-gateway-spend_GatewayError503"
+          },
+          "504": {
+            "$ref": "#/components/responses/GatewayError504"
+          }
+        },
+        "security": [
+          {
+            "telnyxApiKey": []
+          }
+        ],
+        "summary": "List gateway spend events",
+        "tags": [
+          "AI Gateway"
+        ]
+      }
+    },
+    "/llm_token_gateway/spend/summary": {
+      "get": {
+        "description": "Return request counts, token counts and reference spend grouped by one attribution dimension. Both UTC dates and group_by are required. Dates use a half-open range [start_date, end_date) of at most 31 days. Cost reflects budget reference rates, not invoice charges. Unknown spend is excluded and reported separately. The report snapshot supports at most 10,000 matching requests, independently of page size. Exceeding this bound returns HTTP 503 without partial results. Narrow the date range or resource filters before retrying. A failed report must not be interpreted as zero usage. Request tags can filter either report and metadata:\u003ckey\u003e can group the summary.",
+        "operationId": "get_ai_gateway_spend_summary",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/ai-gateway-spend_PageNumber"
+          },
+          {
+            "$ref": "#/components/parameters/ai-gateway-spend_PageSize"
+          },
+          {
+            "$ref": "#/components/parameters/Snapshot"
+          },
+          {
+            "description": "",
+            "in": "query",
+            "name": "start_date",
+            "required": true,
+            "schema": {
+              "format": "date",
+              "type": "string"
+            }
+          },
+          {
+            "description": "",
+            "in": "query",
+            "name": "end_date",
+            "required": true,
+            "schema": {
+              "format": "date",
+              "type": "string"
+            }
+          },
+          {
+            "description": "",
+            "in": "query",
+            "name": "token_group_id",
+            "required": false,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "description": "",
+            "in": "query",
+            "name": "token_user_id",
+            "required": false,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "description": "",
+            "in": "query",
+            "name": "token_key_id",
+            "required": false,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "description": "",
+            "in": "query",
+            "name": "end_user_id",
+            "required": false,
+            "schema": {
+              "maxLength": 256,
+              "minLength": 1,
+              "pattern": "^[^\\u0000-\\u001f\\u007f]+$",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Request tag filters as metadata[\u003ckey\u003e]=\u003cvalue\u003e, at most 5, combined with AND. A value matches the tag's text form exactly (booleans as true/false, integers in decimal), so metadata[flag]=true matches both boolean true and the string \"true\". Keys are case-sensitive; reserved-prefix keys are rejected. Unindexed: bounded by the account, the date range and the report timeout.",
+            "explode": true,
+            "in": "query",
+            "name": "metadata",
+            "required": false,
+            "schema": {
+              "additionalProperties": {
+                "maxLength": 256,
+                "minLength": 1,
+                "pattern": "^[^\\u0000-\\u001f\\u007f]+$",
+                "type": "string"
+              },
+              "maxProperties": 5,
+              "propertyNames": {
+                "pattern": "^[A-Za-z0-9][A-Za-z0-9_.-]{0,63}$"
+              },
+              "type": "object"
+            },
+            "style": "deepObject"
+          },
+          {
+            "description": "A scope, or metadata:\u003ckey\u003e to group by one request tag's text-form value; requests without the key form one group with a null dimension_id.",
+            "in": "query",
+            "name": "group_by",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/SpendGroupBy"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "data": [],
+                  "meta": {
+                    "end_date": "2026-09-08",
+                    "group_by": "token_group",
+                    "has_more": false,
+                    "page_number": 1,
+                    "page_size": 20,
+                    "snapshot": "9b7e4a10-3c2d-4f5e-8a6b-1d2c3e4f5a60",
+                    "start_date": "2026-09-01"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/SpendSummary"
+                }
+              }
+            },
+            "description": "OK",
+            "headers": {
+              "Cache-Control": {
+                "description": "All API responses; application cache is server-side only.",
+                "schema": {
+                  "const": "no-store"
+                }
+              },
+              "X-Request-ID": {
+                "description": "Server-generated correlation ID.",
+                "schema": {
+                  "format": "uuid",
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/ai-gateway-spend_GatewayError400"
+          },
+          "401": {
+            "$ref": "#/components/responses/GatewayError401"
+          },
+          "403": {
+            "$ref": "#/components/responses/GatewayError403"
+          },
+          "404": {
+            "$ref": "#/components/responses/GatewayError404"
+          },
+          "409": {
+            "$ref": "#/components/responses/ai-gateway-spend_GatewayError409"
+          },
+          "412": {
+            "$ref": "#/components/responses/GatewayError412"
+          },
+          "428": {
+            "$ref": "#/components/responses/GatewayError428"
+          },
+          "429": {
+            "$ref": "#/components/responses/GatewayError429"
+          },
+          "502": {
+            "$ref": "#/components/responses/GatewayError502"
+          },
+          "503": {
+            "$ref": "#/components/responses/ai-gateway-spend_GatewayError503"
+          },
+          "504": {
+            "$ref": "#/components/responses/GatewayError504"
+          }
+        },
+        "security": [
+          {
+            "telnyxApiKey": []
+          }
+        ],
+        "summary": "Get gateway spend summary",
+        "tags": [
+          "AI Gateway"
+        ]
+      }
+    },
+    "/llm_token_gateway/token_groups": {
+      "get": {
+        "description": "List gateway token groups within the authenticated Telnyx account. Foreign and unknown resource IDs return the same 404 response.",
+        "operationId": "list_token_groups",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/ai-gateway-resources_PageNumber"
+          },
+          {
+            "$ref": "#/components/parameters/ai-gateway-resources_PageSize"
+          },
+          {
+            "$ref": "#/components/parameters/Snapshot"
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "data": [],
+                  "meta": {
+                    "has_more": false,
+                    "page_number": 1,
+                    "page_size": 1,
+                    "snapshot": "synthetic_snapshot"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/TokenGroupList"
+                }
+              }
+            },
+            "description": "OK",
+            "headers": {
+              "Cache-Control": {
+                "description": "All API responses; application cache is server-side only.",
+                "schema": {
+                  "const": "no-store"
+                }
+              },
+              "X-Request-ID": {
+                "description": "Server-generated correlation ID.",
+                "schema": {
+                  "format": "uuid",
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/GatewayError400"
+          },
+          "401": {
+            "$ref": "#/components/responses/GatewayError401"
+          },
+          "403": {
+            "$ref": "#/components/responses/GatewayError403"
+          },
+          "404": {
+            "$ref": "#/components/responses/GatewayError404"
+          },
+          "409": {
+            "$ref": "#/components/responses/GatewayError409"
+          },
+          "412": {
+            "$ref": "#/components/responses/GatewayError412"
+          },
+          "428": {
+            "$ref": "#/components/responses/GatewayError428"
+          },
+          "429": {
+            "$ref": "#/components/responses/GatewayError429"
+          },
+          "502": {
+            "$ref": "#/components/responses/GatewayError502"
+          },
+          "503": {
+            "$ref": "#/components/responses/GatewayError503"
+          },
+          "504": {
+            "$ref": "#/components/responses/GatewayError504"
+          }
+        },
+        "security": [
+          {
+            "telnyxApiKey": []
+          }
+        ],
+        "summary": "List gateway token groups",
+        "tags": [
+          "AI Gateway"
+        ]
+      },
+      "post": {
+        "description": "Create gateway token group within the authenticated Telnyx account. Foreign and unknown resource IDs return the same 404 response.",
+        "operationId": "create_token_groups",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/ai-gateway-resources_IdempotencyKey"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "example": {
+                "allowed_models": [
+                  "Kimi-K3",
+                  "GLM-5.3-Flash"
+                ],
+                "fallbacks": {
+                  "Kimi-K3": [
+                    "GLM-5.3-Flash"
+                  ]
+                },
+                "max_parallel_requests": 20,
+                "name": "support-backend",
+                "retries": {
+                  "backoff": "exponential",
+                  "max_attempts": 2,
+                  "request_timeout_ms": 10000,
+                  "retry_delay_ms": 250
+                }
+              },
+              "schema": {
+                "$ref": "#/components/schemas/TokenGroupCreate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "data": {
+                    "allowed_models": [
+                      "Kimi-K3",
+                      "GLM-5.3-Flash"
+                    ],
+                    "blocked": false,
+                    "budget_duration": "1d",
+                    "budget_started_at": null,
+                    "cache_ttl": null,
+                    "created_at": "2026-10-07T08:00:00Z",
+                    "fallbacks": null,
+                    "guardrails": null,
+                    "id": "11111111-1111-4111-8111-111111111111",
+                    "max_budget": null,
+                    "max_parallel_requests": 20,
+                    "name": "support-backend",
+                    "provider_key_ids": [],
+                    "record_type": "token_group",
+                    "reserved_spend": 0,
+                    "resets_at": null,
+                    "retries": null,
+                    "rpm_limit": null,
+                    "spend": 0,
+                    "tpm_limit": null,
+                    "updated_at": "2026-10-07T08:00:00Z",
+                    "version": 1
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/TokenGroupResponse"
+                }
+              }
+            },
+            "description": "OK",
+            "headers": {
+              "Cache-Control": {
+                "description": "All API responses; application cache is server-side only.",
+                "schema": {
+                  "const": "no-store"
+                }
+              },
+              "ETag": {
+                "description": "Quoted integer resource version.",
+                "schema": {
+                  "maxLength": 256,
+                  "minLength": 1,
+                  "pattern": "^[^\\u0000-\\u001f\\u007f]+$",
+                  "type": "string"
+                }
+              },
+              "X-Request-ID": {
+                "description": "Server-generated correlation ID.",
+                "schema": {
+                  "format": "uuid",
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/GatewayError400"
+          },
+          "401": {
+            "$ref": "#/components/responses/GatewayError401"
+          },
+          "403": {
+            "$ref": "#/components/responses/GatewayError403"
+          },
+          "404": {
+            "$ref": "#/components/responses/GatewayError404"
+          },
+          "409": {
+            "$ref": "#/components/responses/GatewayError409"
+          },
+          "412": {
+            "$ref": "#/components/responses/GatewayError412"
+          },
+          "428": {
+            "$ref": "#/components/responses/GatewayError428"
+          },
+          "429": {
+            "$ref": "#/components/responses/GatewayError429"
+          },
+          "502": {
+            "$ref": "#/components/responses/GatewayError502"
+          },
+          "503": {
+            "$ref": "#/components/responses/GatewayError503"
+          },
+          "504": {
+            "$ref": "#/components/responses/GatewayError504"
+          }
+        },
+        "security": [
+          {
+            "telnyxApiKey": []
+          }
+        ],
+        "summary": "Create gateway token group",
+        "tags": [
+          "AI Gateway"
+        ]
+      }
+    },
+    "/llm_token_gateway/token_groups/{id}": {
+      "delete": {
+        "description": "Revoke resource and its keys atomically; retain historical attribution, never detach into an ungoverned service key.",
+        "operationId": "delete_token_groups",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/ai-gateway-resources_IdempotencyKey"
+          },
+          {
+            "$ref": "#/components/parameters/IfMatch"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Deleted",
+            "headers": {
+              "Cache-Control": {
+                "description": "All API responses; application cache is server-side only.",
+                "schema": {
+                  "const": "no-store"
+                }
+              },
+              "X-Request-ID": {
+                "description": "Server-generated correlation ID.",
+                "schema": {
+                  "format": "uuid",
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/GatewayError400"
+          },
+          "401": {
+            "$ref": "#/components/responses/GatewayError401"
+          },
+          "403": {
+            "$ref": "#/components/responses/GatewayError403"
+          },
+          "404": {
+            "$ref": "#/components/responses/GatewayError404"
+          },
+          "409": {
+            "$ref": "#/components/responses/GatewayError409"
+          },
+          "412": {
+            "$ref": "#/components/responses/GatewayError412"
+          },
+          "428": {
+            "$ref": "#/components/responses/GatewayError428"
+          },
+          "429": {
+            "$ref": "#/components/responses/GatewayError429"
+          },
+          "502": {
+            "$ref": "#/components/responses/GatewayError502"
+          },
+          "503": {
+            "$ref": "#/components/responses/GatewayError503"
+          },
+          "504": {
+            "$ref": "#/components/responses/GatewayError504"
+          }
+        },
+        "security": [
+          {
+            "telnyxApiKey": []
+          }
+        ],
+        "summary": "Delete gateway token group",
+        "tags": [
+          "AI Gateway"
+        ]
+      },
+      "get": {
+        "description": "Get gateway token group within the authenticated Telnyx account. Foreign and unknown resource IDs return the same 404 response.",
+        "operationId": "get_token_groups",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "data": {
+                    "allowed_models": [
+                      "Kimi-K3",
+                      "GLM-5.3-Flash"
+                    ],
+                    "blocked": false,
+                    "budget_duration": "1d",
+                    "budget_started_at": null,
+                    "cache_ttl": null,
+                    "created_at": "2026-10-07T08:00:00Z",
+                    "fallbacks": null,
+                    "guardrails": null,
+                    "id": "11111111-1111-4111-8111-111111111111",
+                    "max_budget": null,
+                    "max_parallel_requests": 20,
+                    "name": "support-backend",
+                    "provider_key_ids": [],
+                    "record_type": "token_group",
+                    "reserved_spend": 0,
+                    "resets_at": null,
+                    "retries": null,
+                    "rpm_limit": null,
+                    "spend": 0,
+                    "tpm_limit": null,
+                    "updated_at": "2026-10-07T08:00:00Z",
+                    "version": 1
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/TokenGroupResponse"
+                }
+              }
+            },
+            "description": "OK",
+            "headers": {
+              "Cache-Control": {
+                "description": "All API responses; application cache is server-side only.",
+                "schema": {
+                  "const": "no-store"
+                }
+              },
+              "ETag": {
+                "description": "Quoted integer resource version.",
+                "schema": {
+                  "maxLength": 256,
+                  "minLength": 1,
+                  "pattern": "^[^\\u0000-\\u001f\\u007f]+$",
+                  "type": "string"
+                }
+              },
+              "X-Request-ID": {
+                "description": "Server-generated correlation ID.",
+                "schema": {
+                  "format": "uuid",
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/GatewayError400"
+          },
+          "401": {
+            "$ref": "#/components/responses/GatewayError401"
+          },
+          "403": {
+            "$ref": "#/components/responses/GatewayError403"
+          },
+          "404": {
+            "$ref": "#/components/responses/GatewayError404"
+          },
+          "409": {
+            "$ref": "#/components/responses/GatewayError409"
+          },
+          "412": {
+            "$ref": "#/components/responses/GatewayError412"
+          },
+          "428": {
+            "$ref": "#/components/responses/GatewayError428"
+          },
+          "429": {
+            "$ref": "#/components/responses/GatewayError429"
+          },
+          "502": {
+            "$ref": "#/components/responses/GatewayError502"
+          },
+          "503": {
+            "$ref": "#/components/responses/GatewayError503"
+          },
+          "504": {
+            "$ref": "#/components/responses/GatewayError504"
+          }
+        },
+        "security": [
+          {
+            "telnyxApiKey": []
+          }
+        ],
+        "summary": "Get gateway token group",
+        "tags": [
+          "AI Gateway"
+        ]
+      },
+      "parameters": [
+        {
+          "description": "",
+          "in": "path",
+          "name": "id",
+          "required": true,
+          "schema": {
+            "format": "uuid",
+            "type": "string"
+          }
+        }
+      ],
+      "patch": {
+        "description": "Update gateway token group within the authenticated Telnyx account. Foreign and unknown resource IDs return the same 404 response. Omitted fields are preserved. Null clears the optional concurrency, fallback and retry settings. A stale If-Match returns 412; read the resource again before updating.",
+        "operationId": "patch_token_groups",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/ai-gateway-resources_IdempotencyKey"
+          },
+          {
+            "$ref": "#/components/parameters/IfMatch"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "example": {
+                "allowed_models": [
+                  "Kimi-K3",
+                  "GLM-5.3-Flash"
+                ],
+                "fallbacks": {
+                  "Kimi-K3": [
+                    "GLM-5.3-Flash"
+                  ]
+                },
+                "max_parallel_requests": 20,
+                "name": "support-backend",
+                "retries": {
+                  "backoff": "exponential",
+                  "max_attempts": 2,
+                  "request_timeout_ms": 10000,
+                  "retry_delay_ms": 250
+                }
+              },
+              "schema": {
+                "$ref": "#/components/schemas/TokenGroupPatch"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "data": {
+                    "allowed_models": [
+                      "Kimi-K3",
+                      "GLM-5.3-Flash"
+                    ],
+                    "blocked": false,
+                    "budget_duration": "1d",
+                    "budget_started_at": null,
+                    "cache_ttl": null,
+                    "created_at": "2026-10-07T08:00:00Z",
+                    "fallbacks": null,
+                    "guardrails": null,
+                    "id": "11111111-1111-4111-8111-111111111111",
+                    "max_budget": null,
+                    "max_parallel_requests": 20,
+                    "name": "support-backend",
+                    "provider_key_ids": [],
+                    "record_type": "token_group",
+                    "reserved_spend": 0,
+                    "resets_at": null,
+                    "retries": null,
+                    "rpm_limit": null,
+                    "spend": 0,
+                    "tpm_limit": null,
+                    "updated_at": "2026-10-07T08:00:00Z",
+                    "version": 1
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/TokenGroupResponse"
+                }
+              }
+            },
+            "description": "OK",
+            "headers": {
+              "Cache-Control": {
+                "description": "All API responses; application cache is server-side only.",
+                "schema": {
+                  "const": "no-store"
+                }
+              },
+              "ETag": {
+                "description": "Quoted integer resource version.",
+                "schema": {
+                  "maxLength": 256,
+                  "minLength": 1,
+                  "pattern": "^[^\\u0000-\\u001f\\u007f]+$",
+                  "type": "string"
+                }
+              },
+              "X-Request-ID": {
+                "description": "Server-generated correlation ID.",
+                "schema": {
+                  "format": "uuid",
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/GatewayError400"
+          },
+          "401": {
+            "$ref": "#/components/responses/GatewayError401"
+          },
+          "403": {
+            "$ref": "#/components/responses/GatewayError403"
+          },
+          "404": {
+            "$ref": "#/components/responses/GatewayError404"
+          },
+          "409": {
+            "$ref": "#/components/responses/GatewayError409"
+          },
+          "412": {
+            "$ref": "#/components/responses/GatewayError412"
+          },
+          "428": {
+            "$ref": "#/components/responses/GatewayError428"
+          },
+          "429": {
+            "$ref": "#/components/responses/GatewayError429"
+          },
+          "502": {
+            "$ref": "#/components/responses/GatewayError502"
+          },
+          "503": {
+            "$ref": "#/components/responses/GatewayError503"
+          },
+          "504": {
+            "$ref": "#/components/responses/GatewayError504"
+          }
+        },
+        "security": [
+          {
+            "telnyxApiKey": []
+          }
+        ],
+        "summary": "Update gateway token group",
+        "tags": [
+          "AI Gateway"
+        ]
+      }
+    },
+    "/llm_token_gateway/token_keys": {
+      "get": {
+        "description": "List gateway token keys within the authenticated Telnyx account. Foreign and unknown resource IDs return the same 404 response.",
+        "operationId": "list_token_keys",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/ai-gateway-resources_PageNumber"
+          },
+          {
+            "$ref": "#/components/parameters/ai-gateway-resources_PageSize"
+          },
+          {
+            "$ref": "#/components/parameters/Snapshot"
+          },
+          {
+            "description": "",
+            "in": "query",
+            "name": "token_group_id",
+            "required": false,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "description": "",
+            "in": "query",
+            "name": "token_user_id",
+            "required": false,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "data": [],
+                  "meta": {
+                    "has_more": false,
+                    "page_number": 1,
+                    "page_size": 1,
+                    "snapshot": "synthetic_snapshot"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/TokenKeyList"
+                }
+              }
+            },
+            "description": "OK",
+            "headers": {
+              "Cache-Control": {
+                "description": "All API responses; application cache is server-side only.",
+                "schema": {
+                  "const": "no-store"
+                }
+              },
+              "X-Request-ID": {
+                "description": "Server-generated correlation ID.",
+                "schema": {
+                  "format": "uuid",
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/GatewayError400"
+          },
+          "401": {
+            "$ref": "#/components/responses/GatewayError401"
+          },
+          "403": {
+            "$ref": "#/components/responses/GatewayError403"
+          },
+          "404": {
+            "$ref": "#/components/responses/GatewayError404"
+          },
+          "409": {
+            "$ref": "#/components/responses/GatewayError409"
+          },
+          "412": {
+            "$ref": "#/components/responses/GatewayError412"
+          },
+          "428": {
+            "$ref": "#/components/responses/GatewayError428"
+          },
+          "429": {
+            "$ref": "#/components/responses/GatewayError429"
+          },
+          "502": {
+            "$ref": "#/components/responses/GatewayError502"
+          },
+          "503": {
+            "$ref": "#/components/responses/GatewayError503"
+          },
+          "504": {
+            "$ref": "#/components/responses/GatewayError504"
+          }
+        },
+        "security": [
+          {
+            "telnyxApiKey": []
+          }
+        ],
+        "summary": "List gateway token keys",
+        "tags": [
+          "AI Gateway"
+        ]
+      },
+      "post": {
+        "description": "Create gateway token key within the authenticated Telnyx account. Foreign and unknown resource IDs return the same 404 response. The token secret is returned only on the original create response. A replay returns metadata without the secret. Provisioning is advisory; ready is not a guarantee of inference availability.",
+        "operationId": "create_token_keys",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/ai-gateway-resources_IdempotencyKey"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "example": {
+                "max_parallel_requests": 5,
+                "name": "support-service",
+                "token_group_id": "11111111-1111-4111-8111-111111111111"
+              },
+              "schema": {
+                "$ref": "#/components/schemas/TokenKeyCreate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "data": {
+                    "allowed_models": null,
+                    "blocked": false,
+                    "budget_duration": "1d",
+                    "budget_started_at": null,
+                    "created_at": "2026-10-07T08:00:00Z",
+                    "expires_at": null,
+                    "id": "11111111-1111-4111-8111-111111111111",
+                    "max_budget": 1000,
+                    "max_parallel_requests": 5,
+                    "name": "support-backend",
+                    "provisioning": "ready",
+                    "record_type": "token_key",
+                    "required_end_user_id": false,
+                    "reserved_spend": 0,
+                    "resets_at": null,
+                    "rpm_limit": 6000,
+                    "spend": 0,
+                    "token_group_id": "11111111-1111-4111-8111-111111111111",
+                    "token_user_id": null,
+                    "tpm_limit": 10000000,
+                    "updated_at": "2026-10-07T08:00:00Z",
+                    "version": 1
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/TokenKeyResponse"
+                }
+              }
+            },
+            "description": "Idempotency replay: metadata only; lost create response requires revoke/new create.",
+            "headers": {
+              "Cache-Control": {
+                "description": "All API responses; application cache is server-side only.",
+                "schema": {
+                  "const": "no-store"
+                }
+              },
+              "ETag": {
+                "description": "Quoted integer resource version.",
+                "schema": {
+                  "maxLength": 256,
+                  "minLength": 1,
+                  "pattern": "^[^\\u0000-\\u001f\\u007f]+$",
+                  "type": "string"
+                }
+              },
+              "X-Request-ID": {
+                "description": "Server-generated correlation ID.",
+                "schema": {
+                  "format": "uuid",
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "201": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "data": {
+                    "allowed_models": null,
+                    "blocked": false,
+                    "budget_duration": "1d",
+                    "budget_started_at": null,
+                    "created_at": "2026-10-07T08:00:00Z",
+                    "expires_at": null,
+                    "id": "11111111-1111-4111-8111-111111111111",
+                    "max_budget": 1000,
+                    "max_parallel_requests": 5,
+                    "name": "support-backend",
+                    "provisioning": "ready",
+                    "record_type": "token_key",
+                    "required_end_user_id": false,
+                    "reserved_spend": 0,
+                    "resets_at": null,
+                    "rpm_limit": 6000,
+                    "spend": 0,
+                    "token": "ltg_sk_SYNTHETIC_EXAMPLE_NOT_A_VALID_CREDENTIAL",
+                    "token_group_id": "11111111-1111-4111-8111-111111111111",
+                    "token_user_id": null,
+                    "tpm_limit": 10000000,
+                    "updated_at": "2026-10-07T08:00:00Z",
+                    "version": 1
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/TokenKeyCreatedResponse"
+                }
+              }
+            },
+            "description": "OK",
+            "headers": {
+              "Cache-Control": {
+                "description": "All API responses; application cache is server-side only.",
+                "schema": {
+                  "const": "no-store"
+                }
+              },
+              "ETag": {
+                "description": "Quoted integer resource version.",
+                "schema": {
+                  "maxLength": 256,
+                  "minLength": 1,
+                  "pattern": "^[^\\u0000-\\u001f\\u007f]+$",
+                  "type": "string"
+                }
+              },
+              "X-Request-ID": {
+                "description": "Server-generated correlation ID.",
+                "schema": {
+                  "format": "uuid",
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/GatewayError400"
+          },
+          "401": {
+            "$ref": "#/components/responses/GatewayError401"
+          },
+          "403": {
+            "$ref": "#/components/responses/GatewayError403"
+          },
+          "404": {
+            "$ref": "#/components/responses/GatewayError404"
+          },
+          "409": {
+            "$ref": "#/components/responses/GatewayError409"
+          },
+          "412": {
+            "$ref": "#/components/responses/GatewayError412"
+          },
+          "428": {
+            "$ref": "#/components/responses/GatewayError428"
+          },
+          "429": {
+            "$ref": "#/components/responses/GatewayError429"
+          },
+          "502": {
+            "$ref": "#/components/responses/GatewayError502"
+          },
+          "503": {
+            "$ref": "#/components/responses/GatewayError503"
+          },
+          "504": {
+            "$ref": "#/components/responses/GatewayError504"
+          }
+        },
+        "security": [
+          {
+            "telnyxApiKey": []
+          }
+        ],
+        "summary": "Create gateway token key",
+        "tags": [
+          "AI Gateway"
+        ]
+      }
+    },
+    "/llm_token_gateway/token_keys/{id}": {
+      "delete": {
+        "description": "Revoke this token key. Acknowledged revocation blocks new admissions with the key; requests already admitted may complete. Historical usage attribution is retained. Other keys in the group are unchanged.",
+        "operationId": "delete_token_keys",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/ai-gateway-resources_IdempotencyKey"
+          },
+          {
+            "$ref": "#/components/parameters/IfMatch"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Deleted",
+            "headers": {
+              "Cache-Control": {
+                "description": "All API responses; application cache is server-side only.",
+                "schema": {
+                  "const": "no-store"
+                }
+              },
+              "X-Request-ID": {
+                "description": "Server-generated correlation ID.",
+                "schema": {
+                  "format": "uuid",
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/GatewayError400"
+          },
+          "401": {
+            "$ref": "#/components/responses/GatewayError401"
+          },
+          "403": {
+            "$ref": "#/components/responses/GatewayError403"
+          },
+          "404": {
+            "$ref": "#/components/responses/GatewayError404"
+          },
+          "409": {
+            "$ref": "#/components/responses/GatewayError409"
+          },
+          "412": {
+            "$ref": "#/components/responses/GatewayError412"
+          },
+          "428": {
+            "$ref": "#/components/responses/GatewayError428"
+          },
+          "429": {
+            "$ref": "#/components/responses/GatewayError429"
+          },
+          "502": {
+            "$ref": "#/components/responses/GatewayError502"
+          },
+          "503": {
+            "$ref": "#/components/responses/GatewayError503"
+          },
+          "504": {
+            "$ref": "#/components/responses/GatewayError504"
+          }
+        },
+        "security": [
+          {
+            "telnyxApiKey": []
+          }
+        ],
+        "summary": "Delete gateway token key",
+        "tags": [
+          "AI Gateway"
+        ]
+      },
+      "get": {
+        "description": "Get gateway token key within the authenticated Telnyx account. Foreign and unknown resource IDs return the same 404 response.",
+        "operationId": "get_token_keys",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "data": {
+                    "allowed_models": null,
+                    "blocked": false,
+                    "budget_duration": "1d",
+                    "budget_started_at": null,
+                    "created_at": "2026-10-07T08:00:00Z",
+                    "expires_at": null,
+                    "id": "11111111-1111-4111-8111-111111111111",
+                    "max_budget": 1000,
+                    "max_parallel_requests": 5,
+                    "name": "support-backend",
+                    "provisioning": "ready",
+                    "record_type": "token_key",
+                    "required_end_user_id": false,
+                    "reserved_spend": 0,
+                    "resets_at": null,
+                    "rpm_limit": 6000,
+                    "spend": 0,
+                    "token_group_id": "11111111-1111-4111-8111-111111111111",
+                    "token_user_id": null,
+                    "tpm_limit": 10000000,
+                    "updated_at": "2026-10-07T08:00:00Z",
+                    "version": 1
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/TokenKeyResponse"
+                }
+              }
+            },
+            "description": "OK",
+            "headers": {
+              "Cache-Control": {
+                "description": "All API responses; application cache is server-side only.",
+                "schema": {
+                  "const": "no-store"
+                }
+              },
+              "ETag": {
+                "description": "Quoted integer resource version.",
+                "schema": {
+                  "maxLength": 256,
+                  "minLength": 1,
+                  "pattern": "^[^\\u0000-\\u001f\\u007f]+$",
+                  "type": "string"
+                }
+              },
+              "X-Request-ID": {
+                "description": "Server-generated correlation ID.",
+                "schema": {
+                  "format": "uuid",
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/GatewayError400"
+          },
+          "401": {
+            "$ref": "#/components/responses/GatewayError401"
+          },
+          "403": {
+            "$ref": "#/components/responses/GatewayError403"
+          },
+          "404": {
+            "$ref": "#/components/responses/GatewayError404"
+          },
+          "409": {
+            "$ref": "#/components/responses/GatewayError409"
+          },
+          "412": {
+            "$ref": "#/components/responses/GatewayError412"
+          },
+          "428": {
+            "$ref": "#/components/responses/GatewayError428"
+          },
+          "429": {
+            "$ref": "#/components/responses/GatewayError429"
+          },
+          "502": {
+            "$ref": "#/components/responses/GatewayError502"
+          },
+          "503": {
+            "$ref": "#/components/responses/GatewayError503"
+          },
+          "504": {
+            "$ref": "#/components/responses/GatewayError504"
+          }
+        },
+        "security": [
+          {
+            "telnyxApiKey": []
+          }
+        ],
+        "summary": "Get gateway token key",
+        "tags": [
+          "AI Gateway"
+        ]
+      },
+      "parameters": [
+        {
+          "description": "",
+          "in": "path",
+          "name": "id",
+          "required": true,
+          "schema": {
+            "format": "uuid",
+            "type": "string"
+          }
+        }
+      ],
+      "patch": {
+        "description": "Update gateway token key within the authenticated Telnyx account. Foreign and unknown resource IDs return the same 404 response. Omitted fields are preserved. Null clears max_parallel_requests; null resets budget and rate limits to their maximum. A stale If-Match returns 412.",
+        "operationId": "patch_token_keys",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/ai-gateway-resources_IdempotencyKey"
+          },
+          {
+            "$ref": "#/components/parameters/IfMatch"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "example": {
+                "max_parallel_requests": 5
+              },
+              "schema": {
+                "$ref": "#/components/schemas/TokenKeyPatch"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "data": {
+                    "allowed_models": null,
+                    "blocked": false,
+                    "budget_duration": "1d",
+                    "budget_started_at": null,
+                    "created_at": "2026-10-07T08:00:00Z",
+                    "expires_at": null,
+                    "id": "11111111-1111-4111-8111-111111111111",
+                    "max_budget": 1000,
+                    "max_parallel_requests": 5,
+                    "name": "support-backend",
+                    "provisioning": "ready",
+                    "record_type": "token_key",
+                    "required_end_user_id": false,
+                    "reserved_spend": 0,
+                    "resets_at": null,
+                    "rpm_limit": 6000,
+                    "spend": 0,
+                    "token_group_id": "11111111-1111-4111-8111-111111111111",
+                    "token_user_id": null,
+                    "tpm_limit": 10000000,
+                    "updated_at": "2026-10-07T08:00:00Z",
+                    "version": 1
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/TokenKeyResponse"
+                }
+              }
+            },
+            "description": "OK",
+            "headers": {
+              "Cache-Control": {
+                "description": "All API responses; application cache is server-side only.",
+                "schema": {
+                  "const": "no-store"
+                }
+              },
+              "ETag": {
+                "description": "Quoted integer resource version.",
+                "schema": {
+                  "maxLength": 256,
+                  "minLength": 1,
+                  "pattern": "^[^\\u0000-\\u001f\\u007f]+$",
+                  "type": "string"
+                }
+              },
+              "X-Request-ID": {
+                "description": "Server-generated correlation ID.",
+                "schema": {
+                  "format": "uuid",
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/GatewayError400"
+          },
+          "401": {
+            "$ref": "#/components/responses/GatewayError401"
+          },
+          "403": {
+            "$ref": "#/components/responses/GatewayError403"
+          },
+          "404": {
+            "$ref": "#/components/responses/GatewayError404"
+          },
+          "409": {
+            "$ref": "#/components/responses/GatewayError409"
+          },
+          "412": {
+            "$ref": "#/components/responses/GatewayError412"
+          },
+          "428": {
+            "$ref": "#/components/responses/GatewayError428"
+          },
+          "429": {
+            "$ref": "#/components/responses/GatewayError429"
+          },
+          "502": {
+            "$ref": "#/components/responses/GatewayError502"
+          },
+          "503": {
+            "$ref": "#/components/responses/GatewayError503"
+          },
+          "504": {
+            "$ref": "#/components/responses/GatewayError504"
+          }
+        },
+        "security": [
+          {
+            "telnyxApiKey": []
+          }
+        ],
+        "summary": "Update gateway token key",
+        "tags": [
+          "AI Gateway"
+        ]
+      }
+    },
+    "/llm_token_gateway/usage/export": {
+      "get": {
+        "description": "Durable, replayable, content-free usage export for customer pipelines. Requires the dedicated llm_token_gateway.usage_export.read V2 action; spend.read and usage.read do not grant it. Records are inference.request (one per immutable ledger revision; a correction adds a new id with supersedes, keep the highest revision per request_id) and guardrail.evaluation (one per guardrail event, including blocked prompts with no inference record; correlate on request_id). Delivery is at least once in commit order: deduplicate on id. Records appear after settlement and after every older database transaction has finished (meta.horizon_lag_seconds); keep polling with next_cursor, which is always returned and is reusable after has_more is false. After a logical database restore, restart from start_time and deduplicate on id; a cursor from before it may return 409 cursor_expired (no Retry-After). Retention promise 30 days. No prompts, responses, provider credentials, supplier or customer rates. Gateway reference/enforcement usage, not invoice truth or BYOK provider charges.",
+        "operationId": "exportGatewayUsage",
+        "parameters": [
+          {
+            "description": "",
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "schema": {
+              "default": 500,
+              "maximum": 1000,
+              "minimum": 1,
+              "type": "integer"
+            }
+          },
+          {
+            "description": "Opaque next_cursor from a previous page; not combinable with start_time. Bound to the requested types; the account always comes from the credential.",
+            "in": "query",
+            "name": "cursor",
+            "required": false,
+            "schema": {
+              "maxLength": 512,
+              "minLength": 1,
+              "pattern": "^[A-Za-z0-9_-]+$",
+              "type": "string"
+            }
+          },
+          {
+            "description": "First page only: RFC 3339 with offset, at most 30 days ago and not in the future; default now - 24h.",
+            "in": "query",
+            "name": "start_time",
+            "required": false,
+            "schema": {
+              "format": "date-time",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Comma-separated subset of inference.request,guardrail.evaluation; default both.",
+            "in": "query",
+            "name": "types",
+            "required": false,
+            "schema": {
+              "pattern": "^[a-z.]+(,[a-z.]+)?$",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "data": [],
+                  "meta": {
+                    "has_more": false,
+                    "horizon_lag_seconds": 0,
+                    "next_cursor": "synthetic_cursor"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/UsageExportPage"
+                }
+              }
+            },
+            "description": "OK",
+            "headers": {
+              "Cache-Control": {
+                "description": "All API responses; application cache is server-side only.",
+                "schema": {
+                  "const": "no-store"
+                }
+              },
+              "X-Request-ID": {
+                "description": "Server-generated correlation ID.",
+                "schema": {
+                  "format": "uuid",
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/ai-gateway_GatewayError400"
+          },
+          "401": {
+            "$ref": "#/components/responses/GatewayError401"
+          },
+          "403": {
+            "$ref": "#/components/responses/GatewayError403"
+          },
+          "404": {
+            "$ref": "#/components/responses/GatewayError404"
+          },
+          "409": {
+            "$ref": "#/components/responses/GatewayError40911"
+          },
+          "412": {
+            "$ref": "#/components/responses/GatewayError412"
+          },
+          "428": {
+            "$ref": "#/components/responses/GatewayError428"
+          },
+          "429": {
+            "$ref": "#/components/responses/GatewayError429"
+          },
+          "502": {
+            "$ref": "#/components/responses/GatewayError502"
+          },
+          "503": {
+            "$ref": "#/components/responses/UsageExportUnavailable"
+          },
+          "504": {
+            "$ref": "#/components/responses/GatewayError504"
+          }
+        },
+        "security": [
+          {
+            "telnyxApiKey": []
+          }
+        ],
+        "summary": "Export gateway usage",
+        "tags": [
+          "AI Gateway"
+        ]
+      }
+    },
+    "/llm_token_gateway/usage/summary": {
+      "get": {
+        "description": "Gateway reference/enforcement usage, not invoice truth or BYOK provider charges. Requires the dedicated llm_token_gateway.usage.read V2 action for combined spend and guardrail reporting; existing spend.read and guardrail_events.read grants do not grant this endpoint. All totals, UTC daily buckets, models and latest 20 guardrail events share one database snapshot. UTC half-open dates, at most 31 days. Zero-filled days; at most 1000 models (503 rather than truncation on overflow/timeout). Known tokens sum independently known categories across latest attempt evidence, including corrections; unknown spend is excluded and unknown_requests/reserved_spend remain explicit. Guardrail counts count events, not distinct requests. No raw spend events, prompts or secrets. This read-only report creates no pagination snapshot and accepts no pagination parameters.",
+        "operationId": "gateway_usage_summary",
+        "parameters": [
+          {
+            "description": "",
+            "in": "query",
+            "name": "token_group_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "description": "",
+            "in": "query",
+            "name": "start_date",
+            "required": true,
+            "schema": {
+              "format": "date",
+              "type": "string"
+            }
+          },
+          {
+            "description": "",
+            "in": "query",
+            "name": "end_date",
+            "required": true,
+            "schema": {
+              "format": "date",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Request tag filters as metadata[\u003ckey\u003e]=\u003cvalue\u003e, at most 5, combined with AND. A value matches the tag's text form exactly (booleans as true/false, integers in decimal), so metadata[flag]=true matches both boolean true and the string \"true\". Keys are case-sensitive; reserved-prefix keys are rejected. Unindexed: bounded by the account, the date range and the report timeout.",
+            "explode": true,
+            "in": "query",
+            "name": "metadata",
+            "required": false,
+            "schema": {
+              "additionalProperties": {
+                "maxLength": 256,
+                "minLength": 1,
+                "pattern": "^[^\\u0000-\\u001f\\u007f]+$",
+                "type": "string"
+              },
+              "maxProperties": 5,
+              "propertyNames": {
+                "pattern": "^[A-Za-z0-9][A-Za-z0-9_.-]{0,63}$"
+              },
+              "type": "object"
+            },
+            "style": "deepObject"
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "data": {
+                    "by_day": [
+                      {
+                        "cache_hits": 0,
+                        "date": "2026-09-01",
+                        "failed_requests": 0,
+                        "input_tokens": 120,
+                        "output_tokens": 30,
+                        "partial_requests": 0,
+                        "requests": 2,
+                        "reserved_spend": 0.01,
+                        "spend": 0.00045,
+                        "succeeded_requests": 1,
+                        "unknown_requests": 1
+                      }
+                    ],
+                    "by_model": [
+                      {
+                        "cache_hits": 0,
+                        "failed_requests": 0,
+                        "input_tokens": 120,
+                        "model": "Qwen/Qwen3-235B-A22B",
+                        "output_tokens": 30,
+                        "partial_requests": 0,
+                        "requests": 2,
+                        "reserved_spend": 0.01,
+                        "spend": 0.00045,
+                        "succeeded_requests": 1,
+                        "unknown_requests": 1
+                      }
+                    ],
+                    "guardrails": {
+                      "blocked_events": 0,
+                      "flagged_events": 0,
+                      "recent_events": []
+                    },
+                    "totals": {
+                      "cache_hits": 0,
+                      "failed_requests": 0,
+                      "input_tokens": 120,
+                      "output_tokens": 30,
+                      "partial_requests": 0,
+                      "requests": 2,
+                      "reserved_spend": 0.01,
+                      "spend": 0.00045,
+                      "succeeded_requests": 1,
+                      "unknown_requests": 1
+                    }
+                  },
+                  "meta": {
+                    "end_date": "2026-09-02",
+                    "metadata": {},
+                    "start_date": "2026-09-01",
+                    "token_group_id": "11111111-1111-4111-8111-111111111111"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/GatewayUsage"
+                }
+              }
+            },
+            "description": "OK",
+            "headers": {
+              "Cache-Control": {
+                "description": "All API responses; application cache is server-side only.",
+                "schema": {
+                  "const": "no-store"
+                }
+              },
+              "X-Request-ID": {
+                "description": "Server-generated correlation ID.",
+                "schema": {
+                  "format": "uuid",
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/ai-gateway_GatewayError400"
+          },
+          "401": {
+            "$ref": "#/components/responses/GatewayError401"
+          },
+          "403": {
+            "$ref": "#/components/responses/GatewayError403"
+          },
+          "404": {
+            "$ref": "#/components/responses/GatewayError404"
+          },
+          "409": {
+            "$ref": "#/components/responses/GatewayError409"
+          },
+          "412": {
+            "$ref": "#/components/responses/GatewayError412"
+          },
+          "428": {
+            "$ref": "#/components/responses/GatewayError428"
+          },
+          "429": {
+            "$ref": "#/components/responses/GatewayError429"
+          },
+          "502": {
+            "$ref": "#/components/responses/GatewayError502"
+          },
+          "503": {
+            "$ref": "#/components/responses/UsageSummaryUnavailable"
+          },
+          "504": {
+            "$ref": "#/components/responses/GatewayError504"
+          }
+        },
+        "security": [
+          {
+            "telnyxApiKey": []
+          }
+        ],
+        "summary": "Get gateway usage summary",
+        "tags": [
+          "AI Gateway"
+        ]
+      }
+    }
+  },
+  "security": [
+    {
+      "bearerAuth": []
+    }
+  ],
+  "servers": [
+    {
+      "description": "Version 2.0.0 of the Telnyx API",
+      "url": "https://api.telnyx.com/v2"
+    }
+  ]
+}

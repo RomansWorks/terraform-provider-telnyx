@@ -1,0 +1,1203 @@
+{
+  "components": {
+    "schemas": {
+      "AcceptedIngest": {
+        "properties": {
+          "operation_id": {
+            "title": "Operation Id",
+            "type": "string"
+          },
+          "profile_id": {
+            "title": "Profile Id",
+            "type": "string"
+          },
+          "session_id": {
+            "title": "Session Id",
+            "type": "string"
+          },
+          "source_id": {
+            "description": "Identifies one source within its profile: an ingested session, or one remembered fact. Returned by `ingest` and `remember` when the write is accepted. Re-ingesting a session keeps its source id.",
+            "title": "Source Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "operation_id",
+          "profile_id",
+          "session_id",
+          "source_id"
+        ],
+        "title": "AcceptedIngest",
+        "type": "object"
+      },
+      "AcceptedMemory": {
+        "properties": {
+          "operation_id": {
+            "title": "Operation Id",
+            "type": "string"
+          },
+          "profile_id": {
+            "title": "Profile Id",
+            "type": "string"
+          },
+          "source_id": {
+            "description": "Identifies one source within its profile: an ingested session, or one remembered fact. Returned by `ingest` and `remember` when the write is accepted. Re-ingesting a session keeps its source id.",
+            "title": "Source Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "operation_id",
+          "profile_id",
+          "source_id"
+        ],
+        "title": "AcceptedMemory",
+        "type": "object"
+      },
+      "IngestPayload": {
+        "anyOf": [
+          {
+            "additionalProperties": true,
+            "type": "object"
+          },
+          {
+            "type": [
+              "array",
+              "string",
+              "number",
+              "boolean"
+            ]
+          }
+        ],
+        "description": "The session's messages, in whatever shape your framework produces. Any JSON value but null is accepted and stored whole, as long as it holds something to remember: a body with no content anywhere in it -- `{}`, `[]`, `\"\"`, `{\"messages\": []}` -- is a 422.",
+        "title": "Payload"
+      },
+      "IngestResponse": {
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/AcceptedIngest"
+          }
+        },
+        "required": [
+          "data"
+        ],
+        "title": "IngestResponse",
+        "type": "object"
+      },
+      "PreviewSummaryRequest": {
+        "description": "A candidate note to preview against one profile. The field is optional; omitting it, or sending null/empty/whitespace, previews the neutral default.",
+        "properties": {
+          "instructions": {
+            "anyOf": [
+              {
+                "maxLength": 2000,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "The candidate note to try. `null`, empty, or whitespace-only previews the neutral default -- the summary a profile returns to when instructions are cleared. Capped at 2000 characters, the same cap `PATCH /settings` applies on save; a longer note is refused with `422` before anything is generated.",
+            "title": "Instructions"
+          }
+        },
+        "title": "PreviewSummaryRequest",
+        "type": "object"
+      },
+      "PreviewSummaryResponse": {
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/PreviewedSummary"
+          }
+        },
+        "required": [
+          "data"
+        ],
+        "title": "PreviewSummaryResponse",
+        "type": "object"
+      },
+      "PreviewedSummary": {
+        "properties": {
+          "profile_id": {
+            "title": "Profile Id",
+            "type": "string"
+          },
+          "text": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "The summary this profile would carry under the candidate note. Null when nothing was generated -- the same signal `GET /summary` uses for a profile with no card yet.",
+            "title": "Text"
+          }
+        },
+        "required": [
+          "profile_id",
+          "text"
+        ],
+        "title": "PreviewedSummary",
+        "type": "object"
+      },
+      "ProfileSummary": {
+        "properties": {
+          "generated_at": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "When the summary was last generated. Null while none is ready.",
+            "title": "Generated At"
+          },
+          "is_stale": {
+            "description": "Whether newer memories have arrived since the summary was generated. The summary is regenerated in the background, so a true here is ordinary and the summary is still usable.",
+            "title": "Is Stale",
+            "type": "boolean"
+          },
+          "profile_id": {
+            "title": "Profile Id",
+            "type": "string"
+          },
+          "text": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "The precomputed summary, ready to place in an assistant's context at the start of a session.",
+            "title": "Text"
+          }
+        },
+        "required": [
+          "profile_id",
+          "is_stale"
+        ],
+        "title": "ProfileSummary",
+        "type": "object"
+      },
+      "RecallRequest": {
+        "properties": {
+          "query": {
+            "maxLength": 4096,
+            "minLength": 1,
+            "title": "Query",
+            "type": "string"
+          },
+          "top_k": {
+            "anyOf": [
+              {
+                "maximum": 100,
+                "minimum": 1,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Top K"
+          }
+        },
+        "required": [
+          "query"
+        ],
+        "title": "RecallRequest",
+        "type": "object"
+      },
+      "RecallResponse": {
+        "properties": {
+          "data": {
+            "items": {
+              "$ref": "#/components/schemas/RecalledMemory"
+            },
+            "title": "Data",
+            "type": "array"
+          }
+        },
+        "required": [
+          "data"
+        ],
+        "title": "RecallResponse",
+        "type": "object"
+      },
+      "RecalledMemory": {
+        "properties": {
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "recorded_at": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Recorded At"
+          },
+          "score": {
+            "anyOf": [
+              {
+                "maximum": 1,
+                "minimum": 0,
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Relevance, 0-1. Null where the deployment's reranker is a passthrough; results are in rank order either way.",
+            "title": "Score"
+          },
+          "text": {
+            "title": "Text",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "text"
+        ],
+        "title": "RecalledMemory",
+        "type": "object"
+      },
+      "RememberRequest": {
+        "properties": {
+          "text": {
+            "minLength": 1,
+            "title": "Text",
+            "type": "string"
+          }
+        },
+        "required": [
+          "text"
+        ],
+        "title": "RememberRequest",
+        "type": "object"
+      },
+      "RememberResponse": {
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/AcceptedMemory"
+          }
+        },
+        "required": [
+          "data"
+        ],
+        "title": "RememberResponse",
+        "type": "object"
+      },
+      "SummaryResponse": {
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/ProfileSummary"
+          }
+        },
+        "required": [
+          "data"
+        ],
+        "title": "SummaryResponse",
+        "type": "object"
+      },
+      "TelnyxError": {
+        "properties": {
+          "code": {
+            "type": "string"
+          },
+          "detail": {
+            "type": "string"
+          },
+          "meta": {
+            "properties": {
+              "url": {
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
+          "source": {
+            "properties": {
+              "pointer": {
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
+          "title": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "TelnyxErrors": {
+        "properties": {
+          "errors": {
+            "items": {
+              "$ref": "#/components/schemas/TelnyxError"
+            },
+            "type": "array"
+          }
+        },
+        "type": "object"
+      }
+    },
+    "securitySchemes": {
+      "BearerAuth": {
+        "bearerFormat": "API key",
+        "description": "Telnyx API key supplied as `Authorization: Bearer \u003ctoken\u003e`. In production, auth may be validated by the API gateway and forwarded via Telnyx auth headers.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "Payment": {
+        "description": "Machine Payment Protocol credential used on paid retries, sent as `Authorization: Payment ...`. Obtained by paying a challenge returned in the `WWW-Authenticate` header of a 402 response. This is not a Telnyx API key; initial challenge requests use standard bearer authentication instead.",
+        "in": "header",
+        "name": "Authorization",
+        "type": "apiKey"
+      },
+      "agent-memory_bearerAuth": {
+        "description": "Telnyx API key",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "bearerAuth": {
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "branded-calling_bearerAuth": {
+        "description": "Telnyx API key. Generate one at https://portal.telnyx.com/#/app/api-keys.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "collections_bearerAuth": {
+        "description": "Telnyx API key. Collections and results are automatically scoped to the authenticated user's organization.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "number-reputation_bearerAuth": {
+        "description": "Telnyx API key. Generate one at https://portal.telnyx.com/#/app/api-keys.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "oauthClientAuth": {
+        "description": "OAuth 2.0 authentication for Telnyx API and MCP integrations",
+        "flows": {
+          "authorizationCode": {
+            "authorizationUrl": "https://api.telnyx.com/v2/oauth/authorize",
+            "refreshUrl": "https://api.telnyx.com/v2/oauth/token",
+            "scopes": {
+              "admin": "Administrative access to Telnyx resources"
+            },
+            "tokenUrl": "https://api.telnyx.com/v2/oauth/token"
+          },
+          "clientCredentials": {
+            "scopes": {
+              "admin": "Administrative access to Telnyx resources"
+            },
+            "tokenUrl": "https://api.telnyx.com/v2/oauth/token"
+          }
+        },
+        "type": "oauth2"
+      },
+      "outbound-voice-profiles_bearerAuth": {
+        "bearerFormat": "JWT",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "pay-connectors_bearerAuth": {
+        "description": "Telnyx API key, not the processor bearer token.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "pronunciation-dicts_bearerAuth": {
+        "description": "Telnyx API v2 key. Obtain from https://portal.telnyx.com",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "rcs-registration_bearerAuth": {
+        "bearerFormat": "API key",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "stored-payment-transactions_bearerAuth": {
+        "bearerFormat": "JWT",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "telnyxApiKey": {
+        "description": "Management-only Telnyx account credential.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "transcriptions-search_bearerAuth": {
+        "description": "Telnyx API key. Results are automatically scoped to the authenticated user's organization.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "web-search_bearerAuth": {
+        "description": "Telnyx API key",
+        "scheme": "bearer",
+        "type": "http"
+      }
+    }
+  },
+  "info": {
+    "contact": {
+      "email": "support@telnyx.com"
+    },
+    "description": "SIP trunking, SMS, MMS, Call Control and Telephony Data Services.",
+    "title": "Telnyx API",
+    "version": "2.0.0",
+    "x-endpoint-cost": "light",
+    "x-latency-category": "responsive"
+  },
+  "openapi": "3.1.0",
+  "paths": {
+    "/ai/memory/namespaces/{namespace}/profiles/{profile_id}/ingest": {
+      "post": {
+        "description": "Store a session. Facts are extracted from whatever you send — the body is taken as any JSON value and stored whole, so a framework's own transcript shape works unchanged. `messages` of `role`/`content` is the conventional shape, not a requirement. An empty object or a null body is refused. Carry a `session_id` to name the session: re-ingesting the same one replaces what it held. Omit it and a session is opened and returned. Extraction runs asynchronously — poll the returned operation.",
+        "operationId": "IngestSession",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "profile_id",
+            "required": true,
+            "schema": {
+              "title": "Profile Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "namespace",
+            "required": true,
+            "schema": {
+              "title": "Namespace",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Names the session. Re-ingesting the same session replaces what it held and keeps its `source_id`. Omit it to have one derived from the content and returned. No whitespace, control characters, or any of / \\ # ? %.",
+            "in": "query",
+            "name": "session_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 128,
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Names the session. Re-ingesting the same session replaces what it held and keeps its `source_id`. Omit it to have one derived from the content and returned. No whitespace, control characters, or any of / \\ # ? %.",
+              "title": "Session Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "examples": {
+                "new_session": {
+                  "summary": "A new session, opened for you",
+                  "value": {
+                    "messages": [
+                      {
+                        "content": "I prefer email.",
+                        "role": "user"
+                      }
+                    ]
+                  }
+                },
+                "session": {
+                  "summary": "A session you name",
+                  "value": {
+                    "messages": [
+                      {
+                        "content": "Invoices go to 220 W Chicago Ave now.",
+                        "role": "user"
+                      },
+                      {
+                        "content": "Got it.",
+                        "role": "assistant"
+                      }
+                    ]
+                  }
+                }
+              },
+              "schema": {
+                "$ref": "#/components/schemas/IngestPayload"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "202": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "data": {
+                    "operation_id": "op_01HZY4M7Q9",
+                    "profile_id": "caller:+13128675309",
+                    "session_id": "conv_8901",
+                    "source_id": "b1e6c0a2-4f3d-4a2e-9c7b-8e1f2a3b4c5d"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/IngestResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "errors": [
+                    {
+                      "code": "10009",
+                      "detail": "Could not find any usable credentials in the request.",
+                      "meta": {
+                        "url": "https://developers.telnyx.com/docs/overview/errors/10009"
+                      },
+                      "source": {
+                        "pointer": "/"
+                      },
+                      "title": "Authentication failed"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/TelnyxErrors"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "errors": [
+                    {
+                      "code": "namespace_not_found",
+                      "detail": "no such namespace"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/TelnyxErrors"
+                }
+              }
+            },
+            "description": "The namespace does not exist"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "errors": [
+                    {
+                      "code": "empty_payload",
+                      "detail": "payload must carry something to remember"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/TelnyxErrors"
+                }
+              }
+            },
+            "description": "Invalid request"
+          },
+          "502": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "errors": [
+                    {
+                      "code": "upstream_error",
+                      "detail": "the memory dataplane is unavailable"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/TelnyxErrors"
+                }
+              }
+            },
+            "description": "Upstream error"
+          }
+        },
+        "summary": "Ingest a session's messages into a profile",
+        "tags": [
+          "Memory"
+        ]
+      }
+    },
+    "/ai/memory/namespaces/{namespace}/profiles/{profile_id}/recall": {
+      "post": {
+        "description": "Ranked memories for a question. Matching runs over the profile's memories and returns them in rank order with a relevance `score`; the score is null where the deployment's reranker is a passthrough, in which case order is the only signal. No model runs in this path — recall returns facts, it does not compose an answer.",
+        "operationId": "RecallMemories",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "profile_id",
+            "required": true,
+            "schema": {
+              "title": "Profile Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "namespace",
+            "required": true,
+            "schema": {
+              "title": "Namespace",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "example": {
+                "query": "where do invoices go?",
+                "top_k": 5
+              },
+              "schema": {
+                "$ref": "#/components/schemas/RecallRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "data": [
+                    {
+                      "id": "mem_01HZY4",
+                      "recorded_at": "2026-08-26T21:14:11Z",
+                      "score": 0.82,
+                      "text": "Invoices go to 220 W Chicago Ave."
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/RecallResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "errors": [
+                    {
+                      "code": "10009",
+                      "detail": "Could not find any usable credentials in the request.",
+                      "meta": {
+                        "url": "https://developers.telnyx.com/docs/overview/errors/10009"
+                      },
+                      "source": {
+                        "pointer": "/"
+                      },
+                      "title": "Authentication failed"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/TelnyxErrors"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "errors": [
+                    {
+                      "code": "namespace_not_found",
+                      "detail": "no such namespace"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/TelnyxErrors"
+                }
+              }
+            },
+            "description": "The namespace does not exist"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "errors": [
+                    {
+                      "code": "invalid_request",
+                      "detail": "body.query: String should have at least 1 character"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/TelnyxErrors"
+                }
+              }
+            },
+            "description": "Invalid request"
+          },
+          "502": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "errors": [
+                    {
+                      "code": "upstream_error",
+                      "detail": "the memory dataplane is unavailable"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/TelnyxErrors"
+                }
+              }
+            },
+            "description": "Upstream error"
+          }
+        },
+        "summary": "Recall a profile's memories, ranked",
+        "tags": [
+          "Memory"
+        ]
+      }
+    },
+    "/ai/memory/namespaces/{namespace}/profiles/{profile_id}/remember": {
+      "post": {
+        "description": "For a fact the agent has already distilled: `text` is stored as given, with nothing extracted from it. Send a transcript to `ingest` instead. Remembering the same text again writes the same memory rather than a second copy of it, so a retry is safe. The write runs asynchronously -- poll the returned operation.",
+        "operationId": "RememberFact",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "profile_id",
+            "required": true,
+            "schema": {
+              "title": "Profile Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "namespace",
+            "required": true,
+            "schema": {
+              "title": "Namespace",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "example": {
+                "text": "Prefers window seats and flies out of ORD"
+              },
+              "schema": {
+                "$ref": "#/components/schemas/RememberRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "202": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "data": {
+                    "operation_id": "op_01HZY4M7Q9",
+                    "profile_id": "caller:+13128675309",
+                    "source_id": "9af23d17-2b6c-4d8e-a1f0-3c4b5d6e7f80"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/RememberResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "errors": [
+                    {
+                      "code": "10009",
+                      "detail": "Could not find any usable credentials in the request.",
+                      "meta": {
+                        "url": "https://developers.telnyx.com/docs/overview/errors/10009"
+                      },
+                      "source": {
+                        "pointer": "/"
+                      },
+                      "title": "Authentication failed"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/TelnyxErrors"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "errors": [
+                    {
+                      "code": "namespace_not_found",
+                      "detail": "no such namespace"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/TelnyxErrors"
+                }
+              }
+            },
+            "description": "The namespace does not exist"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "errors": [
+                    {
+                      "code": "invalid_request",
+                      "detail": "body.text: String should have at least 1 character"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/TelnyxErrors"
+                }
+              }
+            },
+            "description": "Invalid request"
+          },
+          "502": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "errors": [
+                    {
+                      "code": "upstream_error",
+                      "detail": "the memory dataplane is unavailable"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/TelnyxErrors"
+                }
+              }
+            },
+            "description": "Upstream error"
+          }
+        },
+        "summary": "Remember one fact, stored as written",
+        "tags": [
+          "Memory"
+        ]
+      }
+    },
+    "/ai/memory/namespaces/{namespace}/profiles/{profile_id}/summary": {
+      "get": {
+        "description": "The whole profile as one card, precomputed, with no query. Built for the start of a session, where there is no question to ask yet.\n\nA summary is generated in the background. `is_stale` tells you newer memories have arrived since it was written; that is ordinary and the card is still usable.",
+        "operationId": "GetProfileSummary",
+        "parameters": [
+          {
+            "description": "The namespace. `default` exists for every organization.",
+            "in": "path",
+            "name": "namespace",
+            "required": true,
+            "schema": {
+              "description": "The namespace. `default` exists for every organization.",
+              "type": "string"
+            }
+          },
+          {
+            "description": "The profile: your identifier for the user, caller or agent this memory is about.",
+            "in": "path",
+            "name": "profile_id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "data": {
+                    "generated_at": "2026-09-18T18:32:17.501833+00:00",
+                    "is_stale": false,
+                    "profile_id": "user-42",
+                    "text": "## Profile Summary\n\n- Prefers Slack over email.\n- Timezone: US Central."
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/SummaryResponse"
+                }
+              }
+            },
+            "description": "The profile's summary"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "errors": [
+                    {
+                      "code": "10009",
+                      "detail": "Could not find any usable credentials in the request.",
+                      "meta": {
+                        "url": "https://developers.telnyx.com/docs/overview/errors/10009"
+                      },
+                      "source": {
+                        "pointer": "/"
+                      },
+                      "title": "Authentication failed"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/TelnyxErrors"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "errors": [
+                    {
+                      "code": "namespace_not_found",
+                      "detail": "no such namespace"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/TelnyxErrors"
+                }
+              }
+            },
+            "description": "The namespace does not exist"
+          },
+          "502": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "errors": [
+                    {
+                      "code": "upstream_error",
+                      "detail": "the memory dataplane is unavailable"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/TelnyxErrors"
+                }
+              }
+            },
+            "description": "Upstream error"
+          }
+        },
+        "summary": "Get a profile's precomputed summary",
+        "tags": [
+          "Memory"
+        ]
+      }
+    },
+    "/ai/memory/namespaces/{namespace}/profiles/{profile_id}/summary/preview": {
+      "post": {
+        "description": "Try a candidate note on one profile and see how that profile's summary would read under it, without saving the note and without touching the stored summary. Composes the same source query the apply path (`PATCH /ai/memory/namespaces/{namespace}/settings`) would use, so a preview cannot drift from what saving the note would produce. Reads the candidate alone -- the namespace's current instructions and the profile's stored summary are neither read nor replaced. Bounded at 120 seconds: the summary is generated on the spot rather than read from a stored one. Nothing about the request is stored.",
+        "operationId": "PreviewSummaryInstructions",
+        "parameters": [
+          {
+            "description": "The namespace. `default` exists for every organization.",
+            "in": "path",
+            "name": "namespace",
+            "required": true,
+            "schema": {
+              "description": "The namespace. `default` exists for every organization.",
+              "type": "string"
+            }
+          },
+          {
+            "description": "The profile: your identifier for the user, caller or agent this memory is about.",
+            "in": "path",
+            "name": "profile_id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "example": {
+                "instructions": "Lead with billing status. Prefer plain language over jargon."
+              },
+              "schema": {
+                "$ref": "#/components/schemas/PreviewSummaryRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "data": {
+                    "profile_id": "user-42",
+                    "text": "## Profile Summary\n\n- Billing: current, autopay on.\n- Prefers Slack over email."
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/PreviewSummaryResponse"
+                }
+              }
+            },
+            "description": "The summary this profile would carry under the candidate note. `data.text` is `null` when nothing was generated -- the same signal `GET /summary` uses for a profile with no card yet."
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "errors": [
+                    {
+                      "code": "10009",
+                      "detail": "Could not find any usable credentials in the request.",
+                      "meta": {
+                        "url": "https://developers.telnyx.com/docs/overview/errors/10009"
+                      },
+                      "source": {
+                        "pointer": "/"
+                      },
+                      "title": "Authentication failed"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/TelnyxErrors"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "errors": [
+                    {
+                      "code": "namespace_not_found",
+                      "detail": "no such namespace"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/TelnyxErrors"
+                }
+              }
+            },
+            "description": "The namespace does not exist"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "errors": [
+                    {
+                      "code": "invalid_instructions",
+                      "detail": "instructions must be at most 2000 characters"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/TelnyxErrors"
+                }
+              }
+            },
+            "description": "The candidate note is longer than the 2000-character cap -- refused before anything is generated. The cap is the one `PATCH /settings` applies on save."
+          },
+          "502": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "errors": [
+                    {
+                      "code": "upstream_error",
+                      "detail": "the memory dataplane is unavailable"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/TelnyxErrors"
+                }
+              }
+            },
+            "description": "Upstream error"
+          }
+        },
+        "summary": "Preview a candidate note before saving it",
+        "tags": [
+          "Memory"
+        ]
+      }
+    }
+  },
+  "security": [
+    {
+      "bearerAuth": []
+    }
+  ],
+  "servers": [
+    {
+      "description": "Version 2.0.0 of the Telnyx API",
+      "url": "https://api.telnyx.com/v2"
+    }
+  ]
+}

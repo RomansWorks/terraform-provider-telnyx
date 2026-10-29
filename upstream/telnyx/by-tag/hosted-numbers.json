@@ -1,0 +1,1066 @@
+{
+  "components": {
+    "parameters": {
+      "PageConsolidated": {
+        "description": "Consolidated page parameter (deepObject style). Originally: page[number], page[size]",
+        "explode": true,
+        "in": "query",
+        "name": "page",
+        "schema": {
+          "properties": {
+            "number": {
+              "default": 1,
+              "description": "The page number to load",
+              "minimum": 1,
+              "type": "integer"
+            },
+            "size": {
+              "default": 20,
+              "description": "The size of the page",
+              "maximum": 250,
+              "minimum": 1,
+              "type": "integer"
+            }
+          },
+          "type": "object"
+        },
+        "style": "deepObject"
+      }
+    },
+    "responses": {
+      "messaging_GenericErrorResponse_0b38e7044b": {
+        "content": {
+          "application/json": {
+            "example": {
+              "errors": [
+                {
+                  "code": "string",
+                  "detail": "string",
+                  "source": {
+                    "parameter": "string",
+                    "pointer": "/data/attributes/phone_number"
+                  },
+                  "title": "string"
+                }
+              ]
+            },
+            "schema": {
+              "$ref": "#/components/schemas/messaging_Errors_0b38e7044b"
+            }
+          }
+        },
+        "description": "Unexpected error"
+      }
+    },
+    "schemas": {
+      "CreateMessagingHostedNumberOrderRequest": {
+        "example": {
+          "messaging_profile_id": "dc8f39ac-953d-4520-b93b-786ae87db0da",
+          "phone_numbers": [
+            "+18665550001",
+            "+18665550002"
+          ]
+        },
+        "properties": {
+          "messaging_profile_id": {
+            "description": "Automatically associate the number with this messaging profile ID when the order is complete.",
+            "type": "string"
+          },
+          "phone_numbers": {
+            "description": "Phone numbers to be used for hosted messaging.",
+            "items": {
+              "type": "string",
+              "x-format": "+E.164"
+            },
+            "type": "array"
+          }
+        },
+        "type": "object"
+      },
+      "CreatedVerificationCodesResponse": {
+        "properties": {
+          "data": {
+            "items": {
+              "description": "Verification code result response",
+              "properties": {
+                "error": {
+                  "description": "Error message describing why the verification code creation failed",
+                  "type": "string"
+                },
+                "phone_number": {
+                  "description": "Phone number for which the verification code was created",
+                  "type": "string",
+                  "x-format": "+E.164"
+                },
+                "type": {
+                  "description": "Type of verification method used",
+                  "enum": [
+                    "sms",
+                    "call"
+                  ],
+                  "type": "string"
+                },
+                "verification_code_id": {
+                  "description": "Unique identifier for the verification code",
+                  "format": "uuid",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "phone_number"
+              ],
+              "title": "VerificationCodeResult",
+              "type": "object"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "data"
+        ],
+        "type": "object"
+      },
+      "EligibilityNumberResponse": {
+        "properties": {
+          "detail": {
+            "description": "Detailed information about the eligibility status.",
+            "type": "string"
+          },
+          "eligible": {
+            "description": "Whether the phone number is eligible for hosted messaging.",
+            "type": "boolean"
+          },
+          "eligible_status": {
+            "description": "The eligibility status of the phone number.",
+            "enum": [
+              "NUMBER_CAN_NOT_BE_REPEATED",
+              "NUMBER_CAN_NOT_BE_VALIDATED",
+              "NUMBER_CAN_NOT_BE_WIRELESS",
+              "NUMBER_CAN_NOT_BE_ACTIVE_IN_YOUR_ACCOUNT",
+              "NUMBER_CAN_NOT_HOSTED_WITH_A_TELNYX_SUBSCRIBER",
+              "NUMBER_CAN_NOT_BE_IN_TELNYX",
+              "NUMBER_IS_NOT_A_US_NUMBER",
+              "NUMBER_IS_NOT_A_VALID_ROUTING_NUMBER",
+              "NUMBER_IS_NOT_IN_E164_FORMAT",
+              "BILLING_ACCOUNT_CHECK_FAILED",
+              "BILLING_ACCOUNT_IS_ABOLISHED",
+              "ELIGIBLE"
+            ],
+            "type": "string"
+          },
+          "phone_number": {
+            "description": "The phone number in e164 format.",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "EligibilityNumbersRequest": {
+        "properties": {
+          "phone_numbers": {
+            "description": "List of phone numbers to check eligibility",
+            "items": {
+              "description": "Phone number to check eligibility",
+              "type": "string",
+              "x-format": "+E.164"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "phone_numbers"
+        ],
+        "type": "object"
+      },
+      "EligibilityNumbersResponse": {
+        "properties": {
+          "phone_numbers": {
+            "description": "List of phone numbers with their eligibility status.",
+            "items": {
+              "$ref": "#/components/schemas/EligibilityNumberResponse"
+            },
+            "type": "array"
+          }
+        },
+        "type": "object"
+      },
+      "HostedNumber": {
+        "example": {
+          "id": "bf6307bd-884d-4c1f-b6ea-c62b8c495d3c",
+          "phone_number": "+18665550001",
+          "record_type": "messaging_hosted_number",
+          "status": "successful"
+        },
+        "properties": {
+          "id": {
+            "description": "Identifies the type of resource.",
+            "format": "uuid",
+            "readOnly": true,
+            "type": "string"
+          },
+          "phone_number": {
+            "description": "The messaging hosted phone number (+E.164 format)",
+            "type": "string",
+            "x-format": "+E.164"
+          },
+          "record_type": {
+            "example": "messaging_hosted_number",
+            "type": "string"
+          },
+          "status": {
+            "enum": [
+              "deleted",
+              "failed",
+              "failed_activation",
+              "failed_carrier_rejected",
+              "failed_ineligible_carrier",
+              "failed_number_already_hosted",
+              "failed_number_not_found",
+              "failed_ownership_verification",
+              "failed_timeout",
+              "pending",
+              "provisioning",
+              "successful"
+            ],
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "MessagingHostedNumberOrder": {
+        "example": {
+          "id": "86f58db9-0fe3-4adc-9d1f-46e66e6e9323",
+          "messaging_profile_id": "dc8f39ac-953d-4520-b93b-786ae87db0da",
+          "phone_numbers": [
+            {
+              "id": "bf6307bd-884d-4c1f-b6ea-c62b8c495d3c",
+              "phone_number": "+18665550001",
+              "record_type": "messaging_hosted_number",
+              "status": "pending"
+            },
+            {
+              "id": "464bd54e-a328-4b11-a131-28e6793cb6f2",
+              "phone_number": "+18665550002",
+              "record_type": "messaging_hosted_number",
+              "status": "pending"
+            }
+          ],
+          "record_type": "messaging_hosted_number_order",
+          "status": "pending"
+        },
+        "properties": {
+          "id": {
+            "description": "Resource unique identifier.",
+            "format": "uuid",
+            "readOnly": true,
+            "type": "string"
+          },
+          "messaging_profile_id": {
+            "description": "Automatically associate the number with this messaging profile ID when the order is complete.",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "phone_numbers": {
+            "items": {
+              "$ref": "#/components/schemas/HostedNumber"
+            },
+            "type": "array"
+          },
+          "record_type": {
+            "description": "Identifies the type of the resource.",
+            "example": "messaging_hosted_number_order",
+            "readOnly": true,
+            "type": "string"
+          },
+          "status": {
+            "enum": [
+              "carrier_rejected",
+              "compliance_review_failed",
+              "deleted",
+              "failed",
+              "incomplete_documentation",
+              "incorrect_billing_information",
+              "ineligible_carrier",
+              "loa_file_invalid",
+              "loa_file_successful",
+              "pending",
+              "provisioning",
+              "successful"
+            ],
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "UploadFileMessagingHostedNumberOrderRequest": {
+        "example": {
+          "bill": "bill example",
+          "loa": "example loa"
+        },
+        "properties": {
+          "bill": {
+            "description": "Must be the last month's bill with proof of ownership of all of the numbers in the order in PDF format.",
+            "format": "binary",
+            "type": "string"
+          },
+          "loa": {
+            "description": "Must be a signed LOA for the numbers in the order in PDF format.",
+            "format": "binary",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "ValidationCodes": {
+        "properties": {
+          "order_id": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "phone_numbers": {
+            "items": {
+              "properties": {
+                "phone_number": {
+                  "type": "string",
+                  "x-format": "+E.164"
+                },
+                "status": {
+                  "enum": [
+                    "verified",
+                    "rejected",
+                    "already_verified"
+                  ],
+                  "type": "string"
+                }
+              },
+              "required": [
+                "phone_number",
+                "status"
+              ],
+              "type": "object"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "phone_numbers",
+          "order_id"
+        ],
+        "type": "object"
+      },
+      "ValidationCodesRequest": {
+        "properties": {
+          "verification_codes": {
+            "items": {
+              "properties": {
+                "code": {
+                  "type": "string"
+                },
+                "phone_number": {
+                  "type": "string",
+                  "x-format": "+E.164"
+                }
+              },
+              "required": [
+                "phone_number",
+                "code"
+              ],
+              "type": "object"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "verification_codes"
+        ],
+        "type": "object"
+      },
+      "VerificationCodesRequest": {
+        "properties": {
+          "phone_numbers": {
+            "items": {
+              "type": "string",
+              "x-format": "+E.164"
+            },
+            "type": "array"
+          },
+          "verification_method": {
+            "enum": [
+              "sms",
+              "call"
+            ],
+            "type": "string"
+          }
+        },
+        "required": [
+          "phone_numbers",
+          "verification_method"
+        ],
+        "type": "object"
+      },
+      "messaging_Error_0b38e7044b": {
+        "properties": {
+          "code": {
+            "type": "string",
+            "x-format": "integer"
+          },
+          "detail": {
+            "type": "string"
+          },
+          "meta": {
+            "type": "object"
+          },
+          "source": {
+            "properties": {
+              "parameter": {
+                "description": "Indicates which query parameter caused the error.",
+                "type": "string"
+              },
+              "pointer": {
+                "description": "JSON pointer (RFC6901) to the offending entity.",
+                "format": "json-pointer",
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
+          "title": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "title"
+        ]
+      },
+      "messaging_Errors_0b38e7044b": {
+        "properties": {
+          "errors": {
+            "items": {
+              "$ref": "#/components/schemas/messaging_Error_0b38e7044b"
+            },
+            "type": "array"
+          }
+        }
+      },
+      "messaging_PaginationMeta_0b38e7044b": {
+        "properties": {
+          "page_number": {
+            "example": 2,
+            "type": "integer"
+          },
+          "page_size": {
+            "example": 25,
+            "type": "integer"
+          },
+          "total_pages": {
+            "example": 3,
+            "type": "integer"
+          },
+          "total_results": {
+            "example": 55,
+            "type": "integer"
+          }
+        },
+        "required": [
+          "total_pages",
+          "total_results",
+          "page_size",
+          "page_number"
+        ],
+        "type": "object"
+      }
+    },
+    "securitySchemes": {
+      "BearerAuth": {
+        "bearerFormat": "API key",
+        "description": "Telnyx API key supplied as `Authorization: Bearer \u003ctoken\u003e`. In production, auth may be validated by the API gateway and forwarded via Telnyx auth headers.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "Payment": {
+        "description": "Machine Payment Protocol credential used on paid retries, sent as `Authorization: Payment ...`. Obtained by paying a challenge returned in the `WWW-Authenticate` header of a 402 response. This is not a Telnyx API key; initial challenge requests use standard bearer authentication instead.",
+        "in": "header",
+        "name": "Authorization",
+        "type": "apiKey"
+      },
+      "agent-memory_bearerAuth": {
+        "description": "Telnyx API key",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "bearerAuth": {
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "branded-calling_bearerAuth": {
+        "description": "Telnyx API key. Generate one at https://portal.telnyx.com/#/app/api-keys.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "collections_bearerAuth": {
+        "description": "Telnyx API key. Collections and results are automatically scoped to the authenticated user's organization.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "number-reputation_bearerAuth": {
+        "description": "Telnyx API key. Generate one at https://portal.telnyx.com/#/app/api-keys.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "oauthClientAuth": {
+        "description": "OAuth 2.0 authentication for Telnyx API and MCP integrations",
+        "flows": {
+          "authorizationCode": {
+            "authorizationUrl": "https://api.telnyx.com/v2/oauth/authorize",
+            "refreshUrl": "https://api.telnyx.com/v2/oauth/token",
+            "scopes": {
+              "admin": "Administrative access to Telnyx resources"
+            },
+            "tokenUrl": "https://api.telnyx.com/v2/oauth/token"
+          },
+          "clientCredentials": {
+            "scopes": {
+              "admin": "Administrative access to Telnyx resources"
+            },
+            "tokenUrl": "https://api.telnyx.com/v2/oauth/token"
+          }
+        },
+        "type": "oauth2"
+      },
+      "outbound-voice-profiles_bearerAuth": {
+        "bearerFormat": "JWT",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "pay-connectors_bearerAuth": {
+        "description": "Telnyx API key, not the processor bearer token.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "pronunciation-dicts_bearerAuth": {
+        "description": "Telnyx API v2 key. Obtain from https://portal.telnyx.com",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "rcs-registration_bearerAuth": {
+        "bearerFormat": "API key",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "stored-payment-transactions_bearerAuth": {
+        "bearerFormat": "JWT",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "telnyxApiKey": {
+        "description": "Management-only Telnyx account credential.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "transcriptions-search_bearerAuth": {
+        "description": "Telnyx API key. Results are automatically scoped to the authenticated user's organization.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "web-search_bearerAuth": {
+        "description": "Telnyx API key",
+        "scheme": "bearer",
+        "type": "http"
+      }
+    }
+  },
+  "info": {
+    "contact": {
+      "email": "support@telnyx.com"
+    },
+    "description": "SIP trunking, SMS, MMS, Call Control and Telephony Data Services.",
+    "title": "Telnyx API",
+    "version": "2.0.0",
+    "x-endpoint-cost": "light",
+    "x-latency-category": "responsive"
+  },
+  "openapi": "3.1.0",
+  "paths": {
+    "/messaging_hosted_number_orders": {
+      "get": {
+        "description": "Returns hosted-messaging orders for the authenticated account. Apply the documented filters and pagination parameters to narrow the result set.",
+        "operationId": "ListMessagingHostedNumberOrders",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/PageConsolidated"
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "items": {
+                        "$ref": "#/components/schemas/MessagingHostedNumberOrder"
+                      },
+                      "type": "array"
+                    },
+                    "meta": {
+                      "$ref": "#/components/schemas/messaging_PaginationMeta_0b38e7044b"
+                    }
+                  },
+                  "title": "List Messaging Hosted Number Order Response",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful response with a list of messaging hosted number orders."
+          },
+          "4XX": {
+            "$ref": "#/components/responses/messaging_GenericErrorResponse_0b38e7044b"
+          }
+        },
+        "summary": "List messaging hosted number orders",
+        "tags": [
+          "Hosted Numbers"
+        ],
+        "x-group-parameters": "true"
+      },
+      "post": {
+        "description": "Creates an order to enable Telnyx messaging on phone numbers whose voice service remains with another carrier.",
+        "operationId": "CreateMessagingHostedNumberOrder",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateMessagingHostedNumberOrderRequest"
+              }
+            }
+          },
+          "description": "Message payload"
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/MessagingHostedNumberOrder"
+                    }
+                  },
+                  "title": "Retrieve Messaging Hosted Number Order Response",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful response with details about a messaging hosted number order."
+          },
+          "4XX": {
+            "$ref": "#/components/responses/messaging_GenericErrorResponse_0b38e7044b"
+          }
+        },
+        "summary": "Create a messaging hosted number order",
+        "tags": [
+          "Hosted Numbers"
+        ]
+      }
+    },
+    "/messaging_hosted_number_orders/eligibility_numbers_check": {
+      "post": {
+        "description": "Checks whether the supplied phone numbers are eligible for hosted messaging before an order is created.",
+        "operationId": "CheckEligibilityNumbers",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "example": {
+                "phone_numbers": [
+                  "string"
+                ]
+              },
+              "schema": {
+                "$ref": "#/components/schemas/EligibilityNumbersRequest"
+              }
+            }
+          },
+          "description": "Phone numbers to check eligibility",
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "phone_numbers": [
+                    {
+                      "detail": "string",
+                      "eligible": false,
+                      "eligible_status": "NUMBER_CAN_NOT_BE_REPEATED",
+                      "phone_number": "string"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/EligibilityNumbersResponse"
+                }
+              }
+            },
+            "description": "Successful response"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/messaging_Error_0b38e7044b"
+                }
+              }
+            },
+            "description": "Bad request"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/messaging_Error_0b38e7044b"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          }
+        },
+        "summary": "Check hosted messaging eligibility",
+        "tags": [
+          "Hosted Numbers"
+        ]
+      }
+    },
+    "/messaging_hosted_number_orders/{id}": {
+      "delete": {
+        "description": "Delete a messaging hosted number order and all associated phone numbers.",
+        "operationId": "DeleteMessagingHostedNumberOrder",
+        "parameters": [
+          {
+            "description": "Identifies the messaging hosted number order to delete.",
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/MessagingHostedNumberOrder"
+                    }
+                  },
+                  "title": "Retrieve Messaging Hosted Number Order Response",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful response with details about a messaging hosted number order."
+          },
+          "4XX": {
+            "$ref": "#/components/responses/messaging_GenericErrorResponse_0b38e7044b"
+          }
+        },
+        "summary": "Delete a messaging hosted number order",
+        "tags": [
+          "Hosted Numbers"
+        ]
+      },
+      "get": {
+        "description": "Returns the current state, phone numbers, and required actions for the specified hosted-messaging order.",
+        "operationId": "GetMessagingHostedNumberOrder",
+        "parameters": [
+          {
+            "description": "Identifies the type of resource.",
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/MessagingHostedNumberOrder"
+                    }
+                  },
+                  "title": "Retrieve Messaging Hosted Number Order Response",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful response with details about a messaging hosted number order."
+          },
+          "4XX": {
+            "$ref": "#/components/responses/messaging_GenericErrorResponse_0b38e7044b"
+          }
+        },
+        "summary": "Retrieve a messaging hosted number order",
+        "tags": [
+          "Hosted Numbers"
+        ]
+      }
+    },
+    "/messaging_hosted_number_orders/{id}/actions/file_upload": {
+      "post": {
+        "description": "Uploads a supporting document to the specified hosted-messaging order.",
+        "operationId": "UploadMessagingHostedNumberOrderFile",
+        "parameters": [
+          {
+            "description": "Identifies the type of resource.",
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "encoding": {
+                "bill": {
+                  "contentType": "application/pdf"
+                },
+                "loa": {
+                  "contentType": "application/pdf"
+                }
+              },
+              "schema": {
+                "$ref": "#/components/schemas/UploadFileMessagingHostedNumberOrderRequest"
+              }
+            }
+          },
+          "description": "Message payload"
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/MessagingHostedNumberOrder"
+                    }
+                  },
+                  "title": "Retrieve Messaging Hosted Number Order Response",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful response with details about a messaging hosted number order."
+          },
+          "4XX": {
+            "$ref": "#/components/responses/messaging_GenericErrorResponse_0b38e7044b"
+          }
+        },
+        "summary": "Upload hosted number document",
+        "tags": [
+          "Hosted Numbers"
+        ]
+      }
+    },
+    "/messaging_hosted_number_orders/{id}/validation_codes": {
+      "post": {
+        "description": "Validate the verification codes sent to the numbers of the hosted order. The verification codes must be created in the verification codes endpoint.",
+        "operationId": "ValidateVerificationCodesForMessagingHostedNumberOrder",
+        "parameters": [
+          {
+            "description": "Order ID related to the validation codes.",
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "example": {
+                "verification_codes": [
+                  {
+                    "code": "string",
+                    "phone_number": "string"
+                  }
+                ]
+              },
+              "schema": {
+                "$ref": "#/components/schemas/ValidationCodesRequest"
+              }
+            }
+          },
+          "description": "Message payload"
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "data": {
+                    "order_id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+                    "phone_numbers": [
+                      {
+                        "phone_number": "string",
+                        "status": "verified"
+                      }
+                    ]
+                  }
+                },
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/ValidationCodes"
+                    }
+                  },
+                  "title": "Retrieve Messaging Hosted Number Response",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful response with the phone numbers and their respective status of the validation codes."
+          },
+          "4XX": {
+            "$ref": "#/components/responses/messaging_GenericErrorResponse_0b38e7044b"
+          }
+        },
+        "summary": "Validate hosted number codes",
+        "tags": [
+          "Hosted Numbers"
+        ]
+      }
+    },
+    "/messaging_hosted_number_orders/{id}/verification_codes": {
+      "post": {
+        "description": "Create verification codes to validate numbers of the hosted order. The verification codes will be sent to the numbers of the hosted order.",
+        "operationId": "CreateVerificationCodesForMessagingHostedNumberOrder",
+        "parameters": [
+          {
+            "description": "Order ID to have a verification code created.",
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "example": {
+                "phone_numbers": [
+                  "string"
+                ],
+                "verification_method": "sms"
+              },
+              "schema": {
+                "$ref": "#/components/schemas/VerificationCodesRequest"
+              }
+            }
+          },
+          "description": "Message payload"
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "data": [
+                    {
+                      "error": "string",
+                      "phone_number": "string",
+                      "type": "sms",
+                      "verification_code_id": "3fa85f64-5717-4562-b3fc-2c963f66afa6"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/CreatedVerificationCodesResponse"
+                }
+              }
+            },
+            "description": "Verification codes created and sent to the phone numbers of the hosted order."
+          },
+          "4XX": {
+            "$ref": "#/components/responses/messaging_GenericErrorResponse_0b38e7044b"
+          }
+        },
+        "summary": "Create hosted number verification codes",
+        "tags": [
+          "Hosted Numbers"
+        ]
+      }
+    },
+    "/messaging_hosted_numbers/{id}": {
+      "delete": {
+        "description": "Removes the specified hosted number from Telnyx messaging management.",
+        "operationId": "DeleteMessagingHostedNumber",
+        "parameters": [
+          {
+            "description": "Identifies the type of resource.",
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/MessagingHostedNumberOrder"
+                    }
+                  },
+                  "title": "Retrieve Messaging Hosted Number Order Response",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful response with details about a messaging hosted number order."
+          },
+          "4XX": {
+            "$ref": "#/components/responses/messaging_GenericErrorResponse_0b38e7044b"
+          }
+        },
+        "summary": "Delete a messaging hosted number",
+        "tags": [
+          "Hosted Numbers"
+        ]
+      }
+    }
+  },
+  "security": [
+    {
+      "bearerAuth": []
+    }
+  ],
+  "servers": [
+    {
+      "description": "Version 2.0.0 of the Telnyx API",
+      "url": "https://api.telnyx.com/v2"
+    }
+  ]
+}

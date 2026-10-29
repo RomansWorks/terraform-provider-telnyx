@@ -28,8 +28,9 @@ The generator emits, per resource, a Go file holding a descriptor literal: opera
 | object with properties | Single nested attribute |
 | array of scalars | List (Set when an override says order does not matter) |
 | array of objects | List nested attribute |
-| `oneOf` with a discriminator or a `type` enum selecting sibling objects | One optional nested attribute per variant, with an exactly-one validator |
-| free-form object, `additionalProperties`, or `oneOf`/`anyOf` without a discriminator | String holding normalised JSON (`jsontypes.Normalized`), so formatting does not cause diffs |
+| `oneOf`/`anyOf` whose object variants each fix `type` to one value (the Telnyx convention, for example assistant tools) | One nested object with the union of the variants' fields; `type` selects the variant |
+| `oneOf`/`anyOf` of one scalar type, or of one schema and `null` | That type |
+| free-form object, `additionalProperties` without `properties`, other unions, arrays of arrays | String holding JSON, compared after normalisation so formatting and key order do not cause diffs |
 | `['T', 'null']` | Optional T |
 
 Nesting deeper than four levels is also rendered as normalised JSON, which keeps schemas usable for the deepest assistant settings (conversation flow nodes).
@@ -41,6 +42,9 @@ Nesting deeper than four levels is also rendered as normalised JSON, which keeps
 - Returned by read but not in any request → Computed.
 - Sent but never returned (for example an uploaded file) → kept from configuration. The engine cannot detect drift for these; docs say so.
 - Path parameters of the item path become Required attributes that force replacement (for example `phone_number_id`).
+- Accepted only by update (for example a number order's `regulatory_requirements`) → Optional; the engine sends them in an update straight after create.
+- Accepted only by a PUT update and returned by read (a PUT body that repeats the whole object, server fields included) → Computed, and sent back unchanged.
+- JSON attributes keep the configured value when the API returns the same document with extra keys (server defaults). A changed value in a key the user set is drift.
 
 ### 4. Envelope and ids
 
@@ -52,11 +56,11 @@ PATCH sends only changed attributes. POST updates are treated like PATCH. PUT se
 
 ### 6. Hooks for what the spec cannot express
 
-A resource can register hooks in hand-written `internal/provider/hooks_<name>.go`: before create, after read, custom create (upload) and wait-until-ready. Pilot hooks:
+A resource can register hooks in hand-written `internal/provider/hooks_<name>.go`: plan changes, before request, custom create (upload), after read, wait-until-ready and the destroy warning. Pilot hooks:
 
-- `telnyx_ai_avatar`: create uploads `image_path` as multipart; `image_sha256` (computed from the file) forces replacement, so a new image makes a new avatar.
-- `telnyx_ai_tool`: after read, maps `tool_definition` back onto the variant attribute so drift on a webhook URL is detected.
-- `telnyx_number_order`: after create, polls `GET /number_orders/{id}` until `status` is `success` (fails on `failure`), within a `timeouts.create` default of 10 minutes.
+- `telnyx_ai_avatar`: create uploads `image_path` as multipart; the plan hook hashes the file into `image_sha256` and replaces the avatar when the content changes (a new path to the same content changes nothing).
+- `telnyx_ai_tool`: after read, maps `tool_definition` back onto the variant attribute so drift on a webhook URL is detected; the plan hook rejects a variant that does not match `type` and replaces the tool when `type` changes.
+- `telnyx_number_order`: after create, polls `GET /number_orders/{id}` until `status` is `success` (fails on `failure`), within a `timeouts.create` default of 10 minutes; destroy names the numbers that stay on the account.
 
 ### 7. Objects that cannot be deleted, and adopted settings
 
@@ -66,12 +70,14 @@ When a descriptor has no delete operation, destroy removes the object from state
 
 - Generator: golden-file tests on a fixture spec, plus a CI check that `make generate` leaves no diff.
 - Engine: unit tests for type conversion, envelope handling, PATCH diffs, 404-on-read removal and missing-delete warnings.
-- Resources: unit tests through `terraform-plugin-testing` against an `httptest` server replaying recorded Telnyx responses (no credentials needed); acceptance tests per resource with an import step and an empty-plan check; sweepers for leaked test objects.
+- Resources: unit tests through `terraform-plugin-testing` against an `httptest` fake of the Telnyx API that follows the spec's response shapes and adds server defaults (no credentials needed); acceptance tests per resource with an import step and an empty-plan check; sweepers for leaked test objects.
 
 ## Risks / Trade-offs
 
 - [Kept-from-config attributes hide drift] → limited to fields the API never returns; listed in each resource's docs.
 - [Normalised JSON attributes are less friendly than nested attributes] → used only where the spec gives no stable shape; an override can promote a field to a nested attribute when Telnyx documents its shape.
+- [Importing a JSON attribute brings in server defaults] → after `terraform import`, the first plan may update a JSON attribute (such as an AI tool's `webhook`) to exactly the configured document. The update is harmless and the plan is empty afterwards.
+- [Merged unions accept fields of other variants] → the API rejects mismatched fields; a per-resource plan hook can check them where it matters (AI tools do).
 - [Generic engine bugs affect every resource] → the engine carries the heaviest unit tests, and each pilot pattern has a dedicated test.
 - [The number order test buys a number] → gated by `TELNYX_ACC_BILLABLE=1`, run on demand only, and the sweeper releases the number.
 

@@ -8,15 +8,14 @@ import "github.com/RomansWorks/terraform-provider-telnyx/internal/engine"
 // NumberOrder returns the descriptor of telnyx_number_order.
 func NumberOrder() *engine.Resource {
 	return &engine.Resource{
-		TypeName:      "telnyx_number_order",
-		Description:   "An order for phone numbers.",
-		Create:        &engine.Op{Method: "POST", Path: "/number_orders", Envelope: true},
-		Read:          &engine.Op{Method: "GET", Path: "/number_orders/{number_order_id}", Envelope: true},
-		Update:        &engine.Op{Method: "PATCH", Path: "/number_orders/{number_order_id}", Envelope: true},
-		IDAttr:        "id",
-		Import:        []string{"id"},
-		DeleteWarning: "The Telnyx API cannot cancel a number order. It was removed from Terraform state; the numbers it bought stay in your account until you release them.",
-		Timeouts:      true,
+		TypeName:    "telnyx_number_order",
+		Description: "An order for phone numbers.",
+		Create:      &engine.Op{Method: "POST", Path: "/number_orders", Envelope: true},
+		Read:        &engine.Op{Method: "GET", Path: "/number_orders/{number_order_id}", Envelope: true},
+		Update:      &engine.Op{Method: "PATCH", Path: "/number_orders/{number_order_id}", Envelope: true},
+		IDAttr:      "id",
+		Import:      []string{"id"},
+		Timeouts:    true,
 		Attrs: []*engine.Attr{
 			{Name: "billing_group_id", JSON: "billing_group_id", Kind: engine.KindString, Optional: true, Computed: true, ForceNew: true, InCreate: true, InResponse: true, Description: "Identifies the messaging profile associated with the phone number."},
 			{Name: "connection_id", JSON: "connection_id", Kind: engine.KindString, Optional: true, Computed: true, ForceNew: true, InCreate: true, InResponse: true, Description: "Identifies the connection associated with this phone number."},

@@ -128,6 +128,9 @@ type Hooks struct {
 	Create func(ctx context.Context, c *client.Client, r *Resource, plan Values) (Object, error)
 	// AfterRead can reshape an API object before it is mapped to attributes.
 	AfterRead func(ctx context.Context, obj Object) (Object, error)
+	// DeleteWarning replaces the descriptor's DeleteWarning, for example to
+	// name what stays in Telnyx.
+	DeleteWarning func(state Values) string
 	// Wait is called after create until the object is ready.
 	Wait func(ctx context.Context, c *client.Client, r *Resource, obj Object) (Object, error)
 }

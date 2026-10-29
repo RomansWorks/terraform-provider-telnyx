@@ -6,6 +6,7 @@ package provider
 import (
 	"context"
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-go/tftypes"
@@ -17,8 +18,27 @@ import (
 // numberOrderPoll is how often a pending number order is checked.
 var numberOrderPoll = 5 * time.Second
 
-// A number order completes asynchronously: wait until it succeeds.
+// A number order completes asynchronously: wait until it succeeds. The API
+// cannot cancel an order, so destroy names the numbers that stay.
 var numberOrderHooks = engine.Hooks{
+	DeleteWarning: func(state engine.Values) string {
+		var numbers []string
+		var list []tftypes.Value
+		if v := state["phone_numbers"]; v.IsKnown() && !v.IsNull() && v.As(&list) == nil {
+			for _, item := range list {
+				var f map[string]tftypes.Value
+				var n string
+				if item.As(&f) == nil && f["phone_number"].As(&n) == nil && n != "" {
+					numbers = append(numbers, n)
+				}
+			}
+		}
+		msg := "The Telnyx API cannot cancel a number order, so it was only removed from Terraform state."
+		if len(numbers) > 0 {
+			msg += " These numbers stay in your account until you release them: " + strings.Join(numbers, ", ") + "."
+		}
+		return msg
+	},
 	Wait: func(ctx context.Context, c *client.Client, r *engine.Resource, obj engine.Object) (engine.Object, error) {
 		for {
 			switch status, _ := obj["status"].(string); status {

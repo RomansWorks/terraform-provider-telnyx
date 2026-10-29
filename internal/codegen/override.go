@@ -66,7 +66,8 @@ type AttrOverride struct {
 	Computed    *bool  `yaml:"computed"`
 	Description string `yaml:"description"`
 	// Returned says a hook puts the value into the read response although
-	// the spec does not list it there, so drift is detected.
+	// the spec does not list it there, so drift is detected. Returned
+	// attributes are optional and not computed.
 	Returned bool `yaml:"returned"`
 }
 

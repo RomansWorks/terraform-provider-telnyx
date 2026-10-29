@@ -401,7 +401,9 @@ func (d *deriver) attrs(src sources, depth int, parentComputed bool, prefix stri
 		}
 		if !a.Required {
 			a.Optional = configurable
-			a.Computed = inR
+			// A hook returns exactly what the user set, so the user's value
+			// is the whole truth: not computed.
+			a.Computed = inR && !aov.Returned
 		}
 		// A PUT body often repeats the whole object, server fields included.
 		// Fields only a PUT accepts are the server's: computed, and sent back

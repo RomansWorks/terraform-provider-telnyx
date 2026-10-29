@@ -6,6 +6,7 @@ package engine
 import (
 	"context"
 	"fmt"
+	"slices"
 	"strings"
 
 	"github.com/hashicorp/terraform-plugin-framework-timeouts/resource/timeouts"
@@ -72,7 +73,11 @@ func description(a *Attr) string {
 		d = strings.TrimSpace(d + " One of " + strings.Join(quoted, ", ") + ".")
 	}
 	if a.Kind == KindJSON {
-		d = strings.TrimSpace(d + " A JSON document; use `jsonencode()`.")
+		if a.Required || a.Optional {
+			d = strings.TrimSpace(d + " A JSON document; use `jsonencode()`.")
+		} else {
+			d = strings.TrimSpace(d + " A JSON document; use `jsondecode()` to read it.")
+		}
 	}
 	if !a.InResponse && !a.Local && !a.Computed {
 		d = strings.TrimSpace(d + " The API does not return this value, so changes made outside Terraform are not detected.")
@@ -195,34 +200,23 @@ func attrType(a *Attr) attrTypeT {
 // DataSourceSchema builds the data source schema: lookup attributes are
 // required, everything else computed.
 func (r *Resource) DataSourceSchema() dschema.Schema {
-	lookup := map[string]bool{}
-	for _, n := range r.Import {
-		lookup[n] = true
-	}
 	attrs := map[string]dschema.Attribute{}
-	for _, a := range r.Attrs {
-		if a.Local || (!a.InResponse && !lookup[a.Name]) {
-			continue
-		}
-		attrs[a.Name] = dataAttr(a, lookup[a.Name])
+	for _, a := range r.dataAttrs() {
+		attrs[a.Name] = dataAttr(a, slices.Contains(r.Import, a.Name))
 	}
 	return dschema.Schema{MarkdownDescription: r.Description, Attributes: attrs}
 }
 
-// dataAttrs returns the descriptor attributes present in the data source.
+// dataAttrs returns the descriptor attributes present in the data source:
+// the lookup attributes (the import id parts) and everything read returns.
 func (r *Resource) dataAttrs() []*Attr {
-	lookup := map[string]bool{}
-	for _, n := range r.Import {
-		lookup[n] = true
-	}
 	var out []*Attr
 	for _, a := range r.Attrs {
-		if a.Local || (!a.InResponse && !lookup[a.Name]) {
+		lookup := slices.Contains(r.Import, a.Name)
+		if !lookup && (a.Local || !a.InResponse) {
 			continue
 		}
-		c := *a
-		c.InResponse = a.InResponse || !lookup[a.Name]
-		out = append(out, &c)
+		out = append(out, a)
 	}
 	return out
 }

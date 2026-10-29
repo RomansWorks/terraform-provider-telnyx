@@ -29,7 +29,7 @@ GET /10dlc/brand/smsOtp/{referenceId}:
     bucket: data_source
     terraform: telnyx_10dlc_brand_sms_otp_by_reference
     reviewed: true
-    note: lookup
+    note: read-only
 GET /10dlc/brand/{brandId}:
     bucket: resource
     terraform: telnyx_10dlc_brand
@@ -54,15 +54,15 @@ GET /10dlc/brand/{brandId}/externalVetting:
     bucket: data_source
     terraform: telnyx_10dlc_brand_external_vettings
     reviewed: true
-    note: lookup
+    note: read-only
 POST /10dlc/brand/{brandId}/externalVetting:
     bucket: action
-    terraform: telnyx_10dlc_brand_external_vetting_create
+    terraform: telnyx_10dlc_brand_external_vetting_order
     reviewed: true
     note: one-shot operation
 PUT /10dlc/brand/{brandId}/externalVetting:
     bucket: action
-    terraform: telnyx_10dlc_brand_external_vetting_update
+    terraform: telnyx_10dlc_brand_external_vetting_import
     reviewed: true
     note: one-shot operation
 PUT /10dlc/brand/{brandId}/revet:
@@ -74,30 +74,30 @@ GET /10dlc/brand/{brandId}/smsOtp:
     bucket: data_source
     terraform: telnyx_10dlc_brand_sms_otp
     reviewed: true
-    note: lookup
+    note: read-only
 POST /10dlc/brand/{brandId}/smsOtp:
     bucket: action
-    terraform: telnyx_10dlc_brand_sms_otp_create
+    terraform: telnyx_10dlc_brand_sms_otp_trigger
     reviewed: true
     note: one-shot operation
 PUT /10dlc/brand/{brandId}/smsOtp:
     bucket: action
-    terraform: telnyx_10dlc_brand_sms_otp_update
+    terraform: telnyx_10dlc_brand_sms_otp_verify
     reviewed: true
     note: one-shot operation
 GET /10dlc/brand_feedback/{brandId}:
     bucket: data_source
     terraform: telnyx_10dlc_brand_feedback
     reviewed: true
-    note: lookup
+    note: read-only
 GET /10dlc/campaign:
     bucket: data_source
     terraform: telnyx_10dlc_campaigns
     reviewed: true
-    note: lookup
+    note: list of telnyx_10dlc_campaign
 POST /10dlc/campaign/acceptSharing/{campaignId}:
     bucket: action
-    terraform: telnyx_10dlc_campaign_accept_sharing_create
+    terraform: telnyx_10dlc_campaign_accept_sharing
     reviewed: true
     note: one-shot operation
 GET /10dlc/campaign/usecase/cost:
@@ -108,7 +108,7 @@ GET /10dlc/campaign/usecase_cost:
     bucket: data_source
     terraform: telnyx_10dlc_campaign_usecase_cost
     reviewed: true
-    note: lookup
+    note: read-only
 GET /10dlc/campaign/{campaignId}:
     bucket: resource
     terraform: telnyx_10dlc_campaign
@@ -133,12 +133,12 @@ GET /10dlc/campaign/{campaignId}/mnoMetadata:
     bucket: data_source
     terraform: telnyx_10dlc_campaign_mno_metadata
     reviewed: true
-    note: lookup
+    note: read-only
 GET /10dlc/campaign/{campaignId}/operationStatus:
     bucket: data_source
     terraform: telnyx_10dlc_campaign_operation_status
     reviewed: true
-    note: lookup
+    note: read-only
 GET /10dlc/campaign/{campaignId}/osr/attributes:
     bucket: out_of_scope
     reviewed: true
@@ -147,12 +147,12 @@ GET /10dlc/campaign/{campaignId}/osr_attributes:
     bucket: data_source
     terraform: telnyx_10dlc_campaign_osr_attributes
     reviewed: true
-    note: lookup
+    note: read-only
 GET /10dlc/campaign/{campaignId}/sharing:
     bucket: data_source
     terraform: telnyx_10dlc_campaign_sharing
     reviewed: true
-    note: lookup
+    note: read-only
 POST /10dlc/campaignBuilder:
     bucket: resource
     terraform: telnyx_10dlc_campaign
@@ -162,7 +162,7 @@ GET /10dlc/campaignBuilder/brand/{brandId}/usecase/{usecase}:
     bucket: data_source
     terraform: telnyx_10dlc_campaign_builder_brand_usecase
     reviewed: true
-    note: lookup
+    note: read-only
 GET /10dlc/enum/{endpoint}:
     bucket: data_source
     terraform: telnyx_10dlc_enum
@@ -172,17 +172,17 @@ GET /10dlc/partnerCampaign/sharedByMe:
     bucket: data_source
     terraform: telnyx_10dlc_partner_campaign_shared_by_me
     reviewed: true
-    note: lookup
+    note: read-only
 GET /10dlc/partnerCampaign/{campaignId}/sharing:
     bucket: data_source
     terraform: telnyx_10dlc_partner_campaign_sharing
     reviewed: true
-    note: lookup
+    note: read-only
 GET /10dlc/partner_campaigns:
     bucket: data_source
-    terraform: telnyx_10dlc_partner_campaigns
+    terraform: telnyx_10dlc_shared_campaigns
     reviewed: true
-    note: lookup
+    note: read-only
 GET /10dlc/partner_campaigns/{campaignId}:
     bucket: resource
     terraform: telnyx_10dlc_shared_campaign
@@ -195,19 +195,19 @@ PATCH /10dlc/partner_campaigns/{campaignId}:
     note: update of telnyx_10dlc_shared_campaign (catalog existing)
 POST /10dlc/phoneNumberAssignmentByProfile:
     bucket: action
-    terraform: telnyx_10dlc_phone_number_assignment_by_profile
+    terraform: telnyx_10dlc_messaging_profile_campaign_assign
     reviewed: true
     note: one-shot operation
 GET /10dlc/phoneNumberAssignmentByProfile/{taskId}:
     bucket: data_source
-    terraform: telnyx_10dlc_phone_number_assignment_by_profile
+    terraform: telnyx_10dlc_phone_number_assignment_task
     reviewed: true
-    note: lookup
+    note: read-only
 GET /10dlc/phoneNumberAssignmentByProfile/{taskId}/phoneNumbers:
     bucket: data_source
-    terraform: telnyx_10dlc_phone_number_assignment_by_profile_phone_numbers
+    terraform: telnyx_10dlc_phone_number_assignment_task_phone_numbers
     reviewed: true
-    note: lookup
+    note: read-only
 GET /10dlc/phone_number_campaigns:
     bucket: data_source
     terraform: telnyx_10dlc_phone_number_campaigns
@@ -270,12 +270,12 @@ DELETE /access_ip_ranges/{access_ip_range_id}:
     note: delete of telnyx_access_ip_range (triage)
 POST /actions/purchase/esims:
     bucket: action
-    terraform: telnyx_purchase_esims
+    terraform: telnyx_esim_purchase
     reviewed: true
     note: one-shot operation
 POST /actions/register/sim_cards:
     bucket: action
-    terraform: telnyx_register_sim_cards
+    terraform: telnyx_sim_card_register
     reviewed: true
     note: one-shot operation
 GET /addresses:
@@ -319,7 +319,7 @@ POST /advanced_orders:
     note: create of telnyx_advanced_number_order (triage)
 PATCH /advanced_orders/{advanced-order-id}/requirement_group:
     bucket: action
-    terraform: telnyx_advanced_order_requirement_group
+    terraform: telnyx_advanced_number_order_requirement_group_update
     reviewed: true
     note: one-shot operation
 GET /advanced_orders/{order_id}:
@@ -343,9 +343,9 @@ POST /ai/assistants:
     note: implemented by generator/overrides/ai_assistant.yaml
 GET /ai/assistants/deleted:
     bucket: data_source
-    terraform: telnyx_deleted_ai_assistants
+    terraform: telnyx_ai_assistants_deleted
     reviewed: true
-    note: lookup
+    note: read-only
 POST /ai/assistants/import:
     bucket: action
     terraform: telnyx_ai_assistant_import
@@ -353,9 +353,9 @@ POST /ai/assistants/import:
     note: one-shot operation
 GET /ai/assistants/tags:
     bucket: data_source
-    terraform: telnyx_ai_assistant_tags
+    terraform: telnyx_ai_assistant_tag_names
     reviewed: true
-    note: lookup
+    note: read-only
 GET /ai/assistants/tests:
     bucket: data_source
     terraform: telnyx_ai_assistant_tests
@@ -370,7 +370,7 @@ GET /ai/assistants/tests/test-suites:
     bucket: data_source
     terraform: telnyx_ai_assistant_test_suites
     reviewed: true
-    note: lookup
+    note: read-only
 GET /ai/assistants/tests/test-suites/{suite_name}/runs:
     bucket: out_of_scope
     reviewed: true
@@ -460,9 +460,9 @@ POST /ai/assistants/{assistant_id}/clone:
     note: one-shot operation
 GET /ai/assistants/{assistant_id}/deleted:
     bucket: data_source
-    terraform: telnyx_deleted_ai_assistant
+    terraform: telnyx_ai_assistant_deleted
     reviewed: true
-    note: lookup
+    note: read-only
 POST /ai/assistants/{assistant_id}/instructions/enhance:
     bucket: out_of_scope
     reviewed: true
@@ -502,7 +502,7 @@ GET /ai/assistants/{assistant_id}/texml:
     bucket: data_source
     terraform: telnyx_ai_assistant_texml
     reviewed: true
-    note: lookup
+    note: read-only
 PUT /ai/assistants/{assistant_id}/tools/{tool_id}:
     bucket: resource
     terraform: telnyx_ai_assistant_tool_attachment
@@ -521,15 +521,15 @@ GET /ai/assistants/{assistant_id}/versions:
     bucket: data_source
     terraform: telnyx_ai_assistant_versions
     reviewed: true
-    note: lookup
+    note: read-only
 GET /ai/assistants/{assistant_id}/versions/{version_id}:
     bucket: data_source
     terraform: telnyx_ai_assistant_version
     reviewed: true
-    note: lookup
+    note: read-only
 POST /ai/assistants/{assistant_id}/versions/{version_id}:
     bucket: action
-    terraform: telnyx_ai_assistant_version_create
+    terraform: telnyx_ai_assistant_version_update
     reviewed: true
     note: one-shot operation
 DELETE /ai/assistants/{assistant_id}/versions/{version_id}:
@@ -602,9 +602,9 @@ POST /ai/collections:
     note: create of telnyx_ai_collection (catalog collection)
 GET /ai/collections/slug/{slug}:
     bucket: data_source
-    terraform: telnyx_ai_collection_slug
+    terraform: telnyx_ai_collection_by_slug
     reviewed: true
-    note: lookup
+    note: read-only
 GET /ai/collections/{uuid}:
     bucket: resource
     terraform: telnyx_ai_collection
@@ -645,10 +645,9 @@ POST /ai/collections/{uuid}/sources:
     reviewed: true
     note: create of telnyx_ai_collection_source (triage)
 PUT /ai/collections/{uuid}/sources:
-    bucket: action
-    terraform: telnyx_ai_collection_source_update
+    bucket: out_of_scope
     reviewed: true
-    note: one-shot operation
+    note: alternative update; replaces every telnyx_ai_collection_source of the collection
 DELETE /ai/collections/{uuid}/sources/{sourceId}:
     bucket: resource
     terraform: telnyx_ai_collection_source
@@ -806,17 +805,17 @@ GET /ai/integrations:
     bucket: data_source
     terraform: telnyx_ai_integrations
     reviewed: true
-    note: lookup
+    note: read-only
 GET /ai/integrations/connections:
     bucket: data_source
     terraform: telnyx_ai_integration_connections
     reviewed: true
-    note: lookup
+    note: read-only
 GET /ai/integrations/connections/{user_connection_id}:
     bucket: data_source
     terraform: telnyx_ai_integration_connection
     reviewed: true
-    note: lookup
+    note: read-only
 DELETE /ai/integrations/connections/{user_connection_id}:
     bucket: action
     terraform: telnyx_ai_integration_connection_delete
@@ -826,12 +825,12 @@ GET /ai/integrations/{integration_id}:
     bucket: data_source
     terraform: telnyx_ai_integration
     reviewed: true
-    note: lookup
+    note: read-only
 GET /ai/knowledge/collections/{slug}/documents:
     bucket: data_source
     terraform: telnyx_ai_knowledge_collection_documents
     reviewed: true
-    note: lookup
+    note: read-only
 GET /ai/mcp_servers:
     bucket: data_source
     terraform: telnyx_ai_mcp_servers
@@ -876,7 +875,7 @@ GET /ai/memory/namespaces/{namespace}/operations/{operation_id}:
     bucket: data_source
     terraform: telnyx_ai_memory_namespace_operation
     reviewed: true
-    note: lookup
+    note: read-only
 GET /ai/memory/namespaces/{namespace}/profiles:
     bucket: out_of_scope
     reviewed: true
@@ -1244,7 +1243,7 @@ GET /ai/tests/test_framework/v1/personalities:
     bucket: data_source
     terraform: telnyx_ai_test_personalities
     reviewed: true
-    note: lookup
+    note: read-only
 GET /ai/tests/test_framework/v1/results:
     bucket: out_of_scope
     reviewed: true
@@ -1396,17 +1395,17 @@ GET /available_phone_number_blocks:
     bucket: data_source
     terraform: telnyx_available_phone_number_blocks
     reviewed: true
-    note: lookup
+    note: read-only
 GET /available_phone_numbers:
     bucket: data_source
     terraform: telnyx_available_phone_numbers
     reviewed: true
-    note: lookup
+    note: read-only
 GET /balance:
     bucket: data_source
     terraform: telnyx_balance
     reviewed: true
-    note: lookup
+    note: read-only
 GET /billing_groups:
     bucket: data_source
     terraform: telnyx_billing_groups
@@ -1480,52 +1479,52 @@ GET /bulk_sim_card_actions:
     bucket: data_source
     terraform: telnyx_bulk_sim_card_actions
     reviewed: true
-    note: lookup
+    note: read-only
 GET /bulk_sim_card_actions/{id}:
     bucket: data_source
     terraform: telnyx_bulk_sim_card_action
     reviewed: true
-    note: lookup
+    note: read-only
 GET /bundle_pricing/billing_bundles:
     bucket: data_source
     terraform: telnyx_bundle_pricing_billing_bundles
     reviewed: true
-    note: lookup
+    note: read-only
 GET /bundle_pricing/billing_bundles/{bundle_id}:
     bucket: data_source
     terraform: telnyx_bundle_pricing_billing_bundle
     reviewed: true
-    note: lookup
+    note: read-only
 GET /bundle_pricing/user_bundles:
     bucket: data_source
     terraform: telnyx_bundle_pricing_user_bundles
     reviewed: true
-    note: lookup
+    note: read-only
 POST /bundle_pricing/user_bundles/bulk:
     bucket: action
-    terraform: telnyx_bundle_pricing_user_bundle_bulk
+    terraform: telnyx_user_bundles_create
     reviewed: true
     note: one-shot operation
 GET /bundle_pricing/user_bundles/unused:
     bucket: data_source
     terraform: telnyx_bundle_pricing_unused_user_bundles
     reviewed: true
-    note: lookup
+    note: read-only
 GET /bundle_pricing/user_bundles/{user_bundle_id}:
     bucket: data_source
     terraform: telnyx_bundle_pricing_user_bundle
     reviewed: true
-    note: lookup
+    note: read-only
 DELETE /bundle_pricing/user_bundles/{user_bundle_id}:
     bucket: action
-    terraform: telnyx_bundle_pricing_user_bundle_delete
+    terraform: telnyx_user_bundle_deactivate
     reviewed: true
     note: one-shot operation
 GET /bundle_pricing/user_bundles/{user_bundle_id}/resources:
     bucket: data_source
     terraform: telnyx_bundle_pricing_user_bundle_resources
     reviewed: true
-    note: lookup
+    note: read-only
 GET /call_control_applications:
     bucket: data_source
     terraform: telnyx_call_control_applications
@@ -1745,17 +1744,17 @@ PUT /channel_zones/{channel_zone_id}:
     bucket: resource
     terraform: telnyx_voice_channel_zone
     reviewed: true
-    note: create of telnyx_voice_channel_zone (triage)
+    note: update and create of telnyx_voice_channel_zone (triage)
 GET /charges_breakdown:
     bucket: data_source
     terraform: telnyx_charges_breakdown
     reviewed: true
-    note: lookup
+    note: read-only
 GET /charges_summary:
     bucket: data_source
     terraform: telnyx_charges_summary
     reviewed: true
-    note: lookup
+    note: read-only
 GET /comments:
     bucket: out_of_scope
     reviewed: true
@@ -1776,12 +1775,12 @@ GET /compute/actors/{id}:
     bucket: data_source
     terraform: telnyx_compute_actor
     reviewed: true
-    note: lookup
+    note: read-only
 GET /compute/funcs:
     bucket: data_source
     terraform: telnyx_compute_functions
     reviewed: true
-    note: lookup
+    note: read-only
 GET /compute/funcs/{id}/logs:
     bucket: out_of_scope
     reviewed: true
@@ -1795,7 +1794,7 @@ PUT /compute/funcs/{id}/logs/export:
     bucket: resource
     terraform: telnyx_compute_function_log_export
     reviewed: true
-    note: update of telnyx_compute_function_log_export (catalog singleton)
+    note: create and update of telnyx_compute_function_log_export (catalog singleton)
 DELETE /compute/funcs/{id}/logs/export:
     bucket: resource
     terraform: telnyx_compute_function_log_export
@@ -1809,7 +1808,7 @@ GET /compute/funcs/{id}/revisions:
     bucket: data_source
     terraform: telnyx_compute_function_revisions
     reviewed: true
-    note: lookup
+    note: read-only
 GET /compute/funcs/{id}/ship_inspection:
     bucket: out_of_scope
     reviewed: true
@@ -1910,12 +1909,12 @@ GET /connections:
     bucket: data_source
     terraform: telnyx_connections
     reviewed: true
-    note: lookup
+    note: read-only
 GET /connections/count:
     bucket: data_source
     terraform: telnyx_connection_count
     reviewed: true
-    note: lookup
+    note: read-only
 GET /connections/{connection_id}/active_calls:
     bucket: out_of_scope
     reviewed: true
@@ -1924,7 +1923,7 @@ GET /connections/{id}:
     bucket: data_source
     terraform: telnyx_connection
     reviewed: true
-    note: lookup
+    note: read-only
 GET /country_coverage:
     bucket: data_source
     terraform: telnyx_country_coverage
@@ -2033,7 +2032,7 @@ GET /dir:
     bucket: data_source
     terraform: telnyx_display_identity_records
     reviewed: true
-    note: lookup
+    note: list of telnyx_display_identity_record
 GET /dir/document_types:
     bucket: data_source
     terraform: telnyx_display_identity_record_document_types
@@ -2058,10 +2057,10 @@ GET /dir/{dir_id}/bpo_authorizations:
     bucket: data_source
     terraform: telnyx_display_identity_record_bpo_authorizations
     reviewed: true
-    note: lookup
+    note: read-only
 POST /dir/{dir_id}/bpo_loa:
     bucket: action
-    terraform: telnyx_display_identity_record_bpo_loa
+    terraform: telnyx_display_identity_record_bpo_loa_upload
     reviewed: true
     note: one-shot operation
 GET /dir/{dir_id}/comments:
@@ -2076,7 +2075,7 @@ GET /dir/{dir_id}/infringement_claims:
     bucket: data_source
     terraform: telnyx_display_identity_record_infringement_claims
     reviewed: true
-    note: lookup
+    note: read-only
 PUT /dir/{dir_id}/infringement_update:
     bucket: action
     terraform: telnyx_display_identity_record_infringement_update
@@ -2084,42 +2083,42 @@ PUT /dir/{dir_id}/infringement_update:
     note: one-shot operation
 POST /dir/{dir_id}/loa:
     bucket: action
-    terraform: telnyx_display_identity_record_loa
+    terraform: telnyx_display_identity_record_loa_upload
     reviewed: true
     note: one-shot operation
 GET /dir/{dir_id}/phone_number_batches:
     bucket: data_source
     terraform: telnyx_display_identity_record_phone_number_batches
     reviewed: true
-    note: lookup
+    note: read-only
 GET /dir/{dir_id}/phone_number_batches/{batch_id}:
     bucket: data_source
     terraform: telnyx_display_identity_record_phone_number_batch
     reviewed: true
-    note: lookup
+    note: read-only
 GET /dir/{dir_id}/phone_numbers:
     bucket: data_source
     terraform: telnyx_display_identity_record_phone_numbers
     reviewed: true
-    note: lookup
+    note: list of telnyx_display_identity_record_phone_number
 POST /dir/{dir_id}/phone_numbers:
-    bucket: action
-    terraform: telnyx_display_identity_record_phone_number_create
+    bucket: resource
+    terraform: telnyx_display_identity_record_phone_number
     reviewed: true
-    note: one-shot operation
+    note: create of telnyx_display_identity_record_phone_number (triage)
 DELETE /dir/{dir_id}/phone_numbers:
-    bucket: action
-    terraform: telnyx_display_identity_record_phone_number_delete
+    bucket: resource
+    terraform: telnyx_display_identity_record_phone_number
     reviewed: true
-    note: one-shot operation
+    note: delete of telnyx_display_identity_record_phone_number (triage)
 GET /dir/{dir_id}/references:
     bucket: data_source
     terraform: telnyx_display_identity_record_references
     reviewed: true
-    note: lookup
+    note: read-only
 POST /dir/{dir_id}/references:
     bucket: action
-    terraform: telnyx_display_identity_record_reference_create
+    terraform: telnyx_display_identity_record_reference_add
     reviewed: true
     note: one-shot operation
 PATCH /dir/{dir_id}/references/{ref_type}/{slot}:
@@ -2136,10 +2135,10 @@ GET /dir/{dir_id}/verify_email:
     bucket: data_source
     terraform: telnyx_display_identity_record_verify_email
     reviewed: true
-    note: lookup
+    note: read-only
 POST /dir/{dir_id}/verify_email:
     bucket: action
-    terraform: telnyx_display_identity_record_verify_email_create
+    terraform: telnyx_display_identity_record_verify_email_send
     reviewed: true
     note: one-shot operation
 POST /dir/{dir_id}/verify_email/confirm:
@@ -2151,7 +2150,7 @@ GET /document_links:
     bucket: data_source
     terraform: telnyx_document_links
     reviewed: true
-    note: lookup
+    note: read-only
 GET /documents:
     bucket: data_source
     terraform: telnyx_documents
@@ -2321,14 +2320,14 @@ GET /email_blocks/export:
     note: 'runtime: object access'
 POST /email_blocks/import:
     bucket: action
-    terraform: telnyx_email_suppression_import_create
+    terraform: telnyx_email_suppression_import_start
     reviewed: true
     note: one-shot operation
 GET /email_blocks/import/{id}:
     bucket: data_source
     terraform: telnyx_email_suppression_import
     reviewed: true
-    note: lookup
+    note: read-only
 GET /email_blocks/{id}:
     bucket: resource
     terraform: telnyx_email_suppression
@@ -2357,7 +2356,7 @@ GET /email_domains/{domain_id}/dns_records:
     bucket: data_source
     terraform: telnyx_email_domain_dns_records
     reviewed: true
-    note: lookup
+    note: read-only
 POST /email_domains/{domain_id}/rotate_dkim:
     bucket: action
     terraform: telnyx_email_domain_rotate_dkim
@@ -2412,7 +2411,7 @@ GET /email_domains/{id}/health:
     bucket: data_source
     terraform: telnyx_email_domain_health
     reviewed: true
-    note: lookup
+    note: read-only
 GET /email_events:
     bucket: out_of_scope
     reviewed: true
@@ -2471,24 +2470,22 @@ POST /email_inboxes/{inbox_id}/drafts/{draft_id}/send:
     note: 'runtime: mailbox content'
 GET /email_inboxes/{inbox_id}/filters:
     bucket: resource
-    terraform: telnyx_email_inbox_filter
+    terraform: telnyx_email_inbox_sender_filters
     reviewed: true
-    note: read of telnyx_email_inbox_filter (triage)
+    note: read of telnyx_email_inbox_sender_filters (triage)
 POST /email_inboxes/{inbox_id}/filters:
-    bucket: resource
-    terraform: telnyx_email_inbox_filter
+    bucket: out_of_scope
     reviewed: true
-    note: create of telnyx_email_inbox_filter (triage)
+    note: alternative update; telnyx_email_inbox_sender_filters uses PUT /email_inboxes/{inbox_id}/filters
 PUT /email_inboxes/{inbox_id}/filters:
     bucket: resource
-    terraform: telnyx_email_inbox_filter
+    terraform: telnyx_email_inbox_sender_filters
     reviewed: true
-    note: update of telnyx_email_inbox_filter (triage)
+    note: update and create of telnyx_email_inbox_sender_filters (triage)
 DELETE /email_inboxes/{inbox_id}/filters:
-    bucket: resource
-    terraform: telnyx_email_inbox_filter
+    bucket: out_of_scope
     reviewed: true
-    note: delete of telnyx_email_inbox_filter (triage)
+    note: alternative update; telnyx_email_inbox_sender_filters uses PUT /email_inboxes/{inbox_id}/filters
 GET /email_inboxes/{inbox_id}/messages:
     bucket: out_of_scope
     reviewed: true
@@ -2716,34 +2713,34 @@ POST /enterprises/{enterprise_id}/dir:
     note: create of telnyx_display_identity_record (triage)
 GET /enterprises/{enterprise_id}/reputation:
     bucket: resource
-    terraform: telnyx_reputation_enterprise
+    terraform: telnyx_enterprise_reputation
     reviewed: true
-    note: read of telnyx_reputation_enterprise (triage)
+    note: read of telnyx_enterprise_reputation (triage)
 POST /enterprises/{enterprise_id}/reputation:
     bucket: resource
-    terraform: telnyx_reputation_enterprise
+    terraform: telnyx_enterprise_reputation
     reviewed: true
-    note: create of telnyx_reputation_enterprise (triage)
+    note: create of telnyx_enterprise_reputation (triage)
 DELETE /enterprises/{enterprise_id}/reputation:
     bucket: resource
-    terraform: telnyx_reputation_enterprise
+    terraform: telnyx_enterprise_reputation
     reviewed: true
-    note: delete of telnyx_reputation_enterprise (triage)
+    note: delete of telnyx_enterprise_reputation (triage)
 GET /enterprises/{enterprise_id}/reputation/external_verification:
     bucket: data_source
     terraform: telnyx_enterprise_reputation_external_verification
     reviewed: true
-    note: lookup
+    note: read-only
 POST /enterprises/{enterprise_id}/reputation/external_verification:
     bucket: action
-    terraform: telnyx_enterprise_reputation_external_verification_create
+    terraform: telnyx_enterprise_reputation_external_verification_submit
     reviewed: true
     note: one-shot operation
 PATCH /enterprises/{enterprise_id}/reputation/frequency:
-    bucket: action
-    terraform: telnyx_enterprise_reputation_frequency
+    bucket: resource
+    terraform: telnyx_enterprise_reputation
     reviewed: true
-    note: one-shot operation
+    note: update (frequency) of telnyx_enterprise_reputation (triage)
 POST /enterprises/{enterprise_id}/reputation/loa:
     bucket: action
     terraform: telnyx_enterprise_reputation_loa_upload
@@ -2756,34 +2753,34 @@ PATCH /enterprises/{enterprise_id}/reputation/loa:
     note: one-shot operation
 GET /enterprises/{enterprise_id}/reputation/numbers:
     bucket: data_source
-    terraform: telnyx_reputation_numbers
+    terraform: telnyx_enterprise_reputation_numbers
     reviewed: true
-    note: list of telnyx_reputation_number
+    note: list of telnyx_enterprise_reputation_number
 POST /enterprises/{enterprise_id}/reputation/numbers:
     bucket: resource
-    terraform: telnyx_reputation_number
+    terraform: telnyx_enterprise_reputation_number
     reviewed: true
-    note: create of telnyx_reputation_number (catalog collection)
+    note: create of telnyx_enterprise_reputation_number (catalog collection)
 POST /enterprises/{enterprise_id}/reputation/numbers/refresh:
     bucket: action
-    terraform: telnyx_enterprise_reputation_number_refresh
+    terraform: telnyx_enterprise_reputation_numbers_refresh
     reviewed: true
     note: one-shot operation
 GET /enterprises/{enterprise_id}/reputation/numbers/{phone_number}:
     bucket: resource
-    terraform: telnyx_reputation_number
+    terraform: telnyx_enterprise_reputation_number
     reviewed: true
-    note: read of telnyx_reputation_number (catalog collection)
+    note: read of telnyx_enterprise_reputation_number (catalog collection)
 DELETE /enterprises/{enterprise_id}/reputation/numbers/{phone_number}:
     bucket: resource
-    terraform: telnyx_reputation_number
+    terraform: telnyx_enterprise_reputation_number
     reviewed: true
-    note: delete of telnyx_reputation_number (catalog collection)
+    note: delete of telnyx_enterprise_reputation_number (catalog collection)
 GET /enterprises/{enterprise_id}/reputation/numbers/{phone_number}/ownership:
     bucket: data_source
     terraform: telnyx_enterprise_reputation_number_ownership
     reviewed: true
-    note: lookup
+    note: read-only
 POST /enterprises/{enterprise_id}/reputation/numbers/{phone_number}/ownership_confirm:
     bucket: action
     terraform: telnyx_enterprise_reputation_number_ownership_confirm
@@ -2793,22 +2790,22 @@ GET /enterprises/{enterprise_id}/reputation/remediation:
     bucket: data_source
     terraform: telnyx_enterprise_reputation_remediations
     reviewed: true
-    note: lookup
+    note: read-only
 POST /enterprises/{enterprise_id}/reputation/remediation:
     bucket: action
-    terraform: telnyx_enterprise_reputation_remediation_create
+    terraform: telnyx_enterprise_reputation_remediation_submit
     reviewed: true
     note: one-shot operation
 GET /enterprises/{enterprise_id}/reputation/remediation/{remediation_id}:
     bucket: data_source
     terraform: telnyx_enterprise_reputation_remediation
     reviewed: true
-    note: lookup
+    note: read-only
 PATCH /enterprises/{enterprise_id}/reputation/webhook:
-    bucket: action
-    terraform: telnyx_enterprise_reputation_webhook
+    bucket: resource
+    terraform: telnyx_enterprise_reputation
     reviewed: true
-    note: one-shot operation
+    note: update (webhook) of telnyx_enterprise_reputation (triage)
 POST /enterprises/{enterprise_id}/verify_email:
     bucket: action
     terraform: telnyx_enterprise_verify_email
@@ -2860,12 +2857,12 @@ GET /external_connections/{id}/civic_addresses:
     bucket: data_source
     terraform: telnyx_external_connection_civic_addresses
     reviewed: true
-    note: lookup
+    note: read-only
 GET /external_connections/{id}/civic_addresses/{address_id}:
     bucket: data_source
     terraform: telnyx_external_connection_civic_address
     reviewed: true
-    note: lookup
+    note: read-only
 PATCH /external_connections/{id}/locations/{location_id}:
     bucket: action
     terraform: telnyx_external_connection_location_update
@@ -2875,7 +2872,7 @@ GET /external_connections/{id}/phone_numbers:
     bucket: data_source
     terraform: telnyx_external_connection_phone_numbers
     reviewed: true
-    note: lookup
+    note: list of telnyx_external_connection_phone_number_settings
 GET /external_connections/{id}/phone_numbers/{phone_number_id}:
     bucket: resource
     terraform: telnyx_external_connection_phone_number_settings
@@ -2890,20 +2887,20 @@ GET /external_connections/{id}/releases:
     bucket: data_source
     terraform: telnyx_external_connection_releases
     reviewed: true
-    note: lookup
+    note: read-only
 GET /external_connections/{id}/releases/{release_id}:
     bucket: data_source
     terraform: telnyx_external_connection_release
     reviewed: true
-    note: lookup
+    note: read-only
 GET /external_connections/{id}/uploads:
     bucket: data_source
     terraform: telnyx_external_connection_uploads
     reviewed: true
-    note: lookup
+    note: read-only
 POST /external_connections/{id}/uploads:
     bucket: action
-    terraform: telnyx_external_connection_upload_create
+    terraform: telnyx_external_connection_upload_start
     reviewed: true
     note: one-shot operation
 POST /external_connections/{id}/uploads/refresh:
@@ -2915,12 +2912,12 @@ GET /external_connections/{id}/uploads/status:
     bucket: data_source
     terraform: telnyx_external_connection_upload_status
     reviewed: true
-    note: lookup
+    note: read-only
 GET /external_connections/{id}/uploads/{ticket_id}:
     bucket: data_source
     terraform: telnyx_external_connection_upload
     reviewed: true
-    note: lookup
+    note: read-only
 POST /external_connections/{id}/uploads/{ticket_id}/retry:
     bucket: action
     terraform: telnyx_external_connection_upload_retry
@@ -2930,10 +2927,10 @@ GET /external_requirements/{regulatory_requirement_id}/sub_number_orders/{sub_nu
     bucket: data_source
     terraform: telnyx_external_requirement_sub_number_order
     reviewed: true
-    note: lookup
+    note: read-only
 POST /external_requirements/{regulatory_requirement_id}/sub_number_orders/{sub_number_order_id}:
     bucket: action
-    terraform: telnyx_external_requirement_sub_number_order_create
+    terraform: telnyx_sub_number_order_external_requirement_fulfill
     reviewed: true
     note: one-shot operation
 GET /fax_applications:
@@ -3049,10 +3046,9 @@ GET /global_ip_allowed_ports:
     bucket: data_source
     terraform: telnyx_global_ip_allowed_ports
     reviewed: true
-    note: lookup
+    note: read-only
 GET /global_ip_assignment_health:
     bucket: out_of_scope
-    terraform: telnyx_global_ip_assignment_health
     reviewed: true
     note: reporting
 GET /global_ip_assignments:
@@ -3087,12 +3083,12 @@ DELETE /global_ip_assignments/{id}:
 GET /global_ip_assignments_usage:
     bucket: out_of_scope
     reviewed: true
-    note: alias of GET /global_ip_assignments/usage
+    note: alias of GET /global_ip_assignments/usage; reporting
 GET /global_ip_health_check_types:
     bucket: data_source
     terraform: telnyx_global_ip_health_check_types
     reviewed: true
-    note: lookup
+    note: read-only
 GET /global_ip_health_checks:
     bucket: data_source
     terraform: telnyx_global_ip_health_checks
@@ -3121,7 +3117,7 @@ GET /global_ip_protocols:
     bucket: data_source
     terraform: telnyx_global_ip_protocols
     reviewed: true
-    note: lookup
+    note: read-only
 GET /global_ip_usage:
     bucket: out_of_scope
     reviewed: true
@@ -3148,14 +3144,14 @@ DELETE /global_ips/{id}:
     note: delete of telnyx_global_ip (catalog collection)
 GET /inbound_channels:
     bucket: resource
-    terraform: telnyx_inbound_voice_channels
+    terraform: telnyx_inbound_voice_channel_settings
     reviewed: true
-    note: read of telnyx_inbound_voice_channels (catalog singleton)
+    note: read of telnyx_inbound_voice_channel_settings (catalog singleton)
 PATCH /inbound_channels:
     bucket: resource
-    terraform: telnyx_inbound_voice_channels
+    terraform: telnyx_inbound_voice_channel_settings
     reviewed: true
-    note: update of telnyx_inbound_voice_channels (catalog singleton)
+    note: update of telnyx_inbound_voice_channel_settings (catalog singleton)
 GET /inexplicit_number_orders:
     bucket: data_source
     terraform: telnyx_inexplicit_number_orders
@@ -3175,7 +3171,7 @@ GET /infringement_claims/{claim_id}:
     bucket: data_source
     terraform: telnyx_infringement_claim
     reviewed: true
-    note: lookup
+    note: read-only
 POST /infringement_claims/{claim_id}/contest:
     bucket: action
     terraform: telnyx_infringement_claim_contest
@@ -3205,12 +3201,12 @@ GET /invoices:
     bucket: data_source
     terraform: telnyx_invoices
     reviewed: true
-    note: lookup
+    note: read-only
 GET /invoices/{id}:
     bucket: data_source
     terraform: telnyx_invoice
     reviewed: true
-    note: lookup
+    note: read-only
 GET /ip_connections:
     bucket: data_source
     terraform: telnyx_ip_connections
@@ -3272,35 +3268,35 @@ GET /ledger_billing_group_reports/{id}:
 GET /legacy/reporting/batch/detail/records/speech/to/text:
     bucket: out_of_scope
     reviewed: true
-    note: alias of GET /legacy/reporting/batch_detail_records/speech_to_text
+    note: alias of GET /legacy/reporting/batch_detail_records/speech_to_text; reporting
 POST /legacy/reporting/batch/detail/records/speech/to/text:
     bucket: out_of_scope
     reviewed: true
-    note: alias of POST /legacy/reporting/batch_detail_records/speech_to_text
+    note: alias of POST /legacy/reporting/batch_detail_records/speech_to_text; reporting
 GET /legacy/reporting/batch/detail/records/speech/to/text/{id}:
     bucket: out_of_scope
     reviewed: true
-    note: alias of GET /legacy/reporting/batch_detail_records/speech_to_text/{id}
+    note: alias of GET /legacy/reporting/batch_detail_records/speech_to_text/{id}; reporting
 DELETE /legacy/reporting/batch/detail/records/speech/to/text/{id}:
     bucket: out_of_scope
     reviewed: true
-    note: alias of DELETE /legacy/reporting/batch_detail_records/speech_to_text/{id}
+    note: alias of DELETE /legacy/reporting/batch_detail_records/speech_to_text/{id}; reporting
 GET /legacy/reporting/batch_detail_records/messaging:
     bucket: out_of_scope
     reviewed: true
-    note: alias of GET /legacy_reporting/batch_detail_records/messaging
+    note: alias of GET /legacy_reporting/batch_detail_records/messaging; reporting
 POST /legacy/reporting/batch_detail_records/messaging:
     bucket: out_of_scope
     reviewed: true
-    note: alias of POST /legacy_reporting/batch_detail_records/messaging
+    note: alias of POST /legacy_reporting/batch_detail_records/messaging; reporting
 GET /legacy/reporting/batch_detail_records/messaging/{id}:
     bucket: out_of_scope
     reviewed: true
-    note: alias of GET /legacy_reporting/batch_detail_records/messaging/{id}
+    note: alias of GET /legacy_reporting/batch_detail_records/messaging/{id}; reporting
 DELETE /legacy/reporting/batch_detail_records/messaging/{id}:
     bucket: out_of_scope
     reviewed: true
-    note: alias of DELETE /legacy_reporting/batch_detail_records/messaging/{id}
+    note: alias of DELETE /legacy_reporting/batch_detail_records/messaging/{id}; reporting
 GET /legacy/reporting/batch_detail_records/speech_to_text:
     bucket: out_of_scope
     reviewed: true
@@ -3320,75 +3316,75 @@ DELETE /legacy/reporting/batch_detail_records/speech_to_text/{id}:
 GET /legacy/reporting/batch_detail_records/voice:
     bucket: out_of_scope
     reviewed: true
-    note: alias of GET /legacy_reporting/batch_detail_records/voice
+    note: alias of GET /legacy_reporting/batch_detail_records/voice; reporting
 POST /legacy/reporting/batch_detail_records/voice:
     bucket: out_of_scope
     reviewed: true
-    note: alias of POST /legacy_reporting/batch_detail_records/voice
+    note: alias of POST /legacy_reporting/batch_detail_records/voice; reporting
 GET /legacy/reporting/batch_detail_records/voice/fields:
     bucket: out_of_scope
     reviewed: true
-    note: alias of GET /legacy_reporting/batch_detail_records/voice/fields
+    note: alias of GET /legacy_reporting/batch_detail_records/voice/fields; reporting
 GET /legacy/reporting/batch_detail_records/voice/{id}:
     bucket: out_of_scope
     reviewed: true
-    note: alias of GET /legacy_reporting/batch_detail_records/voice/{id}
+    note: alias of GET /legacy_reporting/batch_detail_records/voice/{id}; reporting
 DELETE /legacy/reporting/batch_detail_records/voice/{id}:
     bucket: out_of_scope
     reviewed: true
-    note: alias of DELETE /legacy_reporting/batch_detail_records/voice/{id}
+    note: alias of DELETE /legacy_reporting/batch_detail_records/voice/{id}; reporting
 GET /legacy/reporting/usage_reports/messaging:
     bucket: out_of_scope
     reviewed: true
-    note: alias of GET /legacy_reporting/usage_reports/messaging
+    note: alias of GET /legacy_reporting/usage_reports/messaging; reporting
 POST /legacy/reporting/usage_reports/messaging:
     bucket: out_of_scope
     reviewed: true
-    note: alias of POST /legacy_reporting/usage_reports/messaging
+    note: alias of POST /legacy_reporting/usage_reports/messaging; reporting
 GET /legacy/reporting/usage_reports/messaging/{id}:
     bucket: out_of_scope
     reviewed: true
-    note: alias of GET /legacy_reporting/usage_reports/messaging/{id}
+    note: alias of GET /legacy_reporting/usage_reports/messaging/{id}; reporting
 DELETE /legacy/reporting/usage_reports/messaging/{id}:
     bucket: out_of_scope
     reviewed: true
-    note: alias of DELETE /legacy_reporting/usage_reports/messaging/{id}
+    note: alias of DELETE /legacy_reporting/usage_reports/messaging/{id}; reporting
 GET /legacy/reporting/usage_reports/number_lookup:
     bucket: out_of_scope
     reviewed: true
-    note: alias of GET /legacy_reporting/usage_reports/number_lookup
+    note: alias of GET /legacy_reporting/usage_reports/number_lookup; reporting
 POST /legacy/reporting/usage_reports/number_lookup:
     bucket: out_of_scope
     reviewed: true
-    note: alias of POST /legacy_reporting/usage_reports/number_lookup
+    note: alias of POST /legacy_reporting/usage_reports/number_lookup; reporting
 GET /legacy/reporting/usage_reports/number_lookup/{id}:
     bucket: out_of_scope
     reviewed: true
-    note: alias of GET /legacy_reporting/usage_reports/number_lookup/{id}
+    note: alias of GET /legacy_reporting/usage_reports/number_lookup/{id}; reporting
 DELETE /legacy/reporting/usage_reports/number_lookup/{id}:
     bucket: out_of_scope
     reviewed: true
-    note: alias of DELETE /legacy_reporting/usage_reports/number_lookup/{id}
+    note: alias of DELETE /legacy_reporting/usage_reports/number_lookup/{id}; reporting
 GET /legacy/reporting/usage_reports/speech_to_text:
     bucket: out_of_scope
     reviewed: true
-    note: alias of GET /legacy_reporting/usage_reports/speech_to_text
+    note: alias of GET /legacy_reporting/usage_reports/speech_to_text; reporting
 GET /legacy/reporting/usage_reports/voice:
     bucket: out_of_scope
     reviewed: true
-    note: alias of GET /legacy_reporting/usage_reports/voice
+    note: alias of GET /legacy_reporting/usage_reports/voice; reporting
 POST /legacy/reporting/usage_reports/voice:
     bucket: out_of_scope
     reviewed: true
-    note: alias of POST /legacy_reporting/usage_reports/voice
+    note: alias of POST /legacy_reporting/usage_reports/voice; reporting
 GET /legacy/reporting/usage_reports/voice/{id}:
     bucket: out_of_scope
     reviewed: true
-    note: alias of GET /legacy_reporting/usage_reports/voice/{id}
+    note: alias of GET /legacy_reporting/usage_reports/voice/{id}; reporting
 DELETE /legacy/reporting/usage_reports/voice/{id}:
     bucket: out_of_scope
     reviewed: true
-    note: alias of DELETE /legacy_reporting/usage_reports/voice/{id}
+    note: alias of DELETE /legacy_reporting/usage_reports/voice/{id}; reporting
 GET /legacy_reporting/batch_detail_records/messaging:
     bucket: out_of_scope
     reviewed: true
@@ -3481,12 +3477,12 @@ GET /list:
     bucket: data_source
     terraform: telnyx_channel_billing_numbers
     reviewed: true
-    note: lookup
+    note: read-only
 GET /list/{channel_zone_id}:
     bucket: data_source
     terraform: telnyx_channel_billing_zone_numbers
     reviewed: true
-    note: lookup
+    note: read-only
 GET /llm_token_gateway/spend/events:
     bucket: out_of_scope
     reviewed: true
@@ -3571,7 +3567,7 @@ GET /managed_accounts/allocatable_global_outbound_channels:
     bucket: data_source
     terraform: telnyx_managed_account_allocatable_global_outbound_channels
     reviewed: true
-    note: lookup
+    note: read-only
 GET /managed_accounts/{id}:
     bucket: resource
     terraform: telnyx_managed_account
@@ -3593,10 +3589,10 @@ POST /managed_accounts/{id}/actions/enable:
     reviewed: true
     note: one-shot operation
 PATCH /managed_accounts/{id}/update_global_channel_limit:
-    bucket: action
-    terraform: telnyx_managed_account_update_global_channel_limit
+    bucket: resource
+    terraform: telnyx_managed_account
     reviewed: true
-    note: one-shot operation
+    note: update (global channel limit) of telnyx_managed_account (triage)
 GET /media:
     bucket: data_source
     terraform: telnyx_medias
@@ -3693,7 +3689,7 @@ POST /messages/alphanumeric/sender/id:
 POST /messages/alphanumeric_sender_id:
     bucket: out_of_scope
     reviewed: true
-    note: alias of POST /messages/alphanumeric/sender/id
+    note: 'alias of POST /messages/alphanumeric/sender/id; runtime: message sending'
 GET /messages/group/{message_id}:
     bucket: out_of_scope
     reviewed: true
@@ -3717,7 +3713,7 @@ POST /messages/rcs:
 GET /messages/rcs/deeplinks/{agent_id}:
     bucket: out_of_scope
     reviewed: true
-    note: alias of GET /messages/rcs_deeplinks/{agent_id}
+    note: 'alias of GET /messages/rcs_deeplinks/{agent_id}; runtime: conversation data'
 GET /messages/rcs_deeplinks/{agent_id}:
     bucket: out_of_scope
     reviewed: true
@@ -3746,7 +3742,7 @@ GET /messaging/hosted/numbers:
     bucket: data_source
     terraform: telnyx_messaging_hosted_numbers
     reviewed: true
-    note: lookup
+    note: list of telnyx_messaging_hosted_number
 POST /messaging/profiles/{id}/actions/regenerate/secret:
     bucket: action
     terraform: telnyx_messaging_profile_regenerate_secret
@@ -3756,26 +3752,23 @@ GET /messaging/profiles/{id}/alphanumeric/sender/ids:
     bucket: data_source
     terraform: telnyx_messaging_profile_alphanumeric_sender_ids
     reviewed: true
-    note: lookup
+    note: read-only
 GET /messaging/profiles/{id}/metrics:
     bucket: out_of_scope
     reviewed: true
     note: reporting
 GET /messaging/rcs/agents:
-    bucket: data_source
-    terraform: telnyx_messaging_rcs_agents
+    bucket: out_of_scope
     reviewed: true
-    note: lookup
+    note: duplicate API of telnyx_rcs_agent
 GET /messaging/rcs/agents/{id}:
-    bucket: resource
-    terraform: telnyx_messaging_rcs_agent
+    bucket: out_of_scope
     reviewed: true
-    note: read of telnyx_messaging_rcs_agent (catalog existing)
+    note: duplicate API of telnyx_rcs_agent
 PATCH /messaging/rcs/agents/{id}:
-    bucket: resource
-    terraform: telnyx_messaging_rcs_agent
+    bucket: out_of_scope
     reviewed: true
-    note: update of telnyx_messaging_rcs_agent (catalog existing)
+    note: duplicate API of telnyx_rcs_agent
 POST /messaging/rcs/bulk_capabilities:
     bucket: out_of_scope
     reviewed: true
@@ -3784,10 +3777,10 @@ GET /messaging/rcs/capabilities/{agent_id}/{phone_number}:
     bucket: data_source
     terraform: telnyx_messaging_rcs_capability
     reviewed: true
-    note: lookup
+    note: read-only
 PUT /messaging/rcs/test_number_invite/{id}/{phone_number}:
     bucket: action
-    terraform: telnyx_messaging_rcs_test_number_invite_update
+    terraform: telnyx_messaging_rcs_test_number_invite
     reviewed: true
     note: one-shot operation
 GET /messaging/tollfree/verification/requests/{id}/status/history:
@@ -3861,7 +3854,7 @@ GET /messaging_numbers/bulk_updates/{order_id}:
     bucket: data_source
     terraform: telnyx_messaging_number_bulk_update
     reviewed: true
-    note: lookup
+    note: read-only
 POST /messaging_numbers_bulk_updates:
     bucket: out_of_scope
     reviewed: true
@@ -3914,17 +3907,17 @@ GET /messaging_profiles/{id}/alphanumeric_sender_ids:
 GET /messaging_profiles/{id}/metrics:
     bucket: out_of_scope
     reviewed: true
-    note: alias of GET /messaging/profiles/{id}/metrics
+    note: alias of GET /messaging/profiles/{id}/metrics; reporting
 GET /messaging_profiles/{id}/phone_numbers:
     bucket: data_source
     terraform: telnyx_messaging_profile_phone_numbers
     reviewed: true
-    note: lookup
+    note: read-only
 GET /messaging_profiles/{id}/short_codes:
     bucket: data_source
     terraform: telnyx_messaging_profile_short_codes
     reviewed: true
-    note: lookup
+    note: read-only
 GET /messaging_profiles/{profile_id}/autoresp_configs:
     bucket: data_source
     terraform: telnyx_messaging_profile_auto_responses
@@ -3978,12 +3971,12 @@ DELETE /messaging_tollfree/verification/requests/{id}:
 GET /messaging_tollfree/verification/requests/{id}/status_history:
     bucket: out_of_scope
     reviewed: true
-    note: alias of GET /messaging/tollfree/verification/requests/{id}/status/history
+    note: 'alias of GET /messaging/tollfree/verification/requests/{id}/status/history; runtime: verification flow'
 GET /messaging_url_domains:
     bucket: data_source
     terraform: telnyx_messaging_url_domains
     reviewed: true
-    note: lookup
+    note: read-only
 GET /mobile_network_operators:
     bucket: data_source
     terraform: telnyx_mobile_network_operators
@@ -3993,12 +3986,12 @@ GET /mobile_phone_numbers/messaging:
     bucket: data_source
     terraform: telnyx_mobile_phone_numbers_messaging_settings
     reviewed: true
-    note: lookup
+    note: read-only
 GET /mobile_phone_numbers/{id}/messaging:
     bucket: data_source
     terraform: telnyx_mobile_phone_number_messaging_settings
     reviewed: true
-    note: lookup
+    note: read-only
 GET /mobile_push_credentials:
     bucket: data_source
     terraform: telnyx_mobile_push_credentials
@@ -4086,9 +4079,9 @@ DELETE /networks/{id}/default_gateway:
     note: delete of telnyx_network_default_gateway (triage)
 GET /networks/{id}/network_interfaces:
     bucket: data_source
-    terraform: telnyx_network_network_interfaces
+    terraform: telnyx_network_interfaces
     reviewed: true
-    note: lookup
+    note: read-only
 GET /noise_suppression_engines:
     bucket: data_source
     terraform: telnyx_noise_suppression_engines
@@ -4123,12 +4116,12 @@ GET /notification_event_conditions:
     bucket: data_source
     terraform: telnyx_notification_event_conditions
     reviewed: true
-    note: lookup
+    note: read-only
 GET /notification_events:
     bucket: data_source
     terraform: telnyx_notification_events
     reviewed: true
-    note: lookup
+    note: read-only
 GET /notification_profiles:
     bucket: data_source
     terraform: telnyx_notification_profiles
@@ -4197,17 +4190,17 @@ GET /number_order_phone_numbers:
     bucket: data_source
     terraform: telnyx_number_order_phone_numbers
     reviewed: true
-    note: lookup
+    note: read-only
 POST /number_order_phone_numbers/{id}/requirement_group:
     bucket: action
-    terraform: telnyx_number_order_phone_number_requirement_group
+    terraform: telnyx_number_order_phone_number_requirement_group_update
     reviewed: true
     note: one-shot operation
 GET /number_order_phone_numbers/{number_order_phone_number_id}:
     bucket: data_source
     terraform: telnyx_number_order_phone_number
     reviewed: true
-    note: lookup
+    note: read-only
 PATCH /number_order_phone_numbers/{number_order_phone_number_id}:
     bucket: action
     terraform: telnyx_number_order_phone_number_update
@@ -4345,15 +4338,15 @@ DELETE /oauth_clients/{id}:
 GET /oauth_grants:
     bucket: out_of_scope
     reviewed: true
-    note: alias of GET /oauth/grants
+    note: 'alias of GET /oauth/grants; runtime: OAuth grants are issued by the OAuth flow'
 GET /oauth_grants/{id}:
     bucket: out_of_scope
     reviewed: true
-    note: alias of GET /oauth/grants/{id}
+    note: 'alias of GET /oauth/grants/{id}; runtime: OAuth grants are issued by the OAuth flow'
 DELETE /oauth_grants/{id}:
     bucket: out_of_scope
     reviewed: true
-    note: alias of DELETE /oauth/grants/{id}
+    note: 'alias of DELETE /oauth/grants/{id}; runtime: OAuth grants are issued by the OAuth flow'
 POST /operator_connect/actions/refresh:
     bucket: action
     terraform: telnyx_operator_connect_refresh
@@ -4363,7 +4356,7 @@ GET /organizations/users:
     bucket: data_source
     terraform: telnyx_organization_users
     reviewed: true
-    note: lookup
+    note: read-only
 GET /organizations/users/users_groups_report:
     bucket: out_of_scope
     reviewed: true
@@ -4372,7 +4365,7 @@ GET /organizations/users/{id}:
     bucket: data_source
     terraform: telnyx_organization_user
     reviewed: true
-    note: lookup
+    note: read-only
 POST /organizations/users/{id}/actions/remove:
     bucket: action
     terraform: telnyx_organization_user_remove
@@ -4382,12 +4375,12 @@ GET /ota_updates:
     bucket: data_source
     terraform: telnyx_ota_updates
     reviewed: true
-    note: lookup
+    note: read-only
 GET /ota_updates/{id}:
     bucket: data_source
     terraform: telnyx_ota_update
     reviewed: true
-    note: lookup
+    note: read-only
 GET /outbound_voice_profiles:
     bucket: data_source
     terraform: telnyx_outbound_voice_profiles
@@ -4452,22 +4445,22 @@ GET /phone_number_blocks/jobs:
     bucket: data_source
     terraform: telnyx_phone_number_block_jobs
     reviewed: true
-    note: lookup
+    note: read-only
 POST /phone_number_blocks/jobs/delete_phone_number_block:
     bucket: action
-    terraform: telnyx_phone_number_block_job_delete_phone_number_block_create
+    terraform: telnyx_phone_number_block_delete
     reviewed: true
     note: one-shot operation
 GET /phone_number_blocks/jobs/{id}:
     bucket: data_source
     terraform: telnyx_phone_number_block_job
     reviewed: true
-    note: lookup
+    note: read-only
 GET /phone_numbers:
     bucket: data_source
     terraform: telnyx_phone_numbers
     reviewed: true
-    note: lookup
+    note: list of telnyx_phone_number
 POST /phone_numbers/actions/verify_ownership:
     bucket: action
     terraform: telnyx_phone_number_verify_ownership
@@ -4489,47 +4482,47 @@ GET /phone_numbers/jobs:
     bucket: data_source
     terraform: telnyx_phone_number_jobs
     reviewed: true
-    note: lookup
+    note: read-only
 POST /phone_numbers/jobs/delete_phone_numbers:
     bucket: action
-    terraform: telnyx_phone_number_job_delete_phone_number_create
+    terraform: telnyx_phone_numbers_bulk_delete
     reviewed: true
     note: one-shot operation
 POST /phone_numbers/jobs/update_emergency_settings:
     bucket: action
-    terraform: telnyx_phone_number_job_update_emergency_setting_create
+    terraform: telnyx_phone_numbers_bulk_update_emergency_settings
     reviewed: true
     note: one-shot operation
 POST /phone_numbers/jobs/update_phone_numbers:
     bucket: action
-    terraform: telnyx_phone_number_job_update_phone_number_create
+    terraform: telnyx_phone_numbers_bulk_update
     reviewed: true
     note: one-shot operation
 GET /phone_numbers/jobs/{id}:
     bucket: data_source
     terraform: telnyx_phone_number_job
     reviewed: true
-    note: lookup
+    note: read-only
 GET /phone_numbers/messaging:
     bucket: data_source
     terraform: telnyx_phone_numbers_messaging_settings
     reviewed: true
-    note: lookup
+    note: read-only
 GET /phone_numbers/regulatory_requirements:
     bucket: data_source
     terraform: telnyx_phone_number_regulatory_requirements
     reviewed: true
-    note: lookup
+    note: read-only
 GET /phone_numbers/slim:
     bucket: data_source
     terraform: telnyx_phone_numbers_slim
     reviewed: true
-    note: lookup
+    note: read-only
 GET /phone_numbers/voice:
     bucket: data_source
     terraform: telnyx_phone_numbers_voice_settings
     reviewed: true
-    note: lookup
+    note: read-only
 GET /phone_numbers/{id}:
     bucket: resource
     terraform: telnyx_phone_number
@@ -4655,12 +4648,12 @@ GET /porting/reports/{id}:
     bucket: data_source
     terraform: telnyx_porting_report
     reviewed: true
-    note: lookup
+    note: read-only
 GET /porting/uk_carriers:
     bucket: data_source
     terraform: telnyx_porting_uk_carriers
     reviewed: true
-    note: lookup
+    note: read-only
 GET /porting_orders:
     bucket: data_source
     terraform: telnyx_porting_orders
@@ -4675,15 +4668,15 @@ GET /porting_orders/exception_types:
     bucket: data_source
     terraform: telnyx_porting_order_exception_types
     reviewed: true
-    note: lookup
+    note: read-only
 GET /porting_orders/phone_number_configurations:
     bucket: data_source
     terraform: telnyx_porting_order_phone_number_configurations
     reviewed: true
-    note: lookup
+    note: read-only
 POST /porting_orders/phone_number_configurations:
     bucket: action
-    terraform: telnyx_porting_order_phone_number_configuration_create
+    terraform: telnyx_porting_order_phone_number_configuration_set
     reviewed: true
     note: one-shot operation
 GET /porting_orders/{id}:
@@ -4725,12 +4718,12 @@ GET /porting_orders/{id}/activation_jobs:
     bucket: data_source
     terraform: telnyx_porting_order_activation_jobs
     reviewed: true
-    note: lookup
+    note: read-only
 GET /porting_orders/{id}/activation_jobs/{activationJobId}:
     bucket: data_source
     terraform: telnyx_porting_order_activation_job
     reviewed: true
-    note: lookup
+    note: read-only
 PATCH /porting_orders/{id}/activation_jobs/{activationJobId}:
     bucket: action
     terraform: telnyx_porting_order_activation_job_update
@@ -4755,7 +4748,7 @@ GET /porting_orders/{id}/allowed_foc_windows:
     bucket: data_source
     terraform: telnyx_porting_order_allowed_foc_windows
     reviewed: true
-    note: lookup
+    note: read-only
 GET /porting_orders/{id}/comments:
     bucket: out_of_scope
     reviewed: true
@@ -4768,22 +4761,22 @@ GET /porting_orders/{id}/loa_template:
     bucket: data_source
     terraform: telnyx_porting_order_loa_template
     reviewed: true
-    note: lookup
+    note: read-only
 GET /porting_orders/{id}/requirements:
     bucket: data_source
     terraform: telnyx_porting_order_requirements
     reviewed: true
-    note: lookup
+    note: read-only
 GET /porting_orders/{id}/sub_request:
     bucket: data_source
     terraform: telnyx_porting_order_sub_request
     reviewed: true
-    note: lookup
+    note: read-only
 GET /porting_orders/{id}/verification_codes:
     bucket: data_source
     terraform: telnyx_porting_order_verification_codes
     reviewed: true
-    note: lookup
+    note: read-only
 POST /porting_orders/{id}/verification_codes/send:
     bucket: action
     terraform: telnyx_porting_order_verification_code_send
@@ -4798,7 +4791,7 @@ GET /porting_orders/{porting_order_id}/action_requirements:
     bucket: data_source
     terraform: telnyx_porting_order_action_requirements
     reviewed: true
-    note: lookup
+    note: read-only
 POST /porting_orders/{porting_order_id}/action_requirements/{id}/initiate:
     bucket: action
     terraform: telnyx_porting_order_action_requirement_initiate
@@ -4853,12 +4846,12 @@ GET /porting_phone_numbers:
     bucket: data_source
     terraform: telnyx_porting_phone_numbers
     reviewed: true
-    note: lookup
+    note: read-only
 GET /portouts:
     bucket: data_source
     terraform: telnyx_portouts
     reviewed: true
-    note: lookup
+    note: read-only
 GET /portouts/events:
     bucket: out_of_scope
     reviewed: true
@@ -4875,7 +4868,7 @@ GET /portouts/rejections/{portout_id}:
     bucket: data_source
     terraform: telnyx_portout_rejections
     reviewed: true
-    note: lookup
+    note: read-only
 GET /portouts/reports:
     bucket: out_of_scope
     reviewed: true
@@ -4888,12 +4881,12 @@ GET /portouts/reports/{id}:
     bucket: data_source
     terraform: telnyx_portout_report
     reviewed: true
-    note: lookup
+    note: read-only
 GET /portouts/{id}:
     bucket: data_source
     terraform: telnyx_portout
     reviewed: true
-    note: lookup
+    note: read-only
 GET /portouts/{id}/comments:
     bucket: out_of_scope
     reviewed: true
@@ -4906,15 +4899,15 @@ GET /portouts/{id}/supporting_documents:
     bucket: data_source
     terraform: telnyx_portout_supporting_documents
     reviewed: true
-    note: lookup
+    note: read-only
 POST /portouts/{id}/supporting_documents:
     bucket: action
-    terraform: telnyx_portout_supporting_document_create
+    terraform: telnyx_portout_supporting_document_add
     reviewed: true
     note: one-shot operation
 PATCH /portouts/{id}/{status}:
     bucket: action
-    terraform: telnyx_portout_update
+    terraform: telnyx_portout_status_update
     reviewed: true
     note: one-shot operation
 GET /pricing/products:
@@ -5057,7 +5050,7 @@ GET /rcs/agents/{id}/carrier_approvals:
     bucket: data_source
     terraform: telnyx_rcs_agent_carrier_approvals
     reviewed: true
-    note: lookup
+    note: read-only
 POST /rcs/agents/{id}/launch:
     bucket: action
     terraform: telnyx_rcs_agent_launch
@@ -5145,7 +5138,7 @@ GET /regulatory_requirements:
     bucket: data_source
     terraform: telnyx_regulatory_requirements
     reviewed: true
-    note: lookup
+    note: read-only
 GET /reports/cdr_usage_reports/sync:
     bucket: out_of_scope
     reviewed: true
@@ -5182,12 +5175,12 @@ GET /reputation/numbers:
     bucket: data_source
     terraform: telnyx_account_reputation_numbers
     reviewed: true
-    note: lookup
+    note: read-only
 GET /reputation/numbers/{phone_number}:
     bucket: data_source
     terraform: telnyx_account_reputation_number
     reviewed: true
-    note: lookup
+    note: read-only
 DELETE /reputation/numbers/{phone_number}:
     bucket: action
     terraform: telnyx_reputation_number_delete
@@ -5237,20 +5230,20 @@ GET /requirements:
     bucket: data_source
     terraform: telnyx_requirements
     reviewed: true
-    note: lookup
+    note: read-only
 GET /requirements/{id}:
     bucket: data_source
     terraform: telnyx_requirement
     reviewed: true
-    note: lookup
+    note: read-only
 POST /requirements/{id}/versions:
     bucket: action
-    terraform: telnyx_requirement_versions
+    terraform: telnyx_requirement_version_schedule
     reviewed: true
     note: one-shot operation
 DELETE /requirements/{id}/versions/pending:
     bucket: action
-    terraform: telnyx_requirement_version_pending
+    terraform: telnyx_requirement_version_cancel
     reviewed: true
     note: one-shot operation
 GET /room_compositions:
@@ -5378,7 +5371,7 @@ GET /short_codes:
     bucket: data_source
     terraform: telnyx_short_codes
     reviewed: true
-    note: lookup
+    note: list of telnyx_short_code_settings
 GET /short_codes/{id}:
     bucket: resource
     terraform: telnyx_short_code_settings
@@ -5393,12 +5386,12 @@ GET /sim_card_actions:
     bucket: data_source
     terraform: telnyx_sim_card_actions
     reviewed: true
-    note: lookup
+    note: read-only
 GET /sim_card_actions/{id}:
     bucket: data_source
     terraform: telnyx_sim_card_action
     reviewed: true
-    note: lookup
+    note: read-only
 GET /sim_card_data_usage_notifications:
     bucket: data_source
     terraform: telnyx_sim_card_data_usage_notifications
@@ -5428,12 +5421,12 @@ GET /sim_card_group_actions:
     bucket: data_source
     terraform: telnyx_sim_card_group_actions
     reviewed: true
-    note: lookup
+    note: read-only
 GET /sim_card_group_actions/{id}:
     bucket: data_source
     terraform: telnyx_sim_card_group_action
     reviewed: true
-    note: lookup
+    note: read-only
 GET /sim_card_groups:
     bucket: data_source
     terraform: telnyx_sim_card_groups
@@ -5460,25 +5453,25 @@ DELETE /sim_card_groups/{id}:
     reviewed: true
     note: delete of telnyx_sim_card_group (catalog collection)
 POST /sim_card_groups/{id}/actions/remove_private_wireless_gateway:
-    bucket: action
-    terraform: telnyx_sim_card_group_remove_private_wireless_gateway
+    bucket: resource
+    terraform: telnyx_sim_card_group
     reviewed: true
-    note: one-shot operation
+    note: update (remove private wireless gateway) of telnyx_sim_card_group (triage)
 POST /sim_card_groups/{id}/actions/remove_wireless_blocklist:
-    bucket: action
-    terraform: telnyx_sim_card_group_remove_wireless_blocklist
+    bucket: resource
+    terraform: telnyx_sim_card_group
     reviewed: true
-    note: one-shot operation
+    note: update (remove wireless blocklist) of telnyx_sim_card_group (triage)
 POST /sim_card_groups/{id}/actions/set_private_wireless_gateway:
-    bucket: action
-    terraform: telnyx_sim_card_group_set_private_wireless_gateway
+    bucket: resource
+    terraform: telnyx_sim_card_group
     reviewed: true
-    note: one-shot operation
+    note: update (private wireless gateway) of telnyx_sim_card_group (triage)
 POST /sim_card_groups/{id}/actions/set_wireless_blocklist:
-    bucket: action
-    terraform: telnyx_sim_card_group_set_wireless_blocklist
+    bucket: resource
+    terraform: telnyx_sim_card_group
     reviewed: true
-    note: one-shot operation
+    note: update (wireless blocklist) of telnyx_sim_card_group (triage)
 POST /sim_card_order_preview:
     bucket: out_of_scope
     reviewed: true
@@ -5502,7 +5495,7 @@ GET /sim_cards:
     bucket: data_source
     terraform: telnyx_sim_cards
     reviewed: true
-    note: lookup
+    note: list of telnyx_sim_card
 POST /sim_cards/actions/bulk_disable_voice:
     bucket: action
     terraform: telnyx_sim_card_bulk_disable_voice
@@ -5581,12 +5574,12 @@ GET /sim_cards/{id}/device_details:
     bucket: data_source
     terraform: telnyx_sim_card_device_details
     reviewed: true
-    note: lookup
+    note: read-only
 GET /sim_cards/{id}/public_ip:
     bucket: data_source
     terraform: telnyx_sim_card_public_ip
     reviewed: true
-    note: lookup
+    note: read-only
 GET /sim_cards/{id}/wireless_connectivity_logs:
     bucket: out_of_scope
     reviewed: true
@@ -5595,7 +5588,7 @@ GET /sip_registration_status:
     bucket: data_source
     terraform: telnyx_sip_registration_status
     reviewed: true
-    note: lookup
+    note: read-only
 POST /siprec_connectors:
     bucket: resource
     terraform: telnyx_siprec_connector
@@ -5654,7 +5647,7 @@ PUT /storage/buckets/{bucketName}/ssl_certificate:
     bucket: resource
     terraform: telnyx_storage_bucket_ssl_certificate
     reviewed: true
-    note: update of telnyx_storage_bucket_ssl_certificate (catalog singleton)
+    note: create and update of telnyx_storage_bucket_ssl_certificate (catalog singleton)
 DELETE /storage/buckets/{bucketName}/ssl_certificate:
     bucket: resource
     terraform: telnyx_storage_bucket_ssl_certificate
@@ -5726,7 +5719,7 @@ GET /storage/kvs/{id}/keys:
     bucket: data_source
     terraform: telnyx_storage_kv_keys
     reviewed: true
-    note: lookup
+    note: list of telnyx_storage_kv_key
 GET /storage/kvs/{id}/keys/{key}:
     bucket: resource
     terraform: telnyx_storage_kv_key
@@ -5736,7 +5729,7 @@ PUT /storage/kvs/{id}/keys/{key}:
     bucket: resource
     terraform: telnyx_storage_kv_key
     reviewed: true
-    note: update of telnyx_storage_kv_key (catalog existing)
+    note: create and update of telnyx_storage_kv_key (catalog existing)
 DELETE /storage/kvs/{id}/keys/{key}:
     bucket: resource
     terraform: telnyx_storage_kv_key
@@ -5746,7 +5739,7 @@ GET /storage/migration_source_coverage:
     bucket: data_source
     terraform: telnyx_storage_migration_source_coverage
     reviewed: true
-    note: lookup
+    note: read-only
 GET /storage/migration_sources:
     bucket: data_source
     terraform: telnyx_storage_migration_sources
@@ -5816,11 +5809,11 @@ GET /sub_number_orders:
     bucket: data_source
     terraform: telnyx_sub_number_orders
     reviewed: true
-    note: lookup
+    note: read-only
 POST /sub_number_orders/report:
     bucket: out_of_scope
     reviewed: true
-    note: alias of POST /sub_number_orders_report
+    note: alias of POST /sub_number_orders_report; reporting
 GET /sub_number_orders/report/{report_id}:
     bucket: out_of_scope
     reviewed: true
@@ -5828,17 +5821,17 @@ GET /sub_number_orders/report/{report_id}:
 GET /sub_number_orders/report/{report_id}/download:
     bucket: out_of_scope
     reviewed: true
-    note: alias of GET /sub_number_orders_report/{report_id}/download
+    note: alias of GET /sub_number_orders_report/{report_id}/download; reporting
 POST /sub_number_orders/{id}/requirement_group:
     bucket: action
-    terraform: telnyx_sub_number_order_requirement_group
+    terraform: telnyx_sub_number_order_requirement_group_update
     reviewed: true
     note: one-shot operation
 GET /sub_number_orders/{sub_number_order_id}:
     bucket: data_source
     terraform: telnyx_sub_number_order
     reviewed: true
-    note: lookup
+    note: read-only
 PATCH /sub_number_orders/{sub_number_order_id}:
     bucket: action
     terraform: telnyx_sub_number_order_update
@@ -5856,7 +5849,7 @@ POST /sub_number_orders_report:
 GET /sub_number_orders_report/{report_id}:
     bucket: out_of_scope
     reviewed: true
-    note: alias of GET /sub_number_orders/report/{report_id}
+    note: alias of GET /sub_number_orders/report/{report_id}; reporting
 GET /sub_number_orders_report/{report_id}/download:
     bucket: out_of_scope
     reviewed: true
@@ -5920,12 +5913,12 @@ GET /terms_of_service/agreements:
     bucket: data_source
     terraform: telnyx_terms_of_service_agreements
     reviewed: true
-    note: lookup
+    note: read-only
 GET /terms_of_service/agreements/{agreement_id}:
     bucket: data_source
     terraform: telnyx_terms_of_service_agreement
     reviewed: true
-    note: lookup
+    note: read-only
 POST /terms_of_service/branded_calling/agree:
     bucket: action
     terraform: telnyx_terms_of_service_branded_calling_agree
@@ -5935,7 +5928,7 @@ GET /terms_of_service/info:
     bucket: data_source
     terraform: telnyx_terms_of_service_info
     reviewed: true
-    note: lookup
+    note: read-only
 POST /terms_of_service/number_reputation/agree:
     bucket: action
     terraform: telnyx_terms_of_service_number_reputation_agree
@@ -5945,7 +5938,7 @@ GET /terms_of_service/status:
     bucket: data_source
     terraform: telnyx_terms_of_service_status
     reviewed: true
-    note: lookup
+    note: read-only
 GET /texml/Accounts/{account_sid}/Calls:
     bucket: out_of_scope
     reviewed: true
@@ -6142,7 +6135,7 @@ GET /traffic/policy/profiles/services:
     bucket: data_source
     terraform: telnyx_traffic_policy_profile_services
     reviewed: true
-    note: lookup
+    note: read-only
 GET /traffic/policy/profiles/{id}:
     bucket: resource
     terraform: telnyx_traffic_policy_profile
@@ -6276,22 +6269,22 @@ GET /user_tags:
     bucket: data_source
     terraform: telnyx_user_tags
     reviewed: true
-    note: lookup
+    note: read-only
 GET /v2/mobile_phone_numbers:
     bucket: data_source
     terraform: telnyx_mobile_phone_numbers
     reviewed: true
-    note: lookup
+    note: list of telnyx_mobile_phone_number
 GET /v2/mobile_phone_numbers/{id}:
     bucket: resource
-    terraform: telnyx_mobile_phone_number_settings
+    terraform: telnyx_mobile_phone_number
     reviewed: true
-    note: read of telnyx_mobile_phone_number_settings (catalog existing)
+    note: read of telnyx_mobile_phone_number (catalog existing)
 PATCH /v2/mobile_phone_numbers/{id}:
     bucket: resource
-    terraform: telnyx_mobile_phone_number_settings
+    terraform: telnyx_mobile_phone_number
     reviewed: true
-    note: update of telnyx_mobile_phone_number_settings (catalog existing)
+    note: update of telnyx_mobile_phone_number (catalog existing)
 GET /v2/mobile_voice_connections:
     bucket: data_source
     terraform: telnyx_mobile_voice_connections
@@ -6380,7 +6373,7 @@ PATCH /v2/whatsapp/phone_numbers/{phone_number}/calling_settings:
 GET /v2/whatsapp/phone_numbers/{phone_number}/conversation_window:
     bucket: out_of_scope
     reviewed: true
-    note: alias of GET /whatsapp/phone_numbers/{phone_number}/conversation_window
+    note: 'alias of GET /whatsapp/phone_numbers/{phone_number}/conversation_window; runtime: live sessions and messaging data'
 GET /v2/whatsapp/phone_numbers/{phone_number}/conversational_components:
     bucket: out_of_scope
     reviewed: true
@@ -6550,7 +6543,7 @@ GET /virtual_cross_connects/coverage:
     bucket: data_source
     terraform: telnyx_virtual_cross_connect_coverage
     reviewed: true
-    note: lookup
+    note: read-only
 GET /virtual_cross_connects/{id}:
     bucket: resource
     terraform: telnyx_virtual_cross_connect
@@ -6669,12 +6662,12 @@ GET /whatsapp/business_accounts:
     bucket: data_source
     terraform: telnyx_whatsapp_business_accounts
     reviewed: true
-    note: lookup
+    note: read-only
 GET /whatsapp/business_accounts/{id}:
     bucket: data_source
     terraform: telnyx_whatsapp_business_account
     reviewed: true
-    note: lookup
+    note: read-only
 DELETE /whatsapp/business_accounts/{id}:
     bucket: action
     terraform: telnyx_whatsapp_business_account_delete
@@ -6684,12 +6677,12 @@ GET /whatsapp/business_accounts/{id}/phone_numbers:
     bucket: data_source
     terraform: telnyx_whatsapp_business_account_phone_numbers
     reviewed: true
-    note: lookup
+    note: read-only
 POST /whatsapp/business_accounts/{id}/phone_numbers:
-    bucket: action
-    terraform: telnyx_whatsapp_business_account_phone_number_create
+    bucket: resource
+    terraform: telnyx_whatsapp_phone_number
     reviewed: true
-    note: one-shot operation
+    note: create of telnyx_whatsapp_phone_number (triage)
 GET /whatsapp/business_accounts/{id}/settings:
     bucket: resource
     terraform: telnyx_whatsapp_business_account_settings
@@ -6741,7 +6734,7 @@ GET /whatsapp/phone_numbers:
     bucket: data_source
     terraform: telnyx_whatsapp_phone_numbers
     reviewed: true
-    note: lookup
+    note: list of telnyx_whatsapp_phone_number
 GET /whatsapp/phone_numbers/{id}/calling_routing:
     bucket: resource
     terraform: telnyx_whatsapp_phone_number_calling_routing
@@ -6753,15 +6746,15 @@ PATCH /whatsapp/phone_numbers/{id}/calling_routing:
     reviewed: true
     note: update of telnyx_whatsapp_phone_number_calling_routing (catalog singleton)
 GET /whatsapp/phone_numbers/{phone_number}:
-    bucket: data_source
+    bucket: resource
     terraform: telnyx_whatsapp_phone_number
     reviewed: true
-    note: lookup
+    note: read of telnyx_whatsapp_phone_number (triage)
 DELETE /whatsapp/phone_numbers/{phone_number}:
-    bucket: action
-    terraform: telnyx_whatsapp_phone_number_delete
+    bucket: resource
+    terraform: telnyx_whatsapp_phone_number
     reviewed: true
-    note: one-shot operation
+    note: delete of telnyx_whatsapp_phone_number (triage)
 GET /whatsapp/phone_numbers/{phone_number}/calling_settings:
     bucket: resource
     terraform: telnyx_whatsapp_phone_number_calling_settings
@@ -6800,10 +6793,10 @@ GET /whatsapp/phone_numbers/{phone_number}/profile/photo:
     bucket: data_source
     terraform: telnyx_whatsapp_phone_number_profile_photo
     reviewed: true
-    note: lookup
+    note: read-only
 POST /whatsapp/phone_numbers/{phone_number}/profile/photo:
     bucket: action
-    terraform: telnyx_whatsapp_phone_number_profile_photo_create
+    terraform: telnyx_whatsapp_phone_number_profile_photo_upload
     reviewed: true
     note: one-shot operation
 DELETE /whatsapp/phone_numbers/{phone_number}/profile/photo:
@@ -6886,11 +6879,11 @@ GET /wireless/detail/records/reports:
 POST /wireless/detail/records/reports:
     bucket: out_of_scope
     reviewed: true
-    note: alias of POST /wireless/detail_records_reports
+    note: alias of POST /wireless/detail_records_reports; reporting
 GET /wireless/detail/records/reports/{id}:
     bucket: out_of_scope
     reviewed: true
-    note: alias of GET /wireless/detail_records_reports/{id}
+    note: alias of GET /wireless/detail_records_reports/{id}; reporting
 DELETE /wireless/detail/records/reports/{id}:
     bucket: out_of_scope
     reviewed: true
@@ -6898,7 +6891,7 @@ DELETE /wireless/detail/records/reports/{id}:
 GET /wireless/detail_records_reports:
     bucket: out_of_scope
     reviewed: true
-    note: alias of GET /wireless/detail/records/reports
+    note: alias of GET /wireless/detail/records/reports; reporting
 POST /wireless/detail_records_reports:
     bucket: out_of_scope
     reviewed: true
@@ -6910,7 +6903,7 @@ GET /wireless/detail_records_reports/{id}:
 DELETE /wireless/detail_records_reports/{id}:
     bucket: out_of_scope
     reviewed: true
-    note: alias of DELETE /wireless/detail/records/reports/{id}
+    note: alias of DELETE /wireless/detail/records/reports/{id}; reporting
 GET /wireless/regions:
     bucket: data_source
     terraform: telnyx_wireless_regions
@@ -6920,7 +6913,7 @@ GET /wireless_blocklist_values:
     bucket: data_source
     terraform: telnyx_wireless_blocklist_values
     reviewed: true
-    note: lookup
+    note: read-only
 GET /wireless_blocklists:
     bucket: data_source
     terraform: telnyx_wireless_blocklists

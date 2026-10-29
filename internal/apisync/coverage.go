@@ -273,7 +273,8 @@ func (r CheckReport) String() string {
 
 // Check verifies that every operation is classified exactly once with a
 // valid bucket, that resource and ephemeral entries name a Terraform type,
-// and that reviewed data source and action entries name one too.
+// that reviewed data source and action entries name one too, and that
+// out_of_scope entries give a reason and name none.
 func (c Coverage) Check(s *Spec) CheckReport {
 	r := CheckReport{ByBucket: map[string]int{}}
 	live := map[string]bool{}
@@ -297,6 +298,8 @@ func (c Coverage) Check(s *Spec) CheckReport {
 			r.Invalid = append(r.Invalid, fmt.Sprintf("%s is bucket %s but names no terraform type", k, e.Bucket))
 		case e.Bucket == BucketOutOfScope && e.Note == "":
 			r.Invalid = append(r.Invalid, fmt.Sprintf("%s is out_of_scope without a note saying why", k))
+		case e.Bucket == BucketOutOfScope && e.Terraform != "":
+			r.Invalid = append(r.Invalid, fmt.Sprintf("%s is out_of_scope but names terraform type %s", k, e.Terraform))
 		}
 	}
 	for _, k := range sortedKeys(c) {

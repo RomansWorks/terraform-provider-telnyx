@@ -62,9 +62,13 @@ type Attr struct {
 	// example a file path to upload).
 	Local bool
 
-	// PathParam names the path parameter this attribute fills, such as
-	// "assistant_id" for the id attribute.
-	PathParam string
+	// PathParams names the path parameters this attribute fills, such as
+	// "assistant_id" for the id attribute. Operations on the same object
+	// sometimes name the parameter differently.
+	PathParams []string
+
+	// Deprecated, when set, is shown to users who configure the attribute.
+	Deprecated string
 }
 
 // Op is one API operation.

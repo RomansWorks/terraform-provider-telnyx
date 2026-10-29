@@ -161,7 +161,7 @@ func widget() *Resource {
 		Import:   []string{"id"},
 		Timeouts: true,
 		Attrs: []*Attr{
-			{Name: "id", JSON: "id", Kind: KindString, Computed: true, InResponse: true, PathParam: "id"},
+			{Name: "id", JSON: "id", Kind: KindString, Computed: true, InResponse: true, PathParams: []string{"id"}},
 			{Name: "name", JSON: "name", Kind: KindString, Required: true, InCreate: true, InUpdate: true, InResponse: true},
 			{Name: "description", JSON: "description", Kind: KindString, Optional: true, InCreate: true, InUpdate: true, InResponse: true},
 			{Name: "settings", JSON: "settings", Kind: KindJSON, Optional: true, InCreate: true, InUpdate: true, InResponse: true},
@@ -201,7 +201,7 @@ func gadget() *Resource {
 		IDAttr:   "id",
 		Import:   []string{"id"},
 		Attrs: []*Attr{
-			{Name: "id", JSON: "id", Kind: KindString, Computed: true, InResponse: true, PathParam: "gadget_id"},
+			{Name: "id", JSON: "id", Kind: KindString, Computed: true, InResponse: true, PathParams: []string{"gadget_id"}},
 			{Name: "name", JSON: "name", Kind: KindString, Required: true, InCreate: true, InUpdate: true, InResponse: true},
 			{Name: "size", JSON: "size", Kind: KindInt, Optional: true, InCreate: true, InUpdate: true, InResponse: true},
 			{Name: "api_secret", JSON: "secret", Kind: KindString, Optional: true, Sensitive: true, InCreate: true, InUpdate: true},

@@ -1,0 +1,22 @@
+type: telnyx_ai_avatar
+description: An avatar image for AI assistants in realtime browser conversations.
+create: POST /ai/avatars
+read: GET /ai/avatars/{avatar_id}
+update: PATCH /ai/avatars/{avatar_id}
+delete_warning: The Telnyx API cannot delete avatars. The avatar was removed from Terraform state but still exists in your Telnyx account.
+attributes:
+  provider:
+    name: avatar_provider
+  image_file:
+    skip: true # uploaded from image_path by the create hook
+add:
+  - name: image_path
+    kind: string
+    required: true
+    force_new: true
+    description: Path to a JPEG, PNG or WebP image of at most 10 MiB, uploaded when the avatar is created.
+  - name: image_sha256
+    kind: string
+    computed: true
+    force_new: true
+    description: SHA-256 of the file at `image_path`. A new image creates a new avatar.

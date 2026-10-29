@@ -13,7 +13,7 @@ import (
 
 func testAttrs() []*Attr {
 	return []*Attr{
-		{Name: "id", JSON: "id", Kind: KindString, Computed: true, InResponse: true, PathParam: "id"},
+		{Name: "id", JSON: "id", Kind: KindString, Computed: true, InResponse: true, PathParams: []string{"id"}},
 		{Name: "name", JSON: "name", Kind: KindString, Required: true, InCreate: true, InUpdate: true, InResponse: true},
 		{Name: "count", JSON: "count", Kind: KindInt, Optional: true, InCreate: true, InResponse: true},
 		{Name: "ratio", JSON: "ratio", Kind: KindFloat, Optional: true, InCreate: true, InResponse: true},
@@ -43,7 +43,7 @@ func nullOf(a []*Attr) Values {
 
 func decode(t *testing.T, s string) Object {
 	t.Helper()
-	obj, err := decodeObject([]byte(s), false)
+	obj, err := Decode([]byte(s), false)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -216,14 +216,14 @@ func TestJSONEqual(t *testing.T) {
 }
 
 func TestDecodeObjectEnvelope(t *testing.T) {
-	obj, err := decodeObject([]byte(`{"data":{"id":"1"}}`), true)
+	obj, err := Decode([]byte(`{"data":{"id":"1"}}`), true)
 	if err != nil || obj["id"] != "1" {
 		t.Errorf("got %v, %v", obj, err)
 	}
-	if _, err := decodeObject([]byte(`{"id":"1"}`), true); err == nil {
+	if _, err := Decode([]byte(`{"id":"1"}`), true); err == nil {
 		t.Error("missing envelope must be an error")
 	}
-	if obj, err := decodeObject(nil, true); err != nil || len(obj) != 0 {
+	if obj, err := Decode(nil, true); err != nil || len(obj) != 0 {
 		t.Errorf("empty body: %v, %v", obj, err)
 	}
 }
@@ -239,5 +239,24 @@ func TestFillPath(t *testing.T) {
 	}
 	if _, err := fillPath(d, "/things/{other}", Values{}); err == nil {
 		t.Error("an unknown path parameter must be an error")
+	}
+}
+
+func TestJSONKeepsConfigWhenServerAddsKeys(t *testing.T) {
+	a := &Attr{Kind: KindJSON}
+	prior := str(`{"url": "https://x", "headers": {"a": "1"}}`)
+	api := map[string]any{"url": "https://x", "method": "POST", "headers": map[string]any{"a": "1", "b": "2"}}
+	v, err := fromJSON(a, api, prior, modeRead)
+	if err != nil || !v.Equal(prior) {
+		t.Errorf("server defaults must not cause drift: %s, %v", v, err)
+	}
+	api["url"] = "https://y"
+	v, _ = fromJSON(a, api, prior, modeRead)
+	if v.Equal(prior) {
+		t.Error("a changed key the user set is drift")
+	}
+	v, _ = fromJSON(a, map[string]any{"url": "https://x", "headers": map[string]any{"a": "1"}, "m": 1}, prior, modeData)
+	if v.Equal(prior) {
+		t.Error("data sources show the API value")
 	}
 }

@@ -1,0 +1,1316 @@
+{
+  "components": {
+    "schemas": {
+      "DedicatedIp": {
+        "description": "A dedicated sending IP address owned by the account.",
+        "properties": {
+          "billing": {
+            "$ref": "#/components/schemas/DedicatedIpBilling"
+          },
+          "created_at": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "dns_confirmed_at": {
+            "description": "When the PTR hostname was forward-confirmed (PTR → hostname → A record → this IP). The IP carries mail only while this is set.",
+            "format": "date-time",
+            "nullable": true,
+            "type": "string"
+          },
+          "id": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "ip_address": {
+            "description": "The allocated IPv4/IPv6 address.",
+            "type": "string"
+          },
+          "ip_version": {
+            "enum": [
+              "ipv4",
+              "ipv6"
+            ],
+            "type": "string"
+          },
+          "pool_id": {
+            "format": "uuid",
+            "nullable": true,
+            "type": "string"
+          },
+          "provisioning": {
+            "$ref": "#/components/schemas/DedicatedIpProvisioning"
+          },
+          "provisioning_status": {
+            "description": "Same value as `provisioning.dns_status`.",
+            "enum": [
+              "not_applicable",
+              "pending_ptr",
+              "pending_dns",
+              "dns_confirmed",
+              "dns_lost"
+            ],
+            "type": "string"
+          },
+          "ptr_hostname": {
+            "description": "Telnyx-managed reverse DNS (PTR) hostname of the IP, in the form `mta-\u003ca-b-c-d\u003e.msgtelnyx.com`. Also used as the EHLO hostname when sending from the IP. Managed by Telnyx and cannot be changed through the API.",
+            "nullable": true,
+            "type": "string"
+          },
+          "quarantine_until": {
+            "description": "Set on release to 30 days after `released_at`. The address is not returned to stock before this time.",
+            "format": "date-time",
+            "nullable": true,
+            "type": "string"
+          },
+          "record_type": {
+            "enum": [
+              "dedicated_ip"
+            ],
+            "type": "string"
+          },
+          "region": {
+            "description": "Region label of the allocated IP (for example, `ewr-nj1`).",
+            "type": "string"
+          },
+          "released_at": {
+            "description": "When the IP was released. Null until release.",
+            "format": "date-time",
+            "nullable": true,
+            "type": "string"
+          },
+          "status": {
+            "description": "Lifecycle status. `provisioning`: purchased and billed, carries no mail until `start_warmup`. `warming_up`: warm-up ramp in progress. `active`: ramp complete. `suspended`: suspended by Telnyx; carries no mail and is still billed. `released`: returned to Telnyx; carries no mail.",
+            "enum": [
+              "provisioning",
+              "warming_up",
+              "active",
+              "suspended",
+              "released"
+            ],
+            "type": "string"
+          },
+          "suspension_reason": {
+            "description": "Reason Telnyx recorded when suspending the IP. Null unless `status` is `suspended`.",
+            "nullable": true,
+            "type": "string"
+          },
+          "updated_at": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "warmup": {
+            "$ref": "#/components/schemas/DedicatedIpWarmup"
+          }
+        },
+        "type": "object"
+      },
+      "DedicatedIpBilling": {
+        "description": "Monthly recurring charge (MRC) state for the IP's current allocation.",
+        "properties": {
+          "charged": {
+            "description": "True when `status` is `active`, `stopping`, or `stop_failed`. An IP carries mail only after its charge has been created.",
+            "type": "boolean"
+          },
+          "status": {
+            "description": "`not_started`: no charge recorded for the current allocation. `pending`: the charge is queued. `in_progress`: the charge is being created. `active`: the MRC is active. `stopping`: release requested; the MRC stop is being processed. `stopped`: the MRC has stopped. `stop_failed`: the MRC stop failed and the charge remains. `failed`: the charge could not be created.",
+            "enum": [
+              "not_started",
+              "pending",
+              "in_progress",
+              "active",
+              "stopping",
+              "stopped",
+              "stop_failed",
+              "failed"
+            ],
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "DedicatedIpProvisioning": {
+        "description": "Read-only status of the Telnyx-managed PTR record. No customer action is required to complete it.",
+        "properties": {
+          "checklist": {
+            "description": "Informational progress flags for the Telnyx-managed PTR. They do not gate `start_warmup`; use `dns_status` to check whether the IP can carry mail.",
+            "properties": {
+              "forward_confirmed": {
+                "type": "boolean"
+              },
+              "ptr_authored": {
+                "type": "boolean"
+              },
+              "ptr_merged": {
+                "type": "boolean"
+              },
+              "ptr_requested": {
+                "type": "boolean"
+              }
+            },
+            "type": "object"
+          },
+          "dns_status": {
+            "description": "`dns_confirmed`: the PTR is forward-confirmed and `dns_confirmed_at` is set. `pending_ptr`: the PTR record is not yet in place. `pending_dns`: the PTR record is waiting for forward confirmation. `dns_lost`: a previously confirmed PTR no longer confirms, or the PTR request was abandoned before it ever confirmed (`ptr_request_state` is `abandoned`); the IP carries no mail until DNS is confirmed. `not_applicable`: the IP is released or has no PTR record on file.",
+            "enum": [
+              "not_applicable",
+              "pending_ptr",
+              "pending_dns",
+              "dns_confirmed",
+              "dns_lost"
+            ],
+            "type": "string"
+          },
+          "ptr_request_pr_url": {
+            "description": "Reference to the Telnyx PTR change request, when one exists. Informational.",
+            "nullable": true,
+            "type": "string"
+          },
+          "ptr_request_state": {
+            "description": "State of the Telnyx PTR change: `pending`, `pr_open`, `merged`, `confirmed`, `failed`, or `abandoned`. Informational.",
+            "enum": [
+              "pending",
+              "pr_open",
+              "merged",
+              "confirmed",
+              "failed",
+              "abandoned",
+              null
+            ],
+            "nullable": true,
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "DedicatedIpWarmup": {
+        "description": "Warmup ramp state for a dedicated IP.",
+        "properties": {
+          "daily_cap": {
+            "description": "Daily cap of the current ramp stage. Null until the scheduler arms the first stage, and cleared when the ramp completes, automatically or through `complete_warmup`. On an `active` IP this value is informational and can keep an earlier stage cap after a suspension is lifted; it does not limit sending.",
+            "minimum": 1,
+            "nullable": true,
+            "type": "integer"
+          },
+          "paused": {
+            "description": "True while the ramp is paused.",
+            "type": "boolean"
+          },
+          "paused_at": {
+            "description": "When the ramp was paused. Null when not paused.",
+            "format": "date-time",
+            "nullable": true,
+            "type": "string"
+          },
+          "progress": {
+            "description": "Ramp progress (0-100): the share of the 28 send-day schedule completed. Only UTC days on which the IP sent mail count. Set to 100 when the ramp completes, automatically or through `complete_warmup`. On an `active` IP this value is informational and can keep an earlier value after a suspension is lifted.",
+            "maximum": 100,
+            "minimum": 0,
+            "type": "integer"
+          },
+          "started_at": {
+            "description": "When `start_warmup` was called. Null before warm-up starts and after release.",
+            "format": "date-time",
+            "nullable": true,
+            "type": "string"
+          },
+          "today": {
+            "description": "Today's warmup allowance report card (current UTC day). Null outside the warmup window (before start_warmup, after release/suspension). `active` IPs report the ramp-complete allowance, except as described for `cap`.",
+            "nullable": true,
+            "properties": {
+              "cap": {
+                "description": "The day's allowance cap. Null when the ramp has not opened yet (day 0: the scheduler has not armed a stage cap) — distinct from a spent day, which reports the cap with remaining 0. `active` IPs report `100000000`, the ramp-complete cap; `complete_warmup` applies it to the current day immediately. A day's allowance created before the IP became `active` can keep its stored `cap` and `remaining` until the next first-attempt send refreshes them.",
+                "nullable": true,
+                "type": "integer"
+              },
+              "day": {
+                "description": "The UTC day this snapshot describes (warmup caps reset at UTC midnight).",
+                "format": "date",
+                "type": "string"
+              },
+              "granted": {
+                "description": "First-attempt sends released from warmup hold so far today. Delivery retries never lease allowance and are not counted.",
+                "type": "integer"
+              },
+              "remaining": {
+                "description": "Headroom left today. A queued send held by the daily cap is explained by remaining == 0; null mirrors cap (ramp not open yet). On an `active` IP whose `cap` is below `100000000`, remaining == 0 is a stored allowance and does not block the next eligible first-attempt send.",
+                "nullable": true,
+                "type": "integer"
+              }
+            },
+            "type": "object"
+          }
+        },
+        "type": "object"
+      },
+      "ErrorEnvelope": {
+        "description": "Telnyx v2 error envelope.",
+        "properties": {
+          "errors": {
+            "items": {
+              "properties": {
+                "code": {
+                  "type": "string"
+                },
+                "detail": {
+                  "type": "string"
+                },
+                "source": {
+                  "properties": {
+                    "parameter": {
+                      "type": "string"
+                    },
+                    "pointer": {
+                      "type": "string"
+                    }
+                  },
+                  "type": "object"
+                },
+                "title": {
+                  "type": "string"
+                }
+              },
+              "type": "object"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "errors"
+        ],
+        "type": "object"
+      },
+      "IpPool": {
+        "description": "An account-scoped pool of dedicated IPs. Mail uses a pool only when the pool is scoped to the sending domain (`domain_id`) or is the account default (`is_default`).",
+        "properties": {
+          "created_at": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "domain_id": {
+            "description": "Email domain this pool is scoped to. The pool carries that domain's mail. Null when the pool is not domain-scoped.",
+            "format": "uuid",
+            "nullable": true,
+            "type": "string"
+          },
+          "id": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "ips": {
+            "description": "Member IPs with their routing weights. Populated by Retrieve an IP pool; list, create, and update responses return an empty array.",
+            "items": {
+              "$ref": "#/components/schemas/IpPoolMemberIp"
+            },
+            "type": "array"
+          },
+          "is_default": {
+            "description": "Whether this is the account's default pool. The default pool carries mail for sending domains that have no domain-scoped pool. At most one per account.",
+            "type": "boolean"
+          },
+          "name": {
+            "description": "Pool name, unique within the account.",
+            "type": "string"
+          },
+          "record_type": {
+            "enum": [
+              "ip_pool"
+            ],
+            "type": "string"
+          },
+          "updated_at": {
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "IpPoolAddIpRequest": {
+        "properties": {
+          "dedicated_ip_id": {
+            "description": "The dedicated IP to add. It must belong to the account, must not be released, and must not already be in a pool.",
+            "format": "uuid",
+            "type": "string"
+          },
+          "weight": {
+            "description": "Relative routing weight for this IP in the pool. Positive integer; defaults to 100.",
+            "minimum": 1,
+            "type": "integer"
+          }
+        },
+        "required": [
+          "dedicated_ip_id"
+        ],
+        "type": "object"
+      },
+      "IpPoolCreateRequest": {
+        "properties": {
+          "domain_id": {
+            "description": "Scope the pool to one of the account's email domains; the pool then carries that domain's mail. Scope at most one pool to each domain.",
+            "format": "uuid",
+            "type": "string"
+          },
+          "is_default": {
+            "description": "Make this the account's default pool, which carries mail for sending domains without a domain-scoped pool. An account can have one default pool. Defaults to `false`.",
+            "type": "boolean"
+          },
+          "name": {
+            "description": "Pool name: 1-64 characters of lowercase letters, digits, `.`, `_`, and `-`, starting and ending with a letter or digit. Must be unique within the account and must not start with `dip_`.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "name"
+        ],
+        "type": "object"
+      },
+      "IpPoolListResponse": {
+        "properties": {
+          "data": {
+            "items": {
+              "$ref": "#/components/schemas/IpPool"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "data"
+        ],
+        "type": "object"
+      },
+      "IpPoolMemberIp": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/DedicatedIp"
+          }
+        ],
+        "description": "A dedicated IP as a member of a pool, with its routing weight in this pool. Weight is a positive integer (default 100).",
+        "properties": {
+          "weight": {
+            "description": "Relative routing weight of this IP within the pool.",
+            "minimum": 1,
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "IpPoolShowResponse": {
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/IpPool"
+          }
+        },
+        "required": [
+          "data"
+        ],
+        "type": "object"
+      },
+      "IpPoolUpdateRequest": {
+        "properties": {
+          "domain_id": {
+            "description": "Scope the pool to one of the account's email domains, or `null` to remove the scope.",
+            "format": "uuid",
+            "nullable": true,
+            "type": "string"
+          },
+          "is_default": {
+            "description": "Set or clear the account default flag. An account can have one default pool.",
+            "type": "boolean"
+          },
+          "name": {
+            "description": "Pool name: 1-64 characters of lowercase letters, digits, `.`, `_`, and `-`, starting and ending with a letter or digit. Must be unique within the account and must not start with `dip_`.",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "PoolMembershipResponse": {
+        "properties": {
+          "data": {
+            "properties": {
+              "created_at": {
+                "format": "date-time",
+                "type": "string"
+              },
+              "dedicated_ip_id": {
+                "format": "uuid",
+                "type": "string"
+              },
+              "pool_id": {
+                "format": "uuid",
+                "type": "string"
+              },
+              "weight": {
+                "minimum": 1,
+                "type": "integer"
+              }
+            },
+            "type": "object"
+          }
+        },
+        "required": [
+          "data"
+        ],
+        "type": "object"
+      }
+    },
+    "securitySchemes": {
+      "BearerAuth": {
+        "bearerFormat": "API key",
+        "description": "Telnyx API key supplied as `Authorization: Bearer \u003ctoken\u003e`. In production, auth may be validated by the API gateway and forwarded via Telnyx auth headers.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "Payment": {
+        "description": "Machine Payment Protocol credential used on paid retries, sent as `Authorization: Payment ...`. Obtained by paying a challenge returned in the `WWW-Authenticate` header of a 402 response. This is not a Telnyx API key; initial challenge requests use standard bearer authentication instead.",
+        "in": "header",
+        "name": "Authorization",
+        "type": "apiKey"
+      },
+      "agent-memory_bearerAuth": {
+        "description": "Telnyx API key",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "bearerAuth": {
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "branded-calling_bearerAuth": {
+        "description": "Telnyx API key. Generate one at https://portal.telnyx.com/#/app/api-keys.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "collections_bearerAuth": {
+        "description": "Telnyx API key. Collections and results are automatically scoped to the authenticated user's organization.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "number-reputation_bearerAuth": {
+        "description": "Telnyx API key. Generate one at https://portal.telnyx.com/#/app/api-keys.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "oauthClientAuth": {
+        "description": "OAuth 2.0 authentication for Telnyx API and MCP integrations",
+        "flows": {
+          "authorizationCode": {
+            "authorizationUrl": "https://api.telnyx.com/v2/oauth/authorize",
+            "refreshUrl": "https://api.telnyx.com/v2/oauth/token",
+            "scopes": {
+              "admin": "Administrative access to Telnyx resources"
+            },
+            "tokenUrl": "https://api.telnyx.com/v2/oauth/token"
+          },
+          "clientCredentials": {
+            "scopes": {
+              "admin": "Administrative access to Telnyx resources"
+            },
+            "tokenUrl": "https://api.telnyx.com/v2/oauth/token"
+          }
+        },
+        "type": "oauth2"
+      },
+      "outbound-voice-profiles_bearerAuth": {
+        "bearerFormat": "JWT",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "pay-connectors_bearerAuth": {
+        "description": "Telnyx API key, not the processor bearer token.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "pronunciation-dicts_bearerAuth": {
+        "description": "Telnyx API v2 key. Obtain from https://portal.telnyx.com",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "rcs-registration_bearerAuth": {
+        "bearerFormat": "API key",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "stored-payment-transactions_bearerAuth": {
+        "bearerFormat": "JWT",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "telnyxApiKey": {
+        "description": "Management-only Telnyx account credential.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "transcriptions-search_bearerAuth": {
+        "description": "Telnyx API key. Results are automatically scoped to the authenticated user's organization.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "web-search_bearerAuth": {
+        "description": "Telnyx API key",
+        "scheme": "bearer",
+        "type": "http"
+      }
+    }
+  },
+  "info": {
+    "contact": {
+      "email": "support@telnyx.com"
+    },
+    "description": "SIP trunking, SMS, MMS, Call Control and Telephony Data Services.",
+    "title": "Telnyx API",
+    "version": "2.0.0",
+    "x-endpoint-cost": "light",
+    "x-latency-category": "responsive"
+  },
+  "openapi": "3.1.0",
+  "paths": {
+    "/email/ip_pools": {
+      "get": {
+        "description": "List the account's dedicated-IP pools. Member IPs are not included (`ips` is empty); retrieve a pool to see its members.",
+        "operationId": "listIpPools",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "data": [
+                    {
+                      "created_at": "2026-09-30T02:03:09.474123Z",
+                      "domain_id": null,
+                      "id": "9b1c4d70-abcd-4e5f-8a9b-0c1d2e3f4a5b",
+                      "ips": [],
+                      "is_default": true,
+                      "name": "primary-pool",
+                      "record_type": "ip_pool",
+                      "updated_at": "2026-09-30T02:03:09.474123Z"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/IpPoolListResponse"
+                }
+              }
+            },
+            "description": "IP pool list"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "errors": [
+                    {
+                      "code": "10007",
+                      "detail": "The API key provided is invalid or unauthorized",
+                      "title": "Unauthorized"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          }
+        },
+        "summary": "List IP pools",
+        "tags": [
+          "IP Pools"
+        ]
+      },
+      "post": {
+        "description": "Create an account-scoped pool of dedicated IPs. Set `is_default` or `domain_id` for the pool to carry mail; a pool with neither carries none.",
+        "operationId": "createIpPool",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "example": {
+                "is_default": true,
+                "name": "primary-pool"
+              },
+              "schema": {
+                "$ref": "#/components/schemas/IpPoolCreateRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "data": {
+                    "created_at": "2026-09-30T02:03:09.474123Z",
+                    "domain_id": null,
+                    "id": "9b1c4d70-abcd-4e5f-8a9b-0c1d2e3f4a5b",
+                    "ips": [],
+                    "is_default": true,
+                    "name": "primary-pool",
+                    "record_type": "ip_pool",
+                    "updated_at": "2026-09-30T02:03:09.474123Z"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/IpPoolShowResponse"
+                }
+              }
+            },
+            "description": "Created IP pool"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Malformed request"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "errors": [
+                    {
+                      "code": "10001",
+                      "detail": "The requested email domain was not found",
+                      "title": "Not Found"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "The referenced email domain was not found."
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "errors": [
+                    {
+                      "code": "10015",
+                      "detail": "already has a default pool",
+                      "source": {
+                        "pointer": "/data/attributes/account_id"
+                      },
+                      "title": "Validation Failed"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Validation failed: invalid or duplicate `name`, a second default pool, or a `domain_id` owned by another account."
+          }
+        },
+        "summary": "Create an IP pool",
+        "tags": [
+          "IP Pools"
+        ]
+      }
+    },
+    "/email/ip_pools/{id}": {
+      "delete": {
+        "description": "Delete the pool. Member IPs are kept but leave the pool, so they carry no mail until added to another pool. Deleting a pool changes routing for subsequently resolved messages. It does not reroute messages already assigned to the deleted pool. Deleting a pool that still has IPs requires `force=true` and `drain=true`.",
+        "operationId": "deleteIpPool",
+        "parameters": [
+          {
+            "description": "The IP pool identifier (UUID).",
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Set together with `drain=true` to delete a pool that still has IPs. Either flag alone has no effect.",
+            "in": "query",
+            "name": "force",
+            "required": false,
+            "schema": {
+              "default": false,
+              "type": "boolean"
+            }
+          },
+          {
+            "description": "Set together with `force=true` to delete a pool that still has IPs. Acknowledges deletion while the pool still has members; this flag does not reroute already queued messages.",
+            "in": "query",
+            "name": "drain",
+            "required": false,
+            "schema": {
+              "default": false,
+              "type": "boolean"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Pool deleted. No response body."
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "errors": [
+                    {
+                      "code": "10001",
+                      "detail": "The requested ip pool was not found",
+                      "title": "Not Found"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Not found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "errors": [
+                    {
+                      "code": "40901",
+                      "detail": "pool still has 2 member IP(s) — remove them first or pass force: true with drain: true",
+                      "title": "Conflict"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "The pool still has IPs and `force`/`drain` were not both set."
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Validation failed."
+          }
+        },
+        "summary": "Delete an IP pool",
+        "tags": [
+          "IP Pools"
+        ]
+      },
+      "get": {
+        "description": "Retrieve a single IP pool by its identifier, including its dedicated-IP members with billing state.",
+        "operationId": "getIpPool",
+        "parameters": [
+          {
+            "description": "The IP pool identifier (UUID).",
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "data": {
+                    "created_at": "2026-09-30T02:03:09.474123Z",
+                    "domain_id": null,
+                    "id": "9b1c4d70-abcd-4e5f-8a9b-0c1d2e3f4a5b",
+                    "ips": [
+                      {
+                        "billing": {
+                          "charged": true,
+                          "status": "active"
+                        },
+                        "created_at": "2026-09-30T02:03:09.474123Z",
+                        "dns_confirmed_at": "2026-10-14T20:12:41.552310Z",
+                        "id": "6a7f9a30-1234-4b5c-8d9e-0f1a2b3c4d5e",
+                        "ip_address": "64.16.239.170",
+                        "ip_version": "ipv4",
+                        "pool_id": "9b1c4d70-abcd-4e5f-8a9b-0c1d2e3f4a5b",
+                        "provisioning": {
+                          "checklist": {
+                            "forward_confirmed": true,
+                            "ptr_authored": false,
+                            "ptr_merged": true,
+                            "ptr_requested": true
+                          },
+                          "dns_status": "dns_confirmed",
+                          "ptr_request_pr_url": null,
+                          "ptr_request_state": "confirmed"
+                        },
+                        "provisioning_status": "dns_confirmed",
+                        "ptr_hostname": "mta-64-16-239-170.msgtelnyx.com",
+                        "quarantine_until": null,
+                        "record_type": "dedicated_ip",
+                        "region": "ewr-nj1",
+                        "released_at": null,
+                        "status": "active",
+                        "suspension_reason": null,
+                        "updated_at": "2026-10-20T04:00:03.402117Z",
+                        "warmup": {
+                          "daily_cap": null,
+                          "paused": false,
+                          "paused_at": null,
+                          "progress": 100,
+                          "started_at": "2026-09-15T00:00:00.000000Z",
+                          "today": {
+                            "cap": 100000000,
+                            "day": "2026-10-24",
+                            "granted": 0,
+                            "remaining": 100000000
+                          }
+                        },
+                        "weight": 100
+                      }
+                    ],
+                    "is_default": true,
+                    "name": "primary-pool",
+                    "record_type": "ip_pool",
+                    "updated_at": "2026-09-30T02:03:09.474123Z"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/IpPoolShowResponse"
+                }
+              }
+            },
+            "description": "IP pool details"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "errors": [
+                    {
+                      "code": "10001",
+                      "detail": "The requested ip pool was not found",
+                      "title": "Not Found"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Not found"
+          }
+        },
+        "summary": "Retrieve an IP pool",
+        "tags": [
+          "IP Pools"
+        ]
+      },
+      "patch": {
+        "description": "Rename the pool, set or clear the default flag, or change its domain scope. Routing follows the new settings for subsequent mail.",
+        "operationId": "updateIpPool",
+        "parameters": [
+          {
+            "description": "The IP pool identifier (UUID).",
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "example": {
+                "name": "renamed-pool"
+              },
+              "schema": {
+                "$ref": "#/components/schemas/IpPoolUpdateRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "data": {
+                    "created_at": "2026-09-30T02:03:09.474123Z",
+                    "domain_id": null,
+                    "id": "9b1c4d70-abcd-4e5f-8a9b-0c1d2e3f4a5b",
+                    "ips": [],
+                    "is_default": true,
+                    "name": "renamed-pool",
+                    "record_type": "ip_pool",
+                    "updated_at": "2026-10-14T21:30:00.000000Z"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/IpPoolShowResponse"
+                }
+              }
+            },
+            "description": "Updated IP pool"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Malformed request"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "errors": [
+                    {
+                      "code": "10001",
+                      "detail": "The requested ip pool was not found",
+                      "title": "Not Found"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "The pool or the referenced email domain was not found."
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "errors": [
+                    {
+                      "code": "10015",
+                      "detail": "must contain only lowercase letters, numbers, dots, underscores and hyphens",
+                      "source": {
+                        "pointer": "/data/attributes/name"
+                      },
+                      "title": "Validation Failed"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Validation failed: invalid or duplicate `name`, a second default pool, or a `domain_id` owned by another account."
+          }
+        },
+        "summary": "Update an IP pool",
+        "tags": [
+          "IP Pools"
+        ]
+      }
+    },
+    "/email/ip_pools/{id}/ips": {
+      "post": {
+        "description": "Add a dedicated IP to the pool with an optional routing weight. An IP can belong to one pool; to move an IP that is already in a pool, use `PATCH /email/dedicated_ips/{id}` with `pool_id`.",
+        "operationId": "addIpToPool",
+        "parameters": [
+          {
+            "description": "The IP pool identifier (UUID).",
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "example": {
+                "dedicated_ip_id": "6a7f9a30-1234-4b5c-8d9e-0f1a2b3c4d5e",
+                "weight": 100
+              },
+              "schema": {
+                "$ref": "#/components/schemas/IpPoolAddIpRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "data": {
+                    "created_at": "2026-10-14T20:40:00.000000Z",
+                    "dedicated_ip_id": "6a7f9a30-1234-4b5c-8d9e-0f1a2b3c4d5e",
+                    "pool_id": "9b1c4d70-abcd-4e5f-8a9b-0c1d2e3f4a5b",
+                    "weight": 100
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/PoolMembershipResponse"
+                }
+              }
+            },
+            "description": "Pool membership created"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Malformed request"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "errors": [
+                    {
+                      "code": "10001",
+                      "detail": "The requested ip pool was not found",
+                      "title": "Not Found"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "The pool or the dedicated IP was not found in this account."
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "errors": [
+                    {
+                      "code": "10015",
+                      "detail": "weight must be a positive integer (got 0)",
+                      "source": {
+                        "pointer": "/data/attributes/weight"
+                      },
+                      "title": "Validation Failed"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Validation failed: missing `dedicated_ip_id`, invalid `weight`, released IP, or IP already in a pool."
+          }
+        },
+        "summary": "Add a dedicated IP to a pool",
+        "tags": [
+          "IP Pools"
+        ]
+      }
+    },
+    "/email/ip_pools/{id}/ips/{ip_id}": {
+      "delete": {
+        "description": "Remove the dedicated IP from the pool. The IP is kept but carries no mail until added to a pool again. Removing the last IP requires `force=true` and `drain=true`.",
+        "operationId": "removeIpFromPool",
+        "parameters": [
+          {
+            "description": "The IP pool identifier (UUID).",
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "description": "The dedicated IP identifier (UUID).",
+            "in": "path",
+            "name": "ip_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Set together with `drain=true` to remove the last IP in the pool. Either flag alone has no effect.",
+            "in": "query",
+            "name": "force",
+            "required": false,
+            "schema": {
+              "default": false,
+              "type": "boolean"
+            }
+          },
+          {
+            "description": "Set together with `force=true` to remove the last IP in the pool. Acknowledges that mail routed to the emptied pool is held until the pool has a sendable IP again.",
+            "in": "query",
+            "name": "drain",
+            "required": false,
+            "schema": {
+              "default": false,
+              "type": "boolean"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "IP removed from the pool. No response body."
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "errors": [
+                    {
+                      "code": "10001",
+                      "detail": "The requested pool membership was not found",
+                      "title": "Not Found"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "The pool or the dedicated IP was not found, or the IP is not in this pool."
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "errors": [
+                    {
+                      "code": "40901",
+                      "detail": "cannot remove the last IP from a pool without force: true and drain: true (in-flight messages need a routable source)",
+                      "title": "Conflict"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "The IP is the pool's last member and `force`/`drain` were not both set."
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Validation failed."
+          }
+        },
+        "summary": "Remove a dedicated IP from a pool",
+        "tags": [
+          "IP Pools"
+        ]
+      }
+    }
+  },
+  "security": [
+    {
+      "bearerAuth": []
+    }
+  ],
+  "servers": [
+    {
+      "description": "Version 2.0.0 of the Telnyx API",
+      "url": "https://api.telnyx.com/v2"
+    }
+  ]
+}

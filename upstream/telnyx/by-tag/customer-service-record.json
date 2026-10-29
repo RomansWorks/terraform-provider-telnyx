@@ -1,0 +1,1067 @@
+{
+  "components": {
+    "parameters": {
+      "PathCustomerServiceRecordId": {
+        "description": "The ID of the customer service record",
+        "in": "path",
+        "name": "customer_service_record_id",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      },
+      "customer_service_record_FilterConsolidated": {
+        "description": "Consolidated filter parameter (deepObject style). Originally: filter[phone_number][eq], filter[phone_number][in][], filter[status][eq], filter[status][in][], filter[created_at][lt], filter[created_at][gt]",
+        "explode": true,
+        "in": "query",
+        "name": "filter",
+        "schema": {
+          "properties": {
+            "created_at": {
+              "properties": {
+                "gt": {
+                  "description": "Filters records to those created after a specific date.",
+                  "example": "2020-01-01T00:00:00Z",
+                  "format": "date-time",
+                  "type": "string"
+                },
+                "lt": {
+                  "description": "Filters records to those created before a specific date.",
+                  "example": "2020-01-01T00:00:00Z",
+                  "format": "date-time",
+                  "type": "string"
+                }
+              },
+              "type": "object"
+            },
+            "phone_number": {
+              "properties": {
+                "eq": {
+                  "description": "Filters records to those with a specified number.",
+                  "example": "+12441239999",
+                  "type": "string"
+                },
+                "in": {
+                  "description": "Filters records to those with at least one number in the list.",
+                  "items": {
+                    "example": "+12441239999",
+                    "type": "string"
+                  },
+                  "type": "array"
+                }
+              },
+              "type": "object"
+            },
+            "status": {
+              "properties": {
+                "eq": {
+                  "description": "Filters records to those with a specific status.",
+                  "enum": [
+                    "pending",
+                    "completed",
+                    "failed"
+                  ],
+                  "example": "pending",
+                  "type": "string"
+                },
+                "in": {
+                  "description": "Filters records to those with a least one status in the list.",
+                  "items": {
+                    "enum": [
+                      "pending",
+                      "completed",
+                      "failed"
+                    ],
+                    "example": "pending",
+                    "type": "string"
+                  },
+                  "type": "array"
+                }
+              },
+              "type": "object"
+            }
+          },
+          "type": "object"
+        },
+        "style": "deepObject"
+      },
+      "customer_service_record_PageConsolidated": {
+        "description": "Consolidated page parameter (deepObject style). Originally: page[size], page[number]",
+        "explode": true,
+        "in": "query",
+        "name": "page",
+        "schema": {
+          "properties": {
+            "number": {
+              "default": 1,
+              "description": "The page number to load",
+              "minimum": 1,
+              "type": "integer"
+            },
+            "size": {
+              "default": 20,
+              "description": "The size of the page",
+              "maximum": 250,
+              "minimum": 1,
+              "type": "integer"
+            }
+          },
+          "type": "object"
+        },
+        "style": "deepObject"
+      }
+    },
+    "requestBodies": {
+      "CreateCustomerServiceRecord": {
+        "content": {
+          "application/json": {
+            "schema": {
+              "properties": {
+                "additional_data": {
+                  "$ref": "#/components/schemas/CustomerServiceRecordAdditionalData"
+                },
+                "phone_number": {
+                  "description": "A valid US phone number in E164 format.",
+                  "example": "+13035553000",
+                  "pattern": "^\\+1\\d{10}$",
+                  "type": "string"
+                },
+                "webhook_url": {
+                  "description": "Callback URL to receive webhook notifications.",
+                  "example": "https://example.com/webhook",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "phone_number"
+              ],
+              "type": "object"
+            }
+          }
+        },
+        "required": true
+      },
+      "VerifyCustomerServiceRecordPhoneNumberCoverage": {
+        "content": {
+          "application/json": {
+            "schema": {
+              "properties": {
+                "phone_numbers": {
+                  "description": "The phone numbers list to be verified.",
+                  "items": {
+                    "description": "A valid US phone number in E164 format.",
+                    "example": "+13035553000",
+                    "pattern": "^\\+1\\d{10}$",
+                    "type": "string"
+                  },
+                  "type": "array"
+                }
+              },
+              "required": [
+                "phone_numbers"
+              ],
+              "type": "object"
+            }
+          }
+        },
+        "required": true
+      }
+    },
+    "responses": {
+      "ResourceNotFoundErrorResponse": {
+        "content": {
+          "application/json": {
+            "schema": {
+              "properties": {
+                "errors": {
+                  "items": {
+                    "$ref": "#/components/schemas/customer_service_record_ResourceNotFoundError"
+                  },
+                  "type": "array"
+                }
+              }
+            }
+          }
+        },
+        "description": "Resource not found"
+      },
+      "UnexpectedErrorResponse": {
+        "content": {
+          "application/json": {
+            "schema": {
+              "properties": {
+                "errors": {
+                  "items": {
+                    "$ref": "#/components/schemas/UnexpectedError"
+                  },
+                  "type": "array"
+                }
+              }
+            }
+          }
+        },
+        "description": "An unexpected error occurred."
+      },
+      "customer_service_record_ForbiddenErrorResponse": {
+        "content": {
+          "application/json": {
+            "schema": {
+              "properties": {
+                "errors": {
+                  "items": {
+                    "$ref": "#/components/schemas/ForbiddenError"
+                  },
+                  "type": "array"
+                }
+              }
+            }
+          }
+        },
+        "description": "You do not have permission to perform the requested action on the specified resource or resources."
+      },
+      "customer_service_record_UnauthorizedErrorResponse": {
+        "content": {
+          "application/json": {
+            "schema": {
+              "properties": {
+                "errors": {
+                  "items": {
+                    "$ref": "#/components/schemas/UnauthorizedError"
+                  },
+                  "type": "array"
+                }
+              }
+            }
+          }
+        },
+        "description": "The required authentication headers were either invalid or not included in the request."
+      },
+      "customer_service_record_UnprocessableEntityErrorResponse": {
+        "content": {
+          "application/json": {
+            "schema": {
+              "properties": {
+                "errors": {
+                  "items": {
+                    "$ref": "#/components/schemas/customer_service_record_UnprocessableEntityError"
+                  },
+                  "type": "array"
+                }
+              }
+            }
+          }
+        },
+        "description": "Unprocessable entity. Check the 'detail' field in response for details."
+      }
+    },
+    "schemas": {
+      "CustomerServiceRecord": {
+        "properties": {
+          "created_at": {
+            "description": "ISO 8601 formatted date indicating when the resource was created.",
+            "example": "2021-03-19T10:07:15.527Z",
+            "format": "date-time",
+            "readOnly": true,
+            "type": "string"
+          },
+          "error_message": {
+            "description": "The error message in case status is `failed`. This field would be null in case of `pending` or `completed` status.",
+            "example": "CSR information not available.",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "id": {
+            "description": "Uniquely identifies this customer service record",
+            "example": "f1486bae-f067-460c-ad43-73a92848f902",
+            "format": "uuid",
+            "readOnly": true,
+            "type": "string"
+          },
+          "phone_number": {
+            "description": "The phone number of the customer service record.",
+            "example": "+12065551212",
+            "type": "string"
+          },
+          "record_type": {
+            "description": "Identifies the type of the resource.",
+            "example": "customer_service_record",
+            "readOnly": true,
+            "type": "string"
+          },
+          "result": {
+            "description": "The result of the CSR request. This field would be null in case of `pending` or `failed` status.",
+            "properties": {
+              "address": {
+                "description": "The address of the customer service record",
+                "properties": {
+                  "administrative_area": {
+                    "description": "The state of the address",
+                    "example": "NY",
+                    "type": "string"
+                  },
+                  "full_address": {
+                    "description": "The full address",
+                    "example": "123 Main St; New York; NY; 10001",
+                    "type": "string"
+                  },
+                  "locality": {
+                    "description": "The city of the address",
+                    "example": "New York",
+                    "type": "string"
+                  },
+                  "postal_code": {
+                    "description": "The zip code of the address",
+                    "example": "10001",
+                    "type": "string"
+                  },
+                  "street_address": {
+                    "description": "The street address",
+                    "example": "123 Main St",
+                    "type": "string"
+                  }
+                },
+                "type": "object"
+              },
+              "admin": {
+                "description": "The admin of the customer service record.",
+                "properties": {
+                  "account_number": {
+                    "description": "The account number of the customer service record.",
+                    "example": "1234567890",
+                    "type": "string"
+                  },
+                  "authorized_person_name": {
+                    "description": "The authorized person name of the customer service record.",
+                    "example": "John Doe",
+                    "type": "string"
+                  },
+                  "billing_phone_number": {
+                    "description": "The billing phone number of the customer service record.",
+                    "example": "+12065551212",
+                    "type": "string"
+                  },
+                  "name": {
+                    "description": "The name of the customer service record.",
+                    "example": "John Doe",
+                    "type": "string"
+                  }
+                },
+                "type": "object"
+              },
+              "associated_phone_numbers": {
+                "description": "The associated phone numbers of the customer service record.",
+                "items": {
+                  "example": "+12065551212",
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              "carrier_name": {
+                "description": "The name of the carrier that the customer service record is for.",
+                "example": "ABC CARRIER, INC.",
+                "type": "string"
+              }
+            },
+            "type": [
+              "object",
+              "null"
+            ]
+          },
+          "status": {
+            "description": "The status of the customer service record",
+            "enum": [
+              "pending",
+              "completed",
+              "failed"
+            ],
+            "example": "completed",
+            "type": "string"
+          },
+          "updated_at": {
+            "description": "ISO 8601 formatted date indicating when the resource was created.",
+            "example": "2021-03-19T10:07:15.527Z",
+            "format": "date-time",
+            "readOnly": true,
+            "type": "string"
+          },
+          "webhook_url": {
+            "description": "Callback URL to receive webhook notifications.",
+            "example": "https://example.com/webhook",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "CustomerServiceRecordAdditionalData": {
+        "properties": {
+          "account_number": {
+            "description": "The account number of the customer service record.",
+            "example": "123456789",
+            "type": "string"
+          },
+          "address_line_1": {
+            "description": "The first line of the address of the customer service record.",
+            "example": "123 Main St",
+            "type": "string"
+          },
+          "authorized_person_name": {
+            "description": "The name of the authorized person.",
+            "example": "John Doe",
+            "type": "string"
+          },
+          "billing_phone_number": {
+            "description": "The billing phone number of the customer service record.",
+            "example": "+12065551212",
+            "pattern": "^\\+1\\d{10}$",
+            "type": "string"
+          },
+          "city": {
+            "description": "The city of the customer service record.",
+            "example": "New York",
+            "type": "string"
+          },
+          "customer_code": {
+            "description": "The customer code of the customer service record.",
+            "example": "123456789",
+            "type": "string"
+          },
+          "name": {
+            "description": "The name of the administrator of CSR.",
+            "example": "Entity Inc.",
+            "type": "string"
+          },
+          "pin": {
+            "description": "The PIN of the customer service record.",
+            "example": "1234",
+            "type": "string"
+          },
+          "state": {
+            "description": "The state of the customer service record.",
+            "example": "NY",
+            "maxLength": 2,
+            "pattern": "^[A-Z]{2}$",
+            "type": "string"
+          },
+          "zip_code": {
+            "description": "The zip code of the customer service record.",
+            "example": "10001",
+            "maxLength": 5,
+            "pattern": "^\\d{5}$",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "CustomerServiceRecordPhoneNumberCoverage": {
+        "properties": {
+          "additional_data_required": {
+            "description": "Additional data required to perform CSR for the phone number. Only returned if `has_csr_coverage` is true.",
+            "items": {
+              "enum": [
+                "name",
+                "authorized_person_name",
+                "account_number",
+                "customer_code",
+                "pin",
+                "address_line_1",
+                "city",
+                "state",
+                "zip_code",
+                "billing_phone_number"
+              ],
+              "example": "name",
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "has_csr_coverage": {
+            "description": "Indicates whether the phone number is covered or not.",
+            "example": true,
+            "type": "boolean"
+          },
+          "phone_number": {
+            "description": "The phone number that is being verified.",
+            "example": "+12223334444",
+            "type": "string"
+          },
+          "reason": {
+            "description": "The reason why the phone number is not covered. Only returned if `has_csr_coverage` is false.",
+            "example": "The phone number '+19999999999' is invalid.",
+            "type": "string"
+          },
+          "record_type": {
+            "description": "Identifies the type of the resource.",
+            "example": "customer_service_record_phone_number_coverage",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "ForbiddenError": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/GenericError"
+          },
+          {
+            "properties": {
+              "code": {
+                "example": "10010",
+                "type": "string"
+              },
+              "detail": {
+                "example": "You do not have permission to perform the requested action on the specified resource or resources.",
+                "type": "string"
+              },
+              "meta": {
+                "properties": {
+                  "url": {
+                    "example": "https://developers.telnyx.com/docs/overview/errors/10010",
+                    "type": "string"
+                  }
+                },
+                "type": "object"
+              },
+              "title": {
+                "example": "Authorization failed",
+                "type": "string"
+              }
+            },
+            "type": "object"
+          }
+        ]
+      },
+      "GenericError": {
+        "properties": {
+          "code": {
+            "type": "string"
+          },
+          "detail": {
+            "type": "string"
+          },
+          "meta": {
+            "additionalProperties": true,
+            "type": "object"
+          },
+          "source": {
+            "properties": {
+              "parameter": {
+                "description": "Indicates which query parameter caused the error.",
+                "type": "string"
+              },
+              "pointer": {
+                "description": "JSON pointer (RFC6901) to the offending entity.",
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
+          "title": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "PaginationMeta": {
+        "properties": {
+          "page_number": {
+            "example": 2,
+            "type": "integer"
+          },
+          "page_size": {
+            "example": 25,
+            "type": "integer"
+          },
+          "total_pages": {
+            "example": 3,
+            "type": "integer"
+          },
+          "total_results": {
+            "example": 55,
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "UnauthorizedError": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/GenericError"
+          },
+          {
+            "properties": {
+              "code": {
+                "example": "10009",
+                "type": "string"
+              },
+              "detail": {
+                "example": "The required authentication headers were either invalid or not included in the request.",
+                "type": "string"
+              },
+              "meta": {
+                "properties": {
+                  "url": {
+                    "example": "https://developers.telnyx.com/docs/overview/errors/10009",
+                    "type": "string"
+                  }
+                },
+                "type": "object"
+              },
+              "title": {
+                "example": "Authentication failed",
+                "type": "string"
+              }
+            },
+            "type": "object"
+          }
+        ]
+      },
+      "UnexpectedError": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/GenericError"
+          },
+          {
+            "properties": {
+              "code": {
+                "example": "10007",
+                "type": "string"
+              },
+              "detail": {
+                "example": "An unexpected error occurred.",
+                "type": "string"
+              },
+              "meta": {
+                "properties": {
+                  "url": {
+                    "example": "https://developers.telnyx.com/docs/overview/errors/10007",
+                    "type": "string"
+                  }
+                },
+                "type": "object"
+              },
+              "title": {
+                "example": "Unexpected error",
+                "type": "string"
+              }
+            },
+            "type": "object"
+          }
+        ]
+      },
+      "customer_service_record_ResourceNotFoundError": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/GenericError"
+          },
+          {
+            "properties": {
+              "code": {
+                "example": "10005",
+                "type": "string"
+              },
+              "detail": {
+                "example": "The requested resource or URL could not be found.",
+                "type": "string"
+              },
+              "meta": {
+                "properties": {
+                  "url": {
+                    "example": "https://developers.telnyx.com/docs/overview/errors/10005",
+                    "type": "string"
+                  }
+                },
+                "type": "object"
+              },
+              "title": {
+                "example": "Resource not found",
+                "type": "string"
+              }
+            },
+            "type": "object"
+          }
+        ]
+      },
+      "customer_service_record_UnprocessableEntityError": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/GenericError"
+          },
+          {
+            "properties": {
+              "code": {
+                "example": "10002",
+                "type": "string"
+              },
+              "detail": {
+                "example": "The phone number is invalid.",
+                "type": "string"
+              },
+              "meta": {
+                "properties": {
+                  "url": {
+                    "example": "https://developers.telnyx.com/docs/overview/errors/10002",
+                    "type": "string"
+                  }
+                },
+                "type": "object"
+              },
+              "source": {
+                "properties": {
+                  "pointer": {
+                    "example": "/phone_numbers",
+                    "type": "string"
+                  }
+                },
+                "type": "object"
+              },
+              "title": {
+                "example": "Invalid phone number",
+                "type": "string"
+              }
+            },
+            "type": "object"
+          }
+        ]
+      }
+    },
+    "securitySchemes": {
+      "BearerAuth": {
+        "bearerFormat": "API key",
+        "description": "Telnyx API key supplied as `Authorization: Bearer \u003ctoken\u003e`. In production, auth may be validated by the API gateway and forwarded via Telnyx auth headers.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "Payment": {
+        "description": "Machine Payment Protocol credential used on paid retries, sent as `Authorization: Payment ...`. Obtained by paying a challenge returned in the `WWW-Authenticate` header of a 402 response. This is not a Telnyx API key; initial challenge requests use standard bearer authentication instead.",
+        "in": "header",
+        "name": "Authorization",
+        "type": "apiKey"
+      },
+      "agent-memory_bearerAuth": {
+        "description": "Telnyx API key",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "bearerAuth": {
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "branded-calling_bearerAuth": {
+        "description": "Telnyx API key. Generate one at https://portal.telnyx.com/#/app/api-keys.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "collections_bearerAuth": {
+        "description": "Telnyx API key. Collections and results are automatically scoped to the authenticated user's organization.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "number-reputation_bearerAuth": {
+        "description": "Telnyx API key. Generate one at https://portal.telnyx.com/#/app/api-keys.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "oauthClientAuth": {
+        "description": "OAuth 2.0 authentication for Telnyx API and MCP integrations",
+        "flows": {
+          "authorizationCode": {
+            "authorizationUrl": "https://api.telnyx.com/v2/oauth/authorize",
+            "refreshUrl": "https://api.telnyx.com/v2/oauth/token",
+            "scopes": {
+              "admin": "Administrative access to Telnyx resources"
+            },
+            "tokenUrl": "https://api.telnyx.com/v2/oauth/token"
+          },
+          "clientCredentials": {
+            "scopes": {
+              "admin": "Administrative access to Telnyx resources"
+            },
+            "tokenUrl": "https://api.telnyx.com/v2/oauth/token"
+          }
+        },
+        "type": "oauth2"
+      },
+      "outbound-voice-profiles_bearerAuth": {
+        "bearerFormat": "JWT",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "pay-connectors_bearerAuth": {
+        "description": "Telnyx API key, not the processor bearer token.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "pronunciation-dicts_bearerAuth": {
+        "description": "Telnyx API v2 key. Obtain from https://portal.telnyx.com",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "rcs-registration_bearerAuth": {
+        "bearerFormat": "API key",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "stored-payment-transactions_bearerAuth": {
+        "bearerFormat": "JWT",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "telnyxApiKey": {
+        "description": "Management-only Telnyx account credential.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "transcriptions-search_bearerAuth": {
+        "description": "Telnyx API key. Results are automatically scoped to the authenticated user's organization.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "web-search_bearerAuth": {
+        "description": "Telnyx API key",
+        "scheme": "bearer",
+        "type": "http"
+      }
+    }
+  },
+  "info": {
+    "contact": {
+      "email": "support@telnyx.com"
+    },
+    "description": "SIP trunking, SMS, MMS, Call Control and Telephony Data Services.",
+    "title": "Telnyx API",
+    "version": "2.0.0",
+    "x-endpoint-cost": "light",
+    "x-latency-category": "responsive"
+  },
+  "openapi": "3.1.0",
+  "paths": {
+    "/customer_service_records": {
+      "get": {
+        "description": "Returns a paginated list of your customer service record (CSR) requests, with support for filtering and sorting.",
+        "operationId": "ListCustomerServiceRecords",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/customer_service_record_PageConsolidated"
+          },
+          {
+            "$ref": "#/components/parameters/customer_service_record_FilterConsolidated"
+          },
+          {
+            "description": "Consolidated sort parameter (deepObject style). Originally: sort[value]",
+            "explode": true,
+            "in": "query",
+            "name": "sort",
+            "schema": {
+              "properties": {
+                "value": {
+                  "description": "Specifies the sort order for results. If not given, results are sorted by created_at in descending order.",
+                  "enum": [
+                    "created_at",
+                    "-created_at"
+                  ],
+                  "example": "created_at",
+                  "type": "string"
+                }
+              },
+              "type": "object"
+            },
+            "style": "deepObject"
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "items": {
+                        "$ref": "#/components/schemas/CustomerServiceRecord"
+                      },
+                      "type": "array"
+                    },
+                    "meta": {
+                      "$ref": "#/components/schemas/PaginationMeta"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "$ref": "#/components/responses/customer_service_record_UnauthorizedErrorResponse"
+          },
+          "403": {
+            "$ref": "#/components/responses/customer_service_record_ForbiddenErrorResponse"
+          },
+          "422": {
+            "$ref": "#/components/responses/customer_service_record_UnprocessableEntityErrorResponse"
+          },
+          "500": {
+            "$ref": "#/components/responses/UnexpectedErrorResponse"
+          }
+        },
+        "summary": "List customer service records",
+        "tags": [
+          "Customer Service Record"
+        ]
+      },
+      "post": {
+        "description": "Create a new customer service record for the provided phone number.",
+        "operationId": "CreateCustomerServiceRecord",
+        "requestBody": {
+          "$ref": "#/components/requestBodies/CreateCustomerServiceRecord"
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "example": {
+                    "data": {
+                      "created_at": "2023-01-01T00:00:00Z",
+                      "error_message": null,
+                      "id": "db7cebdb-21a8-4e89-8f51-e03ba6b799bb",
+                      "phone_number": "+2003271000",
+                      "result": null,
+                      "status": "pending",
+                      "updated_at": "2023-01-01T00:00:00Z",
+                      "webhook_url": "https://example.com/webhook"
+                    }
+                  },
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/CustomerServiceRecord"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "$ref": "#/components/responses/customer_service_record_UnauthorizedErrorResponse"
+          },
+          "403": {
+            "$ref": "#/components/responses/customer_service_record_ForbiddenErrorResponse"
+          },
+          "422": {
+            "$ref": "#/components/responses/customer_service_record_UnprocessableEntityErrorResponse"
+          },
+          "500": {
+            "$ref": "#/components/responses/UnexpectedErrorResponse"
+          }
+        },
+        "summary": "Create a customer service record",
+        "tags": [
+          "Customer Service Record"
+        ]
+      }
+    },
+    "/customer_service_records/phone_number_coverages": {
+      "post": {
+        "description": "Verify the coverage for a list of phone numbers.",
+        "operationId": "VerifyPhoneNumberCoverage",
+        "requestBody": {
+          "$ref": "#/components/requestBodies/VerifyCustomerServiceRecordPhoneNumberCoverage"
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "items": {
+                        "$ref": "#/components/schemas/CustomerServiceRecordPhoneNumberCoverage"
+                      },
+                      "type": "array"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "$ref": "#/components/responses/customer_service_record_UnauthorizedErrorResponse"
+          },
+          "403": {
+            "$ref": "#/components/responses/customer_service_record_ForbiddenErrorResponse"
+          },
+          "422": {
+            "$ref": "#/components/responses/customer_service_record_UnprocessableEntityErrorResponse"
+          },
+          "500": {
+            "$ref": "#/components/responses/UnexpectedErrorResponse"
+          }
+        },
+        "summary": "Verify CSR phone number coverage",
+        "tags": [
+          "Customer Service Record"
+        ]
+      }
+    },
+    "/customer_service_records/{customer_service_record_id}": {
+      "get": {
+        "description": "Returns the details of a single customer service record (CSR) request, including its status and any retrieved record data.",
+        "operationId": "GetCustomerServiceRecord",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/PathCustomerServiceRecordId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/CustomerServiceRecord"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "$ref": "#/components/responses/customer_service_record_UnauthorizedErrorResponse"
+          },
+          "403": {
+            "$ref": "#/components/responses/customer_service_record_ForbiddenErrorResponse"
+          },
+          "404": {
+            "$ref": "#/components/responses/ResourceNotFoundErrorResponse"
+          },
+          "500": {
+            "$ref": "#/components/responses/UnexpectedErrorResponse"
+          }
+        },
+        "summary": "Get a customer service record",
+        "tags": [
+          "Customer Service Record"
+        ]
+      }
+    }
+  },
+  "security": [
+    {
+      "bearerAuth": []
+    }
+  ],
+  "servers": [
+    {
+      "description": "Version 2.0.0 of the Telnyx API",
+      "url": "https://api.telnyx.com/v2"
+    }
+  ]
+}

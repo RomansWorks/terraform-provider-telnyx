@@ -1,0 +1,423 @@
+{
+  "components": {
+    "parameters": {
+      "PageConsolidated": {
+        "description": "Consolidated page parameter (deepObject style). Originally: page[number], page[size]",
+        "explode": true,
+        "in": "query",
+        "name": "page",
+        "schema": {
+          "properties": {
+            "number": {
+              "default": 1,
+              "description": "The page number to load",
+              "minimum": 1,
+              "type": "integer"
+            },
+            "size": {
+              "default": 20,
+              "description": "The size of the page",
+              "maximum": 250,
+              "minimum": 1,
+              "type": "integer"
+            }
+          },
+          "type": "object"
+        },
+        "style": "deepObject"
+      }
+    },
+    "responses": {
+      "GenericErrorResponse": {
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Errors"
+            }
+          }
+        },
+        "description": "Unexpected error"
+      }
+    },
+    "schemas": {
+      "AvailableService": {
+        "enum": [
+          "cloud_vpn",
+          "private_wireless_gateway",
+          "tailscale_subnet_router",
+          "virtual_cross_connect"
+        ],
+        "title": "Available service",
+        "type": "string"
+      },
+      "Error": {
+        "example": {
+          "code": "20207",
+          "description": "The street address provided is invalid.",
+          "source": {
+            "pointer": "/street_address"
+          },
+          "title": "Invalid street address"
+        },
+        "properties": {
+          "code": {
+            "type": "string",
+            "x-format": "int64"
+          },
+          "description": {
+            "type": "string"
+          },
+          "detail": {
+            "description": "A human-readable explanation of the error.",
+            "type": "string"
+          },
+          "meta": {
+            "additionalProperties": true,
+            "type": "object"
+          },
+          "source": {
+            "properties": {
+              "parameter": {
+                "description": "Indicates which query parameter caused the error.",
+                "type": "string"
+              },
+              "pointer": {
+                "description": "JSON pointer (RFC6901) to the offending entity.",
+                "format": "json-pointer",
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
+          "title": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "title"
+        ],
+        "type": "object"
+      },
+      "Errors": {
+        "properties": {
+          "errors": {
+            "items": {
+              "$ref": "#/components/schemas/Error"
+            },
+            "type": "array"
+          }
+        },
+        "type": "object"
+      },
+      "NetworkCoverage": {
+        "properties": {
+          "available_services": {
+            "description": "List of interface types supported in this region.",
+            "items": {
+              "oneOf": [
+                {
+                  "$ref": "#/components/schemas/AvailableService"
+                }
+              ]
+            },
+            "type": "array"
+          },
+          "location": {
+            "$ref": "#/components/schemas/netapps_Location_17904fcfbc"
+          },
+          "record_type": {
+            "description": "Identifies the type of the resource.",
+            "example": "network_coverage",
+            "readOnly": true,
+            "type": "string"
+          }
+        },
+        "title": "NetworkCoverage",
+        "type": "object"
+      },
+      "PaginationMeta": {
+        "properties": {
+          "page_number": {
+            "example": 2,
+            "type": "integer"
+          },
+          "page_size": {
+            "example": 25,
+            "type": "integer"
+          },
+          "total_pages": {
+            "example": 3,
+            "type": "integer"
+          },
+          "total_results": {
+            "example": 55,
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "netapps_Location_17904fcfbc": {
+        "properties": {
+          "code": {
+            "description": "Location code.",
+            "example": "chicago-il",
+            "type": "string"
+          },
+          "name": {
+            "description": "Human readable name of location.",
+            "example": "Chicago IL, US",
+            "type": "string"
+          },
+          "pop": {
+            "description": "Point of presence of location.",
+            "example": "CH1",
+            "type": "string"
+          },
+          "region": {
+            "description": "Identifies the geographical region of location.",
+            "example": "AMER",
+            "type": "string"
+          },
+          "site": {
+            "description": "Site of location.",
+            "example": "ORD",
+            "type": "string"
+          }
+        },
+        "title": "Location",
+        "type": "object"
+      }
+    },
+    "securitySchemes": {
+      "BearerAuth": {
+        "bearerFormat": "API key",
+        "description": "Telnyx API key supplied as `Authorization: Bearer \u003ctoken\u003e`. In production, auth may be validated by the API gateway and forwarded via Telnyx auth headers.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "Payment": {
+        "description": "Machine Payment Protocol credential used on paid retries, sent as `Authorization: Payment ...`. Obtained by paying a challenge returned in the `WWW-Authenticate` header of a 402 response. This is not a Telnyx API key; initial challenge requests use standard bearer authentication instead.",
+        "in": "header",
+        "name": "Authorization",
+        "type": "apiKey"
+      },
+      "agent-memory_bearerAuth": {
+        "description": "Telnyx API key",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "bearerAuth": {
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "branded-calling_bearerAuth": {
+        "description": "Telnyx API key. Generate one at https://portal.telnyx.com/#/app/api-keys.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "collections_bearerAuth": {
+        "description": "Telnyx API key. Collections and results are automatically scoped to the authenticated user's organization.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "number-reputation_bearerAuth": {
+        "description": "Telnyx API key. Generate one at https://portal.telnyx.com/#/app/api-keys.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "oauthClientAuth": {
+        "description": "OAuth 2.0 authentication for Telnyx API and MCP integrations",
+        "flows": {
+          "authorizationCode": {
+            "authorizationUrl": "https://api.telnyx.com/v2/oauth/authorize",
+            "refreshUrl": "https://api.telnyx.com/v2/oauth/token",
+            "scopes": {
+              "admin": "Administrative access to Telnyx resources"
+            },
+            "tokenUrl": "https://api.telnyx.com/v2/oauth/token"
+          },
+          "clientCredentials": {
+            "scopes": {
+              "admin": "Administrative access to Telnyx resources"
+            },
+            "tokenUrl": "https://api.telnyx.com/v2/oauth/token"
+          }
+        },
+        "type": "oauth2"
+      },
+      "outbound-voice-profiles_bearerAuth": {
+        "bearerFormat": "JWT",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "pay-connectors_bearerAuth": {
+        "description": "Telnyx API key, not the processor bearer token.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "pronunciation-dicts_bearerAuth": {
+        "description": "Telnyx API v2 key. Obtain from https://portal.telnyx.com",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "rcs-registration_bearerAuth": {
+        "bearerFormat": "API key",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "stored-payment-transactions_bearerAuth": {
+        "bearerFormat": "JWT",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "telnyxApiKey": {
+        "description": "Management-only Telnyx account credential.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "transcriptions-search_bearerAuth": {
+        "description": "Telnyx API key. Results are automatically scoped to the authenticated user's organization.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "web-search_bearerAuth": {
+        "description": "Telnyx API key",
+        "scheme": "bearer",
+        "type": "http"
+      }
+    }
+  },
+  "info": {
+    "contact": {
+      "email": "support@telnyx.com"
+    },
+    "description": "SIP trunking, SMS, MMS, Call Control and Telephony Data Services.",
+    "title": "Telnyx API",
+    "version": "2.0.0",
+    "x-endpoint-cost": "light",
+    "x-latency-category": "responsive"
+  },
+  "openapi": "3.1.0",
+  "paths": {
+    "/network_coverage": {
+      "get": {
+        "description": "List all locations and the interfaces that region supports",
+        "operationId": "ListNetworkCoverage",
+        "parameters": [
+          {
+            "description": "Consolidated filters parameter (deepObject style). Originally: filters[available_services][contains]",
+            "explode": true,
+            "in": "query",
+            "name": "filters",
+            "schema": {
+              "additionalProperties": false,
+              "properties": {
+                "available_services": {
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/AvailableService",
+                      "description": "Filter by exact available service match"
+                    },
+                    {
+                      "additionalProperties": false,
+                      "description": "Available service filtering operations",
+                      "properties": {
+                        "contains": {
+                          "$ref": "#/components/schemas/AvailableService",
+                          "description": "Filter by available services containing the specified service"
+                        }
+                      },
+                      "type": "object"
+                    }
+                  ]
+                }
+              },
+              "type": "object"
+            },
+            "style": "deepObject"
+          },
+          {
+            "description": "Consolidated filter parameter (deepObject style). Originally: filter[location.region], filter[location.site], filter[location.pop], filter[location.code]",
+            "explode": true,
+            "in": "query",
+            "name": "filter",
+            "schema": {
+              "properties": {
+                "location.code": {
+                  "description": "The code of associated location to filter on.",
+                  "example": "silicon_valley-ca",
+                  "type": "string"
+                },
+                "location.pop": {
+                  "description": "The POP of associated location to filter on.",
+                  "example": "SV1",
+                  "type": "string"
+                },
+                "location.region": {
+                  "description": "The region of associated location to filter on.",
+                  "example": "AMER",
+                  "type": "string"
+                },
+                "location.site": {
+                  "description": "The site of associated location to filter on.",
+                  "example": "SJC",
+                  "type": "string"
+                }
+              },
+              "type": "object"
+            },
+            "style": "deepObject"
+          },
+          {
+            "$ref": "#/components/parameters/PageConsolidated"
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "items": {
+                        "$ref": "#/components/schemas/NetworkCoverage"
+                      },
+                      "type": "array"
+                    },
+                    "meta": {
+                      "$ref": "#/components/schemas/PaginationMeta"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful response"
+          },
+          "422": {
+            "$ref": "#/components/responses/GenericErrorResponse"
+          },
+          "default": {
+            "$ref": "#/components/responses/GenericErrorResponse"
+          }
+        },
+        "summary": "List network coverage locations",
+        "tags": [
+          "Coverage"
+        ]
+      }
+    }
+  },
+  "security": [
+    {
+      "bearerAuth": []
+    }
+  ],
+  "servers": [
+    {
+      "description": "Version 2.0.0 of the Telnyx API",
+      "url": "https://api.telnyx.com/v2"
+    }
+  ]
+}

@@ -1,0 +1,623 @@
+{
+  "components": {
+    "parameters": {
+      "BcPageNumber": {
+        "description": "1-based page number. Out-of-range values return an empty page with correct meta.",
+        "in": "query",
+        "name": "page[number]",
+        "required": false,
+        "schema": {
+          "default": 1,
+          "example": 1,
+          "minimum": 1,
+          "type": "integer"
+        }
+      }
+    },
+    "responses": {
+      "branded-calling_GenericErrorResponse": {
+        "content": {
+          "application/json": {
+            "examples": {
+              "bad_request": {
+                "description": "Returned when the request itself is well-formed but the resource is in a state that disallows this action (e.g. updating a DIR while it is being vetted, or deleting an enterprise that still has DIRs in vetting).",
+                "summary": "400 - request rejected by a state guard",
+                "value": {
+                  "errors": [
+                    {
+                      "code": "10015",
+                      "detail": "Cannot update DIR in 'verified' status",
+                      "meta": {
+                        "url": "https://developers.telnyx.com/docs/overview/errors/10015"
+                      },
+                      "title": "Bad Request"
+                    }
+                  ]
+                }
+              },
+              "conflict": {
+                "summary": "409 - request conflicts with current resource state",
+                "value": {
+                  "errors": [
+                    {
+                      "code": "10021",
+                      "detail": "DIR has 1 active infringement claim(s). Resolve the claim before making this change.",
+                      "meta": {
+                        "url": "https://developers.telnyx.com/docs/overview/errors/10021"
+                      },
+                      "title": "Resource in use"
+                    }
+                  ]
+                }
+              },
+              "not_found": {
+                "summary": "404 - resource does not exist or is not yours",
+                "value": {
+                  "errors": [
+                    {
+                      "code": "10009",
+                      "detail": "Enterprise not found.",
+                      "meta": {
+                        "url": "https://developers.telnyx.com/docs/overview/errors/10009"
+                      },
+                      "title": "Resource not found"
+                    }
+                  ]
+                }
+              },
+              "validation_error": {
+                "summary": "422 - request body failed validation",
+                "value": {
+                  "errors": [
+                    {
+                      "code": "10005",
+                      "detail": "field required",
+                      "meta": {
+                        "url": "https://developers.telnyx.com/docs/overview/errors/10005"
+                      },
+                      "source": {
+                        "pointer": "/body/legal_name"
+                      },
+                      "title": "Invalid parameters"
+                    }
+                  ]
+                }
+              }
+            },
+            "schema": {
+              "$ref": "#/components/schemas/branded-calling_Errors"
+            }
+          }
+        },
+        "description": "An error occurred. The response carries the standard Telnyx error envelope."
+      }
+    },
+    "schemas": {
+      "CallReasonReference": {
+        "description": "Pre-vetted call-reason library entry.",
+        "properties": {
+          "description": {
+            "example": "Alert about account status or changes",
+            "type": "string"
+          },
+          "id": {
+            "example": "d29914a4-3c93-440c-af72-03778f442522",
+            "format": "uuid",
+            "readOnly": true,
+            "type": "string"
+          },
+          "reason": {
+            "example": "Account Alert",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "CallReasonReferenceList": {
+        "properties": {
+          "data": {
+            "items": {
+              "$ref": "#/components/schemas/CallReasonReference"
+            },
+            "type": "array"
+          },
+          "meta": {
+            "$ref": "#/components/schemas/branded-calling_PaginationMeta"
+          }
+        },
+        "required": [
+          "data",
+          "meta"
+        ],
+        "type": "object"
+      },
+      "DocumentTypeReference": {
+        "description": "Single supported document type.",
+        "properties": {
+          "description": {
+            "example": "Signed authorization from the DIR owner permitting Telnyx to register the DIR and its associated numbers on their behalf",
+            "type": "string"
+          },
+          "short_name": {
+            "description": "Stable identifier passed to `Document.document_type`.",
+            "example": "letter_of_authorization",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "DocumentTypeReferenceList": {
+        "properties": {
+          "data": {
+            "items": {
+              "$ref": "#/components/schemas/DocumentTypeReference"
+            },
+            "type": "array"
+          },
+          "meta": {
+            "$ref": "#/components/schemas/branded-calling_PaginationMeta"
+          }
+        },
+        "required": [
+          "data",
+          "meta"
+        ],
+        "type": "object"
+      },
+      "ValidateCallReasonsRequest": {
+        "description": "**Bare JSON array** of candidate call-reason strings (NOT an object - there is no top-level `call_reasons` key on this endpoint). 1–10 strings, each ≤64 characters.",
+        "example": [
+          "Appointment reminders",
+          "Billing inquiries"
+        ],
+        "items": {
+          "maxLength": 64,
+          "type": "string"
+        },
+        "maxItems": 10,
+        "minItems": 1,
+        "type": "array"
+      },
+      "ValidateCallReasonsResponse": {
+        "properties": {
+          "data": {
+            "properties": {
+              "all_pre_approved": {
+                "description": "`true` when every supplied reason matches a pre-vetted entry in the call-reason library. When `true`, the DIR will sail through the call-reasons portion of vetting.",
+                "example": false,
+                "type": "boolean"
+              },
+              "non_approved_reasons": {
+                "description": "Subset of the input that does NOT match the pre-vetted library. The DIR can still be submitted with these - they will go through manual review.",
+                "example": [
+                  "Appointment reminders",
+                  "Billing inquiries"
+                ],
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              "requires_manual_vetting": {
+                "description": "`true` when at least one supplied reason is in `non_approved_reasons`. Equivalent to `non_approved_reasons.length \u003e 0` and the inverse of `all_pre_approved`.",
+                "example": true,
+                "type": "boolean"
+              }
+            },
+            "required": [
+              "all_pre_approved",
+              "non_approved_reasons",
+              "requires_manual_vetting"
+            ],
+            "type": "object"
+          }
+        },
+        "required": [
+          "data"
+        ],
+        "type": "object"
+      },
+      "branded-calling_Error": {
+        "description": "A single entry in the canonical Telnyx error envelope. `code` is the stable Telnyx error catalog id; the human-readable explanation lives at `meta.url`. `detail` is a context-specific message; `source.pointer` (when present) names the offending field of the request.",
+        "properties": {
+          "code": {
+            "description": "Stable numeric Telnyx error catalog id. See `meta.url` for the full catalog entry.",
+            "example": "10005",
+            "type": "string"
+          },
+          "detail": {
+            "description": "Context-specific message describing what went wrong on this particular request. May embed offending values; do not rely on it for programmatic matching - branch on `code`.",
+            "example": "field required",
+            "type": "string"
+          },
+          "meta": {
+            "description": "Carries `url` linking to the Telnyx error catalog entry for this `code`. Useful for forwarding the user to documentation.",
+            "properties": {
+              "pending_check_codes": {
+                "description": "Codes of the pending vetting checks (e.g. `loa_signature_valid`).",
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              "pending_check_ids": {
+                "description": "Set on `422 vetting_checks_incomplete` responses from `/admin/dir/{id}/approve` and `/admin/phone-number-batches/approve`. Lists the still-pending vetting check ids.",
+                "items": {
+                  "format": "uuid",
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              "pending_check_labels": {
+                "description": "Human-readable labels of the pending vetting checks.",
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              "url": {
+                "example": "https://developers.telnyx.com/docs/overview/errors/10005",
+                "format": "uri",
+                "type": "string"
+              }
+            },
+            "required": [
+              "url"
+            ],
+            "type": "object"
+          },
+          "source": {
+            "description": "Optional pointer at the offending field of the request.",
+            "properties": {
+              "parameter": {
+                "example": "page[size]",
+                "type": "string"
+              },
+              "pointer": {
+                "example": "/body/legal_name",
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
+          "title": {
+            "description": "Short human-readable category, e.g. `Bad Request`, `Duplicate resource`, `Not Found`, `Forbidden`. Treat as advisory only - the stable identifier is `code`.",
+            "example": "Invalid parameters",
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "title",
+          "detail",
+          "meta"
+        ],
+        "type": "object"
+      },
+      "branded-calling_Errors": {
+        "description": "Canonical Telnyx error envelope. Returned on every 4xx and 5xx response from this service. `errors` is non-empty; multiple entries indicate multiple distinct problems with the same request (e.g. one entry per invalid phone number on a bulk operation).",
+        "properties": {
+          "errors": {
+            "description": "List of one or more error entries. Order is not significant.",
+            "items": {
+              "$ref": "#/components/schemas/branded-calling_Error"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "errors"
+        ],
+        "type": "object"
+      },
+      "branded-calling_PaginationMeta": {
+        "description": "JSON:API pagination metadata returned with every paginated list response. Page numbering is 1-based. `page_size` reports the number of items actually returned in `data` for this page; the requested size is taken from the `page[size]` query parameter.",
+        "properties": {
+          "page_number": {
+            "description": "1-based index of this page. Echoes the `page[number]` query parameter (default `1`).",
+            "example": 1,
+            "type": "integer"
+          },
+          "page_size": {
+            "description": "Number of items returned in this page's `data` array. Capped at 250.",
+            "example": 20,
+            "type": "integer"
+          },
+          "total_pages": {
+            "description": "Total number of pages available given the current `page_size`.",
+            "example": 3,
+            "type": "integer"
+          },
+          "total_results": {
+            "description": "Total number of items across all pages (excludes soft-deleted rows).",
+            "example": 42,
+            "type": "integer"
+          }
+        },
+        "required": [
+          "total_pages",
+          "total_results",
+          "page_number",
+          "page_size"
+        ],
+        "type": "object"
+      }
+    },
+    "securitySchemes": {
+      "BearerAuth": {
+        "bearerFormat": "API key",
+        "description": "Telnyx API key supplied as `Authorization: Bearer \u003ctoken\u003e`. In production, auth may be validated by the API gateway and forwarded via Telnyx auth headers.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "Payment": {
+        "description": "Machine Payment Protocol credential used on paid retries, sent as `Authorization: Payment ...`. Obtained by paying a challenge returned in the `WWW-Authenticate` header of a 402 response. This is not a Telnyx API key; initial challenge requests use standard bearer authentication instead.",
+        "in": "header",
+        "name": "Authorization",
+        "type": "apiKey"
+      },
+      "agent-memory_bearerAuth": {
+        "description": "Telnyx API key",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "bearerAuth": {
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "branded-calling_bearerAuth": {
+        "description": "Telnyx API key. Generate one at https://portal.telnyx.com/#/app/api-keys.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "collections_bearerAuth": {
+        "description": "Telnyx API key. Collections and results are automatically scoped to the authenticated user's organization.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "number-reputation_bearerAuth": {
+        "description": "Telnyx API key. Generate one at https://portal.telnyx.com/#/app/api-keys.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "oauthClientAuth": {
+        "description": "OAuth 2.0 authentication for Telnyx API and MCP integrations",
+        "flows": {
+          "authorizationCode": {
+            "authorizationUrl": "https://api.telnyx.com/v2/oauth/authorize",
+            "refreshUrl": "https://api.telnyx.com/v2/oauth/token",
+            "scopes": {
+              "admin": "Administrative access to Telnyx resources"
+            },
+            "tokenUrl": "https://api.telnyx.com/v2/oauth/token"
+          },
+          "clientCredentials": {
+            "scopes": {
+              "admin": "Administrative access to Telnyx resources"
+            },
+            "tokenUrl": "https://api.telnyx.com/v2/oauth/token"
+          }
+        },
+        "type": "oauth2"
+      },
+      "outbound-voice-profiles_bearerAuth": {
+        "bearerFormat": "JWT",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "pay-connectors_bearerAuth": {
+        "description": "Telnyx API key, not the processor bearer token.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "pronunciation-dicts_bearerAuth": {
+        "description": "Telnyx API v2 key. Obtain from https://portal.telnyx.com",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "rcs-registration_bearerAuth": {
+        "bearerFormat": "API key",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "stored-payment-transactions_bearerAuth": {
+        "bearerFormat": "JWT",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "telnyxApiKey": {
+        "description": "Management-only Telnyx account credential.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "transcriptions-search_bearerAuth": {
+        "description": "Telnyx API key. Results are automatically scoped to the authenticated user's organization.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "web-search_bearerAuth": {
+        "description": "Telnyx API key",
+        "scheme": "bearer",
+        "type": "http"
+      }
+    }
+  },
+  "info": {
+    "contact": {
+      "email": "support@telnyx.com"
+    },
+    "description": "SIP trunking, SMS, MMS, Call Control and Telephony Data Services.",
+    "title": "Telnyx API",
+    "version": "2.0.0",
+    "x-endpoint-cost": "light",
+    "x-latency-category": "responsive"
+  },
+  "openapi": "3.1.0",
+  "paths": {
+    "/call_reasons": {
+      "get": {
+        "description": "Telnyx maintains a library of pre-vetted call-reason phrases (e.g. \"Appointment reminders\", \"Billing inquiries\") that carry through DIR vetting smoothly. You can use any string that fits your use case in `DirCreateRequest.call_reasons`, but matching one of these reduces the chance the vetting team flags the phrasing for clarification.",
+        "operationId": "listCallReasons",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/BcPageNumber"
+          },
+          {
+            "description": "Items per page. Default `100` for this endpoint (the call-reason library is small and most callers want the whole list in one call). Maximum 250; values above are clamped to 250.",
+            "in": "query",
+            "name": "page[size]",
+            "required": false,
+            "schema": {
+              "default": 100,
+              "example": 100,
+              "maximum": 250,
+              "minimum": 1,
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "data": [
+                    {
+                      "description": "Alert about account status or changes",
+                      "id": "d29914a4-3c93-440c-af72-03778f442522",
+                      "reason": "Account Alert"
+                    },
+                    {
+                      "description": "General account notifications",
+                      "id": "4cabcae2-6c61-415b-ac5b-753469458a56",
+                      "reason": "Account Notification"
+                    }
+                  ],
+                  "meta": {
+                    "page_number": 1,
+                    "page_size": 2,
+                    "total_pages": 23,
+                    "total_results": 45
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/CallReasonReferenceList"
+                }
+              }
+            },
+            "description": "Paginated list of standard call reasons."
+          },
+          "4XX": {
+            "$ref": "#/components/responses/branded-calling_GenericErrorResponse"
+          },
+          "default": {
+            "$ref": "#/components/responses/branded-calling_GenericErrorResponse"
+          }
+        },
+        "summary": "List standard call reasons",
+        "tags": [
+          "Reference Data"
+        ]
+      }
+    },
+    "/call_reasons/validate": {
+      "post": {
+        "description": "Check up to 10 candidate `call_reasons` strings against Telnyx's vetting heuristics before sending them on a DIR create or update. The endpoint flags strings that are likely to be rejected during vetting (too generic, banned phrases, length issues, etc.) so you can fix them up front.",
+        "operationId": "validateCallReasons",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "example": [
+                "Appointment reminders",
+                "Billing inquiries"
+              ],
+              "schema": {
+                "$ref": "#/components/schemas/ValidateCallReasonsRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidateCallReasonsResponse"
+                }
+              }
+            },
+            "description": "Per-string validation result."
+          },
+          "4XX": {
+            "$ref": "#/components/responses/branded-calling_GenericErrorResponse"
+          },
+          "default": {
+            "$ref": "#/components/responses/branded-calling_GenericErrorResponse"
+          }
+        },
+        "summary": "Validate a list of call reasons",
+        "tags": [
+          "Reference Data"
+        ]
+      }
+    },
+    "/dir/document_types": {
+      "get": {
+        "description": "Reference list of `document_type` values accepted by `DirCreateRequest.documents[].document_type` and the infringement-contest endpoint. Each entry has a stable `short_name` (used in API calls) and a customer-facing description.",
+        "operationId": "listDocumentTypes",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "data": [
+                    {
+                      "description": "Signed authorization from the DIR owner permitting Telnyx to register the DIR and its associated numbers on their behalf",
+                      "short_name": "letter_of_authorization"
+                    },
+                    {
+                      "description": "Official Secretary of State (or equivalent) registration showing the legal entity exists and is in good standing",
+                      "short_name": "business_registration"
+                    }
+                  ],
+                  "meta": {
+                    "page_number": 1,
+                    "page_size": 20,
+                    "total_pages": 1,
+                    "total_results": 2
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/DocumentTypeReferenceList"
+                }
+              }
+            },
+            "description": "List of supported document types."
+          },
+          "4XX": {
+            "$ref": "#/components/responses/branded-calling_GenericErrorResponse"
+          },
+          "default": {
+            "$ref": "#/components/responses/branded-calling_GenericErrorResponse"
+          }
+        },
+        "summary": "List supported DIR document types",
+        "tags": [
+          "Reference Data"
+        ]
+      }
+    }
+  },
+  "security": [
+    {
+      "bearerAuth": []
+    }
+  ],
+  "servers": [
+    {
+      "description": "Version 2.0.0 of the Telnyx API",
+      "url": "https://api.telnyx.com/v2"
+    }
+  ]
+}

@@ -1,0 +1,1934 @@
+{
+  "components": {
+    "examples": {
+      "Maximum20JobsAllowed": {
+        "value": {
+          "errors": [
+            {
+              "code": "10015",
+              "detail": "You can have at most 20 pending or in progress jobs",
+              "meta": {
+                "url": "https://developers.telnyx.com/docs/overview/errors/10015"
+              },
+              "source": {
+                "pointer": "/base"
+              },
+              "title": "Bad Request"
+            }
+          ]
+        }
+      },
+      "MaximumAllowedPhoneNumbers": {
+        "value": {
+          "errors": [
+            {
+              "code": "10015",
+              "detail": "1000 numbers is the maximum allowed.",
+              "meta": {
+                "url": "https://developers.telnyx.com/docs/overview/errors/10015"
+              },
+              "source": {
+                "pointer": "/phone_numbers"
+              },
+              "title": "Bad Request"
+            }
+          ]
+        }
+      },
+      "MinimumAllowedPhoneNumbers": {
+        "value": {
+          "errors": [
+            {
+              "code": "10015",
+              "detail": "You must provide at least 1 phone number.",
+              "meta": {
+                "url": "https://developers.telnyx.com/docs/overview/errors/10015"
+              },
+              "source": {
+                "pointer": "/phone_numbers"
+              },
+              "title": "Bad Request"
+            }
+          ]
+        }
+      },
+      "MixedIdsAndE164Values": {
+        "value": {
+          "errors": [
+            {
+              "code": "10015",
+              "detail": "You must specify either all phone numbers in the e164 format or all as phone number ids",
+              "meta": {
+                "url": "https://developers.telnyx.com/docs/overview/errors/10015"
+              },
+              "source": {
+                "pointer": "/phone_numbers"
+              },
+              "title": "Bad Request"
+            }
+          ]
+        }
+      },
+      "NotAuthorized": {
+        "value": {
+          "errors": [
+            {
+              "code": "10006",
+              "detail": "You are not authorized to access the requested resource.",
+              "meta": {
+                "url": "https://developers.telnyx.com/docs/overview/errors/10006"
+              },
+              "title": "Not authorized"
+            }
+          ]
+        }
+      },
+      "PhoneNumberOwnership": {
+        "value": {
+          "errors": [
+            {
+              "code": "10015",
+              "detail": "You must own every number in the bulk request",
+              "meta": {
+                "url": "https://developers.telnyx.com/docs/overview/errors/10015"
+              },
+              "source": {
+                "pointer": "/phone_numbers"
+              },
+              "title": "Bad Request"
+            }
+          ]
+        }
+      },
+      "PhoneNumbersMustBePresent": {
+        "value": {
+          "errors": [
+            {
+              "code": "10015",
+              "detail": "must be present",
+              "meta": {
+                "url": "https://developers.telnyx.com/docs/overview/errors/10015"
+              },
+              "source": {
+                "pointer": "/phone_numbers"
+              },
+              "title": "Bad Request"
+            }
+          ]
+        }
+      }
+    },
+    "parameters": {
+      "numbers_PageConsolidated_73c9788e53": {
+        "description": "Consolidated page parameter (deepObject style). Originally: page[size], page[number]",
+        "explode": true,
+        "in": "query",
+        "name": "page",
+        "schema": {
+          "properties": {
+            "number": {
+              "default": 1,
+              "description": "The page number to load",
+              "minimum": 1,
+              "type": "integer"
+            },
+            "size": {
+              "default": 20,
+              "description": "The size of the page",
+              "maximum": 250,
+              "minimum": 1,
+              "type": "integer"
+            }
+          },
+          "type": "object"
+        },
+        "style": "deepObject"
+      }
+    },
+    "responses": {
+      "GenericErrorResponse": {
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Errors"
+            }
+          }
+        },
+        "description": "Unexpected error"
+      },
+      "numbers_BadRequestResponse_73c9788e53": {
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Errors"
+            }
+          }
+        },
+        "description": "Bad request, the request was unacceptable, often due to missing a required parameter."
+      },
+      "numbers_ForbiddenResponse_73c9788e53": {
+        "content": {
+          "application/json": {
+            "examples": {
+              "Not authorized": {
+                "$ref": "#/components/examples/NotAuthorized"
+              }
+            },
+            "schema": {
+              "$ref": "#/components/schemas/Errors"
+            }
+          }
+        },
+        "description": "Forbidden"
+      },
+      "numbers_UnauthorizedResponse_73c9788e53": {
+        "content": {
+          "application/json": {
+            "examples": {
+              "Authentication Failed": {
+                "value": {
+                  "errors": [
+                    {
+                      "code": "10009",
+                      "detail": "Could not understand the provided credentials.",
+                      "meta": {
+                        "url": "https://developers.telnyx.com/docs/overview/errors/10009"
+                      },
+                      "title": "Authentication failed"
+                    }
+                  ]
+                }
+              }
+            },
+            "schema": {
+              "$ref": "#/components/schemas/Errors"
+            }
+          }
+        },
+        "description": "Unauthorized"
+      },
+      "numbers_UnprocessableEntity_73c9788e53": {
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Errors"
+            }
+          }
+        },
+        "description": "Unprocessable entity. Check the 'detail' field in response for details."
+      }
+    },
+    "schemas": {
+      "CallForwarding": {
+        "description": "The call forwarding settings for a phone number.",
+        "example": {
+          "call_forwarding_enabled": true,
+          "forwarding_type": "always",
+          "forwards_to": "+13035559123"
+        },
+        "properties": {
+          "call_forwarding_enabled": {
+            "default": true,
+            "description": "Indicates if call forwarding will be enabled for this number if forwards_to and forwarding_type are filled in. Defaults to true for backwards compatibility with APIV1 use of numbers endpoints.",
+            "example": true,
+            "type": "boolean"
+          },
+          "forwarding_type": {
+            "description": "Call forwarding type. 'forwards_to' must be set for this to have an effect.",
+            "enum": [
+              "always",
+              "on-failure"
+            ],
+            "example": "always",
+            "type": "string"
+          },
+          "forwards_to": {
+            "description": "The phone number to which inbound calls to this number are forwarded. Inbound calls will not be forwarded if this field is left blank. If set, must be a +E.164-formatted phone number.",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "CallRecording": {
+        "description": "The call recording settings for a phone number.",
+        "example": {
+          "inbound_call_recording_channels": "single",
+          "inbound_call_recording_enabled": true,
+          "inbound_call_recording_format": "wav"
+        },
+        "properties": {
+          "inbound_call_recording_channels": {
+            "default": "single",
+            "description": "When using 'dual' channels, final audio file will be stereo recorded with the first leg on channel A, and the rest on channel B.",
+            "enum": [
+              "single",
+              "dual"
+            ],
+            "type": "string"
+          },
+          "inbound_call_recording_enabled": {
+            "default": false,
+            "description": "When enabled, any inbound call to this number will be recorded.",
+            "type": "boolean"
+          },
+          "inbound_call_recording_format": {
+            "default": "wav",
+            "description": "The audio file format for calls being recorded.",
+            "enum": [
+              "wav",
+              "mp3"
+            ],
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "CnamListing": {
+        "description": "The CNAM listing settings for a phone number.",
+        "example": {
+          "cnam_listing_details": "example",
+          "cnam_listing_enabled": true
+        },
+        "properties": {
+          "cnam_listing_details": {
+            "description": "The CNAM listing details for this number. Must be alphanumeric characters or spaces with a maximum length of 15. Requires cnam_listing_enabled to also be set to true.",
+            "type": "string"
+          },
+          "cnam_listing_enabled": {
+            "default": false,
+            "description": "Enables CNAM listings for this number. Requires cnam_listing_details to also be set.",
+            "type": "boolean"
+          }
+        },
+        "type": "object"
+      },
+      "Error": {
+        "example": {
+          "code": "20207",
+          "description": "The street address provided is invalid.",
+          "source": {
+            "pointer": "/street_address"
+          },
+          "title": "Invalid street address"
+        },
+        "properties": {
+          "code": {
+            "type": "string",
+            "x-format": "int64"
+          },
+          "description": {
+            "type": "string"
+          },
+          "detail": {
+            "description": "A human-readable explanation of the error.",
+            "type": "string"
+          },
+          "meta": {
+            "additionalProperties": true,
+            "type": "object"
+          },
+          "source": {
+            "properties": {
+              "parameter": {
+                "description": "Indicates which query parameter caused the error.",
+                "type": "string"
+              },
+              "pointer": {
+                "description": "JSON pointer (RFC6901) to the offending entity.",
+                "format": "json-pointer",
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
+          "title": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "title"
+        ],
+        "type": "object"
+      },
+      "Errors": {
+        "properties": {
+          "errors": {
+            "items": {
+              "$ref": "#/components/schemas/Error"
+            },
+            "type": "array"
+          }
+        },
+        "type": "object"
+      },
+      "MediaFeatures": {
+        "description": "The media features settings for a phone number.",
+        "example": {
+          "accept_any_rtp_packets_enabled": true,
+          "rtp_auto_adjust_enabled": true,
+          "t38_fax_gateway_enabled": true
+        },
+        "properties": {
+          "accept_any_rtp_packets_enabled": {
+            "default": false,
+            "description": "When enabled, Telnyx will accept RTP packets from any customer-side IP address and port, not just those to which Telnyx is sending RTP.",
+            "type": "boolean"
+          },
+          "rtp_auto_adjust_enabled": {
+            "default": true,
+            "description": "When RTP Auto-Adjust is enabled, the destination RTP address port will be automatically changed to match the source of the incoming RTP packets.",
+            "type": "boolean"
+          },
+          "t38_fax_gateway_enabled": {
+            "default": false,
+            "description": "Controls whether Telnyx will accept a T.38 re-INVITE for this phone number. Note that Telnyx will not send a T.38 re-INVITE; this option only controls whether one will be accepted.",
+            "type": "boolean"
+          }
+        },
+        "type": "object"
+      },
+      "PaginationMeta": {
+        "properties": {
+          "page_number": {
+            "example": 2,
+            "type": "integer"
+          },
+          "page_size": {
+            "example": 25,
+            "type": "integer"
+          },
+          "total_pages": {
+            "example": 3,
+            "type": "integer"
+          },
+          "total_results": {
+            "example": 55,
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "PhoneNumbersJobDeletePhoneNumbersRequest": {
+        "example": {
+          "phone_numbers": [
+            "+19705555098",
+            "+19715555098",
+            "32873127836"
+          ]
+        },
+        "properties": {
+          "phone_numbers": {
+            "items": {
+              "description": "Array of phone number ids and/or phone numbers in E164 format to update",
+              "type": "string"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "phone_numbers"
+        ],
+        "type": "object"
+      },
+      "PhoneNumbersJobPendingOperation": {
+        "properties": {
+          "id": {
+            "description": "The phone number's ID",
+            "type": "string"
+          },
+          "phone_number": {
+            "description": "The phone number in e164 format.",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "PhoneNumbersJobPhoneNumber": {
+        "properties": {
+          "id": {
+            "description": "The phone number's ID",
+            "type": "string"
+          },
+          "phone_number": {
+            "description": "The phone number in e164 format.",
+            "example": "+19705555000",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "PhoneNumbersJobSuccessfulOperation": {
+        "properties": {
+          "id": {
+            "description": "The phone number's ID",
+            "type": "string"
+          },
+          "phone_number": {
+            "description": "The phone number in e164 format.",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "PhoneNumbersJobUpdateEmergencySettingsRequest": {
+        "example": {
+          "emergency_address_id": "53829456729313",
+          "emergency_enabled": true,
+          "phone_numbers": [
+            "+19705555098",
+            "+19715555098",
+            "32873127836"
+          ]
+        },
+        "properties": {
+          "emergency_address_id": {
+            "description": "Identifies the address to be used with emergency services. Required if emergency_enabled is true, must be null or omitted if emergency_enabled is false.",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "emergency_enabled": {
+            "description": "Indicates whether to enable or disable emergency services on the numbers.",
+            "type": "boolean"
+          },
+          "phone_numbers": {
+            "items": {
+              "description": "Array of phone number ids and/or phone numbers in E164 format to update",
+              "type": "string"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "emergency_enabled",
+          "phone_numbers"
+        ],
+        "type": "object"
+      },
+      "UpdatePhoneNumberVoiceSettingsRequest": {
+        "example": {
+          "call_forwarding": {
+            "call_forwarding_enabled": true,
+            "forwarding_type": "always",
+            "forwards_to": "+13035559123"
+          },
+          "call_recording": {
+            "inbound_call_recording_channels": "single",
+            "inbound_call_recording_enabled": true,
+            "inbound_call_recording_format": "wav"
+          },
+          "caller_id_name_enabled": true,
+          "cnam_listing": {
+            "cnam_listing_details": "example",
+            "cnam_listing_enabled": true
+          },
+          "inbound_call_screening": "disabled",
+          "media_features": {
+            "accept_any_rtp_packets_enabled": true,
+            "rtp_auto_adjust_enabled": true,
+            "t38_fax_gateway_enabled": true
+          },
+          "tech_prefix_enabled": true,
+          "translated_number": "+13035559999",
+          "usage_payment_method": "pay-per-minute"
+        },
+        "properties": {
+          "call_forwarding": {
+            "$ref": "#/components/schemas/CallForwarding"
+          },
+          "call_recording": {
+            "$ref": "#/components/schemas/CallRecording"
+          },
+          "caller_id_name_enabled": {
+            "default": false,
+            "description": "Controls whether the caller ID name is enabled for this phone number.",
+            "type": "boolean"
+          },
+          "cnam_listing": {
+            "$ref": "#/components/schemas/CnamListing"
+          },
+          "inbound_call_screening": {
+            "default": "disabled",
+            "description": "The inbound_call_screening setting is a phone number configuration option variable that allows users to configure their settings to block or flag fraudulent calls. It can be set to disabled, reject_calls, or flag_calls. This feature has an additional per-number monthly cost associated with it.",
+            "enum": [
+              "disabled",
+              "reject_calls",
+              "flag_calls"
+            ],
+            "type": "string"
+          },
+          "media_features": {
+            "$ref": "#/components/schemas/MediaFeatures"
+          },
+          "tech_prefix_enabled": {
+            "default": false,
+            "description": "Controls whether a tech prefix is enabled for this phone number.",
+            "type": "boolean"
+          },
+          "translated_number": {
+            "description": "This field allows you to rewrite the destination number of an inbound call before the call is routed to you. The value of this field may be any alphanumeric value, and the value will replace the number originally dialed.",
+            "type": "string"
+          },
+          "usage_payment_method": {
+            "default": "pay-per-minute",
+            "description": "Controls whether a number is billed per minute or uses your concurrent channels.",
+            "enum": [
+              "pay-per-minute",
+              "channel"
+            ],
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "numbers_Error_73c9788e53": {
+        "properties": {
+          "code": {
+            "example": "10007",
+            "type": "string"
+          },
+          "detail": {
+            "example": "An unexpected error occured.",
+            "type": "string"
+          },
+          "meta": {
+            "properties": {
+              "url": {
+                "description": "URL with additional information on the error.",
+                "example": "https://developers.telnyx.com/docs/overview/errors/10015",
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
+          "source": {
+            "properties": {
+              "parameter": {
+                "description": "Indicates which query parameter caused the error.",
+                "type": "string"
+              },
+              "pointer": {
+                "description": "JSON pointer (RFC6901) to the offending entity.",
+                "example": "/base",
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
+          "title": {
+            "example": "Unexpected error",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "numbers_PhoneNumbersJob": {
+        "example": {
+          "created_at": "2020-10-23T18:10:00.000Z",
+          "etc": "2020-10-30T18:10:00.000Z",
+          "failed_operations": [
+            {
+              "errors": [
+                {
+                  "code": "10015",
+                  "detail": "The field is invalid.",
+                  "source": {
+                    "pointer": "/emergency_address_id"
+                  },
+                  "title": "Bad Request"
+                }
+              ],
+              "id": "3388768018273",
+              "phone_number": "+19705551234"
+            }
+          ],
+          "id": "42587e44-3a3e-46de-9255-0c9a7a1d1ec7",
+          "pending_operations": [
+            {
+              "id": "2637816387126861837",
+              "phone_number": "+19705555099"
+            }
+          ],
+          "phone_numbers": [
+            {
+              "id": "2637816387126861836"
+            },
+            {
+              "phone_number": "+19715555098"
+            },
+            {
+              "phone_number": "+19705555099"
+            },
+            {
+              "id": "3388768018273"
+            }
+          ],
+          "record_type": "phone_numbers_job",
+          "status": "pending",
+          "successful_operations": [
+            {
+              "id": "2637816387126861836",
+              "phone_number": "+19705555098"
+            },
+            {
+              "id": "33081887126861836",
+              "phone_number": "+19715555098"
+            }
+          ],
+          "type": "update_emergency_settings",
+          "updated_at": "2020-10-23T18:10:01.000Z"
+        },
+        "properties": {
+          "created_at": {
+            "description": "ISO 8601 formatted date indicating when the resource was created.",
+            "readOnly": true,
+            "type": "string"
+          },
+          "etc": {
+            "description": "ISO 8601 formatted date indicating when the estimated time of completion of the background job.",
+            "format": "date-time",
+            "readOnly": true,
+            "type": "string"
+          },
+          "failed_operations": {
+            "items": {
+              "$ref": "#/components/schemas/numbers_PhoneNumbersJobFailedOperation"
+            },
+            "readOnly": true,
+            "type": "array"
+          },
+          "id": {
+            "description": "Identifies the resource.",
+            "example": "42587e44-3a3e-46de-9255-0c9a7a1d1ec7",
+            "format": "uuid",
+            "readOnly": true,
+            "type": "string"
+          },
+          "parameters": {
+            "description": "Effective parameters saved when the job was created, not a snapshot of the original HTTP request or current phone-number settings. Update jobs include the saved update fields; emergency-settings jobs include the saved emergency fields; delete jobs include only targets. Absent fields are omitted, and saved false, null and empty values are preserved. Tags may be normalized to arrays; filter-created jobs contain resolved target identifiers rather than the original filters. Historical jobs with no saved arguments return an empty object.",
+            "examples": [
+              {
+                "customer_reference": "customer-reference",
+                "phone_numbers": [
+                  "1583466971586889004",
+                  "+13127367254"
+                ],
+                "tags": [
+                  "tag"
+                ],
+                "voice": {
+                  "tech_prefix_enabled": false
+                }
+              },
+              {
+                "emergency_address_id": null,
+                "emergency_enabled": false,
+                "phone_numbers": [
+                  "+19705555098"
+                ]
+              },
+              {
+                "phone_numbers": [
+                  "+19705555098"
+                ]
+              }
+            ],
+            "properties": {
+              "add_tags": {
+                "description": "Saved add_tags for an update_phone_numbers job. Values reflect creation-time normalization.",
+                "items": {
+                  "type": "string"
+                },
+                "type": [
+                  "array",
+                  "null"
+                ]
+              },
+              "billing_group_id": {
+                "description": "Saved billing_group_id supplied for an update_phone_numbers job.",
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "connection_id": {
+                "description": "Saved connection_id supplied for an update_phone_numbers job.",
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "customer_reference": {
+                "description": "Saved customer_reference supplied for an update_phone_numbers job.",
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "deletion_lock_enabled": {
+                "description": "Saved deletion_lock_enabled supplied for an update_phone_numbers job.",
+                "type": [
+                  "boolean",
+                  "null"
+                ]
+              },
+              "emergency_address_id": {
+                "description": "Saved emergency address identifier for an update_emergency_settings job. An explicitly supplied null is preserved.",
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "emergency_enabled": {
+                "description": "Saved emergency-services setting for an update_emergency_settings job.",
+                "type": [
+                  "boolean",
+                  "null"
+                ]
+              },
+              "external_pin": {
+                "description": "Saved external_pin supplied for an update_phone_numbers job.",
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "hd_voice_enabled": {
+                "description": "Saved hd_voice_enabled supplied for an update_phone_numbers job.",
+                "type": [
+                  "boolean",
+                  "null"
+                ]
+              },
+              "phone_numbers": {
+                "description": "Saved target phone numbers in E.164 format and/or identifiers. Jobs created using filters contain the resolved identifiers, not the original filter expression. Stored identifier types are preserved.",
+                "items": {
+                  "type": [
+                    "string",
+                    "integer"
+                  ]
+                },
+                "type": "array"
+              },
+              "remove_tags": {
+                "description": "Saved remove_tags for an update_phone_numbers job. Values reflect creation-time normalization.",
+                "items": {
+                  "type": "string"
+                },
+                "type": [
+                  "array",
+                  "null"
+                ]
+              },
+              "tags": {
+                "description": "Saved tags for an update_phone_numbers job. Values reflect creation-time normalization.",
+                "items": {
+                  "type": "string"
+                },
+                "type": [
+                  "array",
+                  "null"
+                ]
+              },
+              "voice": {
+                "description": "Saved voice settings for an update_phone_numbers job, using the public field names and nesting. Only settings present at creation are returned.",
+                "properties": {
+                  "call_forwarding": {
+                    "properties": {
+                      "call_forwarding_enabled": {
+                        "description": "Saved call_forwarding_enabled setting.",
+                        "type": [
+                          "boolean",
+                          "null"
+                        ]
+                      },
+                      "forwarding_type": {
+                        "description": "Saved forwarding_type setting.",
+                        "type": [
+                          "string",
+                          "null"
+                        ]
+                      },
+                      "forwards_to": {
+                        "description": "Saved forwards_to setting.",
+                        "type": [
+                          "string",
+                          "null"
+                        ]
+                      }
+                    },
+                    "type": "object"
+                  },
+                  "call_recording": {
+                    "properties": {
+                      "inbound_call_recording_channels": {
+                        "description": "Saved inbound_call_recording_channels setting.",
+                        "type": [
+                          "string",
+                          "null"
+                        ]
+                      },
+                      "inbound_call_recording_enabled": {
+                        "description": "Saved inbound_call_recording_enabled setting.",
+                        "type": [
+                          "boolean",
+                          "null"
+                        ]
+                      },
+                      "inbound_call_recording_format": {
+                        "description": "Saved inbound_call_recording_format setting.",
+                        "type": [
+                          "string",
+                          "null"
+                        ]
+                      },
+                      "record_continue_on_hold": {
+                        "description": "Saved record_continue_on_hold setting.",
+                        "type": [
+                          "boolean",
+                          "null"
+                        ]
+                      }
+                    },
+                    "type": "object"
+                  },
+                  "caller_id_name_enabled": {
+                    "description": "Saved caller_id_name_enabled setting.",
+                    "type": [
+                      "boolean",
+                      "null"
+                    ]
+                  },
+                  "cnam_listing": {
+                    "properties": {
+                      "cnam_listing_details": {
+                        "description": "Saved cnam_listing_details setting.",
+                        "type": [
+                          "string",
+                          "null"
+                        ]
+                      },
+                      "cnam_listing_enabled": {
+                        "description": "Saved cnam_listing_enabled setting.",
+                        "type": [
+                          "boolean",
+                          "null"
+                        ]
+                      }
+                    },
+                    "type": "object"
+                  },
+                  "inbound_call_screening": {
+                    "description": "Saved inbound_call_screening setting.",
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  },
+                  "media_features": {
+                    "properties": {
+                      "accept_any_rtp_packets_enabled": {
+                        "description": "Saved accept_any_rtp_packets_enabled setting.",
+                        "type": [
+                          "boolean",
+                          "null"
+                        ]
+                      },
+                      "rtp_auto_adjust_enabled": {
+                        "description": "Saved rtp_auto_adjust_enabled setting.",
+                        "type": [
+                          "boolean",
+                          "null"
+                        ]
+                      },
+                      "t38_fax_gateway_enabled": {
+                        "description": "Saved t38_fax_gateway_enabled setting.",
+                        "type": [
+                          "boolean",
+                          "null"
+                        ]
+                      }
+                    },
+                    "type": "object"
+                  },
+                  "tech_prefix_enabled": {
+                    "description": "Saved tech_prefix_enabled setting.",
+                    "type": [
+                      "boolean",
+                      "null"
+                    ]
+                  },
+                  "usage_payment_method": {
+                    "description": "Saved usage_payment_method setting.",
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  }
+                },
+                "type": "object"
+              }
+            },
+            "readOnly": true,
+            "type": "object"
+          },
+          "pending_operations": {
+            "items": {
+              "$ref": "#/components/schemas/PhoneNumbersJobPendingOperation",
+              "description": "The phone numbers pending confirmation on update results. Entries in this list are transient, and will be moved to either successful_operations or failed_operations once the processing is done."
+            },
+            "readOnly": true,
+            "type": "array"
+          },
+          "phone_numbers": {
+            "items": {
+              "$ref": "#/components/schemas/PhoneNumbersJobPhoneNumber",
+              "description": "The unique phone numbers given as arguments in the job creation."
+            },
+            "type": "array"
+          },
+          "record_type": {
+            "description": "Identifies the type of the resource.",
+            "example": "phone_numbers_job",
+            "readOnly": true,
+            "type": "string"
+          },
+          "status": {
+            "default": "pending",
+            "description": "Indicates the completion status of the background update.",
+            "enum": [
+              "pending",
+              "in_progress",
+              "completed",
+              "failed",
+              "expired"
+            ],
+            "example": "pending",
+            "readOnly": true,
+            "type": "string"
+          },
+          "successful_operations": {
+            "items": {
+              "$ref": "#/components/schemas/PhoneNumbersJobSuccessfulOperation",
+              "description": "The phone numbers successfully updated."
+            },
+            "readOnly": true,
+            "type": "array"
+          },
+          "type": {
+            "description": "Identifies the type of the background job.",
+            "enum": [
+              "update_emergency_settings",
+              "delete_phone_numbers",
+              "update_phone_numbers"
+            ],
+            "example": "update_emergency_settings",
+            "readOnly": true,
+            "type": "string"
+          },
+          "updated_at": {
+            "description": "ISO 8601 formatted date indicating when the resource was updated.",
+            "readOnly": true,
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "numbers_PhoneNumbersJobFailedOperation": {
+        "properties": {
+          "errors": {
+            "items": {
+              "$ref": "#/components/schemas/numbers_Error_73c9788e53"
+            },
+            "type": "array"
+          },
+          "id": {
+            "description": "The phone number's ID",
+            "type": "string"
+          },
+          "phone_number": {
+            "description": "The phone number in e164 format.",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "numbers_PhoneNumbersJobUpdatePhoneNumbersRequest": {
+        "example": {
+          "billing_group_id": "dc8e4d67-33a0-4cbb-af74-7b58f05bd494",
+          "connection_id": "dc8e4d67-33a0-4cbb-af74-7b58f05bd494",
+          "customer_reference": "customer-reference",
+          "deletion_lock_enabled": true,
+          "external_pin": "123456",
+          "phone_numbers": [
+            "1583466971586889004",
+            "+13127367254"
+          ],
+          "tags": [
+            "tag"
+          ],
+          "voice": {
+            "call_forwarding": {
+              "call_forwarding_enabled": true,
+              "forwarding_type": "always",
+              "forwards_to": "+13035559123"
+            }
+          }
+        },
+        "properties": {
+          "billing_group_id": {
+            "description": "Identifies the billing group associated with the phone number.",
+            "type": "string"
+          },
+          "connection_id": {
+            "description": "Identifies the connection associated with the phone number.",
+            "type": "string"
+          },
+          "customer_reference": {
+            "description": "Sets the customer reference on the selected phone numbers and retains the supplied value on the job. Recover the job without its ID using GET /phone_numbers/jobs with filter[customer_reference] within 90 days of job creation. This body field updates the numbers; the separate filter[customer_reference] query parameter selects numbers by their current reference.",
+            "example": "MY REF 001",
+            "type": "string"
+          },
+          "deletion_lock_enabled": {
+            "description": "Indicates whether to enable or disable the deletion lock on each phone number. When enabled, this prevents the phone number from being deleted via the API or Telnyx portal.",
+            "type": "boolean"
+          },
+          "external_pin": {
+            "description": "If someone attempts to port your phone number away from Telnyx and your phone number has an external PIN set, we will attempt to verify that you provided the correct external PIN to the winning carrier. Note that not all carriers cooperate with this security mechanism.",
+            "type": "string"
+          },
+          "hd_voice_enabled": {
+            "description": "Indicates whether to enable or disable HD Voice on each phone number. HD Voice is a paid feature and may not be available for all phone numbers, more details about it can be found in the Telnyx support documentation.",
+            "type": "boolean"
+          },
+          "phone_numbers": {
+            "description": "Array of phone number ids and/or phone numbers in E164 format to update. This parameter is required if no filter parameters are provided. If you want to update specific numbers rather than all numbers matching a filter, you must use this parameter. Each item must be either a valid phone number ID or a phone number in E164 format (e.g., '+13127367254').",
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "tags": {
+            "description": "A list of user-assigned tags to help organize phone numbers.",
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "voice": {
+            "$ref": "#/components/schemas/UpdatePhoneNumberVoiceSettingsRequest"
+          }
+        },
+        "required": [
+          "phone_numbers"
+        ],
+        "type": "object"
+      }
+    },
+    "securitySchemes": {
+      "BearerAuth": {
+        "bearerFormat": "API key",
+        "description": "Telnyx API key supplied as `Authorization: Bearer \u003ctoken\u003e`. In production, auth may be validated by the API gateway and forwarded via Telnyx auth headers.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "Payment": {
+        "description": "Machine Payment Protocol credential used on paid retries, sent as `Authorization: Payment ...`. Obtained by paying a challenge returned in the `WWW-Authenticate` header of a 402 response. This is not a Telnyx API key; initial challenge requests use standard bearer authentication instead.",
+        "in": "header",
+        "name": "Authorization",
+        "type": "apiKey"
+      },
+      "agent-memory_bearerAuth": {
+        "description": "Telnyx API key",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "bearerAuth": {
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "branded-calling_bearerAuth": {
+        "description": "Telnyx API key. Generate one at https://portal.telnyx.com/#/app/api-keys.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "collections_bearerAuth": {
+        "description": "Telnyx API key. Collections and results are automatically scoped to the authenticated user's organization.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "number-reputation_bearerAuth": {
+        "description": "Telnyx API key. Generate one at https://portal.telnyx.com/#/app/api-keys.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "oauthClientAuth": {
+        "description": "OAuth 2.0 authentication for Telnyx API and MCP integrations",
+        "flows": {
+          "authorizationCode": {
+            "authorizationUrl": "https://api.telnyx.com/v2/oauth/authorize",
+            "refreshUrl": "https://api.telnyx.com/v2/oauth/token",
+            "scopes": {
+              "admin": "Administrative access to Telnyx resources"
+            },
+            "tokenUrl": "https://api.telnyx.com/v2/oauth/token"
+          },
+          "clientCredentials": {
+            "scopes": {
+              "admin": "Administrative access to Telnyx resources"
+            },
+            "tokenUrl": "https://api.telnyx.com/v2/oauth/token"
+          }
+        },
+        "type": "oauth2"
+      },
+      "outbound-voice-profiles_bearerAuth": {
+        "bearerFormat": "JWT",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "pay-connectors_bearerAuth": {
+        "description": "Telnyx API key, not the processor bearer token.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "pronunciation-dicts_bearerAuth": {
+        "description": "Telnyx API v2 key. Obtain from https://portal.telnyx.com",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "rcs-registration_bearerAuth": {
+        "bearerFormat": "API key",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "stored-payment-transactions_bearerAuth": {
+        "bearerFormat": "JWT",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "telnyxApiKey": {
+        "description": "Management-only Telnyx account credential.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "transcriptions-search_bearerAuth": {
+        "description": "Telnyx API key. Results are automatically scoped to the authenticated user's organization.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "web-search_bearerAuth": {
+        "description": "Telnyx API key",
+        "scheme": "bearer",
+        "type": "http"
+      }
+    }
+  },
+  "info": {
+    "contact": {
+      "email": "support@telnyx.com"
+    },
+    "description": "SIP trunking, SMS, MMS, Call Control and Telephony Data Services.",
+    "title": "Telnyx API",
+    "version": "2.0.0",
+    "x-endpoint-cost": "light",
+    "x-latency-category": "responsive"
+  },
+  "openapi": "3.1.0",
+  "paths": {
+    "/phone_numbers/jobs": {
+      "get": {
+        "description": "Returns background jobs that operate on phone numbers. Filter by job type, target phone numbers, job status, or creation-time customer reference, and sort by creation time. Multiple phone-number or status values use OR semantics within that filter; different filter categories use AND semantics. Results include pagination metadata.",
+        "operationId": "ListPhoneNumbersJobs",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/numbers_PageConsolidated_73c9788e53"
+          },
+          {
+            "description": "Specifies the sort order for results. If not given, results are sorted by created_at in descending order.",
+            "in": "query",
+            "name": "sort",
+            "required": false,
+            "schema": {
+              "enum": [
+                "created_at"
+              ],
+              "example": "created_at",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Consolidated filter parameter (deepObject style). Originally: filter[type], filter[phone_number], filter[phone_number][], filter[status][], filter[customer_reference]",
+            "explode": true,
+            "in": "query",
+            "name": "filter",
+            "schema": {
+              "properties": {
+                "customer_reference": {
+                  "description": "Exact, case-sensitive match for the customer reference supplied when the job was created. Only jobs created within the last 90 days are returned, including for accounts otherwise exempt from job retention limits. Searches the stored job reference, not the current reference on a phone number. Multiple jobs may share a reference. Combines with the other filters and account ownership. Supply a single non-blank string of up to 250 characters, without null characters, using `filter[customer_reference]=yourcustomerrefhere`. Whitespace is preserved; blank strings, arrays, and objects return HTTP 422. An invalid filter value returns HTTP 422. The literal string `null` is matched as text.",
+                  "example": "yourcustomerrefhere",
+                  "maxLength": 250,
+                  "minLength": 1,
+                  "type": "string"
+                },
+                "phone_number": {
+                  "description": "Returns jobs that targeted any of the supplied account-owned phone numbers. Values beginning with `+` must contain 1 to 20 digits after the plus sign. The 10-value limit is enforced before duplicate values are removed. Unmatched or non-account-owned identifiers return an empty result. Phone-number filtering must be enabled for the account.",
+                  "oneOf": [
+                    {
+                      "description": "One E.164 phone number or Telnyx Phone Number ID, or a comma-separated list of up to 10 values.",
+                      "example": "+15551234567,1234567890123456789",
+                      "type": "string"
+                    },
+                    {
+                      "description": "Up to 10 E.164 phone numbers or Telnyx Phone Number IDs. Use repeated `filter[phone_number][]` parameters.",
+                      "example": [
+                        "+15551234567",
+                        "1234567890123456789"
+                      ],
+                      "items": {
+                        "minLength": 1,
+                        "type": "string"
+                      },
+                      "maxItems": 10,
+                      "minItems": 1,
+                      "type": "array"
+                    }
+                  ]
+                },
+                "status": {
+                  "description": "Returns jobs with any of the supplied statuses. Use repeated `filter[status][]` parameters; scalar and comma-separated status values are not accepted.",
+                  "example": [
+                    "pending",
+                    "in_progress"
+                  ],
+                  "items": {
+                    "enum": [
+                      "pending",
+                      "in_progress",
+                      "completed",
+                      "failed",
+                      "expired"
+                    ],
+                    "type": "string"
+                  },
+                  "minItems": 1,
+                  "type": "array"
+                },
+                "type": {
+                  "description": "Identifies the type of the background job.",
+                  "enum": [
+                    "update_emergency_settings",
+                    "delete_phone_numbers",
+                    "update_phone_numbers"
+                  ],
+                  "example": "update_emergency_settings",
+                  "type": "string"
+                }
+              },
+              "type": "object"
+            },
+            "style": "deepObject"
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "items": {
+                        "$ref": "#/components/schemas/numbers_PhoneNumbersJob"
+                      },
+                      "type": "array"
+                    },
+                    "meta": {
+                      "$ref": "#/components/schemas/PaginationMeta"
+                    }
+                  },
+                  "title": "List Phone Numbers Background Jobs Response",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful response with a list of phone numbers background jobs."
+          },
+          "400": {
+            "$ref": "#/components/responses/numbers_BadRequestResponse_73c9788e53"
+          },
+          "401": {
+            "$ref": "#/components/responses/numbers_UnauthorizedResponse_73c9788e53"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "Invalid page number": {
+                    "value": {
+                      "errors": [
+                        {
+                          "code": "10015",
+                          "detail": "The provided 'page' parameter is invalid. It must be an object with 'size' and/or 'number' with numeric values.",
+                          "meta": {
+                            "url": "https://developers.telnyx.com/docs/overview/errors/10015"
+                          },
+                          "source": {
+                            "pointer": "page/number"
+                          },
+                          "title": "Invalid pagination"
+                        }
+                      ]
+                    }
+                  },
+                  "Invalid page size": {
+                    "value": {
+                      "errors": [
+                        {
+                          "code": "10015",
+                          "detail": "The provided 'page' parameter is invalid. It must be an object with 'size' and/or 'number' with numeric values.",
+                          "meta": {
+                            "url": "https://developers.telnyx.com/docs/overview/errors/10015"
+                          },
+                          "source": {
+                            "pointer": "page/size"
+                          },
+                          "title": "Invalid pagination"
+                        }
+                      ]
+                    }
+                  },
+                  "Invalid sorting value": {
+                    "value": {
+                      "errors": [
+                        {
+                          "code": "10015",
+                          "detail": "The value provided for sorting is not valid. Check the value used and try again.",
+                          "meta": {
+                            "url": "https://developers.telnyx.com/docs/overview/errors/10015"
+                          },
+                          "source": {
+                            "pointer": "/sort"
+                          },
+                          "title": "Invalid sorting value"
+                        }
+                      ]
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/Errors"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          },
+          "500": {
+            "$ref": "#/components/responses/GenericErrorResponse"
+          }
+        },
+        "summary": "Lists the phone numbers jobs",
+        "tags": [
+          "Bulk Phone Number Operations"
+        ],
+        "x-endpoint-cost": "medium",
+        "x-group-parameters": "true"
+      }
+    },
+    "/phone_numbers/jobs/delete_phone_numbers": {
+      "post": {
+        "description": "Creates a new background job to delete a batch of numbers. At most one thousand numbers can be updated per API call.",
+        "operationId": "CreateDeletePhoneNumbersJob",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PhoneNumbersJobDeletePhoneNumbersRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "202": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/numbers_PhoneNumbersJob"
+                    }
+                  },
+                  "title": "Phone Numbers Job Delete Phone Numbers",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Deletion job accepted. The response contains a background job; poll GET /phone_numbers/jobs/{id} with the job id until it completes."
+          },
+          "400": {
+            "$ref": "#/components/responses/numbers_BadRequestResponse_73c9788e53"
+          },
+          "401": {
+            "$ref": "#/components/responses/numbers_UnauthorizedResponse_73c9788e53"
+          },
+          "403": {
+            "$ref": "#/components/responses/numbers_ForbiddenResponse_73c9788e53"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "Maximum allowed phone numbers": {
+                    "$ref": "#/components/examples/MaximumAllowedPhoneNumbers"
+                  },
+                  "Maximum jobs allowed": {
+                    "$ref": "#/components/examples/Maximum20JobsAllowed"
+                  },
+                  "Minimum allowed phone numbers": {
+                    "$ref": "#/components/examples/MinimumAllowedPhoneNumbers"
+                  },
+                  "Mixed IDs and E164 values": {
+                    "$ref": "#/components/examples/MixedIdsAndE164Values"
+                  },
+                  "Phone number ownership": {
+                    "$ref": "#/components/examples/PhoneNumberOwnership"
+                  },
+                  "Phone numbers must be present": {
+                    "$ref": "#/components/examples/PhoneNumbersMustBePresent"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/Errors"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          },
+          "500": {
+            "$ref": "#/components/responses/GenericErrorResponse"
+          }
+        },
+        "summary": "Delete a batch of numbers",
+        "tags": [
+          "Bulk Phone Number Operations"
+        ],
+        "x-group-parameters": "true",
+        "x-latency-category": "background"
+      }
+    },
+    "/phone_numbers/jobs/update_emergency_settings": {
+      "post": {
+        "description": "Creates a background job to update the emergency settings of a collection of phone numbers. At most one thousand numbers can be updated per API call.",
+        "operationId": "CreatePhoneNumbersJobUpdateEmergencySettings",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PhoneNumbersJobUpdateEmergencySettingsRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "202": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/numbers_PhoneNumbersJob"
+                    }
+                  },
+                  "title": "Phone Numbers Enable Emergency",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Emergency settings job accepted. The response contains a background job; poll GET /phone_numbers/jobs/{id} with the job id until it completes."
+          },
+          "400": {
+            "$ref": "#/components/responses/numbers_BadRequestResponse_73c9788e53"
+          },
+          "401": {
+            "$ref": "#/components/responses/numbers_UnauthorizedResponse_73c9788e53"
+          },
+          "403": {
+            "$ref": "#/components/responses/numbers_ForbiddenResponse_73c9788e53"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "Maximum allowed phone numbers": {
+                    "$ref": "#/components/examples/MaximumAllowedPhoneNumbers"
+                  },
+                  "Maximum jobs allowed": {
+                    "value": {
+                      "errors": [
+                        {
+                          "code": "10015",
+                          "detail": "You can have at most 500 pending or in progress jobs",
+                          "meta": {
+                            "url": "https://developers.telnyx.com/docs/overview/errors/10015"
+                          },
+                          "source": {
+                            "pointer": "/base"
+                          },
+                          "title": "Bad Request"
+                        }
+                      ]
+                    }
+                  },
+                  "Minimum allowed phone numbers": {
+                    "$ref": "#/components/examples/MinimumAllowedPhoneNumbers"
+                  },
+                  "Mixed IDs and E164 values": {
+                    "$ref": "#/components/examples/MixedIdsAndE164Values"
+                  },
+                  "Phone number ownership": {
+                    "$ref": "#/components/examples/PhoneNumberOwnership"
+                  },
+                  "Phone numbers must be present": {
+                    "$ref": "#/components/examples/PhoneNumbersMustBePresent"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/Errors"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          },
+          "500": {
+            "$ref": "#/components/responses/GenericErrorResponse"
+          }
+        },
+        "summary": "Update the emergency settings from a batch of numbers",
+        "tags": [
+          "Bulk Phone Number Operations"
+        ],
+        "x-latency-category": "background"
+      }
+    },
+    "/phone_numbers/jobs/update_phone_numbers": {
+      "post": {
+        "description": "Creates a new background job to update a batch of numbers. At most one thousand numbers can be updated per API call. At least one of the updateable fields must be submitted. IMPORTANT: You must either specify filters (using the filter parameters) or specific phone numbers (using the phone_numbers parameter in the request body). If you specify filters, ALL phone numbers that match the given filters (up to 1000 at a time) will be updated. If you want to update only specific numbers, you must use the phone_numbers parameter in the request body. When using the phone_numbers parameter, ensure you follow the correct format as shown in the example (either phone number IDs or phone numbers in E164 format).",
+        "operationId": "CreateUpdatePhoneNumbersJob",
+        "parameters": [
+          {
+            "description": "Consolidated filter parameter (deepObject style). Originally: filter[has_bundle], filter[tag], filter[connection_id], filter[phone_number], filter[status], filter[voice.connection_name], filter[voice.usage_payment_method], filter[billing_group_id], filter[emergency_address_id], filter[customer_reference]",
+            "explode": true,
+            "in": "query",
+            "name": "filter",
+            "schema": {
+              "properties": {
+                "billing_group_id": {
+                  "description": "Filter by the billing_group_id associated with phone numbers. To filter to only phone numbers that have no billing group associated them, set the value of this filter to the string 'null'.",
+                  "example": "62e4bf2e-c278-4282-b524-488d9c9c43b2",
+                  "type": "string"
+                },
+                "connection_id": {
+                  "description": "Filter by connection_id.",
+                  "example": "1521916448077776306",
+                  "type": "string"
+                },
+                "customer_reference": {
+                  "description": "Filter numbers via the customer_reference set.",
+                  "type": "string"
+                },
+                "emergency_address_id": {
+                  "description": "Filter by the emergency_address_id associated with phone numbers. To filter only phone numbers that have no emergency address associated with them, set the value of this filter to the string 'null'.",
+                  "example": "9102160989215728032",
+                  "type": "string"
+                },
+                "has_bundle": {
+                  "description": "Filter by phone number that have bundles.",
+                  "type": "string"
+                },
+                "phone_number": {
+                  "description": "Filter by phone number. Requires at least three digits.\n             Non-numerical characters will result in no values being returned.",
+                  "type": "string"
+                },
+                "status": {
+                  "description": "Filter by phone number status.",
+                  "enum": [
+                    "purchase-pending",
+                    "purchase-failed",
+                    "port-pending",
+                    "active",
+                    "deleted",
+                    "port-failed",
+                    "emergency-only",
+                    "ported-out",
+                    "port-out-pending"
+                  ],
+                  "example": "active",
+                  "type": "string"
+                },
+                "tag": {
+                  "description": "Filter by phone number tags.",
+                  "type": "string"
+                },
+                "voice.connection_name": {
+                  "additionalProperties": false,
+                  "description": "Filter by voice connection name pattern matching.",
+                  "properties": {
+                    "contains": {
+                      "description": "Filter contains connection name. Requires at least three characters.",
+                      "example": "test",
+                      "type": "string"
+                    },
+                    "ends_with": {
+                      "description": "Filter ends with connection name. Requires at least three characters.",
+                      "example": "test",
+                      "type": "string"
+                    },
+                    "eq": {
+                      "description": "Filter by connection name.",
+                      "example": "test",
+                      "type": "string"
+                    },
+                    "starts_with": {
+                      "description": "Filter starts with connection name. Requires at least three characters.",
+                      "example": "test",
+                      "type": "string"
+                    }
+                  },
+                  "type": "object"
+                },
+                "voice.usage_payment_method": {
+                  "description": "Filter by usage_payment_method.",
+                  "enum": [
+                    "pay-per-minute",
+                    "channel"
+                  ],
+                  "example": "channel",
+                  "type": "string"
+                }
+              },
+              "type": "object"
+            },
+            "style": "deepObject"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/numbers_PhoneNumbersJobUpdatePhoneNumbersRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "202": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/numbers_PhoneNumbersJob"
+                    }
+                  },
+                  "title": "Phone Numbers Job Update Phone Numbers",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Update job accepted. The response contains a background job; poll GET /phone_numbers/jobs/{id} with the job id until it completes."
+          },
+          "400": {
+            "$ref": "#/components/responses/numbers_BadRequestResponse_73c9788e53"
+          },
+          "401": {
+            "$ref": "#/components/responses/numbers_UnauthorizedResponse_73c9788e53"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "Billing group not authorized": {
+                    "value": {
+                      "errors": [
+                        {
+                          "code": "10010",
+                          "detail": "The specified billing group either does not exist or is not part of your account",
+                          "meta": {
+                            "url": "https://developers.telnyx.com/docs/overview/errors/10010"
+                          },
+                          "source": {
+                            "pointer": "/billing_group_id"
+                          },
+                          "title": "Authorization Failed"
+                        }
+                      ]
+                    }
+                  },
+                  "Not authorized": {
+                    "$ref": "#/components/examples/NotAuthorized"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/Errors"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "Maximum allowed phone numbers": {
+                    "$ref": "#/components/examples/MaximumAllowedPhoneNumbers"
+                  },
+                  "Maximum jobs allowed": {
+                    "$ref": "#/components/examples/Maximum20JobsAllowed"
+                  },
+                  "Minimum allowed phone numbers": {
+                    "$ref": "#/components/examples/MinimumAllowedPhoneNumbers"
+                  },
+                  "Minimum updateable field": {
+                    "value": {
+                      "errors": [
+                        {
+                          "code": "10015",
+                          "detail": "You must provide at least 1 updateable field.",
+                          "meta": {
+                            "url": "https://developers.telnyx.com/docs/overview/errors/10015"
+                          },
+                          "source": {
+                            "pointer": "/updateable_fields"
+                          },
+                          "title": "Bad Request"
+                        }
+                      ]
+                    }
+                  },
+                  "Mixed IDs and E164 values": {
+                    "$ref": "#/components/examples/MixedIdsAndE164Values"
+                  },
+                  "Phone number ownership": {
+                    "$ref": "#/components/examples/PhoneNumberOwnership"
+                  },
+                  "Phone numbers must be present": {
+                    "$ref": "#/components/examples/PhoneNumbersMustBePresent"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/Errors"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          },
+          "500": {
+            "$ref": "#/components/responses/GenericErrorResponse"
+          }
+        },
+        "summary": "Update a batch of numbers",
+        "tags": [
+          "Bulk Phone Number Operations"
+        ],
+        "x-group-parameters": "true",
+        "x-latency-category": "background"
+      }
+    },
+    "/phone_numbers/jobs/{id}": {
+      "get": {
+        "description": "Returns the status and details of the phone-number background job identified by `id`.",
+        "operationId": "RetrievePhoneNumbersJob",
+        "parameters": [
+          {
+            "description": "Identifies the Phone Numbers Job.",
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/numbers_PhoneNumbersJob"
+                    }
+                  },
+                  "title": "Phone Numbers Job",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Phone numbers job details."
+          },
+          "400": {
+            "$ref": "#/components/responses/numbers_BadRequestResponse_73c9788e53"
+          },
+          "401": {
+            "$ref": "#/components/responses/numbers_UnauthorizedResponse_73c9788e53"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "Resource not found": {
+                    "value": {
+                      "errors": [
+                        {
+                          "code": "10005",
+                          "detail": "The requested resource or URL could not be found.",
+                          "meta": {
+                            "url": "https://developers.telnyx.com/docs/overview/errors/10005"
+                          },
+                          "source": {
+                            "pointer": "/base"
+                          },
+                          "title": "Resource not found"
+                        }
+                      ]
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/Errors"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "422": {
+            "$ref": "#/components/responses/numbers_UnprocessableEntity_73c9788e53"
+          },
+          "500": {
+            "$ref": "#/components/responses/GenericErrorResponse"
+          }
+        },
+        "summary": "Retrieve a phone numbers job",
+        "tags": [
+          "Bulk Phone Number Operations"
+        ],
+        "x-group-parameters": "true"
+      }
+    }
+  },
+  "security": [
+    {
+      "bearerAuth": []
+    }
+  ],
+  "servers": [
+    {
+      "description": "Version 2.0.0 of the Telnyx API",
+      "url": "https://api.telnyx.com/v2"
+    }
+  ]
+}

@@ -1,0 +1,963 @@
+{
+  "components": {
+    "parameters": {
+      "WirelessBlocklistId": {
+        "description": "Identifies the wireless blocklist.",
+        "in": "path",
+        "name": "id",
+        "required": true,
+        "schema": {
+          "example": "6a09cdc3-8948-47f0-aa62-74ac943d6c58",
+          "format": "uuid",
+          "type": "string"
+        }
+      },
+      "wireless_PageNumber_c5290d5308": {
+        "description": "The page number to load.",
+        "in": "query",
+        "name": "page[number]",
+        "schema": {
+          "default": 1,
+          "minimum": 1,
+          "type": "integer"
+        }
+      },
+      "wireless_PageSize_c5290d5308": {
+        "description": "The size of the page.",
+        "in": "query",
+        "name": "page[size]",
+        "schema": {
+          "default": 20,
+          "maximum": 250,
+          "minimum": 1,
+          "type": "integer"
+        }
+      }
+    },
+    "responses": {
+      "ResourceNotFound": {
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/documents_Error"
+            }
+          }
+        },
+        "description": "Resource not found"
+      },
+      "wireless_GenericErrorResponse_c5290d5308": {
+        "content": {
+          "application/json": {
+            "examples": {
+              "unexpectedError": {
+                "summary": "Unexpected API error",
+                "value": {
+                  "errors": [
+                    {
+                      "code": "10007",
+                      "detail": "An unexpected error occured.",
+                      "title": "Unexpected error"
+                    }
+                  ]
+                }
+              }
+            },
+            "schema": {
+              "$ref": "#/components/schemas/Errors"
+            }
+          }
+        },
+        "description": "Unexpected error"
+      },
+      "wireless_UnprocessableEntity_c5290d5308": {
+        "content": {
+          "application/json": {
+            "examples": {
+              "unprocessableEntity": {
+                "summary": "Request could not be processed",
+                "value": {
+                  "errors": [
+                    {
+                      "code": "10027",
+                      "detail": "The server understood the syntax of the request but was unable to process the instructions.",
+                      "title": "Unprocessable Entity"
+                    }
+                  ]
+                }
+              }
+            },
+            "schema": {
+              "$ref": "#/components/schemas/Errors"
+            }
+          }
+        },
+        "description": "Unprocessable entity. Check the 'detail' field in response for details."
+      }
+    },
+    "schemas": {
+      "CountryCode": {
+        "description": "ISO 3166-1 Alpha-2 Country Code.",
+        "example": "US",
+        "type": "string"
+      },
+      "Error": {
+        "example": {
+          "code": "20207",
+          "description": "The street address provided is invalid.",
+          "source": {
+            "pointer": "/street_address"
+          },
+          "title": "Invalid street address"
+        },
+        "properties": {
+          "code": {
+            "type": "string",
+            "x-format": "int64"
+          },
+          "description": {
+            "type": "string"
+          },
+          "detail": {
+            "description": "A human-readable explanation of the error.",
+            "type": "string"
+          },
+          "meta": {
+            "additionalProperties": true,
+            "type": "object"
+          },
+          "source": {
+            "properties": {
+              "parameter": {
+                "description": "Indicates which query parameter caused the error.",
+                "type": "string"
+              },
+              "pointer": {
+                "description": "JSON pointer (RFC6901) to the offending entity.",
+                "format": "json-pointer",
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
+          "title": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "title"
+        ],
+        "type": "object"
+      },
+      "Errors": {
+        "properties": {
+          "errors": {
+            "items": {
+              "$ref": "#/components/schemas/Error"
+            },
+            "type": "array"
+          }
+        },
+        "type": "object"
+      },
+      "MobileCountryCode": {
+        "description": "Mobile Country Code.",
+        "example": "311",
+        "type": "string"
+      },
+      "PLMNCode": {
+        "description": "Public land mobile network code (MCC + MNC).",
+        "example": "311210",
+        "type": "string"
+      },
+      "PaginationMeta": {
+        "properties": {
+          "page_number": {
+            "example": 2,
+            "type": "integer"
+          },
+          "page_size": {
+            "example": 25,
+            "type": "integer"
+          },
+          "total_pages": {
+            "example": 3,
+            "type": "integer"
+          },
+          "total_results": {
+            "example": 55,
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "documents_Error": {
+        "properties": {
+          "code": {
+            "type": "string"
+          },
+          "detail": {
+            "type": "string"
+          },
+          "meta": {
+            "additionalProperties": true,
+            "type": "object"
+          },
+          "source": {
+            "properties": {
+              "parameter": {
+                "description": "Indicates which query parameter caused the error.",
+                "type": "string"
+              },
+              "pointer": {
+                "description": "JSON pointer (RFC6901) to the offending entity.",
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
+          "title": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "title"
+        ],
+        "type": "object"
+      },
+      "wireless_Country": {
+        "properties": {
+          "country_code": {
+            "description": "ISO 3166-1 Alpha-2 Country Code.",
+            "example": "US",
+            "type": "string"
+          }
+        },
+        "required": [
+          "country_code"
+        ],
+        "title": "Country",
+        "type": "object"
+      },
+      "wireless_Error_c5290d5308": {
+        "properties": {
+          "code": {
+            "type": "string"
+          },
+          "detail": {
+            "type": "string"
+          },
+          "meta": {
+            "additionalProperties": true,
+            "type": "object"
+          },
+          "source": {
+            "properties": {
+              "parameter": {
+                "description": "Indicates which query parameter caused the error.",
+                "type": "string"
+              },
+              "pointer": {
+                "description": "JSON pointer (RFC6901) to the offending entity.",
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
+          "title": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "title"
+        ],
+        "type": "object"
+      },
+      "wireless_MCC": {
+        "properties": {
+          "mcc": {
+            "description": "Mobile Country Code.",
+            "example": "310",
+            "type": "string"
+          }
+        },
+        "required": [
+          "mcc"
+        ],
+        "title": "Mobile Country Code",
+        "type": "object"
+      },
+      "wireless_PLMN": {
+        "properties": {
+          "plmn": {
+            "description": "Public land mobile network code (MCC + MNC).",
+            "example": "310260",
+            "type": "string"
+          }
+        },
+        "required": [
+          "plmn"
+        ],
+        "title": "Public land mobile network",
+        "type": "object"
+      },
+      "wireless_WirelessBlocklist": {
+        "properties": {
+          "created_at": {
+            "description": "ISO 8601 formatted date-time indicating when the resource was created.",
+            "example": "2018-02-02T22:25:27.521Z",
+            "readOnly": true,
+            "type": "string"
+          },
+          "id": {
+            "description": "Identifies the resource.",
+            "example": "6a09cdc3-8948-47f0-aa62-74ac943d6c58",
+            "format": "uuid",
+            "readOnly": true,
+            "type": "string"
+          },
+          "name": {
+            "description": "The wireless blocklist name.",
+            "example": "My wireless blocklist.",
+            "type": "string"
+          },
+          "type": {
+            "default": "country",
+            "description": "The type of the wireless blocklist.",
+            "enum": [
+              "country",
+              "mcc",
+              "plmn"
+            ],
+            "example": "country",
+            "type": "string"
+          },
+          "updated_at": {
+            "description": "ISO 8601 formatted date-time indicating when the resource was updated.",
+            "example": "2018-02-02T22:25:27.521Z",
+            "readOnly": true,
+            "type": "string"
+          },
+          "values": {
+            "description": "Values to block. The values here depend on the `type` of Wireless Blocklist.",
+            "example": [
+              "CA",
+              "MX",
+              "US"
+            ],
+            "items": {
+              "anyOf": [
+                {
+                  "$ref": "#/components/schemas/CountryCode"
+                },
+                {
+                  "$ref": "#/components/schemas/MobileCountryCode"
+                },
+                {
+                  "$ref": "#/components/schemas/PLMNCode"
+                }
+              ]
+            },
+            "type": "array"
+          }
+        },
+        "type": "object"
+      }
+    },
+    "securitySchemes": {
+      "BearerAuth": {
+        "bearerFormat": "API key",
+        "description": "Telnyx API key supplied as `Authorization: Bearer \u003ctoken\u003e`. In production, auth may be validated by the API gateway and forwarded via Telnyx auth headers.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "Payment": {
+        "description": "Machine Payment Protocol credential used on paid retries, sent as `Authorization: Payment ...`. Obtained by paying a challenge returned in the `WWW-Authenticate` header of a 402 response. This is not a Telnyx API key; initial challenge requests use standard bearer authentication instead.",
+        "in": "header",
+        "name": "Authorization",
+        "type": "apiKey"
+      },
+      "agent-memory_bearerAuth": {
+        "description": "Telnyx API key",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "bearerAuth": {
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "branded-calling_bearerAuth": {
+        "description": "Telnyx API key. Generate one at https://portal.telnyx.com/#/app/api-keys.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "collections_bearerAuth": {
+        "description": "Telnyx API key. Collections and results are automatically scoped to the authenticated user's organization.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "number-reputation_bearerAuth": {
+        "description": "Telnyx API key. Generate one at https://portal.telnyx.com/#/app/api-keys.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "oauthClientAuth": {
+        "description": "OAuth 2.0 authentication for Telnyx API and MCP integrations",
+        "flows": {
+          "authorizationCode": {
+            "authorizationUrl": "https://api.telnyx.com/v2/oauth/authorize",
+            "refreshUrl": "https://api.telnyx.com/v2/oauth/token",
+            "scopes": {
+              "admin": "Administrative access to Telnyx resources"
+            },
+            "tokenUrl": "https://api.telnyx.com/v2/oauth/token"
+          },
+          "clientCredentials": {
+            "scopes": {
+              "admin": "Administrative access to Telnyx resources"
+            },
+            "tokenUrl": "https://api.telnyx.com/v2/oauth/token"
+          }
+        },
+        "type": "oauth2"
+      },
+      "outbound-voice-profiles_bearerAuth": {
+        "bearerFormat": "JWT",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "pay-connectors_bearerAuth": {
+        "description": "Telnyx API key, not the processor bearer token.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "pronunciation-dicts_bearerAuth": {
+        "description": "Telnyx API v2 key. Obtain from https://portal.telnyx.com",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "rcs-registration_bearerAuth": {
+        "bearerFormat": "API key",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "stored-payment-transactions_bearerAuth": {
+        "bearerFormat": "JWT",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "telnyxApiKey": {
+        "description": "Management-only Telnyx account credential.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "transcriptions-search_bearerAuth": {
+        "description": "Telnyx API key. Results are automatically scoped to the authenticated user's organization.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "web-search_bearerAuth": {
+        "description": "Telnyx API key",
+        "scheme": "bearer",
+        "type": "http"
+      }
+    }
+  },
+  "info": {
+    "contact": {
+      "email": "support@telnyx.com"
+    },
+    "description": "SIP trunking, SMS, MMS, Call Control and Telephony Data Services.",
+    "title": "Telnyx API",
+    "version": "2.0.0",
+    "x-endpoint-cost": "light",
+    "x-latency-category": "responsive"
+  },
+  "openapi": "3.1.0",
+  "paths": {
+    "/wireless_blocklist_values": {
+      "get": {
+        "description": "Retrieve all wireless blocklist values for a given blocklist type. The request returns `422` when `type` is missing or invalid.",
+        "operationId": "WirelessBlocklistsGetAll",
+        "parameters": [
+          {
+            "description": "The Wireless Blocklist type for which to list possible values (e.g., `country`, `mcc`, `plmn`).",
+            "in": "query",
+            "name": "type",
+            "required": true,
+            "schema": {
+              "enum": [
+                "country",
+                "mcc",
+                "plmn"
+              ],
+              "example": "country",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "country": {
+                    "summary": "Country values",
+                    "value": {
+                      "data": [
+                        {
+                          "country_code": "US"
+                        }
+                      ]
+                    }
+                  },
+                  "mcc": {
+                    "summary": "MCC values",
+                    "value": {
+                      "data": [
+                        {
+                          "mcc": "310"
+                        }
+                      ]
+                    }
+                  },
+                  "plmn": {
+                    "summary": "PLMN values",
+                    "value": {
+                      "data": [
+                        {
+                          "plmn": "310260"
+                        }
+                      ]
+                    }
+                  }
+                },
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "oneOf": [
+                        {
+                          "items": {
+                            "$ref": "#/components/schemas/wireless_Country"
+                          },
+                          "title": "Country",
+                          "type": "array"
+                        },
+                        {
+                          "items": {
+                            "$ref": "#/components/schemas/wireless_MCC"
+                          },
+                          "title": "MCC",
+                          "type": "array"
+                        },
+                        {
+                          "items": {
+                            "$ref": "#/components/schemas/wireless_PLMN"
+                          },
+                          "title": "PLMN",
+                          "type": "array"
+                        }
+                      ]
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "A list of possible wireless blocklist values"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "invalidType": {
+                    "summary": "Invalid type",
+                    "value": {
+                      "code": "10027",
+                      "detail": "Type must be one of: country, mcc, plmn",
+                      "meta": {
+                        "url": "https://developers.telnyx.com/api/errors/10027"
+                      },
+                      "source": {
+                        "pointer": "/type"
+                      },
+                      "title": "Invalid filter type"
+                    }
+                  },
+                  "missingType": {
+                    "summary": "Missing type",
+                    "value": {
+                      "code": "10027",
+                      "detail": "The 'type' query parameter is required. Must be one of: country, mcc, plmn",
+                      "meta": {
+                        "url": "https://developers.telnyx.com/api/errors/10027"
+                      },
+                      "source": {
+                        "pointer": "/type"
+                      },
+                      "title": "Missing required parameter"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/wireless_Error_c5290d5308"
+                }
+              }
+            },
+            "description": "Missing or invalid blocklist type"
+          },
+          "default": {
+            "$ref": "#/components/responses/wireless_GenericErrorResponse_c5290d5308"
+          }
+        },
+        "summary": "Get all possible wireless blocklist values",
+        "tags": [
+          "Wireless Blocklists"
+        ]
+      }
+    },
+    "/wireless_blocklists": {
+      "get": {
+        "description": "Get all Wireless Blocklists belonging to the user.",
+        "operationId": "GetWirelessBlocklistsGateways",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/wireless_PageNumber_c5290d5308"
+          },
+          {
+            "$ref": "#/components/parameters/wireless_PageSize_c5290d5308"
+          },
+          {
+            "description": "The name of the Wireless Blocklist.",
+            "example": "my private gateway",
+            "in": "query",
+            "name": "filter[name]",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "When the Private Wireless Gateway was last updated.",
+            "example": "country",
+            "in": "query",
+            "name": "filter[type]",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "items": {
+                        "$ref": "#/components/schemas/wireless_WirelessBlocklist"
+                      },
+                      "type": "array"
+                    },
+                    "meta": {
+                      "$ref": "#/components/schemas/PaginationMeta"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "default": {
+            "$ref": "#/components/responses/wireless_GenericErrorResponse_c5290d5308"
+          }
+        },
+        "summary": "Get all Wireless Blocklists",
+        "tags": [
+          "Wireless Blocklists"
+        ]
+      },
+      "post": {
+        "description": "Create a Wireless Blocklist to prevent SIMs from connecting to certain networks.",
+        "operationId": "CreateWirelessBlocklist",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "name": {
+                    "description": "The name of the Wireless Blocklist.",
+                    "example": "My Wireless Blocklist",
+                    "type": "string"
+                  },
+                  "type": {
+                    "description": "The type of wireless blocklist.",
+                    "enum": [
+                      "country",
+                      "mcc",
+                      "plmn"
+                    ],
+                    "example": "country",
+                    "type": "string"
+                  },
+                  "values": {
+                    "description": "Values to block. The values here depend on the `type` of Wireless Blocklist.",
+                    "example": [
+                      "CA",
+                      "US"
+                    ],
+                    "items": {
+                      "anyOf": [
+                        {
+                          "$ref": "#/components/schemas/CountryCode"
+                        },
+                        {
+                          "$ref": "#/components/schemas/MobileCountryCode"
+                        },
+                        {
+                          "$ref": "#/components/schemas/PLMNCode"
+                        }
+                      ]
+                    },
+                    "type": "array"
+                  }
+                },
+                "required": [
+                  "name",
+                  "type",
+                  "values"
+                ],
+                "type": "object"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "example": {
+                    "data": {
+                      "created_at": "2018-02-02T22:25:27.521Z",
+                      "id": "6a09cdc3-8948-47f0-aa62-74ac943d6c58",
+                      "name": "North American Wireless Blocklist",
+                      "type": "country",
+                      "updated_at": "2018-02-02T22:25:27.521Z",
+                      "values": [
+                        "CA",
+                        "MX",
+                        "US"
+                      ]
+                    }
+                  },
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/wireless_WirelessBlocklist"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Wireless Blocklist created"
+          },
+          "422": {
+            "$ref": "#/components/responses/wireless_UnprocessableEntity_c5290d5308"
+          },
+          "default": {
+            "$ref": "#/components/responses/wireless_GenericErrorResponse_c5290d5308"
+          }
+        },
+        "summary": "Create a Wireless Blocklist",
+        "tags": [
+          "Wireless Blocklists"
+        ]
+      }
+    },
+    "/wireless_blocklists/{id}": {
+      "delete": {
+        "description": "Permanently deletes the specified wireless blocklist from your account. The request returns `422` when the wireless blocklist is assigned to a SIM Card Group.",
+        "operationId": "DeleteWirelessBlocklist",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/WirelessBlocklistId"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Wireless Blocklist deleted"
+          },
+          "404": {
+            "$ref": "#/components/responses/ResourceNotFound"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "wirelessBlocklistAssigned": {
+                    "summary": "Wireless Blocklist is still assigned",
+                    "value": {
+                      "code": "10027",
+                      "detail": "This wireless blocklist is associated with one or more SIM Cards or SIM Card Groups. Remove any association(s) before deleting.",
+                      "meta": {
+                        "url": "https://developers.telnyx.com/api/errors/10027"
+                      },
+                      "source": {
+                        "pointer": "/wireless_blocklist"
+                      },
+                      "title": "Cannot delete wireless blocklist"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/wireless_Error_c5290d5308"
+                }
+              }
+            },
+            "description": "Wireless Blocklist is still assigned"
+          },
+          "default": {
+            "$ref": "#/components/responses/wireless_GenericErrorResponse_c5290d5308"
+          }
+        },
+        "summary": "Delete a Wireless Blocklist",
+        "tags": [
+          "Wireless Blocklists"
+        ]
+      },
+      "get": {
+        "description": "Retrieve information about a Wireless Blocklist.",
+        "operationId": "GetWirelessBlocklist",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/WirelessBlocklistId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/wireless_WirelessBlocklist"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "404": {
+            "$ref": "#/components/responses/ResourceNotFound"
+          },
+          "default": {
+            "$ref": "#/components/responses/wireless_GenericErrorResponse_c5290d5308"
+          }
+        },
+        "summary": "Get a Wireless Blocklist",
+        "tags": [
+          "Wireless Blocklists"
+        ]
+      },
+      "patch": {
+        "description": "Updates the specified wireless blocklist. The update is processed asynchronously, so the request is accepted and completes in the background.",
+        "operationId": "UpdateWirelessBlocklist",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/WirelessBlocklistId"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "name": {
+                    "description": "The name of the Wireless Blocklist.",
+                    "example": "My Wireless Blocklist",
+                    "type": "string"
+                  },
+                  "values": {
+                    "description": "Values to block. The values here depend on the `type` of Wireless Blocklist.",
+                    "example": [
+                      "CA",
+                      "US"
+                    ],
+                    "items": {
+                      "anyOf": [
+                        {
+                          "$ref": "#/components/schemas/CountryCode"
+                        },
+                        {
+                          "$ref": "#/components/schemas/MobileCountryCode"
+                        },
+                        {
+                          "$ref": "#/components/schemas/PLMNCode"
+                        }
+                      ]
+                    },
+                    "type": "array"
+                  }
+                },
+                "type": "object"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "202": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/wireless_WirelessBlocklist"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Update accepted and processed asynchronously. Poll GET /wireless_blocklists/{id} to check the result."
+          },
+          "422": {
+            "$ref": "#/components/responses/wireless_UnprocessableEntity_c5290d5308"
+          },
+          "default": {
+            "$ref": "#/components/responses/wireless_GenericErrorResponse_c5290d5308"
+          }
+        },
+        "summary": "Update a Wireless Blocklist",
+        "tags": [
+          "Wireless Blocklists"
+        ]
+      }
+    }
+  },
+  "security": [
+    {
+      "bearerAuth": []
+    }
+  ],
+  "servers": [
+    {
+      "description": "Version 2.0.0 of the Telnyx API",
+      "url": "https://api.telnyx.com/v2"
+    }
+  ]
+}

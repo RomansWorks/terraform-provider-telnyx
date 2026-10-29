@@ -1,0 +1,923 @@
+{
+  "components": {
+    "parameters": {
+      "BcPageNumber": {
+        "description": "1-based page number. Out-of-range values return an empty page with correct meta.",
+        "in": "query",
+        "name": "page[number]",
+        "required": false,
+        "schema": {
+          "default": 1,
+          "example": 1,
+          "minimum": 1,
+          "type": "integer"
+        }
+      },
+      "BcPageSize": {
+        "description": "Items per page. Maximum 250; values above are clamped to 250.",
+        "in": "query",
+        "name": "page[size]",
+        "required": false,
+        "schema": {
+          "default": 20,
+          "example": 20,
+          "maximum": 250,
+          "minimum": 1,
+          "type": "integer"
+        }
+      }
+    },
+    "responses": {
+      "branded-calling_GenericErrorResponse": {
+        "content": {
+          "application/json": {
+            "examples": {
+              "bad_request": {
+                "description": "Returned when the request itself is well-formed but the resource is in a state that disallows this action (e.g. updating a DIR while it is being vetted, or deleting an enterprise that still has DIRs in vetting).",
+                "summary": "400 - request rejected by a state guard",
+                "value": {
+                  "errors": [
+                    {
+                      "code": "10015",
+                      "detail": "Cannot update DIR in 'verified' status",
+                      "meta": {
+                        "url": "https://developers.telnyx.com/docs/overview/errors/10015"
+                      },
+                      "title": "Bad Request"
+                    }
+                  ]
+                }
+              },
+              "conflict": {
+                "summary": "409 - request conflicts with current resource state",
+                "value": {
+                  "errors": [
+                    {
+                      "code": "10021",
+                      "detail": "DIR has 1 active infringement claim(s). Resolve the claim before making this change.",
+                      "meta": {
+                        "url": "https://developers.telnyx.com/docs/overview/errors/10021"
+                      },
+                      "title": "Resource in use"
+                    }
+                  ]
+                }
+              },
+              "not_found": {
+                "summary": "404 - resource does not exist or is not yours",
+                "value": {
+                  "errors": [
+                    {
+                      "code": "10009",
+                      "detail": "Enterprise not found.",
+                      "meta": {
+                        "url": "https://developers.telnyx.com/docs/overview/errors/10009"
+                      },
+                      "title": "Resource not found"
+                    }
+                  ]
+                }
+              },
+              "validation_error": {
+                "summary": "422 - request body failed validation",
+                "value": {
+                  "errors": [
+                    {
+                      "code": "10005",
+                      "detail": "field required",
+                      "meta": {
+                        "url": "https://developers.telnyx.com/docs/overview/errors/10005"
+                      },
+                      "source": {
+                        "pointer": "/body/legal_name"
+                      },
+                      "title": "Invalid parameters"
+                    }
+                  ]
+                }
+              }
+            },
+            "schema": {
+              "$ref": "#/components/schemas/branded-calling_Errors"
+            }
+          }
+        },
+        "description": "An error occurred. The response carries the standard Telnyx error envelope."
+      },
+      "number-reputation_GenericErrorResponse": {
+        "content": {
+          "application/json": {
+            "examples": {
+              "bad_request": {
+                "description": "Returned when the request itself is well-formed but the resource is in a state that disallows this action (e.g. updating a DIR while it is being vetted, or deleting an enterprise that still has DIRs in vetting).",
+                "summary": "400 - request rejected by a state guard",
+                "value": {
+                  "errors": [
+                    {
+                      "code": "10015",
+                      "detail": "Cannot update DIR in 'verified' status",
+                      "meta": {
+                        "url": "https://developers.telnyx.com/docs/overview/errors/10015"
+                      },
+                      "title": "Bad Request"
+                    }
+                  ]
+                }
+              },
+              "conflict": {
+                "summary": "409 - request conflicts with current resource state",
+                "value": {
+                  "errors": [
+                    {
+                      "code": "10021",
+                      "detail": "DIR has 1 active infringement claim(s). Resolve the claim before making this change.",
+                      "meta": {
+                        "url": "https://developers.telnyx.com/docs/overview/errors/10021"
+                      },
+                      "title": "Resource in use"
+                    }
+                  ]
+                }
+              },
+              "not_found": {
+                "summary": "404 - resource does not exist or is not yours",
+                "value": {
+                  "errors": [
+                    {
+                      "code": "10009",
+                      "detail": "Enterprise not found.",
+                      "meta": {
+                        "url": "https://developers.telnyx.com/docs/overview/errors/10009"
+                      },
+                      "title": "Resource not found"
+                    }
+                  ]
+                }
+              },
+              "validation_error": {
+                "summary": "422 - request body failed validation",
+                "value": {
+                  "errors": [
+                    {
+                      "code": "10005",
+                      "detail": "field required",
+                      "meta": {
+                        "url": "https://developers.telnyx.com/docs/overview/errors/10005"
+                      },
+                      "source": {
+                        "pointer": "/body/legal_name"
+                      },
+                      "title": "Invalid parameters"
+                    }
+                  ]
+                }
+              }
+            },
+            "schema": {
+              "$ref": "#/components/schemas/number-reputation_Errors"
+            }
+          }
+        },
+        "description": "An error occurred. The response carries the standard Telnyx error envelope."
+      }
+    },
+    "schemas": {
+      "TermsOfServiceInfo": {
+        "properties": {
+          "agreements": {
+            "items": {
+              "$ref": "#/components/schemas/TermsOfServiceInfoItem"
+            },
+            "type": "array"
+          }
+        },
+        "type": "object"
+      },
+      "TermsOfServiceInfoItem": {
+        "properties": {
+          "current_version": {
+            "description": "The latest published version of these terms.",
+            "example": "v1.0.0",
+            "type": "string"
+          },
+          "description": {
+            "description": "A short summary of the product these terms cover.",
+            "example": "Terms and Conditions for Telnyx Number Reputation service",
+            "type": "string"
+          },
+          "effective_date": {
+            "description": "The date this version took effect.",
+            "example": "2025-07-10",
+            "format": "date",
+            "type": "string"
+          },
+          "product_type": {
+            "$ref": "#/components/schemas/TosProductType"
+          },
+          "terms_url": {
+            "description": "A link to the full terms text.",
+            "example": "https://telnyx.com/terms/reputation-services",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "TosAgreement": {
+        "description": "A recorded user agreement to a product's Terms of Service. The `user_id` is intentionally NOT echoed back on this public surface - the caller already knows their own identity.",
+        "properties": {
+          "agreed_at": {
+            "description": "When you accepted this version of the terms.",
+            "example": "2025-07-10T10:30:00Z",
+            "format": "date-time",
+            "readOnly": true,
+            "type": "string"
+          },
+          "created_at": {
+            "description": "When this agreement record was created.",
+            "example": "2025-07-10T10:30:00Z",
+            "format": "date-time",
+            "readOnly": true,
+            "type": "string"
+          },
+          "id": {
+            "description": "The unique identifier of this recorded agreement.",
+            "example": "550e8400-e29b-41d4-a716-446655440000",
+            "format": "uuid",
+            "readOnly": true,
+            "type": "string"
+          },
+          "product_type": {
+            "$ref": "#/components/schemas/TosProductType"
+          },
+          "terms_version": {
+            "description": "The version of the terms you accepted.",
+            "example": "v1.0.0",
+            "type": "string"
+          },
+          "version": {
+            "description": "Convenience alias of `terms_version`. Both keys are present on every response.",
+            "example": "v1.0.0",
+            "readOnly": true,
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "TosAgreementList": {
+        "description": "Paginated list of Terms of Service agreements for the calling user.",
+        "properties": {
+          "data": {
+            "items": {
+              "$ref": "#/components/schemas/TosAgreement"
+            },
+            "type": "array"
+          },
+          "meta": {
+            "$ref": "#/components/schemas/branded-calling_PaginationMeta"
+          }
+        },
+        "required": [
+          "data",
+          "meta"
+        ],
+        "type": "object"
+      },
+      "TosAgreementWrapped": {
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/TosAgreement"
+          }
+        },
+        "required": [
+          "data"
+        ],
+        "type": "object"
+      },
+      "TosProductType": {
+        "description": "Telnyx product the Terms of Service apply to.",
+        "enum": [
+          "branded_calling",
+          "number_reputation"
+        ],
+        "example": "branded_calling",
+        "type": "string"
+      },
+      "TosStatus": {
+        "description": "Whether the calling user has agreed to a product's current Terms of Service. The `user_id` is intentionally omitted on this public surface.",
+        "properties": {
+          "agreed_at": {
+            "description": "When you accepted the terms, or null if you have not.",
+            "example": "2025-07-10T10:30:00Z",
+            "format": "date-time",
+            "nullable": true,
+            "type": "string"
+          },
+          "agreed_version": {
+            "description": "Version the user previously agreed to (may be older than `current_terms_version`). `null` if the user has never agreed.",
+            "example": "v1.0.0",
+            "nullable": true,
+            "type": "string"
+          },
+          "agreement_required": {
+            "description": "`true` when the user must agree to the latest version before using the product. Equivalent to `!has_agreed`.",
+            "example": true,
+            "type": "boolean"
+          },
+          "current_terms_version": {
+            "description": "Latest published version of the ToS for this product.",
+            "example": "v1.1.0",
+            "type": "string"
+          },
+          "has_agreed": {
+            "description": "`true` if the user has agreed to the latest version.",
+            "example": false,
+            "type": "boolean"
+          },
+          "product_type": {
+            "$ref": "#/components/schemas/TosProductType"
+          }
+        },
+        "required": [
+          "product_type",
+          "current_terms_version",
+          "has_agreed",
+          "agreement_required"
+        ],
+        "type": "object"
+      },
+      "TosStatusWrapped": {
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/TosStatus"
+          }
+        },
+        "required": [
+          "data"
+        ],
+        "type": "object"
+      },
+      "branded-calling_Error": {
+        "description": "A single entry in the canonical Telnyx error envelope. `code` is the stable Telnyx error catalog id; the human-readable explanation lives at `meta.url`. `detail` is a context-specific message; `source.pointer` (when present) names the offending field of the request.",
+        "properties": {
+          "code": {
+            "description": "Stable numeric Telnyx error catalog id. See `meta.url` for the full catalog entry.",
+            "example": "10005",
+            "type": "string"
+          },
+          "detail": {
+            "description": "Context-specific message describing what went wrong on this particular request. May embed offending values; do not rely on it for programmatic matching - branch on `code`.",
+            "example": "field required",
+            "type": "string"
+          },
+          "meta": {
+            "description": "Carries `url` linking to the Telnyx error catalog entry for this `code`. Useful for forwarding the user to documentation.",
+            "properties": {
+              "pending_check_codes": {
+                "description": "Codes of the pending vetting checks (e.g. `loa_signature_valid`).",
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              "pending_check_ids": {
+                "description": "Set on `422 vetting_checks_incomplete` responses from `/admin/dir/{id}/approve` and `/admin/phone-number-batches/approve`. Lists the still-pending vetting check ids.",
+                "items": {
+                  "format": "uuid",
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              "pending_check_labels": {
+                "description": "Human-readable labels of the pending vetting checks.",
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              "url": {
+                "example": "https://developers.telnyx.com/docs/overview/errors/10005",
+                "format": "uri",
+                "type": "string"
+              }
+            },
+            "required": [
+              "url"
+            ],
+            "type": "object"
+          },
+          "source": {
+            "description": "Optional pointer at the offending field of the request.",
+            "properties": {
+              "parameter": {
+                "example": "page[size]",
+                "type": "string"
+              },
+              "pointer": {
+                "example": "/body/legal_name",
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
+          "title": {
+            "description": "Short human-readable category, e.g. `Bad Request`, `Duplicate resource`, `Not Found`, `Forbidden`. Treat as advisory only - the stable identifier is `code`.",
+            "example": "Invalid parameters",
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "title",
+          "detail",
+          "meta"
+        ],
+        "type": "object"
+      },
+      "branded-calling_Errors": {
+        "description": "Canonical Telnyx error envelope. Returned on every 4xx and 5xx response from this service. `errors` is non-empty; multiple entries indicate multiple distinct problems with the same request (e.g. one entry per invalid phone number on a bulk operation).",
+        "properties": {
+          "errors": {
+            "description": "List of one or more error entries. Order is not significant.",
+            "items": {
+              "$ref": "#/components/schemas/branded-calling_Error"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "errors"
+        ],
+        "type": "object"
+      },
+      "branded-calling_PaginationMeta": {
+        "description": "JSON:API pagination metadata returned with every paginated list response. Page numbering is 1-based. `page_size` reports the number of items actually returned in `data` for this page; the requested size is taken from the `page[size]` query parameter.",
+        "properties": {
+          "page_number": {
+            "description": "1-based index of this page. Echoes the `page[number]` query parameter (default `1`).",
+            "example": 1,
+            "type": "integer"
+          },
+          "page_size": {
+            "description": "Number of items returned in this page's `data` array. Capped at 250.",
+            "example": 20,
+            "type": "integer"
+          },
+          "total_pages": {
+            "description": "Total number of pages available given the current `page_size`.",
+            "example": 3,
+            "type": "integer"
+          },
+          "total_results": {
+            "description": "Total number of items across all pages (excludes soft-deleted rows).",
+            "example": 42,
+            "type": "integer"
+          }
+        },
+        "required": [
+          "total_pages",
+          "total_results",
+          "page_number",
+          "page_size"
+        ],
+        "type": "object"
+      },
+      "number-reputation_Error": {
+        "description": "A single entry in the canonical Telnyx error envelope. `code` is the stable Telnyx error catalog id; the human-readable explanation lives at `meta.url`. `detail` is a context-specific message; `source.pointer` (when present) names the offending field of the request.",
+        "properties": {
+          "code": {
+            "description": "Stable numeric Telnyx error catalog id. See `meta.url` for the full catalog entry.",
+            "example": "10005",
+            "type": "string"
+          },
+          "detail": {
+            "description": "Context-specific message describing what went wrong on this particular request. May embed offending values; do not rely on it for programmatic matching - branch on `code`.",
+            "example": "field required",
+            "type": "string"
+          },
+          "meta": {
+            "description": "Carries `url` linking to the Telnyx error catalog entry for this `code`. Useful for forwarding the user to documentation.",
+            "properties": {
+              "pending_check_codes": {
+                "description": "Codes of the pending vetting checks (e.g. `loa_signature_valid`).",
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              "pending_check_ids": {
+                "description": "Set on `422 vetting_checks_incomplete` responses from `/admin/dir/{id}/approve` and `/admin/phone-number-batches/approve`. Lists the still-pending vetting check ids.",
+                "items": {
+                  "format": "uuid",
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              "pending_check_labels": {
+                "description": "Human-readable labels of the pending vetting checks.",
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              "url": {
+                "example": "https://developers.telnyx.com/docs/overview/errors/10005",
+                "format": "uri",
+                "type": "string"
+              }
+            },
+            "required": [
+              "url"
+            ],
+            "type": "object"
+          },
+          "source": {
+            "description": "Optional pointer at the offending field of the request.",
+            "properties": {
+              "parameter": {
+                "example": "page[size]",
+                "type": "string"
+              },
+              "pointer": {
+                "example": "/body/legal_name",
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
+          "title": {
+            "description": "Short human-readable category, e.g. `Bad Request`, `Duplicate resource`, `Not Found`, `Forbidden`. Treat as advisory only - the stable identifier is `code`.",
+            "example": "Invalid parameters",
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "title",
+          "detail",
+          "meta"
+        ],
+        "type": "object"
+      },
+      "number-reputation_Errors": {
+        "description": "Canonical Telnyx error envelope. Returned on every 4xx and 5xx response from this service. `errors` is non-empty; multiple entries indicate multiple distinct problems with the same request (e.g. one entry per invalid phone number on a bulk operation).",
+        "properties": {
+          "errors": {
+            "description": "List of one or more error entries. Order is not significant.",
+            "items": {
+              "$ref": "#/components/schemas/number-reputation_Error"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "errors"
+        ],
+        "type": "object"
+      }
+    },
+    "securitySchemes": {
+      "BearerAuth": {
+        "bearerFormat": "API key",
+        "description": "Telnyx API key supplied as `Authorization: Bearer \u003ctoken\u003e`. In production, auth may be validated by the API gateway and forwarded via Telnyx auth headers.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "Payment": {
+        "description": "Machine Payment Protocol credential used on paid retries, sent as `Authorization: Payment ...`. Obtained by paying a challenge returned in the `WWW-Authenticate` header of a 402 response. This is not a Telnyx API key; initial challenge requests use standard bearer authentication instead.",
+        "in": "header",
+        "name": "Authorization",
+        "type": "apiKey"
+      },
+      "agent-memory_bearerAuth": {
+        "description": "Telnyx API key",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "bearerAuth": {
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "branded-calling_bearerAuth": {
+        "description": "Telnyx API key. Generate one at https://portal.telnyx.com/#/app/api-keys.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "collections_bearerAuth": {
+        "description": "Telnyx API key. Collections and results are automatically scoped to the authenticated user's organization.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "number-reputation_bearerAuth": {
+        "description": "Telnyx API key. Generate one at https://portal.telnyx.com/#/app/api-keys.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "oauthClientAuth": {
+        "description": "OAuth 2.0 authentication for Telnyx API and MCP integrations",
+        "flows": {
+          "authorizationCode": {
+            "authorizationUrl": "https://api.telnyx.com/v2/oauth/authorize",
+            "refreshUrl": "https://api.telnyx.com/v2/oauth/token",
+            "scopes": {
+              "admin": "Administrative access to Telnyx resources"
+            },
+            "tokenUrl": "https://api.telnyx.com/v2/oauth/token"
+          },
+          "clientCredentials": {
+            "scopes": {
+              "admin": "Administrative access to Telnyx resources"
+            },
+            "tokenUrl": "https://api.telnyx.com/v2/oauth/token"
+          }
+        },
+        "type": "oauth2"
+      },
+      "outbound-voice-profiles_bearerAuth": {
+        "bearerFormat": "JWT",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "pay-connectors_bearerAuth": {
+        "description": "Telnyx API key, not the processor bearer token.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "pronunciation-dicts_bearerAuth": {
+        "description": "Telnyx API v2 key. Obtain from https://portal.telnyx.com",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "rcs-registration_bearerAuth": {
+        "bearerFormat": "API key",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "stored-payment-transactions_bearerAuth": {
+        "bearerFormat": "JWT",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "telnyxApiKey": {
+        "description": "Management-only Telnyx account credential.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "transcriptions-search_bearerAuth": {
+        "description": "Telnyx API key. Results are automatically scoped to the authenticated user's organization.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "web-search_bearerAuth": {
+        "description": "Telnyx API key",
+        "scheme": "bearer",
+        "type": "http"
+      }
+    }
+  },
+  "info": {
+    "contact": {
+      "email": "support@telnyx.com"
+    },
+    "description": "SIP trunking, SMS, MMS, Call Control and Telephony Data Services.",
+    "title": "Telnyx API",
+    "version": "2.0.0",
+    "x-endpoint-cost": "light",
+    "x-latency-category": "responsive"
+  },
+  "openapi": "3.1.0",
+  "paths": {
+    "/terms_of_service/agreements": {
+      "get": {
+        "description": "Returns the Terms of Service agreements the authenticated user has on file. Each entry records the version agreed to and when. Most users only have one agreement per product, but if the ToS is updated and the user re-agrees a new entry is added.\n\nResults are paginated with the standard `page[number]` / `page[size]` parameters; the response uses the standard `{data, meta}` JSON:API envelope.\n\nBy default this returns agreements for **all** products the user has agreed to. Pass the `product_type` query parameter to scope the result to a single product.",
+        "operationId": "listTermsOfServiceAgreements",
+        "parameters": [
+          {
+            "description": "Optional filter. Omit to list the user's agreements for **every** product (branded_calling and number_reputation); pass a value to return only that product's agreements.",
+            "example": "branded_calling",
+            "in": "query",
+            "name": "product_type",
+            "required": false,
+            "schema": {
+              "$ref": "#/components/schemas/TosProductType"
+            }
+          },
+          {
+            "$ref": "#/components/parameters/BcPageNumber"
+          },
+          {
+            "$ref": "#/components/parameters/BcPageSize"
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TosAgreementList"
+                }
+              }
+            },
+            "description": "Paginated list of agreements."
+          },
+          "4XX": {
+            "$ref": "#/components/responses/branded-calling_GenericErrorResponse"
+          },
+          "default": {
+            "$ref": "#/components/responses/branded-calling_GenericErrorResponse"
+          }
+        },
+        "summary": "List the calling user's Terms of Service agreements",
+        "tags": [
+          "Terms of Service"
+        ]
+      }
+    },
+    "/terms_of_service/agreements/{agreement_id}": {
+      "get": {
+        "description": "Retrieve a single ToS agreement record. Returns `404` if the agreement does not exist or does not belong to the authenticated user.",
+        "operationId": "getTermsOfServiceAgreement",
+        "parameters": [
+          {
+            "description": "Unique identifier of the agreement.",
+            "in": "path",
+            "name": "agreement_id",
+            "required": true,
+            "schema": {
+              "example": "550e8400-e29b-41d4-a716-446655440000",
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TosAgreementWrapped"
+                }
+              }
+            },
+            "description": "Agreement."
+          },
+          "4XX": {
+            "$ref": "#/components/responses/branded-calling_GenericErrorResponse"
+          },
+          "default": {
+            "$ref": "#/components/responses/branded-calling_GenericErrorResponse"
+          }
+        },
+        "summary": "Get a Terms of Service agreement by id",
+        "tags": [
+          "Terms of Service"
+        ]
+      }
+    },
+    "/terms_of_service/branded_calling/agree": {
+      "post": {
+        "description": "Records the authenticated user's agreement to the current Branded Calling ToS. No body required. Idempotent - re-calling after agreement is a no-op and returns the existing agreement.\n\nThis is a prerequisite for activating Branded Calling on any enterprise (`POST /enterprises/{id}/branded_calling`); without an agreement, activation returns `403`.",
+        "operationId": "agreeToBrandedCallingTos",
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TosAgreementWrapped"
+                }
+              }
+            },
+            "description": "Agreement recorded."
+          },
+          "4XX": {
+            "$ref": "#/components/responses/branded-calling_GenericErrorResponse"
+          },
+          "default": {
+            "$ref": "#/components/responses/branded-calling_GenericErrorResponse"
+          }
+        },
+        "summary": "Agree to the Branded Calling Terms of Service",
+        "tags": [
+          "Terms of Service"
+        ]
+      }
+    },
+    "/terms_of_service/info": {
+      "get": {
+        "description": "Returns the available Terms of Service agreements (product, current version, terms URL, effective date). Omit `product_type` to return all products; pass it to scope to one.",
+        "operationId": "getTermsOfServiceInfo",
+        "parameters": [
+          {
+            "description": "Optional product filter. Omit to return info for all products.",
+            "example": "branded_calling",
+            "in": "query",
+            "name": "product_type",
+            "required": false,
+            "schema": {
+              "$ref": "#/components/schemas/TosProductType"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TermsOfServiceInfo"
+                }
+              }
+            },
+            "description": "Terms of Service information."
+          },
+          "401": {
+            "$ref": "#/components/responses/branded-calling_GenericErrorResponse"
+          },
+          "default": {
+            "$ref": "#/components/responses/branded-calling_GenericErrorResponse"
+          }
+        },
+        "summary": "Get Terms of Service information",
+        "tags": [
+          "Terms of Service"
+        ]
+      }
+    },
+    "/terms_of_service/number_reputation/agree": {
+      "post": {
+        "description": "Records the authenticated user's agreement to the current Phone Number Reputation ToS. No body required. Idempotent.\n\nPrerequisite for using any of the `/v2/.../reputation/*` endpoints.",
+        "operationId": "agreeNumberReputationTermsOfService",
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TosAgreementWrapped"
+                }
+              }
+            },
+            "description": "Agreement recorded."
+          },
+          "4XX": {
+            "$ref": "#/components/responses/number-reputation_GenericErrorResponse"
+          },
+          "default": {
+            "$ref": "#/components/responses/number-reputation_GenericErrorResponse"
+          }
+        },
+        "summary": "Agree to the Phone Number Reputation Terms of Service",
+        "tags": [
+          "Terms of Service"
+        ]
+      }
+    },
+    "/terms_of_service/status": {
+      "get": {
+        "description": "Returns whether the authenticated user has agreed to the current Terms of Service for the product given by `product_type`. Used during onboarding to decide whether to prompt the user with the ToS dialog before continuing.\n\n`agreement_required: true` means the user has not yet agreed (or has agreed to an outdated version) and must agree before using that product's endpoints.",
+        "operationId": "getTermsOfServiceStatus",
+        "parameters": [
+          {
+            "description": "Which product's ToS to check. Defaults to `branded_calling`.",
+            "in": "query",
+            "name": "product_type",
+            "required": false,
+            "schema": {
+              "$ref": "#/components/schemas/TosProductType"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TosStatusWrapped"
+                }
+              }
+            },
+            "description": "Status."
+          },
+          "4XX": {
+            "$ref": "#/components/responses/branded-calling_GenericErrorResponse"
+          },
+          "default": {
+            "$ref": "#/components/responses/branded-calling_GenericErrorResponse"
+          }
+        },
+        "summary": "Get the calling user's Terms of Service status",
+        "tags": [
+          "Terms of Service"
+        ]
+      }
+    }
+  },
+  "security": [
+    {
+      "bearerAuth": []
+    }
+  ],
+  "servers": [
+    {
+      "description": "Version 2.0.0 of the Telnyx API",
+      "url": "https://api.telnyx.com/v2"
+    }
+  ]
+}

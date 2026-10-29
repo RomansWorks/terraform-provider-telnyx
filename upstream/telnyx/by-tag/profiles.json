@@ -1,0 +1,2412 @@
+{
+  "components": {
+    "parameters": {
+      "MessagingProfileId": {
+        "description": "The id of the messaging profile to retrieve",
+        "in": "path",
+        "name": "id",
+        "required": true,
+        "schema": {
+          "format": "uuid",
+          "type": "string"
+        }
+      },
+      "PageConsolidated": {
+        "description": "Consolidated page parameter (deepObject style). Originally: page[number], page[size]",
+        "explode": true,
+        "in": "query",
+        "name": "page",
+        "schema": {
+          "properties": {
+            "number": {
+              "default": 1,
+              "description": "The page number to load",
+              "minimum": 1,
+              "type": "integer"
+            },
+            "size": {
+              "default": 20,
+              "description": "The size of the page",
+              "maximum": 250,
+              "minimum": 1,
+              "type": "integer"
+            }
+          },
+          "type": "object"
+        },
+        "style": "deepObject"
+      }
+    },
+    "responses": {
+      "messaging_GenericErrorResponse_0b38e7044b": {
+        "content": {
+          "application/json": {
+            "example": {
+              "errors": [
+                {
+                  "code": "string",
+                  "detail": "string",
+                  "source": {
+                    "parameter": "string",
+                    "pointer": "/data/attributes/phone_number"
+                  },
+                  "title": "string"
+                }
+              ]
+            },
+            "schema": {
+              "$ref": "#/components/schemas/messaging_Errors_0b38e7044b"
+            }
+          }
+        },
+        "description": "Unexpected error"
+      }
+    },
+    "schemas": {
+      "ForgetResponse": {
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/ForgottenProfile"
+          }
+        },
+        "required": [
+          "data"
+        ],
+        "title": "ForgetResponse",
+        "type": "object"
+      },
+      "ForgottenProfile": {
+        "properties": {
+          "memories_deleted": {
+            "description": "Memories the profile held and no longer does, counted before and after. A report rather than an audit: memory moves in the background between the two counts. The status carries the outcome.",
+            "title": "Memories Deleted",
+            "type": "integer"
+          },
+          "profile_id": {
+            "title": "Profile Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "profile_id",
+          "memories_deleted"
+        ],
+        "title": "ForgottenProfile",
+        "type": "object"
+      },
+      "ListedMemory": {
+        "properties": {
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "recorded_at": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Recorded At"
+          },
+          "source_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "The source this memory was extracted from. Set for a fact, which comes from exactly one source; null for a memory derived from other memories. Read it with `GET .../sources/{source_id}`. A source deleted a moment ago can still be named here, and then answers 404.",
+            "title": "Source Id"
+          },
+          "text": {
+            "title": "Text",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "text",
+          "source_id"
+        ],
+        "title": "ListedMemory",
+        "type": "object"
+      },
+      "MM7Metadata": {
+        "description": "MM7 settings for inbound messages",
+        "properties": {
+          "mm7_failover_webhook_url": {
+            "description": "Failover webhook URL to receive inbound MM7 traffic",
+            "format": "url",
+            "type": "string"
+          },
+          "mm7_webhook_url": {
+            "description": "Webhook URL to receive inbound MM7 traffic",
+            "format": "url",
+            "type": "string"
+          }
+        },
+        "type": [
+          "object",
+          "null"
+        ]
+      },
+      "MemoryListResponse": {
+        "properties": {
+          "data": {
+            "items": {
+              "$ref": "#/components/schemas/ListedMemory"
+            },
+            "title": "Data",
+            "type": "array"
+          },
+          "meta": {
+            "$ref": "#/components/schemas/PageMeta"
+          }
+        },
+        "required": [
+          "data",
+          "meta"
+        ],
+        "title": "MemoryListResponse",
+        "type": "object"
+      },
+      "MemoryResponse": {
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/TracedMemory"
+          }
+        },
+        "required": [
+          "data"
+        ],
+        "title": "MemoryResponse",
+        "type": "object"
+      },
+      "MessagingFeatureSet": {
+        "description": "The set of features available for a specific messaging use case (SMS or MMS). Features\ncan vary depending on the characteristics the phone number, as well as its current\nproduct configuration.\n",
+        "example": {
+          "domestic_two_way": true,
+          "international_inbound": false,
+          "international_outbound": true
+        },
+        "properties": {
+          "domestic_two_way": {
+            "description": "Send messages to and receive messages from numbers in the same country.",
+            "type": "boolean"
+          },
+          "international_inbound": {
+            "description": "Receive messages from numbers in other countries.",
+            "type": "boolean"
+          },
+          "international_outbound": {
+            "description": "Send messages to numbers in other countries.",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "domestic_two_way",
+          "international_inbound",
+          "international_outbound"
+        ],
+        "type": [
+          "object",
+          "null"
+        ]
+      },
+      "MessagingProfileFeatures": {
+        "additionalProperties": true,
+        "description": "Telnyx product features the messaging customer can enable on the messaging profile. Keys map to individual feature flags; unknown keys are accepted and preserved for forward compatibility with rolling deployments.",
+        "example": {
+          "ai_opt_out_detection_enabled": true,
+          "auto_chunk_long_messages": true
+        },
+        "properties": {
+          "ai_opt_out_detection_enabled": {
+            "description": "Enables AI detection of inbound opt-out messages that do not follow the standard STOP/UNSTOP/HELP opt-out keyword pattern. When enabled, the messaging platform applies an AI model to identify non-standard opt-out requests (e.g. natural-language phrases) and treats them as opt-outs.",
+            "type": "boolean"
+          },
+          "auto_chunk_long_messages": {
+            "description": "Enables server-side chunking of outbound SMS. When enabled, an outbound message that exceeds the maximum number of segments allowed for its destination (10 segments by default; some aggregators accept up to 25) is automatically split into multiple child messages, each within the segment limit, and sent sequentially in order. Splitting is encoding-aware: GSM-7 bodies split at 153-character boundaries and UCS-2 bodies at 134-byte (67-character) boundaries. When disabled (the default), messages exceeding the segment limit are rejected with an error.",
+            "type": "boolean"
+          }
+        },
+        "type": [
+          "object",
+          "null"
+        ]
+      },
+      "NumberHealthMetrics": {
+        "description": "High level health metrics about the number and it's messaging sending patterns.\n",
+        "example": {
+          "inbound_outbound_ratio": 1,
+          "message_count": 10,
+          "spam_ratio": 10,
+          "success_ratio": 2
+        },
+        "properties": {
+          "inbound_outbound_ratio": {
+            "description": "The ratio of messages received to the number of messages sent.",
+            "format": "float",
+            "type": "number"
+          },
+          "message_count": {
+            "description": "The number of messages analyzed for the health metrics.",
+            "type": "integer"
+          },
+          "spam_ratio": {
+            "description": "The ratio of messages blocked for spam to the number of messages attempted.",
+            "format": "float",
+            "type": "number"
+          },
+          "success_ratio": {
+            "description": "The ratio of messages sucessfully delivered to the number of messages attempted.",
+            "format": "float",
+            "type": "number"
+          }
+        },
+        "required": [
+          "message_count",
+          "inbound_outbound_ratio",
+          "success_ratio",
+          "spam_ratio"
+        ],
+        "type": "object"
+      },
+      "NumberPoolSettings": {
+        "description": "Number Pool allows you to send messages from a pool of numbers of different types, assigning\nweights to each type. The pool consists of all the long code and toll free numbers\nassigned to the messaging profile.\n\nTo disable this feature, set the object field to `null`.\n",
+        "example": {
+          "geomatch": false,
+          "long_code_weight": 1,
+          "skip_unhealthy": true,
+          "sticky_sender": false,
+          "toll_free_weight": 10
+        },
+        "properties": {
+          "geomatch": {
+            "default": false,
+            "description": "If set to true, Number Pool will try to choose a sending number with the same area code as the destination\nnumber. If there are no such numbers available, a nunber with a different area code will be chosen. Currently\nonly NANP numbers are supported.\n",
+            "type": "boolean"
+          },
+          "long_code_weight": {
+            "description": "Defines the probability weight for a Long Code number to be selected when sending a message.\nThe higher the weight the higher the probability. The sum of the weights for all number types\ndoes not necessarily need to add to 100.  Weight must be a non-negative number, and when equal\nto zero it will remove the number type from the pool.\n",
+            "example": 1,
+            "type": "number"
+          },
+          "skip_unhealthy": {
+            "description": "If set to true all unhealthy numbers will be automatically excluded from the pool.\nHealth metrics per number are calculated on a regular basis, taking into account the deliverability\nrate and the amount of messages marked as spam by upstream carriers.\nNumbers with a deliverability rate below 25% or spam ratio over 75% will be considered unhealthy.\n",
+            "example": true,
+            "type": "boolean"
+          },
+          "sticky_sender": {
+            "default": false,
+            "description": "If set to true, Number Pool will try to choose the same sending number for all messages to a particular\nrecipient. If the sending number becomes unhealthy and `skip_unhealthy` is set to true, a new\nnumber will be chosen.\n",
+            "type": "boolean"
+          },
+          "toll_free_weight": {
+            "description": "Defines the probability weight for a Toll Free number to be selected when sending a message.\nThe higher the weight the higher the probability. The sum of the weights for all number types\ndoes not necessarily need to add to 100. Weight must be a non-negative number, and when equal\nto zero it will remove the number type from the pool.\n",
+            "example": 10,
+            "type": "number"
+          }
+        },
+        "required": [
+          "toll_free_weight",
+          "long_code_weight",
+          "skip_unhealthy"
+        ],
+        "type": [
+          "object",
+          "null"
+        ]
+      },
+      "PageMeta": {
+        "description": "Where a listing's page sits in the whole.\n\nA page is a snapshot: the counts it reports and the order it is drawn in\nboth move as writes land, so paging through a busy namespace can repeat or\nmiss an entry at a page boundary.",
+        "properties": {
+          "page_number": {
+            "description": "The page returned, counting from 1.",
+            "title": "Page Number",
+            "type": "integer"
+          },
+          "page_size": {
+            "description": "How many results a page holds.",
+            "title": "Page Size",
+            "type": "integer"
+          },
+          "total_pages": {
+            "description": "Pages that can be requested; 0 when nothing matched. Page until `page_number` reaches it rather than until a page comes back short: a page can hold fewer than `page_size` results without being the last. Capped at the deepest page served, so on a very large listing it covers fewer results than `total_results`.",
+            "title": "Total Pages",
+            "type": "integer"
+          },
+          "total_results": {
+            "description": "Results the request matched, including any past the deepest page.",
+            "title": "Total Results",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "page_number",
+          "page_size",
+          "total_pages",
+          "total_results"
+        ],
+        "title": "PageMeta",
+        "type": "object"
+      },
+      "PhoneNumberWithMessagingSettings": {
+        "example": {
+          "country_code": "US",
+          "created_at": "2019-01-23T18:10:02.574Z",
+          "eligible_messaging_products": [
+            "A2P"
+          ],
+          "features": {
+            "mms": null,
+            "sms": {
+              "domestic_two_way": true,
+              "international_inbound": true,
+              "international_outbound": true
+            }
+          },
+          "health": {
+            "inbound_outbound_ratio": 0.43,
+            "message_count": 122,
+            "spam_ratio": 0.06,
+            "success_ratio": 0.94
+          },
+          "id": "1293384261075731499",
+          "messaging_product": "A2P",
+          "messaging_profile_id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+          "phone_number": "+18005550001",
+          "record_type": "messaging_settings",
+          "traffic_type": "A2P",
+          "type": "tollfree",
+          "updated_at": "2019-01-23T18:10:02.574Z"
+        },
+        "properties": {
+          "country_code": {
+            "description": "ISO 3166-1 alpha-2 country code.",
+            "example": "US",
+            "pattern": "^[A-Z]{2}$",
+            "readOnly": true,
+            "type": "string"
+          },
+          "created_at": {
+            "description": "ISO 8601 formatted date indicating when the resource was created.",
+            "format": "date-time",
+            "readOnly": true,
+            "type": "string"
+          },
+          "eligible_messaging_products": {
+            "description": "The messaging products that this number can be registered to use",
+            "items": {
+              "type": "string"
+            },
+            "readOnly": true,
+            "type": "array"
+          },
+          "features": {
+            "properties": {
+              "mms": {
+                "$ref": "#/components/schemas/MessagingFeatureSet"
+              },
+              "sms": {
+                "$ref": "#/components/schemas/MessagingFeatureSet"
+              }
+            },
+            "readOnly": true,
+            "type": "object"
+          },
+          "health": {
+            "$ref": "#/components/schemas/NumberHealthMetrics"
+          },
+          "id": {
+            "description": "Identifies the type of resource.",
+            "readOnly": true,
+            "type": "string"
+          },
+          "messaging_product": {
+            "description": "The messaging product that the number is registered to use",
+            "example": "P2P",
+            "type": "string"
+          },
+          "messaging_profile_id": {
+            "description": "Unique identifier for a messaging profile.",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "organization_id": {
+            "description": "The organization that owns this phone number.",
+            "type": "string"
+          },
+          "phone_number": {
+            "description": "+E.164 formatted phone number.",
+            "readOnly": true,
+            "type": "string",
+            "x-format": "e164"
+          },
+          "record_type": {
+            "description": "Identifies the type of the resource.",
+            "enum": [
+              "messaging_phone_number",
+              "messaging_settings"
+            ],
+            "example": "messaging_settings",
+            "readOnly": true,
+            "type": "string"
+          },
+          "tags": {
+            "description": "Tags associated with this phone number.",
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "traffic_type": {
+            "description": "The messaging traffic or use case for which the number is currently configured.",
+            "example": "P2P",
+            "readOnly": true,
+            "type": "string"
+          },
+          "type": {
+            "description": "The type of the phone number",
+            "enum": [
+              "long-code",
+              "toll-free",
+              "short-code",
+              "longcode",
+              "tollfree",
+              "shortcode"
+            ],
+            "readOnly": true,
+            "type": "string"
+          },
+          "updated_at": {
+            "description": "ISO 8601 formatted date indicating when the resource was updated.",
+            "format": "date-time",
+            "readOnly": true,
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "Profile": {
+        "properties": {
+          "memory_count": {
+            "description": "Memories stored under this profile, including the consolidated ones that paraphrase others. Listings are ordered by it.",
+            "title": "Memory Count",
+            "type": "integer"
+          },
+          "profile_id": {
+            "title": "Profile Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "profile_id",
+          "memory_count"
+        ],
+        "title": "Profile",
+        "type": "object"
+      },
+      "ProfileListResponse": {
+        "properties": {
+          "data": {
+            "items": {
+              "$ref": "#/components/schemas/Profile"
+            },
+            "title": "Data",
+            "type": "array"
+          },
+          "meta": {
+            "$ref": "#/components/schemas/PageMeta"
+          }
+        },
+        "required": [
+          "data",
+          "meta"
+        ],
+        "title": "ProfileListResponse",
+        "type": "object"
+      },
+      "ShortCode": {
+        "example": {
+          "country_code": "US",
+          "created_at": "2019-01-23T18:10:02.574Z",
+          "id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+          "messaging_profile_id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+          "record_type": "short_code",
+          "short_code": "12345",
+          "tags": [
+            "test_customer"
+          ],
+          "updated_at": "2019-01-23T18:10:02.574Z"
+        },
+        "properties": {
+          "country_code": {
+            "description": "ISO 3166-1 alpha-2 country code.",
+            "example": "US",
+            "pattern": "^[A-Z]{2}$",
+            "readOnly": true,
+            "type": "string"
+          },
+          "created_at": {
+            "description": "ISO 8601 formatted date indicating when the resource was created.",
+            "format": "date-time",
+            "readOnly": true,
+            "type": "string"
+          },
+          "id": {
+            "description": "Identifies the type of resource.",
+            "format": "uuid",
+            "readOnly": true,
+            "type": "string"
+          },
+          "messaging_profile_id": {
+            "description": "Unique identifier for a messaging profile.",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "record_type": {
+            "description": "Identifies the type of the resource.",
+            "enum": [
+              "short_code"
+            ],
+            "example": "short_code",
+            "readOnly": true,
+            "type": "string"
+          },
+          "short_code": {
+            "description": "Short digit sequence used to address messages.",
+            "readOnly": true,
+            "type": "string"
+          },
+          "tags": {
+            "description": "Tags associated with the resource.",
+            "items": {
+              "type": "string"
+            },
+            "type": [
+              "array"
+            ]
+          },
+          "updated_at": {
+            "description": "ISO 8601 formatted date indicating when the resource was updated.",
+            "format": "date-time",
+            "readOnly": true,
+            "type": "string"
+          }
+        },
+        "required": [
+          "messaging_profile_id"
+        ],
+        "type": "object"
+      },
+      "TelnyxError": {
+        "properties": {
+          "code": {
+            "type": "string"
+          },
+          "detail": {
+            "type": "string"
+          },
+          "meta": {
+            "properties": {
+              "url": {
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
+          "source": {
+            "properties": {
+              "pointer": {
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
+          "title": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "TelnyxErrors": {
+        "properties": {
+          "errors": {
+            "items": {
+              "$ref": "#/components/schemas/TelnyxError"
+            },
+            "type": "array"
+          }
+        },
+        "type": "object"
+      },
+      "TracedMemory": {
+        "properties": {
+          "derived_from": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "The ids of the memories this one was derived from. Read each with `GET .../memories/{memory_id}` to reach its `source_id`. Set for a derived memory; null for a fact.",
+            "title": "Derived From"
+          },
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "recorded_at": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Recorded At"
+          },
+          "source_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "The source this memory was extracted from. Set for a fact, which comes from exactly one source; null for a memory derived from other memories. Read it with `GET .../sources/{source_id}`. A source deleted a moment ago can still be named here, and then answers 404.",
+            "title": "Source Id"
+          },
+          "text": {
+            "title": "Text",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "text",
+          "source_id",
+          "derived_from"
+        ],
+        "title": "TracedMemory",
+        "type": "object"
+      },
+      "UrlShortenerSettings": {
+        "description": "The URL shortener feature allows automatic replacement of URLs that were generated using\na public URL shortener service. Some examples include bit.do, bit.ly, goo.gl, ht.ly,\nis.gd, ow.ly, rebrand.ly, t.co, tiny.cc, and tinyurl.com. Such URLs are replaced with\nwith links generated by Telnyx. The use of custom links can improve branding and message\ndeliverability.\n\nTo disable this feature, set the object field to `null`.\n",
+        "example": {
+          "domain": "example.ex",
+          "prefix": "",
+          "replace_blacklist_only": true,
+          "send_webhooks": false
+        },
+        "properties": {
+          "domain": {
+            "description": "One of the domains provided by the Telnyx URL shortener service.\n",
+            "example": "acct.fyi",
+            "type": "string"
+          },
+          "prefix": {
+            "description": "Optional prefix that can be used to identify your brand, and will appear in the Telnyx generated URLs after the domain name.\n",
+            "example": "",
+            "type": "string"
+          },
+          "replace_blacklist_only": {
+            "description": "Use the link replacement tool only for links that are specifically blacklisted by Telnyx.\n",
+            "example": true,
+            "type": "boolean"
+          },
+          "send_webhooks": {
+            "description": "Receive webhooks for when your replaced links are clicked. Webhooks are sent to the webhooks on the messaging profile.\n",
+            "example": false,
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "domain"
+        ],
+        "type": [
+          "object",
+          "null"
+        ]
+      },
+      "messaging_CreateMessagingProfileRequest": {
+        "example": {
+          "enabled": true,
+          "mm7_metadata": {
+            "mm7_failover_webhook_url": "https://backup.example.com/hooks",
+            "mm7_webhook_url": "https://www.example.com/hooks"
+          },
+          "name": "My name",
+          "number_pool_settings": {
+            "geomatch": false,
+            "long_code_weight": 1,
+            "skip_unhealthy": true,
+            "sticky_sender": false,
+            "toll_free_weight": 10
+          },
+          "url_shortener_settings": {
+            "domain": "example.ex",
+            "prefix": "",
+            "replace_blacklist_only": true,
+            "send_webhooks": false
+          },
+          "webhook_api_version": "2",
+          "webhook_failover_url": "https://backup.example.com/hooks",
+          "webhook_url": "https://www.example.com/hooks",
+          "whitelisted_destinations": [
+            "US"
+          ]
+        },
+        "properties": {
+          "ai_assistant_id": {
+            "description": "The AI assistant ID to associate with this messaging profile.",
+            "example": "ai_assistant-a80a9d4a-728c-4593-852c-2e93ad890000",
+            "maxLength": 64,
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "alpha_sender": {
+            "description": "The alphanumeric sender ID to use when sending to destinations that require an alphanumeric sender ID.",
+            "pattern": "^[A-Za-z0-9 ]{1,11}$",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "daily_spend_limit": {
+            "description": "The maximum amount of money (in USD) that can be spent by this profile before midnight UTC.",
+            "pattern": "^[0-9]+(?:\\.[0-9]+)?$",
+            "type": "string"
+          },
+          "daily_spend_limit_enabled": {
+            "description": "Whether to enforce the value configured by `daily_spend_limit`.",
+            "type": "boolean"
+          },
+          "enabled": {
+            "default": true,
+            "description": "Specifies whether the messaging profile is enabled or not.",
+            "type": "boolean"
+          },
+          "features": {
+            "$ref": "#/components/schemas/MessagingProfileFeatures"
+          },
+          "health_webhook_url": {
+            "description": "A URL to receive health check webhooks for numbers in this profile.",
+            "format": "url",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "mm7_metadata": {
+            "$ref": "#/components/schemas/MM7Metadata"
+          },
+          "mms_fall_back_to_sms": {
+            "default": false,
+            "description": "enables SMS fallback for MMS messages.",
+            "type": "boolean"
+          },
+          "mms_transcoding": {
+            "default": false,
+            "description": "enables automated resizing of MMS media.",
+            "type": "boolean"
+          },
+          "mobile_only": {
+            "default": false,
+            "description": "Send messages only to mobile phone numbers.",
+            "type": "boolean"
+          },
+          "name": {
+            "description": "A user friendly name for the messaging profile.",
+            "type": "string"
+          },
+          "number_pool_settings": {
+            "$ref": "#/components/schemas/NumberPoolSettings"
+          },
+          "resource_group_id": {
+            "description": "The resource group ID to associate with this messaging profile.",
+            "maxLength": 64,
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "smart_encoding": {
+            "default": false,
+            "description": "Enables automatic character encoding optimization for SMS messages. When enabled, the system automatically selects the most efficient encoding (GSM-7 or UCS-2) based on message content to maximize character limits and minimize costs.",
+            "type": "boolean"
+          },
+          "url_shortener_settings": {
+            "$ref": "#/components/schemas/UrlShortenerSettings"
+          },
+          "webhook_api_version": {
+            "default": "2",
+            "description": "Determines which webhook format will be used, Telnyx API v1, v2, or a legacy 2010-04-01 format.",
+            "enum": [
+              "1",
+              "2",
+              "2010-04-01"
+            ],
+            "type": "string"
+          },
+          "webhook_failover_url": {
+            "default": "",
+            "description": "The failover URL where webhooks related to this messaging profile will be sent if sending to the primary URL fails.",
+            "format": "url",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "webhook_url": {
+            "default": "",
+            "description": "The URL where webhooks related to this messaging profile will be sent.",
+            "format": "url",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "whitelisted_destinations": {
+            "description": "Destinations to which the messaging profile is allowed to send. The elements in the list must be valid ISO 3166-1 alpha-2 country codes. If set to `[\"*\"]` all destinations will be allowed.",
+            "items": {
+              "description": "ISO 3166-1 alpha-2 country code.",
+              "pattern": "^[A-Z]{2}$",
+              "type": "string"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "name",
+          "whitelisted_destinations"
+        ],
+        "type": "object"
+      },
+      "messaging_Error_0b38e7044b": {
+        "properties": {
+          "code": {
+            "type": "string",
+            "x-format": "integer"
+          },
+          "detail": {
+            "type": "string"
+          },
+          "meta": {
+            "type": "object"
+          },
+          "source": {
+            "properties": {
+              "parameter": {
+                "description": "Indicates which query parameter caused the error.",
+                "type": "string"
+              },
+              "pointer": {
+                "description": "JSON pointer (RFC6901) to the offending entity.",
+                "format": "json-pointer",
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
+          "title": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "title"
+        ]
+      },
+      "messaging_Errors_0b38e7044b": {
+        "properties": {
+          "errors": {
+            "items": {
+              "$ref": "#/components/schemas/messaging_Error_0b38e7044b"
+            },
+            "type": "array"
+          }
+        }
+      },
+      "messaging_MessagingProfile": {
+        "example": {
+          "created_at": "2019-01-23T18:10:02.574Z",
+          "daily_spend_limit": "100.00",
+          "daily_spend_limit_enabled": false,
+          "enabled": true,
+          "features": {
+            "ai_opt_out_detection_enabled": true,
+            "auto_chunk_long_messages": true
+          },
+          "health_webhook_url": null,
+          "id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+          "mm7_metadata": {
+            "mm7_failover_webhook_url": "https://backup.example.com/hooks",
+            "mm7_webhook_url": "https://www.example.com/hooks"
+          },
+          "mms_fall_back_to_sms": false,
+          "mms_transcoding": false,
+          "mobile_only": false,
+          "name": "Profile for Messages",
+          "number_pool_settings": {
+            "geomatch": false,
+            "long_code_weight": 2,
+            "skip_unhealthy": false,
+            "sticky_sender": true,
+            "toll_free_weight": 10
+          },
+          "record_type": "messaging_profile",
+          "redaction_enabled": false,
+          "redaction_level": 2,
+          "updated_at": "2019-01-23T18:10:02.574Z",
+          "url_shortener_settings": {
+            "domain": "example.ex",
+            "prefix": "cmpny",
+            "replace_blacklist_only": true,
+            "send_webhooks": false
+          },
+          "v1_secret": "rP1VamejkU2v0qIUxntqLW2c",
+          "webhook_api_version": "2",
+          "webhook_failover_url": "https://backup.example.com/hooks",
+          "webhook_url": "https://www.example.com/hooks",
+          "whitelisted_destinations": [
+            "US"
+          ]
+        },
+        "properties": {
+          "ai_assistant_id": {
+            "description": "The AI assistant ID associated with this messaging profile.",
+            "example": "ai_assistant-a80a9d4a-728c-4593-852c-2e93ad890000",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "alpha_sender": {
+            "description": "The alphanumeric sender ID to use when sending to destinations that require an alphanumeric sender ID.",
+            "pattern": "^[A-Za-z0-9 ]{1,11}$",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "created_at": {
+            "description": "ISO 8601 formatted date indicating when the resource was created.",
+            "format": "date-time",
+            "readOnly": true,
+            "type": "string"
+          },
+          "daily_spend_limit": {
+            "description": "The maximum amount of money (in USD) that can be spent by this profile before midnight UTC.",
+            "pattern": "^[0-9]+(?:\\.[0-9]+)?$",
+            "type": "string"
+          },
+          "daily_spend_limit_enabled": {
+            "description": "Whether to enforce the value configured by `daily_spend_limit`.",
+            "type": "boolean"
+          },
+          "enabled": {
+            "description": "Specifies whether the messaging profile is enabled or not.",
+            "type": "boolean"
+          },
+          "features": {
+            "$ref": "#/components/schemas/MessagingProfileFeatures"
+          },
+          "health_webhook_url": {
+            "description": "DEPRECATED: health check url service checking",
+            "format": "url",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "id": {
+            "description": "Identifies the type of resource.",
+            "format": "uuid",
+            "readOnly": true,
+            "type": "string"
+          },
+          "mm7_metadata": {
+            "$ref": "#/components/schemas/MM7Metadata"
+          },
+          "mms_fall_back_to_sms": {
+            "default": false,
+            "description": "enables SMS fallback for MMS messages.",
+            "type": "boolean"
+          },
+          "mms_transcoding": {
+            "default": false,
+            "description": "enables automated resizing of MMS media.",
+            "type": "boolean"
+          },
+          "mobile_only": {
+            "default": false,
+            "description": "Send messages only to mobile phone numbers.",
+            "type": "boolean"
+          },
+          "name": {
+            "description": "A user friendly name for the messaging profile.",
+            "type": "string"
+          },
+          "number_pool_settings": {
+            "$ref": "#/components/schemas/NumberPoolSettings"
+          },
+          "organization_id": {
+            "description": "The organization that owns this messaging profile.",
+            "type": "string"
+          },
+          "record_type": {
+            "description": "Identifies the type of the resource.",
+            "enum": [
+              "messaging_profile"
+            ],
+            "readOnly": true,
+            "type": "string"
+          },
+          "redaction_enabled": {
+            "default": false,
+            "description": "Indicates whether message content redaction is enabled for this profile. When enabled, message text, MMS media, and the counterparty phone number are redacted in message records and reporting. Requires organization activation — contact support to enable. The field is only present in responses for organizations with redaction access.",
+            "type": "boolean"
+          },
+          "redaction_level": {
+            "default": 2,
+            "description": "Determines how much information is redacted for privacy or compliance purposes. Level 1: message records and reporting are redacted, but inbound webhook payloads are not. Level 2 (default): message records, reporting, and inbound webhook payloads are all redacted.",
+            "type": "integer"
+          },
+          "resource_group_id": {
+            "description": "The resource group ID associated with this messaging profile.",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "smart_encoding": {
+            "default": false,
+            "description": "Enables automatic character encoding optimization for SMS messages. When enabled, the system automatically selects the most efficient encoding (GSM-7 or UCS-2) based on message content to maximize character limits and minimize costs.",
+            "type": "boolean"
+          },
+          "updated_at": {
+            "description": "ISO 8601 formatted date indicating when the resource was updated.",
+            "format": "date-time",
+            "readOnly": true,
+            "type": "string"
+          },
+          "url_shortener_settings": {
+            "$ref": "#/components/schemas/UrlShortenerSettings"
+          },
+          "v1_secret": {
+            "description": "Secret used to authenticate with v1 endpoints.",
+            "type": "string"
+          },
+          "webhook_api_version": {
+            "description": "Determines which webhook format will be used, Telnyx API v1, v2, or a legacy 2010-04-01 format.",
+            "enum": [
+              "1",
+              "2",
+              "2010-04-01"
+            ],
+            "type": "string"
+          },
+          "webhook_failover_url": {
+            "description": "The failover URL where webhooks related to this messaging profile will be sent if sending to the primary URL fails.",
+            "format": "url",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "webhook_url": {
+            "description": "The URL where webhooks related to this messaging profile will be sent.",
+            "format": "url",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "whitelisted_destinations": {
+            "description": "Destinations to which the messaging profile is allowed to send. The elements in the list must be valid ISO 3166-1 alpha-2 country codes. If set to `[\"*\"]`, all destinations will be allowed.",
+            "items": {
+              "description": "ISO 3166-1 alpha-2 country code.",
+              "pattern": "^[A-Z]{2}$",
+              "type": "string"
+            },
+            "type": "array"
+          }
+        },
+        "type": "object"
+      },
+      "messaging_PaginationMeta_0b38e7044b": {
+        "properties": {
+          "page_number": {
+            "example": 2,
+            "type": "integer"
+          },
+          "page_size": {
+            "example": 25,
+            "type": "integer"
+          },
+          "total_pages": {
+            "example": 3,
+            "type": "integer"
+          },
+          "total_results": {
+            "example": 55,
+            "type": "integer"
+          }
+        },
+        "required": [
+          "total_pages",
+          "total_results",
+          "page_size",
+          "page_number"
+        ],
+        "type": "object"
+      },
+      "messaging_UpdateMessagingProfileRequest": {
+        "example": {
+          "enabled": true,
+          "mm7_metadata": {
+            "mm7_failover_webhook_url": "https://backup.example.com/hooks",
+            "mm7_webhook_url": "https://www.example.com/hooks"
+          },
+          "name": "Updated Profile for Messages",
+          "number_pool_settings": {
+            "geomatch": false,
+            "long_code_weight": 2,
+            "skip_unhealthy": false,
+            "sticky_sender": true,
+            "toll_free_weight": 10
+          },
+          "url_shortener_settings": {
+            "domain": "example.ex",
+            "prefix": "cmpny",
+            "replace_blacklist_only": true,
+            "send_webhooks": false
+          },
+          "v1_secret": "rP1VamejkU2v0qIUxntqLW2c",
+          "webhook_api_version": "2",
+          "webhook_failover_url": "https://backup.example.com/hooks",
+          "webhook_url": "https://www.example.com/hooks",
+          "whitelisted_destinations": [
+            "US"
+          ]
+        },
+        "properties": {
+          "ai_assistant_id": {
+            "description": "The ID of the AI assistant associated with this messaging profile.",
+            "example": "ai_assistant-a80a9d4a-728c-4593-852c-2e93ad890000",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "alpha_sender": {
+            "description": "The alphanumeric sender ID to use when sending to destinations that require an alphanumeric sender ID.",
+            "pattern": "^[A-Za-z0-9 ]{1,11}$",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "created_at": {
+            "description": "ISO 8601 formatted date indicating when the resource was created.",
+            "format": "date-time",
+            "readOnly": true,
+            "type": "string"
+          },
+          "daily_spend_limit": {
+            "description": "The maximum amount of money (in USD) that can be spent by this profile before midnight UTC.",
+            "pattern": "^[0-9]+(?:\\.[0-9]+)?$",
+            "type": "string"
+          },
+          "daily_spend_limit_enabled": {
+            "description": "Whether to enforce the value configured by `daily_spend_limit`.",
+            "type": "boolean"
+          },
+          "enabled": {
+            "description": "Specifies whether the messaging profile is enabled or not.",
+            "type": "boolean"
+          },
+          "features": {
+            "$ref": "#/components/schemas/MessagingProfileFeatures"
+          },
+          "id": {
+            "description": "Identifies the type of resource.",
+            "format": "uuid",
+            "readOnly": true,
+            "type": "string"
+          },
+          "mm7_metadata": {
+            "$ref": "#/components/schemas/MM7Metadata"
+          },
+          "mms_fall_back_to_sms": {
+            "default": false,
+            "description": "enables SMS fallback for MMS messages.",
+            "type": "boolean"
+          },
+          "mms_transcoding": {
+            "default": false,
+            "description": "enables automated resizing of MMS media.",
+            "type": "boolean"
+          },
+          "mobile_only": {
+            "default": false,
+            "description": "Send messages only to mobile phone numbers.",
+            "type": "boolean"
+          },
+          "name": {
+            "description": "A user friendly name for the messaging profile.",
+            "type": "string"
+          },
+          "number_pool_settings": {
+            "$ref": "#/components/schemas/NumberPoolSettings"
+          },
+          "record_type": {
+            "description": "Identifies the type of the resource.",
+            "enum": [
+              "messaging_profile"
+            ],
+            "readOnly": true,
+            "type": "string"
+          },
+          "redaction_enabled": {
+            "default": false,
+            "description": "Set to true to enable message content redaction on this profile, or false to disable it. Ignored if the organization is not on the redaction allowlist. See the [Message Redaction guide](/docs/messaging/messages/message-redaction) for what is redacted.",
+            "type": "boolean"
+          },
+          "redaction_level": {
+            "default": 2,
+            "description": "The redaction level to apply when redaction is enabled. 1: redact message records and reporting only. 2 (default): also redact inbound webhook payloads. See the [Message Redaction guide](/docs/messaging/messages/message-redaction).",
+            "type": "integer"
+          },
+          "smart_encoding": {
+            "default": false,
+            "description": "Enables automatic character encoding optimization for SMS messages. When enabled, the system automatically selects the most efficient encoding (GSM-7 or UCS-2) based on message content to maximize character limits and minimize costs.",
+            "type": "boolean"
+          },
+          "updated_at": {
+            "description": "ISO 8601 formatted date indicating when the resource was updated.",
+            "format": "date-time",
+            "readOnly": true,
+            "type": "string"
+          },
+          "url_shortener_settings": {
+            "$ref": "#/components/schemas/UrlShortenerSettings"
+          },
+          "v1_secret": {
+            "description": "Secret used to authenticate with v1 endpoints.",
+            "type": "string"
+          },
+          "webhook_api_version": {
+            "description": "Determines which webhook format will be used, Telnyx API v1, v2, or a legacy 2010-04-01 format.",
+            "enum": [
+              "1",
+              "2",
+              "2010-04-01"
+            ],
+            "type": "string"
+          },
+          "webhook_failover_url": {
+            "description": "The failover URL where webhooks related to this messaging profile will be sent if sending to the primary URL fails.",
+            "format": "url",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "webhook_url": {
+            "description": "The URL where webhooks related to this messaging profile will be sent.",
+            "format": "url",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "whitelisted_destinations": {
+            "description": "Destinations to which the messaging profile is allowed to send. The elements in the list must be valid ISO 3166-1 alpha-2 country codes. If set to `[\"*\"]`, all destinations will be allowed.\n\nThis field is required if the messaging profile doesn't have it defined yet.",
+            "items": {
+              "description": "ISO 3166-1 alpha-2 country code.",
+              "pattern": "^[A-Z]{2}$",
+              "type": "string"
+            },
+            "type": "array"
+          }
+        },
+        "type": "object"
+      }
+    },
+    "securitySchemes": {
+      "BearerAuth": {
+        "bearerFormat": "API key",
+        "description": "Telnyx API key supplied as `Authorization: Bearer \u003ctoken\u003e`. In production, auth may be validated by the API gateway and forwarded via Telnyx auth headers.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "Payment": {
+        "description": "Machine Payment Protocol credential used on paid retries, sent as `Authorization: Payment ...`. Obtained by paying a challenge returned in the `WWW-Authenticate` header of a 402 response. This is not a Telnyx API key; initial challenge requests use standard bearer authentication instead.",
+        "in": "header",
+        "name": "Authorization",
+        "type": "apiKey"
+      },
+      "agent-memory_bearerAuth": {
+        "description": "Telnyx API key",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "bearerAuth": {
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "branded-calling_bearerAuth": {
+        "description": "Telnyx API key. Generate one at https://portal.telnyx.com/#/app/api-keys.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "collections_bearerAuth": {
+        "description": "Telnyx API key. Collections and results are automatically scoped to the authenticated user's organization.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "number-reputation_bearerAuth": {
+        "description": "Telnyx API key. Generate one at https://portal.telnyx.com/#/app/api-keys.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "oauthClientAuth": {
+        "description": "OAuth 2.0 authentication for Telnyx API and MCP integrations",
+        "flows": {
+          "authorizationCode": {
+            "authorizationUrl": "https://api.telnyx.com/v2/oauth/authorize",
+            "refreshUrl": "https://api.telnyx.com/v2/oauth/token",
+            "scopes": {
+              "admin": "Administrative access to Telnyx resources"
+            },
+            "tokenUrl": "https://api.telnyx.com/v2/oauth/token"
+          },
+          "clientCredentials": {
+            "scopes": {
+              "admin": "Administrative access to Telnyx resources"
+            },
+            "tokenUrl": "https://api.telnyx.com/v2/oauth/token"
+          }
+        },
+        "type": "oauth2"
+      },
+      "outbound-voice-profiles_bearerAuth": {
+        "bearerFormat": "JWT",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "pay-connectors_bearerAuth": {
+        "description": "Telnyx API key, not the processor bearer token.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "pronunciation-dicts_bearerAuth": {
+        "description": "Telnyx API v2 key. Obtain from https://portal.telnyx.com",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "rcs-registration_bearerAuth": {
+        "bearerFormat": "API key",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "stored-payment-transactions_bearerAuth": {
+        "bearerFormat": "JWT",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "telnyxApiKey": {
+        "description": "Management-only Telnyx account credential.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "transcriptions-search_bearerAuth": {
+        "description": "Telnyx API key. Results are automatically scoped to the authenticated user's organization.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "web-search_bearerAuth": {
+        "description": "Telnyx API key",
+        "scheme": "bearer",
+        "type": "http"
+      }
+    }
+  },
+  "info": {
+    "contact": {
+      "email": "support@telnyx.com"
+    },
+    "description": "SIP trunking, SMS, MMS, Call Control and Telephony Data Services.",
+    "title": "Telnyx API",
+    "version": "2.0.0",
+    "x-endpoint-cost": "light",
+    "x-latency-category": "responsive"
+  },
+  "openapi": "3.1.0",
+  "paths": {
+    "/ai/memory/namespaces/{namespace}/profiles": {
+      "get": {
+        "description": "Profiles are never created, only written to, so this lists the ones that hold a memory. A profile whose first ingest is still running is not here yet. Ordered by memory count, largest first, so a profile written to while the listing is paged can move between pages and be repeated or missed.",
+        "operationId": "ListMemoryProfiles",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "namespace",
+            "required": true,
+            "schema": {
+              "title": "Namespace",
+              "type": "string"
+            }
+          },
+          {
+            "description": "The page to return, counting from 1. Bounded in depth: (page[number] - 1) * page[size] may be at most 10000.",
+            "in": "query",
+            "name": "page[number]",
+            "required": false,
+            "schema": {
+              "default": 1,
+              "maximum": 10001,
+              "minimum": 1,
+              "title": "Number",
+              "type": "integer"
+            }
+          },
+          {
+            "description": "How many results a page holds.",
+            "in": "query",
+            "name": "page[size]",
+            "required": false,
+            "schema": {
+              "default": 20,
+              "maximum": 100,
+              "minimum": 1,
+              "title": "Size",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "data": [
+                    {
+                      "memory_count": 12,
+                      "profile_id": "caller:+13128675309"
+                    }
+                  ],
+                  "meta": {
+                    "page_number": 1,
+                    "page_size": 20,
+                    "total_pages": 1,
+                    "total_results": 1
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProfileListResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "errors": [
+                    {
+                      "code": "10009",
+                      "detail": "Could not find any usable credentials in the request.",
+                      "meta": {
+                        "url": "https://developers.telnyx.com/docs/overview/errors/10009"
+                      },
+                      "source": {
+                        "pointer": "/"
+                      },
+                      "title": "Authentication failed"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/TelnyxErrors"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "errors": [
+                    {
+                      "code": "namespace_not_found",
+                      "detail": "no such namespace"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/TelnyxErrors"
+                }
+              }
+            },
+            "description": "The namespace does not exist"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "errors": [
+                    {
+                      "code": "invalid_request",
+                      "detail": "limit is no longer supported: page with page[number] and page[size] instead"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/TelnyxErrors"
+                }
+              }
+            },
+            "description": "Invalid request"
+          },
+          "502": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "errors": [
+                    {
+                      "code": "upstream_error",
+                      "detail": "the memory dataplane is unavailable"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/TelnyxErrors"
+                }
+              }
+            },
+            "description": "Upstream error"
+          }
+        },
+        "summary": "List a namespace's profiles",
+        "tags": [
+          "Profiles"
+        ]
+      }
+    },
+    "/ai/memory/namespaces/{namespace}/profiles/{profile_id}": {
+      "delete": {
+        "description": "Delete everything held about one profile. A 2xx means none of its memories are left, and its summary goes with them. There is no undo.",
+        "operationId": "ForgetProfile",
+        "parameters": [
+          {
+            "description": "The namespace. `default` exists for every organization.",
+            "in": "path",
+            "name": "namespace",
+            "required": true,
+            "schema": {
+              "description": "The namespace. `default` exists for every organization.",
+              "type": "string"
+            }
+          },
+          {
+            "description": "The profile: your identifier for the user, caller or agent this memory is about.",
+            "in": "path",
+            "name": "profile_id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "data": {
+                    "memories_deleted": 12,
+                    "profile_id": "caller:+13128675309"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ForgetResponse"
+                }
+              }
+            },
+            "description": "The profile's memories are gone"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "errors": [
+                    {
+                      "code": "10009",
+                      "detail": "Could not find any usable credentials in the request.",
+                      "meta": {
+                        "url": "https://developers.telnyx.com/docs/overview/errors/10009"
+                      },
+                      "source": {
+                        "pointer": "/"
+                      },
+                      "title": "Authentication failed"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/TelnyxErrors"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "errors": [
+                    {
+                      "code": "namespace_not_found",
+                      "detail": "no such namespace"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/TelnyxErrors"
+                }
+              }
+            },
+            "description": "The namespace does not exist"
+          },
+          "502": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "errors": [
+                    {
+                      "code": "upstream_error",
+                      "detail": "the memory dataplane is unavailable"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/TelnyxErrors"
+                }
+              }
+            },
+            "description": "Upstream error"
+          }
+        },
+        "summary": "Forget a profile's memories",
+        "tags": [
+          "Profiles"
+        ]
+      }
+    },
+    "/ai/memory/namespaces/{namespace}/profiles/{profile_id}/memories": {
+      "get": {
+        "description": "Everything stored under one profile, unranked -- ask `recall` for the memories that answer a question. A profile that holds nothing is an empty page rather than a 404: profiles exist by being written to. Each memory names the `source_id` it was extracted from, or null for a memory derived from other memories -- which can read almost the same as the fact it restates. A `source_id` narrows the listing to the memories extracted from that source, and a `session_id` to those extracted from the session, which is the same thing named another way; pass one or the other. Neither is everything the source led to: a memory derived from several sources belongs to no single one and appears only in the unfiltered listing. A memory written while the listing is paged shifts the pages after it, so an entry can be repeated or missed at a page boundary.",
+        "operationId": "ListMemories",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "profile_id",
+            "required": true,
+            "schema": {
+              "title": "Profile Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "namespace",
+            "required": true,
+            "schema": {
+              "title": "Namespace",
+              "type": "string"
+            }
+          },
+          {
+            "description": "An ingested session, by the `session_id` it was ingested with. Narrows the request to the source that session was stored as.",
+            "in": "query",
+            "name": "session_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 128,
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Session Id"
+            }
+          },
+          {
+            "description": "Narrows the listing to the memories extracted from one source, a remembered fact as well as a session. Pass this or `session_id`, not both.",
+            "in": "query",
+            "name": "source_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 128,
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Source Id"
+            }
+          },
+          {
+            "description": "The page to return, counting from 1. Bounded in depth: (page[number] - 1) * page[size] may be at most 10000.",
+            "in": "query",
+            "name": "page[number]",
+            "required": false,
+            "schema": {
+              "default": 1,
+              "maximum": 10001,
+              "minimum": 1,
+              "title": "Number",
+              "type": "integer"
+            }
+          },
+          {
+            "description": "How many results a page holds.",
+            "in": "query",
+            "name": "page[size]",
+            "required": false,
+            "schema": {
+              "default": 20,
+              "maximum": 100,
+              "minimum": 1,
+              "title": "Size",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "data": [
+                    {
+                      "id": "mem_01HZY4",
+                      "recorded_at": "2026-08-26T21:14:11Z",
+                      "source_id": "b1e6c0a2-4f3d-4a2e-9c7b-8e1f2a3b4c5d",
+                      "text": "Invoices go to 220 W Chicago Ave."
+                    }
+                  ],
+                  "meta": {
+                    "page_number": 1,
+                    "page_size": 20,
+                    "total_pages": 22,
+                    "total_results": 431
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/MemoryListResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "errors": [
+                    {
+                      "code": "10009",
+                      "detail": "Could not find any usable credentials in the request.",
+                      "meta": {
+                        "url": "https://developers.telnyx.com/docs/overview/errors/10009"
+                      },
+                      "source": {
+                        "pointer": "/"
+                      },
+                      "title": "Authentication failed"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/TelnyxErrors"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "errors": [
+                    {
+                      "code": "namespace_not_found",
+                      "detail": "no such namespace"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/TelnyxErrors"
+                }
+              }
+            },
+            "description": "The namespace does not exist"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "errors": [
+                    {
+                      "code": "invalid_request",
+                      "detail": "pass source_id or session_id, not both"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/TelnyxErrors"
+                }
+              }
+            },
+            "description": "Invalid request"
+          },
+          "502": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "errors": [
+                    {
+                      "code": "upstream_error",
+                      "detail": "the memory dataplane is unavailable"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/TelnyxErrors"
+                }
+              }
+            },
+            "description": "Upstream error"
+          }
+        },
+        "summary": "List a profile's memories, most recent first",
+        "tags": [
+          "Profiles"
+        ]
+      }
+    },
+    "/ai/memory/namespaces/{namespace}/profiles/{profile_id}/memories/{memory_id}": {
+      "get": {
+        "description": "One memory by its id, as `recall` and the listing return it, together with what it came from. A fact names its `source_id`: read it with `GET .../sources/{source_id}` to see what was stored. A memory derived from other memories names them in `derived_from` instead; read each of those to reach its source.",
+        "operationId": "GetMemory",
+        "parameters": [
+          {
+            "description": "The namespace. `default` exists for every organization.",
+            "in": "path",
+            "name": "namespace",
+            "required": true,
+            "schema": {
+              "description": "The namespace. `default` exists for every organization.",
+              "title": "Namespace",
+              "type": "string"
+            }
+          },
+          {
+            "description": "The profile: your identifier for the user, caller or agent this memory is about.",
+            "in": "path",
+            "name": "profile_id",
+            "required": true,
+            "schema": {
+              "description": "The profile: your identifier for the user, caller or agent this memory is about.",
+              "title": "Profile Id",
+              "type": "string"
+            }
+          },
+          {
+            "description": "A memory's id, as `recall` and the listing return it.",
+            "in": "path",
+            "name": "memory_id",
+            "required": true,
+            "schema": {
+              "description": "A memory's id, as `recall` and the listing return it.",
+              "title": "Memory Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "data": {
+                    "derived_from": null,
+                    "id": "mem_01HZY4",
+                    "recorded_at": "2026-08-26T21:14:11Z",
+                    "source_id": "b1e6c0a2-4f3d-4a2e-9c7b-8e1f2a3b4c5d",
+                    "text": "Invoices go to 220 W Chicago Ave."
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/MemoryResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "errors": [
+                    {
+                      "code": "10009",
+                      "detail": "Could not find any usable credentials in the request.",
+                      "meta": {
+                        "url": "https://developers.telnyx.com/docs/overview/errors/10009"
+                      },
+                      "source": {
+                        "pointer": "/"
+                      },
+                      "title": "Authentication failed"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/TelnyxErrors"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "errors": [
+                    {
+                      "code": "memory_not_found",
+                      "detail": "no such memory"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/TelnyxErrors"
+                }
+              }
+            },
+            "description": "The memory does not exist"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "errors": [
+                    {
+                      "code": "invalid_request",
+                      "detail": "memory id must be a UUID"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/TelnyxErrors"
+                }
+              }
+            },
+            "description": "Invalid request"
+          },
+          "502": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "errors": [
+                    {
+                      "code": "upstream_error",
+                      "detail": "the memory dataplane is unavailable"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/TelnyxErrors"
+                }
+              }
+            },
+            "description": "Upstream error"
+          }
+        },
+        "summary": "Read one memory, and what it came from",
+        "tags": [
+          "Profiles"
+        ]
+      }
+    },
+    "/messaging_profiles": {
+      "get": {
+        "description": "Lists messaging profiles owned by the authenticated account. Apply the documented filters and pagination parameters to narrow the result set.",
+        "operationId": "ListMessagingProfiles",
+        "parameters": [
+          {
+            "description": "Consolidated filter parameter (deepObject style). Originally: filter[name]",
+            "explode": true,
+            "in": "query",
+            "name": "filter",
+            "schema": {
+              "properties": {
+                "name": {
+                  "description": "Filter by name",
+                  "type": "string"
+                }
+              },
+              "type": "object"
+            },
+            "style": "deepObject"
+          },
+          {
+            "$ref": "#/components/parameters/PageConsolidated"
+          },
+          {
+            "description": "Filter profiles by exact name match.",
+            "in": "query",
+            "name": "filter[name][eq]",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Filter profiles by name containing the given string.",
+            "in": "query",
+            "name": "filter[name][contains]",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "items": {
+                        "$ref": "#/components/schemas/messaging_MessagingProfile"
+                      },
+                      "type": "array"
+                    },
+                    "meta": {
+                      "$ref": "#/components/schemas/messaging_PaginationMeta_0b38e7044b"
+                    }
+                  },
+                  "title": "List Messaging Profiles Response",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful response with a list of messaging profiles."
+          },
+          "4XX": {
+            "$ref": "#/components/responses/messaging_GenericErrorResponse_0b38e7044b"
+          }
+        },
+        "summary": "List messaging profiles",
+        "tags": [
+          "Profiles"
+        ],
+        "x-endpoint-cost": "medium",
+        "x-group-parameters": "true"
+      },
+      "post": {
+        "description": "Creates a messaging profile that controls outbound sender selection, webhook delivery, and inbound message handling for associated numbers and short codes.",
+        "operationId": "CreateMessagingProfile",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/messaging_CreateMessagingProfileRequest"
+              }
+            }
+          },
+          "description": "New Messaging Profile object",
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/messaging_MessagingProfile"
+                    }
+                  },
+                  "title": "Messaging Profile Response",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful response with details about a messaging profile."
+          },
+          "4XX": {
+            "$ref": "#/components/responses/messaging_GenericErrorResponse_0b38e7044b"
+          }
+        },
+        "summary": "Create a messaging profile",
+        "tags": [
+          "Profiles"
+        ],
+        "x-endpoint-cost": "medium"
+      }
+    },
+    "/messaging_profiles/{id}": {
+      "delete": {
+        "description": "Deletes the specified messaging profile and returns the profile's final configuration.",
+        "operationId": "DeleteMessagingProfile",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/MessagingProfileId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/messaging_MessagingProfile"
+                    }
+                  },
+                  "title": "Messaging Profile Response",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful response with details about a messaging profile."
+          },
+          "4XX": {
+            "$ref": "#/components/responses/messaging_GenericErrorResponse_0b38e7044b"
+          }
+        },
+        "summary": "Delete a messaging profile",
+        "tags": [
+          "Profiles"
+        ]
+      },
+      "get": {
+        "description": "Returns the complete configuration of the specified messaging profile, including webhook and sender-selection settings.",
+        "operationId": "RetrieveMessagingProfile",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/MessagingProfileId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/messaging_MessagingProfile"
+                    }
+                  },
+                  "title": "Messaging Profile Response",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful response with details about a messaging profile."
+          },
+          "4XX": {
+            "$ref": "#/components/responses/messaging_GenericErrorResponse_0b38e7044b"
+          }
+        },
+        "summary": "Retrieve a messaging profile",
+        "tags": [
+          "Profiles"
+        ]
+      },
+      "patch": {
+        "description": "Updates the supplied settings on the specified messaging profile. Settings omitted from the request remain unchanged.",
+        "operationId": "UpdateMessagingProfile",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/MessagingProfileId"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/messaging_UpdateMessagingProfileRequest"
+              }
+            }
+          },
+          "description": "New Messaging Profile object",
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/messaging_MessagingProfile"
+                    }
+                  },
+                  "title": "Messaging Profile Response",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful response with details about a messaging profile."
+          },
+          "4XX": {
+            "$ref": "#/components/responses/messaging_GenericErrorResponse_0b38e7044b"
+          }
+        },
+        "summary": "Update a messaging profile",
+        "tags": [
+          "Profiles"
+        ]
+      }
+    },
+    "/messaging_profiles/{id}/phone_numbers": {
+      "get": {
+        "description": "Returns the phone numbers currently associated with the specified messaging profile.",
+        "operationId": "ListProfilePhoneNumbers",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/MessagingProfileId"
+          },
+          {
+            "$ref": "#/components/parameters/PageConsolidated"
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "items": {
+                        "$ref": "#/components/schemas/PhoneNumberWithMessagingSettings"
+                      },
+                      "type": "array"
+                    },
+                    "meta": {
+                      "$ref": "#/components/schemas/messaging_PaginationMeta_0b38e7044b"
+                    }
+                  },
+                  "title": "List Messaging Profile Phone Numbers Response",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful response with a list of messaging profile phone numbers."
+          },
+          "4XX": {
+            "$ref": "#/components/responses/messaging_GenericErrorResponse_0b38e7044b"
+          }
+        },
+        "summary": "List phone numbers associated with a messaging profile",
+        "tags": [
+          "Profiles"
+        ],
+        "x-group-parameters": "true"
+      }
+    },
+    "/messaging_profiles/{id}/short_codes": {
+      "get": {
+        "description": "Returns the short codes currently associated with the specified messaging profile.",
+        "operationId": "ListProfileShortCodes",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/MessagingProfileId"
+          },
+          {
+            "$ref": "#/components/parameters/PageConsolidated"
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "items": {
+                        "$ref": "#/components/schemas/ShortCode"
+                      },
+                      "type": "array"
+                    },
+                    "meta": {
+                      "$ref": "#/components/schemas/messaging_PaginationMeta_0b38e7044b"
+                    }
+                  },
+                  "title": "List Messaging Profile Short Codes Response",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful response with a list of messaging profile short codes."
+          },
+          "4XX": {
+            "$ref": "#/components/responses/messaging_GenericErrorResponse_0b38e7044b"
+          }
+        },
+        "summary": "List short codes associated with a messaging profile",
+        "tags": [
+          "Profiles"
+        ],
+        "x-group-parameters": "true"
+      }
+    }
+  },
+  "security": [
+    {
+      "bearerAuth": []
+    }
+  ],
+  "servers": [
+    {
+      "description": "Version 2.0.0 of the Telnyx API",
+      "url": "https://api.telnyx.com/v2"
+    }
+  ]
+}

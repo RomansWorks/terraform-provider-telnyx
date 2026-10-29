@@ -1,0 +1,821 @@
+{
+  "components": {
+    "parameters": {
+      "FilterSIMCardOrdersConsolidated": {
+        "description": "Consolidated filter parameter for SIM card orders (deepObject style). Originally: filter[created_at], filter[updated_at], filter[quantity], filter[cost.amount], filter[cost.currency], filter[address.id], filter[address.street_address], filter[address.extended_address], filter[address.locality], filter[address.administrative_area], filter[address.country_code], filter[address.postal_code]",
+        "explode": true,
+        "in": "query",
+        "name": "filter",
+        "schema": {
+          "properties": {
+            "address.administrative_area": {
+              "description": "Filter by state or province where the address is located.",
+              "example": "TX",
+              "type": "string"
+            },
+            "address.country_code": {
+              "description": "Filter by the mobile operator two-character (ISO 3166-1 alpha-2) origin country code.",
+              "example": "US",
+              "type": "string"
+            },
+            "address.extended_address": {
+              "description": "Returns entries with matching name of the supplemental field for address information.",
+              "example": "14th Floor",
+              "type": "string"
+            },
+            "address.id": {
+              "description": "Uniquely identifies the address for the order.",
+              "example": "1293384261075731499",
+              "type": "string"
+            },
+            "address.locality": {
+              "description": "Filter by the name of the city where the address is located.",
+              "example": "Austin",
+              "type": "string"
+            },
+            "address.postal_code": {
+              "description": "Filter by postal code for the address.",
+              "example": "78701",
+              "type": "string"
+            },
+            "address.street_address": {
+              "description": "Returns entries with matching name of the street where the address is located.",
+              "example": "600 Congress Avenue",
+              "type": "string"
+            },
+            "cost.amount": {
+              "description": "The total monetary amount of the order.",
+              "example": "2.53",
+              "type": "string"
+            },
+            "cost.currency": {
+              "description": "Filter by ISO 4217 currency string.",
+              "example": "USD",
+              "type": "string"
+            },
+            "created_at": {
+              "description": "Filter by ISO 8601 formatted date-time string matching resource creation date-time.",
+              "example": "2018-02-02T22:25:27.521Z",
+              "format": "date-time",
+              "type": "string"
+            },
+            "quantity": {
+              "description": "Filter orders by how many SIM cards were ordered.",
+              "example": 21,
+              "type": "integer"
+            },
+            "updated_at": {
+              "description": "Filter by ISO 8601 formatted date-time string matching resource last update date-time.",
+              "example": "2018-02-02T22:25:27.521Z",
+              "format": "date-time",
+              "type": "string"
+            }
+          },
+          "type": "object"
+        }
+      },
+      "ResourceId": {
+        "description": "Identifies the resource.",
+        "in": "path",
+        "name": "id",
+        "required": true,
+        "schema": {
+          "example": "6a09cdc3-8948-47f0-aa62-74ac943d6c58",
+          "format": "uuid",
+          "type": "string"
+        }
+      },
+      "wireless_PageConsolidated_c5290d5308": {
+        "description": "Consolidated pagination parameter (deepObject style). Originally: page[number], page[size]",
+        "explode": true,
+        "in": "query",
+        "name": "page",
+        "schema": {
+          "properties": {
+            "number": {
+              "default": 1,
+              "description": "The page number to load.",
+              "minimum": 1,
+              "type": "integer"
+            },
+            "size": {
+              "default": 20,
+              "description": "The size of the page.",
+              "maximum": 250,
+              "minimum": 1,
+              "type": "integer"
+            }
+          },
+          "type": "object"
+        }
+      }
+    },
+    "responses": {
+      "ResourceNotFound": {
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/documents_Error"
+            }
+          }
+        },
+        "description": "Resource not found"
+      },
+      "wireless_GenericErrorResponse_c5290d5308": {
+        "content": {
+          "application/json": {
+            "examples": {
+              "unexpectedError": {
+                "summary": "Unexpected API error",
+                "value": {
+                  "errors": [
+                    {
+                      "code": "10007",
+                      "detail": "An unexpected error occured.",
+                      "title": "Unexpected error"
+                    }
+                  ]
+                }
+              }
+            },
+            "schema": {
+              "$ref": "#/components/schemas/Errors"
+            }
+          }
+        },
+        "description": "Unexpected error"
+      },
+      "wireless_UnprocessableEntity_c5290d5308": {
+        "content": {
+          "application/json": {
+            "examples": {
+              "unprocessableEntity": {
+                "summary": "Request could not be processed",
+                "value": {
+                  "errors": [
+                    {
+                      "code": "10027",
+                      "detail": "The server understood the syntax of the request but was unable to process the instructions.",
+                      "title": "Unprocessable Entity"
+                    }
+                  ]
+                }
+              }
+            },
+            "schema": {
+              "$ref": "#/components/schemas/Errors"
+            }
+          }
+        },
+        "description": "Unprocessable entity. Check the 'detail' field in response for details."
+      }
+    },
+    "schemas": {
+      "Error": {
+        "example": {
+          "code": "20207",
+          "description": "The street address provided is invalid.",
+          "source": {
+            "pointer": "/street_address"
+          },
+          "title": "Invalid street address"
+        },
+        "properties": {
+          "code": {
+            "type": "string",
+            "x-format": "int64"
+          },
+          "description": {
+            "type": "string"
+          },
+          "detail": {
+            "description": "A human-readable explanation of the error.",
+            "type": "string"
+          },
+          "meta": {
+            "additionalProperties": true,
+            "type": "object"
+          },
+          "source": {
+            "properties": {
+              "parameter": {
+                "description": "Indicates which query parameter caused the error.",
+                "type": "string"
+              },
+              "pointer": {
+                "description": "JSON pointer (RFC6901) to the offending entity.",
+                "format": "json-pointer",
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
+          "title": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "title"
+        ],
+        "type": "object"
+      },
+      "Errors": {
+        "properties": {
+          "errors": {
+            "items": {
+              "$ref": "#/components/schemas/Error"
+            },
+            "type": "array"
+          }
+        },
+        "type": "object"
+      },
+      "PaginationMeta": {
+        "properties": {
+          "page_number": {
+            "example": 2,
+            "type": "integer"
+          },
+          "page_size": {
+            "example": 25,
+            "type": "integer"
+          },
+          "total_pages": {
+            "example": 3,
+            "type": "integer"
+          },
+          "total_results": {
+            "example": 55,
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "SIMCardOrder": {
+        "properties": {
+          "cost": {
+            "description": "An object representing the total cost of the order.",
+            "example": {
+              "amount": "2.52",
+              "currency": "USD"
+            },
+            "properties": {
+              "amount": {
+                "description": "A string representing the cost amount.",
+                "example": "2.32",
+                "type": "string"
+              },
+              "currency": {
+                "description": "Filter by ISO 4217 currency string.",
+                "example": "USD",
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
+          "created_at": {
+            "description": "ISO 8601 formatted date-time indicating when the resource was last created.",
+            "example": "2018-02-02T22:25:27.521Z",
+            "readOnly": true,
+            "type": "string"
+          },
+          "id": {
+            "description": "Identifies the resource.",
+            "example": "6a09cdc3-8948-47f0-aa62-74ac943d6c58",
+            "format": "uuid",
+            "readOnly": true,
+            "type": "string"
+          },
+          "order_address": {
+            "description": "An object representing the address information from when the order was submitted.",
+            "example": {
+              "administrative_area": "TX",
+              "country_code": "US",
+              "extended_address": "14th Floor",
+              "id": "1293384261075731499",
+              "locality": "Austin",
+              "postal_code": "78701",
+              "street_address": "600 Congress Avenue"
+            },
+            "properties": {
+              "administrative_area": {
+                "description": "State or province where the address is located.",
+                "example": "TX",
+                "type": "string"
+              },
+              "business_name": {
+                "description": "The name of the business where the address is located.",
+                "example": "Telnyx LLC",
+                "type": "string"
+              },
+              "country_code": {
+                "description": "The mobile operator two-character (ISO 3166-1 alpha-2) origin country code.",
+                "example": "US",
+                "type": "string"
+              },
+              "extended_address": {
+                "description": "Supplemental field for address information.",
+                "example": "14th Floor",
+                "type": "string"
+              },
+              "first_name": {
+                "description": "The first name of the shipping recipient.",
+                "example": "John",
+                "type": "string"
+              },
+              "id": {
+                "description": "Uniquely identifies the address for the order.",
+                "example": "1293384261075731499",
+                "type": "string"
+              },
+              "last_name": {
+                "description": "The last name of the shipping recipient.",
+                "example": "Smith",
+                "type": "string"
+              },
+              "locality": {
+                "description": "The name of the city where the address is located.",
+                "example": "Austin",
+                "type": "string"
+              },
+              "postal_code": {
+                "description": "Postal code for the address.",
+                "example": "78701",
+                "type": "string"
+              },
+              "street_address": {
+                "description": "The name of the street where the address is located.",
+                "example": "600 Congress Avenue",
+                "type": "string"
+              }
+            },
+            "readOnly": true,
+            "type": "object"
+          },
+          "quantity": {
+            "description": "The amount of SIM cards requested in the SIM card order.",
+            "example": 21,
+            "minimum": 1,
+            "type": "integer"
+          },
+          "record_type": {
+            "description": "Identifies the type of the resource.",
+            "example": "sim_card_order",
+            "readOnly": true,
+            "type": "string"
+          },
+          "status": {
+            "description": "The current status of the SIM Card order.\u003cul\u003e \u003cli\u003e\u003ccode\u003epending\u003c/code\u003e - the order is waiting to be processed.\u003c/li\u003e \u003cli\u003e\u003ccode\u003eprocessing\u003c/code\u003e - the order is currently being processed.\u003c/li\u003e \u003cli\u003e\u003ccode\u003eready_to_ship\u003c/code\u003e - the order is ready to be shipped to the specified \u003cb\u003eaddress\u003c/b\u003e.\u003c/li\u003e \u003cli\u003e\u003ccode\u003eshipped\u003c/code\u003e - the order was shipped and is on its way to be delivered to the specified \u003cb\u003eaddress\u003c/b\u003e.\u003c/li\u003e \u003cli\u003e\u003ccode\u003edelivered\u003c/code\u003e - the order was delivered to the specified \u003cb\u003eaddress\u003c/b\u003e.\u003c/li\u003e \u003cli\u003e\u003ccode\u003ecanceled\u003c/code\u003e - the order was canceled.\u003c/li\u003e \u003c/ul\u003e",
+            "enum": [
+              "pending",
+              "processing",
+              "ready_to_ship",
+              "shipped",
+              "delivered",
+              "canceled"
+            ],
+            "example": "pending",
+            "type": "string"
+          },
+          "tracking_url": {
+            "description": "The URL used to get tracking information about the order.",
+            "example": "http://www.example.com/",
+            "format": "uri",
+            "type": "string"
+          },
+          "updated_at": {
+            "description": "ISO 8601 formatted date-time indicating when the resource was last updated.",
+            "example": "2018-02-02T22:25:27.521Z",
+            "readOnly": true,
+            "type": "string"
+          }
+        },
+        "title": "SIMCardOrder",
+        "type": "object"
+      },
+      "SIMCardOrderPreview": {
+        "properties": {
+          "quantity": {
+            "description": "The amount of SIM cards requested in the SIM card order.",
+            "example": 21,
+            "type": "integer"
+          },
+          "record_type": {
+            "description": "Identifies the type of the resource.",
+            "example": "sim_card_order_preview",
+            "readOnly": true,
+            "type": "string"
+          },
+          "shipping_cost": {
+            "properties": {
+              "amount": {
+                "description": "A string representing the cost amount.",
+                "example": "2.32",
+                "type": "string"
+              },
+              "currency": {
+                "description": "ISO 4217 currency string.",
+                "example": "USD",
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
+          "sim_cards_cost": {
+            "properties": {
+              "amount": {
+                "description": "A string representing the cost amount.",
+                "example": "2.32",
+                "type": "string"
+              },
+              "currency": {
+                "description": "ISO 4217 currency string.",
+                "example": "USD",
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
+          "total_cost": {
+            "properties": {
+              "amount": {
+                "description": "A string representing the cost amount.",
+                "example": "2.32",
+                "type": "string"
+              },
+              "currency": {
+                "description": "ISO 4217 currency string.",
+                "example": "USD",
+                "type": "string"
+              }
+            },
+            "type": "object"
+          }
+        },
+        "title": "SIMCardOrderPreview",
+        "type": "object"
+      },
+      "SimCardOrderCreate": {
+        "properties": {
+          "address_id": {
+            "description": "Uniquely identifies the address for the order.",
+            "example": "1293384261075731499",
+            "type": "string"
+          },
+          "quantity": {
+            "description": "The amount of SIM cards to order.",
+            "example": 23,
+            "minimum": 1,
+            "type": "integer"
+          }
+        },
+        "required": [
+          "address_id",
+          "quantity"
+        ],
+        "title": "SimCardOrderCreate",
+        "type": "object"
+      },
+      "documents_Error": {
+        "properties": {
+          "code": {
+            "type": "string"
+          },
+          "detail": {
+            "type": "string"
+          },
+          "meta": {
+            "additionalProperties": true,
+            "type": "object"
+          },
+          "source": {
+            "properties": {
+              "parameter": {
+                "description": "Indicates which query parameter caused the error.",
+                "type": "string"
+              },
+              "pointer": {
+                "description": "JSON pointer (RFC6901) to the offending entity.",
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
+          "title": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "title"
+        ],
+        "type": "object"
+      }
+    },
+    "securitySchemes": {
+      "BearerAuth": {
+        "bearerFormat": "API key",
+        "description": "Telnyx API key supplied as `Authorization: Bearer \u003ctoken\u003e`. In production, auth may be validated by the API gateway and forwarded via Telnyx auth headers.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "Payment": {
+        "description": "Machine Payment Protocol credential used on paid retries, sent as `Authorization: Payment ...`. Obtained by paying a challenge returned in the `WWW-Authenticate` header of a 402 response. This is not a Telnyx API key; initial challenge requests use standard bearer authentication instead.",
+        "in": "header",
+        "name": "Authorization",
+        "type": "apiKey"
+      },
+      "agent-memory_bearerAuth": {
+        "description": "Telnyx API key",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "bearerAuth": {
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "branded-calling_bearerAuth": {
+        "description": "Telnyx API key. Generate one at https://portal.telnyx.com/#/app/api-keys.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "collections_bearerAuth": {
+        "description": "Telnyx API key. Collections and results are automatically scoped to the authenticated user's organization.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "number-reputation_bearerAuth": {
+        "description": "Telnyx API key. Generate one at https://portal.telnyx.com/#/app/api-keys.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "oauthClientAuth": {
+        "description": "OAuth 2.0 authentication for Telnyx API and MCP integrations",
+        "flows": {
+          "authorizationCode": {
+            "authorizationUrl": "https://api.telnyx.com/v2/oauth/authorize",
+            "refreshUrl": "https://api.telnyx.com/v2/oauth/token",
+            "scopes": {
+              "admin": "Administrative access to Telnyx resources"
+            },
+            "tokenUrl": "https://api.telnyx.com/v2/oauth/token"
+          },
+          "clientCredentials": {
+            "scopes": {
+              "admin": "Administrative access to Telnyx resources"
+            },
+            "tokenUrl": "https://api.telnyx.com/v2/oauth/token"
+          }
+        },
+        "type": "oauth2"
+      },
+      "outbound-voice-profiles_bearerAuth": {
+        "bearerFormat": "JWT",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "pay-connectors_bearerAuth": {
+        "description": "Telnyx API key, not the processor bearer token.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "pronunciation-dicts_bearerAuth": {
+        "description": "Telnyx API v2 key. Obtain from https://portal.telnyx.com",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "rcs-registration_bearerAuth": {
+        "bearerFormat": "API key",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "stored-payment-transactions_bearerAuth": {
+        "bearerFormat": "JWT",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "telnyxApiKey": {
+        "description": "Management-only Telnyx account credential.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "transcriptions-search_bearerAuth": {
+        "description": "Telnyx API key. Results are automatically scoped to the authenticated user's organization.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "web-search_bearerAuth": {
+        "description": "Telnyx API key",
+        "scheme": "bearer",
+        "type": "http"
+      }
+    }
+  },
+  "info": {
+    "contact": {
+      "email": "support@telnyx.com"
+    },
+    "description": "SIP trunking, SMS, MMS, Call Control and Telephony Data Services.",
+    "title": "Telnyx API",
+    "version": "2.0.0",
+    "x-endpoint-cost": "light",
+    "x-latency-category": "responsive"
+  },
+  "openapi": "3.1.0",
+  "paths": {
+    "/sim_card_order_preview": {
+      "post": {
+        "description": "Previews a SIM card order purchase, returning estimated costs and details before you place the order. The preview is processed asynchronously.",
+        "operationId": "PreviewSimCardOrders",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "address_id": {
+                    "description": "Uniquely identifies the address for the order.",
+                    "example": "1293384261075731499",
+                    "type": "string"
+                  },
+                  "quantity": {
+                    "description": "The amount of SIM cards that the user would like to purchase in the SIM card order.",
+                    "example": 21,
+                    "minimum": 1,
+                    "type": "integer"
+                  }
+                },
+                "required": [
+                  "quantity",
+                  "address_id"
+                ],
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "202": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/SIMCardOrderPreview"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "$ref": "#/components/responses/wireless_UnprocessableEntity_c5290d5308"
+          }
+        },
+        "summary": "Preview SIM card orders",
+        "tags": [
+          "SIM Card Orders"
+        ]
+      }
+    },
+    "/sim_card_orders": {
+      "get": {
+        "description": "Get all SIM card orders according to filters.",
+        "operationId": "GetSimCardOrders",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/FilterSIMCardOrdersConsolidated"
+          },
+          {
+            "$ref": "#/components/parameters/wireless_PageConsolidated_c5290d5308"
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "items": {
+                        "$ref": "#/components/schemas/SIMCardOrder"
+                      },
+                      "type": "array"
+                    },
+                    "meta": {
+                      "$ref": "#/components/schemas/PaginationMeta"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "default": {
+            "$ref": "#/components/responses/wireless_GenericErrorResponse_c5290d5308"
+          }
+        },
+        "summary": "Get all SIM card orders",
+        "tags": [
+          "SIM Card Orders"
+        ]
+      },
+      "post": {
+        "description": "Creates a new order for physical SIM cards, including quantity and shipping details, and returns the created order.",
+        "operationId": "CreateSimCardOrder",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SimCardOrderCreate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/SIMCardOrder"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "default": {
+            "$ref": "#/components/responses/wireless_GenericErrorResponse_c5290d5308"
+          }
+        },
+        "summary": "Create a SIM card order",
+        "tags": [
+          "SIM Card Orders"
+        ]
+      }
+    },
+    "/sim_card_orders/{id}": {
+      "get": {
+        "description": "Returns the details of a single SIM card order by its ID, including its status.",
+        "operationId": "GetSimCardOrder",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/ResourceId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/SIMCardOrder"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "404": {
+            "$ref": "#/components/responses/ResourceNotFound"
+          },
+          "default": {
+            "$ref": "#/components/responses/wireless_GenericErrorResponse_c5290d5308"
+          }
+        },
+        "summary": "Get a single SIM card order",
+        "tags": [
+          "SIM Card Orders"
+        ]
+      }
+    }
+  },
+  "security": [
+    {
+      "bearerAuth": []
+    }
+  ],
+  "servers": [
+    {
+      "description": "Version 2.0.0 of the Telnyx API",
+      "url": "https://api.telnyx.com/v2"
+    }
+  ]
+}

@@ -1,0 +1,832 @@
+{
+  "components": {
+    "parameters": {
+      "PageCursorConsolidated": {
+        "description": "Consolidated page parameter (deepObject style). Originally: page[after], page[limit]",
+        "explode": true,
+        "in": "query",
+        "name": "page",
+        "schema": {
+          "properties": {
+            "after": {
+              "description": "The cursor from `meta.cursors.after` of the previous page.",
+              "type": "string"
+            },
+            "limit": {
+              "default": 20,
+              "description": "The number of results per page.",
+              "maximum": 100,
+              "minimum": 1,
+              "type": "integer"
+            }
+          },
+          "type": "object"
+        },
+        "style": "deepObject"
+      }
+    },
+    "responses": {
+      "GenericErrorResponse": {
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Errors"
+            }
+          }
+        },
+        "description": "Unexpected error"
+      }
+    },
+    "schemas": {
+      "Error": {
+        "example": {
+          "code": "20207",
+          "description": "The street address provided is invalid.",
+          "source": {
+            "pointer": "/street_address"
+          },
+          "title": "Invalid street address"
+        },
+        "properties": {
+          "code": {
+            "type": "string",
+            "x-format": "int64"
+          },
+          "description": {
+            "type": "string"
+          },
+          "detail": {
+            "description": "A human-readable explanation of the error.",
+            "type": "string"
+          },
+          "meta": {
+            "additionalProperties": true,
+            "type": "object"
+          },
+          "source": {
+            "properties": {
+              "parameter": {
+                "description": "Indicates which query parameter caused the error.",
+                "type": "string"
+              },
+              "pointer": {
+                "description": "JSON pointer (RFC6901) to the offending entity.",
+                "format": "json-pointer",
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
+          "title": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "title"
+        ],
+        "type": "object"
+      },
+      "Errors": {
+        "properties": {
+          "errors": {
+            "items": {
+              "$ref": "#/components/schemas/Error"
+            },
+            "type": "array"
+          }
+        },
+        "type": "object"
+      },
+      "NetworkRoute": {
+        "properties": {
+          "cidr": {
+            "description": "The IPv4 CIDR the route covers.",
+            "example": "10.20.0.0/16",
+            "type": "string"
+          },
+          "created_at": {
+            "description": "ISO 8601 formatted date-time indicating when the resource was created.",
+            "example": "2026-10-21T15:04:05.123456Z",
+            "format": "date-time",
+            "readOnly": true,
+            "type": "string"
+          },
+          "id": {
+            "description": "Identifies the resource.",
+            "example": "e8a2c5d0-3f7b-4a19-b6d2-9c1e0f8a7b53",
+            "format": "uuid",
+            "readOnly": true,
+            "type": "string"
+          },
+          "network_id": {
+            "description": "The id of the Network the route belongs to.",
+            "example": "91446ee3-5b1c-4f0e-8d2a-6c7e9b0a1f24",
+            "format": "uuid",
+            "type": "string"
+          },
+          "next_hop": {
+            "$ref": "#/components/schemas/NetworkRouteNextHop"
+          },
+          "origin": {
+            "description": "`static` for a route added with `POST /network_routes`, `attachment` for a route that another resource installed and removes.",
+            "enum": [
+              "static",
+              "attachment"
+            ],
+            "example": "static",
+            "readOnly": true,
+            "type": "string"
+          },
+          "record_type": {
+            "description": "Identifies the type of the resource.",
+            "example": "network_route",
+            "readOnly": true,
+            "type": "string"
+          },
+          "status": {
+            "description": "`pending` until Telnyx installs the route on the Network, then `active`. `inactive` while a tunnel next hop has no connected process. `failed` (Preview, not reported yet) when Telnyx could not install the route.",
+            "enum": [
+              "pending",
+              "active",
+              "inactive",
+              "failed"
+            ],
+            "example": "active",
+            "readOnly": true,
+            "type": "string"
+          }
+        },
+        "title": "NetworkRoute",
+        "type": "object"
+      },
+      "NetworkRouteCreate": {
+        "properties": {
+          "cidr": {
+            "description": "The IPv4 subnet to route, such as a subnet behind the tunnel. It must be a canonical CIDR. Default, loopback, link-local, multicast, and shared address space (`100.64.0.0/10`) ranges are rejected. So are ranges that overlap the Tailscale Subnet Router ranges, `172.27.254.0/24` and `198.18.0.0/20`, or a subnet already on the Network.",
+            "example": "10.20.0.0/16",
+            "type": "string"
+          },
+          "network_id": {
+            "description": "The id of the Network to add the route to.",
+            "example": "91446ee3-5b1c-4f0e-8d2a-6c7e9b0a1f24",
+            "format": "uuid",
+            "type": "string"
+          },
+          "next_hop": {
+            "description": "Where the Network sends traffic for `cidr`.",
+            "properties": {
+              "id": {
+                "description": "The id of the tunnel.",
+                "example": "62d438d2-8a51-4c5e-9d0c-1f6b2a7e4c39",
+                "format": "uuid",
+                "type": "string"
+              },
+              "type": {
+                "description": "The type of the next hop.",
+                "enum": [
+                  "tunnel"
+                ],
+                "example": "tunnel",
+                "type": "string"
+              }
+            },
+            "required": [
+              "type",
+              "id"
+            ],
+            "type": "object"
+          }
+        },
+        "required": [
+          "network_id",
+          "cidr",
+          "next_hop"
+        ],
+        "title": "NetworkRouteCreate",
+        "type": "object"
+      },
+      "NetworkRouteNextHop": {
+        "description": "Where the Network sends traffic for the route's CIDR.",
+        "properties": {
+          "id": {
+            "description": "The id of the tunnel or attachment.",
+            "example": "62d438d2-8a51-4c5e-9d0c-1f6b2a7e4c39",
+            "format": "uuid",
+            "type": "string"
+          },
+          "type": {
+            "description": "The type of the next hop. Routes added with `POST /network_routes` use `tunnel`. Routes that attachments install carry the attachment's type.",
+            "enum": [
+              "tunnel",
+              "wireguard_peer",
+              "wireguard_interface",
+              "private_wireless_gateway",
+              "virtual_cross_connect",
+              "ipsec_tunnel",
+              "public_internet_gateway"
+            ],
+            "example": "tunnel",
+            "type": "string"
+          }
+        },
+        "required": [
+          "type",
+          "id"
+        ],
+        "title": "NetworkRouteNextHop",
+        "type": "object"
+      },
+      "netapps_CursorPaginationMeta": {
+        "properties": {
+          "cursors": {
+            "description": "Opaque cursors. Absent keys mean there is no such page.",
+            "properties": {
+              "after": {
+                "description": "Pass as `page[after]` to fetch the next page. Absent on the last page.",
+                "type": "string"
+              },
+              "before": {
+                "description": "The cursor of the previous page. Present when the request used `page[after]`.",
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
+          "next": {
+            "description": "The path of the next page, with the same query parameters. Absent on the last page.",
+            "example": "/v2/network_routes?filter%5Bnetwork_id%5D=91446ee3-5b1c-4f0e-8d2a-6c7e9b0a1f24\u0026page%5Bafter%5D=MjAyNi0xMC0yMVQxNjowNjowMC4wNDMwNDRa\u0026page%5Blimit%5D=1",
+            "type": "string"
+          },
+          "previous": {
+            "description": "The path of the previous page. Present when the request used `page[after]`.",
+            "type": "string"
+          }
+        },
+        "title": "CursorPaginationMeta",
+        "type": "object"
+      }
+    },
+    "securitySchemes": {
+      "BearerAuth": {
+        "bearerFormat": "API key",
+        "description": "Telnyx API key supplied as `Authorization: Bearer \u003ctoken\u003e`. In production, auth may be validated by the API gateway and forwarded via Telnyx auth headers.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "Payment": {
+        "description": "Machine Payment Protocol credential used on paid retries, sent as `Authorization: Payment ...`. Obtained by paying a challenge returned in the `WWW-Authenticate` header of a 402 response. This is not a Telnyx API key; initial challenge requests use standard bearer authentication instead.",
+        "in": "header",
+        "name": "Authorization",
+        "type": "apiKey"
+      },
+      "agent-memory_bearerAuth": {
+        "description": "Telnyx API key",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "bearerAuth": {
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "branded-calling_bearerAuth": {
+        "description": "Telnyx API key. Generate one at https://portal.telnyx.com/#/app/api-keys.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "collections_bearerAuth": {
+        "description": "Telnyx API key. Collections and results are automatically scoped to the authenticated user's organization.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "number-reputation_bearerAuth": {
+        "description": "Telnyx API key. Generate one at https://portal.telnyx.com/#/app/api-keys.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "oauthClientAuth": {
+        "description": "OAuth 2.0 authentication for Telnyx API and MCP integrations",
+        "flows": {
+          "authorizationCode": {
+            "authorizationUrl": "https://api.telnyx.com/v2/oauth/authorize",
+            "refreshUrl": "https://api.telnyx.com/v2/oauth/token",
+            "scopes": {
+              "admin": "Administrative access to Telnyx resources"
+            },
+            "tokenUrl": "https://api.telnyx.com/v2/oauth/token"
+          },
+          "clientCredentials": {
+            "scopes": {
+              "admin": "Administrative access to Telnyx resources"
+            },
+            "tokenUrl": "https://api.telnyx.com/v2/oauth/token"
+          }
+        },
+        "type": "oauth2"
+      },
+      "outbound-voice-profiles_bearerAuth": {
+        "bearerFormat": "JWT",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "pay-connectors_bearerAuth": {
+        "description": "Telnyx API key, not the processor bearer token.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "pronunciation-dicts_bearerAuth": {
+        "description": "Telnyx API v2 key. Obtain from https://portal.telnyx.com",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "rcs-registration_bearerAuth": {
+        "bearerFormat": "API key",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "stored-payment-transactions_bearerAuth": {
+        "bearerFormat": "JWT",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "telnyxApiKey": {
+        "description": "Management-only Telnyx account credential.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "transcriptions-search_bearerAuth": {
+        "description": "Telnyx API key. Results are automatically scoped to the authenticated user's organization.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "web-search_bearerAuth": {
+        "description": "Telnyx API key",
+        "scheme": "bearer",
+        "type": "http"
+      }
+    }
+  },
+  "info": {
+    "contact": {
+      "email": "support@telnyx.com"
+    },
+    "description": "SIP trunking, SMS, MMS, Call Control and Telephony Data Services.",
+    "title": "Telnyx API",
+    "version": "2.0.0",
+    "x-endpoint-cost": "light",
+    "x-latency-category": "responsive"
+  },
+  "openapi": "3.1.0",
+  "paths": {
+    "/network_routes": {
+      "get": {
+        "description": "Lists the routes of the account's Networks. A Network's list is its effective route table: the routes added with `POST /network_routes` (`origin` `static`) and the routes that its attachments install (`origin` `attachment`). Lookup is longest prefix within the Network.",
+        "operationId": "ListNetworkRoutes",
+        "parameters": [
+          {
+            "description": "Consolidated filter parameter (deepObject style). Originally: filter[network_id], filter[origin], filter[next_hop.type], filter[cidr], filter[status]",
+            "explode": true,
+            "in": "query",
+            "name": "filter",
+            "required": true,
+            "schema": {
+              "properties": {
+                "cidr": {
+                  "description": "Only routes with this CIDR.",
+                  "example": "10.20.0.0/16",
+                  "type": "string"
+                },
+                "network_id": {
+                  "description": "The id of the Network whose route table is returned. Required.",
+                  "example": "91446ee3-5b1c-4f0e-8d2a-6c7e9b0a1f24",
+                  "format": "uuid",
+                  "type": "string"
+                },
+                "next_hop.type": {
+                  "description": "Only routes whose next hop has this type.",
+                  "enum": [
+                    "tunnel",
+                    "wireguard_peer",
+                    "wireguard_interface",
+                    "private_wireless_gateway",
+                    "virtual_cross_connect",
+                    "ipsec_tunnel",
+                    "public_internet_gateway"
+                  ],
+                  "example": "tunnel",
+                  "type": "string"
+                },
+                "origin": {
+                  "description": "Only routes of this origin.",
+                  "enum": [
+                    "static",
+                    "attachment"
+                  ],
+                  "example": "static",
+                  "type": "string"
+                },
+                "status": {
+                  "description": "Only routes with this status.",
+                  "enum": [
+                    "pending",
+                    "active",
+                    "inactive",
+                    "failed"
+                  ],
+                  "example": "active",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "network_id"
+              ],
+              "type": "object"
+            },
+            "style": "deepObject"
+          },
+          {
+            "description": "Sorts the results by a field, ascending, or descending with a leading `-`. The default is `-created_at`.",
+            "in": "query",
+            "name": "sort",
+            "schema": {
+              "enum": [
+                "cidr",
+                "-cidr",
+                "status",
+                "-status",
+                "created_at",
+                "-created_at"
+              ],
+              "example": "-created_at",
+              "type": "string"
+            }
+          },
+          {
+            "$ref": "#/components/parameters/PageCursorConsolidated"
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "data": [
+                    {
+                      "cidr": "172.27.0.0/24",
+                      "created_at": "2026-10-21T15:04:05.123456Z",
+                      "id": "b6a10cb9-2d4e-4f61-9a3b-7e5c8d1f0a26",
+                      "network_id": "91446ee3-5b1c-4f0e-8d2a-6c7e9b0a1f24",
+                      "next_hop": {
+                        "id": "b6a10cb9-2d4e-4f61-9a3b-7e5c8d1f0a26",
+                        "type": "wireguard_interface"
+                      },
+                      "origin": "attachment",
+                      "record_type": "network_route",
+                      "status": "active"
+                    },
+                    {
+                      "cidr": "10.20.0.0/16",
+                      "created_at": "2026-10-21T15:04:05.123456Z",
+                      "id": "e8a2c5d0-3f7b-4a19-b6d2-9c1e0f8a7b53",
+                      "network_id": "91446ee3-5b1c-4f0e-8d2a-6c7e9b0a1f24",
+                      "next_hop": {
+                        "id": "62d438d2-8a51-4c5e-9d0c-1f6b2a7e4c39",
+                        "type": "tunnel"
+                      },
+                      "origin": "static",
+                      "record_type": "network_route",
+                      "status": "active"
+                    }
+                  ],
+                  "meta": {
+                    "cursors": {}
+                  }
+                },
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "items": {
+                        "$ref": "#/components/schemas/NetworkRoute"
+                      },
+                      "type": "array"
+                    },
+                    "meta": {
+                      "$ref": "#/components/schemas/netapps_CursorPaginationMeta"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful response."
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "errors": [
+                    {
+                      "code": "10022",
+                      "detail": "filter[network_id] is required",
+                      "source": {
+                        "parameter": "filter[network_id]"
+                      },
+                      "title": "Unprocessable Entity"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/Errors"
+                }
+              }
+            },
+            "description": "Unprocessable entity: `filter[network_id]` is missing, or a query parameter is not valid, such as an unsupported `sort` field."
+          },
+          "default": {
+            "$ref": "#/components/responses/GenericErrorResponse"
+          }
+        },
+        "summary": "List all Network Routes",
+        "tags": [
+          "Network Routes"
+        ]
+      },
+      "post": {
+        "description": "Adds a route to a Network. Traffic on the Network to an address in `cidr` goes via `next_hop`. With a tunnel as the next hop, functions on the Network reach the CIDR through the tunnel without a redeploy. A Network holds each CIDR once.",
+        "operationId": "CreateNetworkRoute",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "example": {
+                "cidr": "10.20.0.0/16",
+                "network_id": "91446ee3-5b1c-4f0e-8d2a-6c7e9b0a1f24",
+                "next_hop": {
+                  "id": "62d438d2-8a51-4c5e-9d0c-1f6b2a7e4c39",
+                  "type": "tunnel"
+                }
+              },
+              "schema": {
+                "$ref": "#/components/schemas/NetworkRouteCreate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "data": {
+                    "cidr": "10.20.0.0/16",
+                    "created_at": "2026-10-21T15:04:05.123456Z",
+                    "id": "e8a2c5d0-3f7b-4a19-b6d2-9c1e0f8a7b53",
+                    "network_id": "91446ee3-5b1c-4f0e-8d2a-6c7e9b0a1f24",
+                    "next_hop": {
+                      "id": "62d438d2-8a51-4c5e-9d0c-1f6b2a7e4c39",
+                      "type": "tunnel"
+                    },
+                    "origin": "static",
+                    "record_type": "network_route",
+                    "status": "pending"
+                  }
+                },
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/NetworkRoute"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Created."
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "errors": [
+                    {
+                      "code": "10020",
+                      "detail": "tunnel 62d438d2-8a51-4c5e-9d0c-1f6b2a7e4c39 not found",
+                      "title": "Resource not found"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/Errors"
+                }
+              }
+            },
+            "description": "Not found: no tunnel with the `next_hop.id` exists on the account."
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "errors": [
+                    {
+                      "code": "10021",
+                      "detail": "create route: resource already exists",
+                      "title": "Resource conflict"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/Errors"
+                }
+              }
+            },
+            "description": "Conflict: the Network already has a route for this CIDR."
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "errors": [
+                    {
+                      "code": "10022",
+                      "detail": "cidr must be a valid CIDR range (e.g. 10.20.0.0/16)",
+                      "source": {
+                        "pointer": "/cidr"
+                      },
+                      "title": "Unprocessable Entity"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/Errors"
+                }
+              }
+            },
+            "description": "Unprocessable entity: the body failed validation. `source.pointer` names the field."
+          },
+          "default": {
+            "$ref": "#/components/responses/GenericErrorResponse"
+          }
+        },
+        "summary": "Create a Network Route",
+        "tags": [
+          "Network Routes"
+        ]
+      }
+    },
+    "/network_routes/{id}": {
+      "delete": {
+        "description": "Deletes a route that was added with `POST /network_routes`. Traffic to its CIDR stops going via the next hop at once. Routes that an attachment installs (`origin` `attachment`) leave with the attachment and cannot be deleted here.",
+        "operationId": "DeleteNetworkRoute",
+        "parameters": [
+          {
+            "description": "The id of the route.",
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "example": "e8a2c5d0-3f7b-4a19-b6d2-9c1e0f8a7b53",
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Deleted."
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "errors": [
+                    {
+                      "code": "10020",
+                      "detail": "get route: not found",
+                      "title": "Resource not found"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/Errors"
+                }
+              }
+            },
+            "description": "Not found: no route with this id exists on the account."
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "errors": [
+                    {
+                      "code": "10021",
+                      "detail": "network_route b6a10cb9-2d4e-4f61-9a3b-7e5c8d1f0a26 was installed by an attachment (wireguard_interface on network 91446ee3-5b1c-4f0e-8d2a-6c7e9b0a1f24); it is read-only and is removed with the attachment",
+                      "title": "Resource conflict"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/Errors"
+                }
+              }
+            },
+            "description": "Conflict: the route was installed by an attachment."
+          },
+          "default": {
+            "$ref": "#/components/responses/GenericErrorResponse"
+          }
+        },
+        "summary": "Delete a Network Route",
+        "tags": [
+          "Network Routes"
+        ]
+      },
+      "get": {
+        "description": "Retrieves a route and its status.",
+        "operationId": "GetNetworkRoute",
+        "parameters": [
+          {
+            "description": "The id of the route.",
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "example": "e8a2c5d0-3f7b-4a19-b6d2-9c1e0f8a7b53",
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "data": {
+                    "cidr": "10.20.0.0/16",
+                    "created_at": "2026-10-21T15:04:05.123456Z",
+                    "id": "e8a2c5d0-3f7b-4a19-b6d2-9c1e0f8a7b53",
+                    "network_id": "91446ee3-5b1c-4f0e-8d2a-6c7e9b0a1f24",
+                    "next_hop": {
+                      "id": "62d438d2-8a51-4c5e-9d0c-1f6b2a7e4c39",
+                      "type": "tunnel"
+                    },
+                    "origin": "static",
+                    "record_type": "network_route",
+                    "status": "active"
+                  }
+                },
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/NetworkRoute"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful response."
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "errors": [
+                    {
+                      "code": "10020",
+                      "detail": "get route: not found",
+                      "title": "Resource not found"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/Errors"
+                }
+              }
+            },
+            "description": "Not found: no route with this id exists on the account."
+          },
+          "default": {
+            "$ref": "#/components/responses/GenericErrorResponse"
+          }
+        },
+        "summary": "Retrieve a Network Route",
+        "tags": [
+          "Network Routes"
+        ]
+      }
+    }
+  },
+  "security": [
+    {
+      "bearerAuth": []
+    }
+  ],
+  "servers": [
+    {
+      "description": "Version 2.0.0 of the Telnyx API",
+      "url": "https://api.telnyx.com/v2"
+    }
+  ]
+}

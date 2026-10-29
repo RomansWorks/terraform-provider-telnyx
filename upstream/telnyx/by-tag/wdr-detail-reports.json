@@ -1,0 +1,526 @@
+{
+  "components": {
+    "schemas": {
+      "DownlinkData": {
+        "properties": {
+          "amount": {
+            "description": "Downlink data",
+            "example": 1,
+            "type": "number"
+          },
+          "unit": {
+            "default": "MB",
+            "description": "Transmission unit",
+            "enum": [
+              "B",
+              "KB",
+              "MB"
+            ],
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "ExternalWdrDetailRecordDto": {
+        "properties": {
+          "cost": {
+            "$ref": "#/components/schemas/WirelessCost"
+          },
+          "created_at": {
+            "description": "Record created time",
+            "example": "2020-07-01T00:00:00-06:00",
+            "format": "date-time",
+            "type": "string"
+          },
+          "downlink_data": {
+            "$ref": "#/components/schemas/DownlinkData"
+          },
+          "duration_seconds": {
+            "description": "Session duration in seconds.",
+            "example": 1,
+            "type": "number"
+          },
+          "id": {
+            "description": "WDR id",
+            "example": "3ca7bd3d-7d82-4e07-9df4-009123068320",
+            "type": "string"
+          },
+          "imsi": {
+            "description": "International mobile subscriber identity.",
+            "example": "123",
+            "type": "string"
+          },
+          "mcc": {
+            "description": "Mobile country code.",
+            "example": "204",
+            "type": "string"
+          },
+          "mnc": {
+            "description": "Mobile network code.",
+            "example": "01",
+            "type": "string"
+          },
+          "phone_number": {
+            "description": "Phone number",
+            "example": "+12345678910",
+            "type": "string"
+          },
+          "rate": {
+            "$ref": "#/components/schemas/WirelessRate"
+          },
+          "record_type": {
+            "example": "wdr",
+            "type": "string"
+          },
+          "sim_card_id": {
+            "description": "Sim card unique identifier",
+            "example": "877f80a6-e5b2-4687-9a04-88076265720f",
+            "type": "string"
+          },
+          "sim_group_id": {
+            "description": "Sim group unique identifier",
+            "example": "f05a189f-7c46-4531-ac56-1460dc465a42",
+            "type": "string"
+          },
+          "sim_group_name": {
+            "description": "Defined sim group name",
+            "example": "sim name",
+            "type": "string"
+          },
+          "uplink_data": {
+            "$ref": "#/components/schemas/UplinkData"
+          }
+        },
+        "type": "object"
+      },
+      "UplinkData": {
+        "properties": {
+          "amount": {
+            "description": "Uplink data",
+            "example": 1,
+            "type": "number"
+          },
+          "unit": {
+            "default": "MB",
+            "description": "Transmission unit",
+            "enum": [
+              "B",
+              "KB",
+              "MB"
+            ],
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "WirelessCost": {
+        "properties": {
+          "amount": {
+            "description": "Final cost. Cost is calculated as rate * unit",
+            "example": "0.1",
+            "type": "string"
+          },
+          "currency": {
+            "description": "Currency of the rate and cost",
+            "enum": [
+              "AUD",
+              "CAD",
+              "EUR",
+              "GBP",
+              "USD"
+            ],
+            "example": "USD",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "WirelessRate": {
+        "properties": {
+          "amount": {
+            "description": "Rate from which cost is calculated",
+            "example": "0.1",
+            "type": "string"
+          },
+          "currency": {
+            "description": "Currency of the rate and cost",
+            "enum": [
+              "AUD",
+              "CAD",
+              "EUR",
+              "GBP",
+              "USD"
+            ],
+            "example": "USD",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "wireless-public_ErrorResponse_ea8f2ad863": {
+        "properties": {
+          "errors": {
+            "items": {
+              "$ref": "#/components/schemas/wireless-public_Error_ea8f2ad863"
+            },
+            "type": "array"
+          }
+        },
+        "type": "object"
+      },
+      "wireless-public_Error_ea8f2ad863": {
+        "properties": {
+          "code": {
+            "example": "10011",
+            "type": "string"
+          },
+          "detail": {
+            "example": "Invalid parameter value",
+            "type": "string"
+          },
+          "title": {
+            "example": "Bad Request",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "wireless-public_ExternalWdrGetDetailResponse": {
+        "properties": {
+          "data": {
+            "items": {
+              "$ref": "#/components/schemas/ExternalWdrDetailRecordDto"
+            },
+            "type": "array"
+          },
+          "meta": {
+            "$ref": "#/components/schemas/wireless-public_PaginationMeta_ea8f2ad863"
+          }
+        },
+        "type": "object"
+      },
+      "wireless-public_PaginationMeta_ea8f2ad863": {
+        "properties": {
+          "page_number": {
+            "example": 2,
+            "format": "int32",
+            "type": "integer"
+          },
+          "page_size": {
+            "example": 25,
+            "format": "int32",
+            "type": "integer"
+          },
+          "total_pages": {
+            "example": 3,
+            "format": "int32",
+            "type": "integer"
+          },
+          "total_results": {
+            "example": 55,
+            "format": "int32",
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      }
+    },
+    "securitySchemes": {
+      "BearerAuth": {
+        "bearerFormat": "API key",
+        "description": "Telnyx API key supplied as `Authorization: Bearer \u003ctoken\u003e`. In production, auth may be validated by the API gateway and forwarded via Telnyx auth headers.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "Payment": {
+        "description": "Machine Payment Protocol credential used on paid retries, sent as `Authorization: Payment ...`. Obtained by paying a challenge returned in the `WWW-Authenticate` header of a 402 response. This is not a Telnyx API key; initial challenge requests use standard bearer authentication instead.",
+        "in": "header",
+        "name": "Authorization",
+        "type": "apiKey"
+      },
+      "agent-memory_bearerAuth": {
+        "description": "Telnyx API key",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "bearerAuth": {
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "branded-calling_bearerAuth": {
+        "description": "Telnyx API key. Generate one at https://portal.telnyx.com/#/app/api-keys.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "collections_bearerAuth": {
+        "description": "Telnyx API key. Collections and results are automatically scoped to the authenticated user's organization.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "number-reputation_bearerAuth": {
+        "description": "Telnyx API key. Generate one at https://portal.telnyx.com/#/app/api-keys.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "oauthClientAuth": {
+        "description": "OAuth 2.0 authentication for Telnyx API and MCP integrations",
+        "flows": {
+          "authorizationCode": {
+            "authorizationUrl": "https://api.telnyx.com/v2/oauth/authorize",
+            "refreshUrl": "https://api.telnyx.com/v2/oauth/token",
+            "scopes": {
+              "admin": "Administrative access to Telnyx resources"
+            },
+            "tokenUrl": "https://api.telnyx.com/v2/oauth/token"
+          },
+          "clientCredentials": {
+            "scopes": {
+              "admin": "Administrative access to Telnyx resources"
+            },
+            "tokenUrl": "https://api.telnyx.com/v2/oauth/token"
+          }
+        },
+        "type": "oauth2"
+      },
+      "outbound-voice-profiles_bearerAuth": {
+        "bearerFormat": "JWT",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "pay-connectors_bearerAuth": {
+        "description": "Telnyx API key, not the processor bearer token.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "pronunciation-dicts_bearerAuth": {
+        "description": "Telnyx API v2 key. Obtain from https://portal.telnyx.com",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "rcs-registration_bearerAuth": {
+        "bearerFormat": "API key",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "stored-payment-transactions_bearerAuth": {
+        "bearerFormat": "JWT",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "telnyxApiKey": {
+        "description": "Management-only Telnyx account credential.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "transcriptions-search_bearerAuth": {
+        "description": "Telnyx API key. Results are automatically scoped to the authenticated user's organization.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "web-search_bearerAuth": {
+        "description": "Telnyx API key",
+        "scheme": "bearer",
+        "type": "http"
+      }
+    }
+  },
+  "info": {
+    "contact": {
+      "email": "support@telnyx.com"
+    },
+    "description": "SIP trunking, SMS, MMS, Call Control and Telephony Data Services.",
+    "title": "Telnyx API",
+    "version": "2.0.0",
+    "x-endpoint-cost": "light",
+    "x-latency-category": "responsive"
+  },
+  "openapi": "3.1.0",
+  "paths": {
+    "/reports/wdrs": {
+      "get": {
+        "description": "Returns wireless detail records (WDRs) matching the provided criteria, such as date range, SIM card, IMSI, or phone number, with pagination and sorting.",
+        "operationId": "GetPaginatedWdrs",
+        "parameters": [
+          {
+            "description": "Start date",
+            "in": "query",
+            "name": "start_date",
+            "schema": {
+              "example": "2021-05-01T00:00:00Z",
+              "type": "string"
+            }
+          },
+          {
+            "description": "End date",
+            "in": "query",
+            "name": "end_date",
+            "schema": {
+              "example": "2021-06-01T00:00:00Z",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Filter results by identifier.",
+            "in": "query",
+            "name": "id",
+            "schema": {
+              "description": "WDR uuid",
+              "example": "e093fbe0-5bde-11eb-ae93-0242ac130002",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Filter results by mcc.",
+            "in": "query",
+            "name": "mcc",
+            "schema": {
+              "description": "Mobile country code",
+              "example": "204",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Filter results by mnc.",
+            "in": "query",
+            "name": "mnc",
+            "schema": {
+              "description": "Mobile network code",
+              "example": "01",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Filter results by imsi.",
+            "in": "query",
+            "name": "imsi",
+            "schema": {
+              "description": "International mobile subscriber identity",
+              "example": "123456",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Filter results by sim group name.",
+            "in": "query",
+            "name": "sim_group_name",
+            "schema": {
+              "description": "Sim group name",
+              "example": "sim name",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Filter results by sim group id.",
+            "in": "query",
+            "name": "sim_group_id",
+            "schema": {
+              "description": "Sim group unique identifier",
+              "example": "f05a189f-7c46-4531-ac56-1460dc465a42",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Filter results by sim card id.",
+            "in": "query",
+            "name": "sim_card_id",
+            "schema": {
+              "description": "Sim card unique identifier",
+              "example": "877f80a6-e5b2-4687-9a04-88076265720f",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Filter results by phone number.",
+            "in": "query",
+            "name": "phone_number",
+            "schema": {
+              "description": "Phone number",
+              "example": "+12345678910",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Field and direction to sort the results by.",
+            "in": "query",
+            "name": "sort",
+            "schema": {
+              "default": [
+                "created_at"
+              ],
+              "description": "Field used to order the data. If no field is specified, default value is 'created_at'",
+              "example": [
+                "created_at"
+              ],
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            }
+          },
+          {
+            "description": "Consolidated page parameter (deepObject style). Originally: page[number], page[size]",
+            "explode": true,
+            "in": "query",
+            "name": "page",
+            "schema": {
+              "properties": {
+                "number": {
+                  "default": 1,
+                  "description": "Page number",
+                  "format": "int32",
+                  "type": "integer"
+                },
+                "size": {
+                  "default": 20,
+                  "description": "Size of the page",
+                  "format": "int32",
+                  "type": "integer"
+                }
+              },
+              "type": "object"
+            },
+            "style": "deepObject"
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/wireless-public_ExternalWdrGetDetailResponse"
+                }
+              }
+            },
+            "description": "Successful"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/wireless-public_ErrorResponse_ea8f2ad863"
+                }
+              }
+            },
+            "description": "Bad Request"
+          }
+        },
+        "summary": "Fetches all Wdr records",
+        "tags": [
+          "WDR Detail Reports"
+        ],
+        "x-latency-category": "interactive"
+      }
+    }
+  },
+  "security": [
+    {
+      "bearerAuth": []
+    }
+  ],
+  "servers": [
+    {
+      "description": "Version 2.0.0 of the Telnyx API",
+      "url": "https://api.telnyx.com/v2"
+    }
+  ]
+}

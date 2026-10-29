@@ -1,0 +1,677 @@
+{
+  "components": {
+    "schemas": {
+      "MobileVoiceConnection": {
+        "properties": {
+          "active": {
+            "description": "Indicates if the connection is active.",
+            "type": "boolean"
+          },
+          "connection_name": {
+            "description": "The name of the connection.",
+            "type": "string"
+          },
+          "created_at": {
+            "format": "date-time",
+            "readOnly": true,
+            "type": "string"
+          },
+          "id": {
+            "description": "Identifies the resource.",
+            "readOnly": true,
+            "type": "string"
+          },
+          "inbound": {
+            "properties": {
+              "channel_limit": {
+                "type": [
+                  "integer",
+                  "null"
+                ]
+              }
+            },
+            "type": "object"
+          },
+          "outbound": {
+            "properties": {
+              "channel_limit": {
+                "type": [
+                  "integer",
+                  "null"
+                ]
+              },
+              "outbound_voice_profile_id": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              }
+            },
+            "type": "object"
+          },
+          "record_type": {
+            "description": "Identifies the type of the resource.",
+            "enum": [
+              "mobile_voice_connection"
+            ],
+            "example": "mobile_voice_connection",
+            "readOnly": true,
+            "type": "string"
+          },
+          "tags": {
+            "description": "A list of tags associated with the connection.",
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "updated_at": {
+            "format": "date-time",
+            "readOnly": true,
+            "type": "string"
+          },
+          "webhook_api_version": {
+            "description": "The API version for webhooks.",
+            "enum": [
+              "1",
+              "2"
+            ],
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "webhook_event_failover_url": {
+            "description": "The failover URL where webhooks are sent.",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "webhook_event_url": {
+            "description": "The URL where webhooks are sent.",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "webhook_timeout_secs": {
+            "description": "The timeout for webhooks in seconds.",
+            "type": [
+              "integer",
+              "null"
+            ]
+          }
+        },
+        "type": "object"
+      },
+      "MobileVoiceConnectionCreate": {
+        "properties": {
+          "active": {
+            "default": true,
+            "type": "boolean"
+          },
+          "connection_name": {
+            "default": "Telnyx Mobile Voice IMS",
+            "type": "string"
+          },
+          "inbound": {
+            "properties": {
+              "channel_limit": {
+                "type": "integer"
+              }
+            },
+            "type": "object"
+          },
+          "outbound": {
+            "properties": {
+              "channel_limit": {
+                "type": "integer"
+              },
+              "outbound_voice_profile_id": {
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
+          "tags": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "webhook_api_version": {
+            "default": "2",
+            "enum": [
+              "1",
+              "2"
+            ],
+            "type": "string"
+          },
+          "webhook_event_failover_url": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "webhook_event_url": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "webhook_timeout_secs": {
+            "type": [
+              "integer",
+              "null"
+            ]
+          }
+        },
+        "required": [],
+        "type": "object"
+      },
+      "MobileVoiceConnectionUpdate": {
+        "properties": {
+          "active": {
+            "type": "boolean"
+          },
+          "connection_name": {
+            "type": "string"
+          },
+          "inbound": {
+            "properties": {
+              "channel_limit": {
+                "type": "integer"
+              }
+            },
+            "type": "object"
+          },
+          "outbound": {
+            "properties": {
+              "channel_limit": {
+                "type": "integer"
+              },
+              "outbound_voice_profile_id": {
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
+          "tags": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "webhook_api_version": {
+            "enum": [
+              "1",
+              "2"
+            ],
+            "type": "string"
+          },
+          "webhook_event_failover_url": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "webhook_event_url": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "webhook_timeout_secs": {
+            "type": "integer"
+          }
+        },
+        "required": [],
+        "type": "object"
+      },
+      "mobile_voice_connections_PaginationMeta": {
+        "properties": {
+          "page_number": {
+            "type": "integer"
+          },
+          "page_size": {
+            "type": "integer"
+          },
+          "total_pages": {
+            "type": "integer"
+          },
+          "total_results": {
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      }
+    },
+    "securitySchemes": {
+      "BearerAuth": {
+        "bearerFormat": "API key",
+        "description": "Telnyx API key supplied as `Authorization: Bearer \u003ctoken\u003e`. In production, auth may be validated by the API gateway and forwarded via Telnyx auth headers.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "Payment": {
+        "description": "Machine Payment Protocol credential used on paid retries, sent as `Authorization: Payment ...`. Obtained by paying a challenge returned in the `WWW-Authenticate` header of a 402 response. This is not a Telnyx API key; initial challenge requests use standard bearer authentication instead.",
+        "in": "header",
+        "name": "Authorization",
+        "type": "apiKey"
+      },
+      "agent-memory_bearerAuth": {
+        "description": "Telnyx API key",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "bearerAuth": {
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "branded-calling_bearerAuth": {
+        "description": "Telnyx API key. Generate one at https://portal.telnyx.com/#/app/api-keys.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "collections_bearerAuth": {
+        "description": "Telnyx API key. Collections and results are automatically scoped to the authenticated user's organization.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "number-reputation_bearerAuth": {
+        "description": "Telnyx API key. Generate one at https://portal.telnyx.com/#/app/api-keys.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "oauthClientAuth": {
+        "description": "OAuth 2.0 authentication for Telnyx API and MCP integrations",
+        "flows": {
+          "authorizationCode": {
+            "authorizationUrl": "https://api.telnyx.com/v2/oauth/authorize",
+            "refreshUrl": "https://api.telnyx.com/v2/oauth/token",
+            "scopes": {
+              "admin": "Administrative access to Telnyx resources"
+            },
+            "tokenUrl": "https://api.telnyx.com/v2/oauth/token"
+          },
+          "clientCredentials": {
+            "scopes": {
+              "admin": "Administrative access to Telnyx resources"
+            },
+            "tokenUrl": "https://api.telnyx.com/v2/oauth/token"
+          }
+        },
+        "type": "oauth2"
+      },
+      "outbound-voice-profiles_bearerAuth": {
+        "bearerFormat": "JWT",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "pay-connectors_bearerAuth": {
+        "description": "Telnyx API key, not the processor bearer token.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "pronunciation-dicts_bearerAuth": {
+        "description": "Telnyx API v2 key. Obtain from https://portal.telnyx.com",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "rcs-registration_bearerAuth": {
+        "bearerFormat": "API key",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "stored-payment-transactions_bearerAuth": {
+        "bearerFormat": "JWT",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "telnyxApiKey": {
+        "description": "Management-only Telnyx account credential.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "transcriptions-search_bearerAuth": {
+        "description": "Telnyx API key. Results are automatically scoped to the authenticated user's organization.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "web-search_bearerAuth": {
+        "description": "Telnyx API key",
+        "scheme": "bearer",
+        "type": "http"
+      }
+    }
+  },
+  "info": {
+    "contact": {
+      "email": "support@telnyx.com"
+    },
+    "description": "SIP trunking, SMS, MMS, Call Control and Telephony Data Services.",
+    "title": "Telnyx API",
+    "version": "2.0.0",
+    "x-endpoint-cost": "light",
+    "x-latency-category": "responsive"
+  },
+  "openapi": "3.1.0",
+  "paths": {
+    "/v2/mobile_voice_connections": {
+      "get": {
+        "description": "Retrieve a paginated list of mobile voice connections on your account.",
+        "operationId": "listMobileVoiceConnections",
+        "parameters": [
+          {
+            "description": "The page number to load",
+            "in": "query",
+            "name": "page[number]",
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "description": "The size of the page",
+            "in": "query",
+            "name": "page[size]",
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "description": "Filter by connection name containing the given string",
+            "in": "query",
+            "name": "filter[connection_name][contains]",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Sort by field (e.g., created_at, connection_name, active). Prefix with - for descending order.",
+            "in": "query",
+            "name": "sort",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "items": {
+                        "$ref": "#/components/schemas/MobileVoiceConnection"
+                      },
+                      "type": "array"
+                    },
+                    "meta": {
+                      "$ref": "#/components/schemas/mobile_voice_connections_PaginationMeta"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful response"
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
+        },
+        "summary": "List Mobile Voice Connections",
+        "tags": [
+          "Mobile Voice Connections"
+        ]
+      },
+      "post": {
+        "description": "Creates a new mobile voice connection with the provided configuration and returns the created connection.",
+        "operationId": "createMobileVoiceConnection",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "example": {
+                "active": true,
+                "connection_name": "Telnyx Mobile Voice IMS",
+                "inbound": {
+                  "channel_limit": 0
+                },
+                "outbound": {
+                  "channel_limit": 0,
+                  "outbound_voice_profile_id": "string"
+                },
+                "tags": [
+                  "string"
+                ],
+                "webhook_api_version": "2"
+              },
+              "schema": {
+                "$ref": "#/components/schemas/MobileVoiceConnectionCreate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/MobileVoiceConnection"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful response"
+          },
+          "403": {
+            "description": "Unauthorized or Limit Reached"
+          },
+          "422": {
+            "description": "Unprocessable Entity"
+          }
+        },
+        "summary": "Create a Mobile Voice Connection",
+        "tags": [
+          "Mobile Voice Connections"
+        ]
+      }
+    },
+    "/v2/mobile_voice_connections/{id}": {
+      "delete": {
+        "description": "Delete a mobile voice connection from your account.",
+        "operationId": "deleteMobileVoiceConnection",
+        "parameters": [
+          {
+            "description": "The ID of the mobile voice connection",
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/MobileVoiceConnection"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful response"
+          },
+          "404": {
+            "description": "Resource not found"
+          }
+        },
+        "summary": "Delete a Mobile Voice Connection",
+        "tags": [
+          "Mobile Voice Connections"
+        ]
+      },
+      "get": {
+        "description": "Retrieve the details of a specific mobile voice connection.",
+        "operationId": "retrieveMobileVoiceConnection",
+        "parameters": [
+          {
+            "description": "The ID of the mobile voice connection",
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/MobileVoiceConnection"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful response"
+          },
+          "404": {
+            "description": "Resource not found"
+          }
+        },
+        "summary": "Retrieve a Mobile Voice Connection",
+        "tags": [
+          "Mobile Voice Connections"
+        ]
+      },
+      "patch": {
+        "description": "Update the settings of a specific mobile voice connection.",
+        "operationId": "updateMobileVoiceConnection",
+        "parameters": [
+          {
+            "description": "The ID of the mobile voice connection",
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "example": {
+                "active": false,
+                "connection_name": "string",
+                "inbound": {
+                  "channel_limit": 0
+                },
+                "outbound": {
+                  "channel_limit": 0,
+                  "outbound_voice_profile_id": "string"
+                },
+                "tags": [
+                  "string"
+                ],
+                "webhook_api_version": "1",
+                "webhook_timeout_secs": 0
+              },
+              "schema": {
+                "$ref": "#/components/schemas/MobileVoiceConnectionUpdate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/MobileVoiceConnection"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful response"
+          },
+          "404": {
+            "description": "Resource not found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "errors": [
+                    {
+                      "detail": "A previous update to this connection is still in progress. Please try again later."
+                    }
+                  ]
+                },
+                "schema": {
+                  "properties": {
+                    "errors": {
+                      "items": {
+                        "properties": {
+                          "detail": {
+                            "type": "string"
+                          }
+                        },
+                        "type": "object"
+                      },
+                      "type": "array"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Conflict. Another update to this connection is still in progress. Wait and retry the request later."
+          },
+          "422": {
+            "description": "Unprocessable Entity"
+          }
+        },
+        "summary": "Update a Mobile Voice Connection",
+        "tags": [
+          "Mobile Voice Connections"
+        ]
+      }
+    }
+  },
+  "security": [
+    {
+      "bearerAuth": []
+    }
+  ],
+  "servers": [
+    {
+      "description": "Version 2.0.0 of the Telnyx API",
+      "url": "https://api.telnyx.com/v2"
+    }
+  ]
+}

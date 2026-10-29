@@ -1,0 +1,902 @@
+{
+  "components": {
+    "schemas": {
+      "DecisionModelAnswer": {
+        "description": "An answer whose type matches its question.",
+        "discriminator": {
+          "mapping": {
+            "choice": "#/components/schemas/DecisionModelChoiceAnswer",
+            "noul": "#/components/schemas/DecisionModelNoulAnswer",
+            "score": "#/components/schemas/DecisionModelScoreAnswer"
+          },
+          "propertyName": "type"
+        },
+        "oneOf": [
+          {
+            "$ref": "#/components/schemas/DecisionModelChoiceAnswer"
+          },
+          {
+            "$ref": "#/components/schemas/DecisionModelNoulAnswer"
+          },
+          {
+            "$ref": "#/components/schemas/DecisionModelScoreAnswer"
+          }
+        ]
+      },
+      "DecisionModelChoiceAnswer": {
+        "additionalProperties": false,
+        "description": "A selected option and the distribution across all supplied option keys.",
+        "example": {
+          "choice": "technical_support",
+          "confidence": 0.9820522416354122,
+          "probabilities": {
+            "billing": 0.0024719786572585446,
+            "sales": 0.00026054450937119613,
+            "technical_support": 0.9972674768333701
+          },
+          "type": "choice"
+        },
+        "properties": {
+          "choice": {
+            "description": "The option key with the highest relative score. Ties favor the first option in request order.",
+            "type": "string"
+          },
+          "confidence": {
+            "$ref": "#/components/schemas/DecisionModelConfidence"
+          },
+          "probabilities": {
+            "$ref": "#/components/schemas/DecisionModelProbabilities"
+          },
+          "type": {
+            "description": "Answer type.",
+            "enum": [
+              "choice"
+            ],
+            "type": "string"
+          }
+        },
+        "required": [
+          "type",
+          "choice",
+          "probabilities",
+          "confidence"
+        ],
+        "type": "object"
+      },
+      "DecisionModelChoiceQuestion": {
+        "additionalProperties": false,
+        "description": "Select one of the supplied options.",
+        "example": {
+          "criteria": {
+            "billing": "Payments and refunds",
+            "sales": "New purchases",
+            "technical_support": "Service faults and technical problems"
+          },
+          "instructions": "Choose the team that should handle this incident.",
+          "type": "choice"
+        },
+        "properties": {
+          "criteria": {
+            "additionalProperties": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "description": "Between 2 and 64 option keys mapped to description strings or null. A null description uses the option key as its text.",
+            "maxProperties": 64,
+            "minProperties": 2,
+            "type": "object"
+          },
+          "instructions": {
+            "$ref": "#/components/schemas/DecisionModelContent",
+            "description": "Required instructions describing what to decide about the shared state."
+          },
+          "type": {
+            "description": "Question type.",
+            "enum": [
+              "choice"
+            ],
+            "type": "string"
+          }
+        },
+        "required": [
+          "type",
+          "instructions",
+          "criteria"
+        ],
+        "type": "object"
+      },
+      "DecisionModelConfidence": {
+        "description": "Normalized entropy confidence: 1 - H(p) / ln(N), where H(p) = -sum(p * ln(p)) and N is the number of options. Zero indicates a uniform distribution; one indicates concentration on one option. This is neither the winning probability nor calibrated correctness.",
+        "maximum": 1,
+        "minimum": 0,
+        "type": "number"
+      },
+      "DecisionModelContent": {
+        "description": "Text, a JSON object, or an array containing text-based context. Text-only conversation histories are supported; image and audio inputs are not supported.",
+        "oneOf": [
+          {
+            "type": "string"
+          },
+          {
+            "additionalProperties": true,
+            "type": "object"
+          },
+          {
+            "items": {},
+            "type": "array"
+          }
+        ]
+      },
+      "DecisionModelError": {
+        "additionalProperties": false,
+        "description": "A decision model service error.",
+        "properties": {
+          "error": {
+            "additionalProperties": false,
+            "description": "Error details.",
+            "properties": {
+              "message": {
+                "description": "Human-readable explanation of the failure.",
+                "type": "string"
+              }
+            },
+            "required": [
+              "message"
+            ],
+            "type": "object"
+          }
+        },
+        "required": [
+          "error"
+        ],
+        "type": "object"
+      },
+      "DecisionModelNoulAnswer": {
+        "additionalProperties": false,
+        "description": "A yes/no score with no separate confidence or probabilities fields.",
+        "example": {
+          "noul": 0.9991959141264766,
+          "type": "noul"
+        },
+        "properties": {
+          "noul": {
+            "description": "Score of the positive outcome. Values near 1 favor yes; values near 0 favor no. This is a number, not a Boolean, and is not calibrated correctness.",
+            "maximum": 1,
+            "minimum": 0,
+            "type": "number"
+          },
+          "type": {
+            "description": "Answer type.",
+            "enum": [
+              "noul"
+            ],
+            "type": "string"
+          }
+        },
+        "required": [
+          "type",
+          "noul"
+        ],
+        "type": "object"
+      },
+      "DecisionModelNoulCriteria": {
+        "additionalProperties": false,
+        "default": {
+          "false": "No",
+          "true": "Yes"
+        },
+        "description": "Optional descriptions for the positive and negative outcomes. Descriptions must be strings.",
+        "properties": {
+          "false": {
+            "default": "No",
+            "description": "Description of the negative outcome.",
+            "type": "string"
+          },
+          "true": {
+            "default": "Yes",
+            "description": "Description of the positive outcome.",
+            "type": "string"
+          }
+        },
+        "required": [],
+        "type": "object"
+      },
+      "DecisionModelNoulQuestion": {
+        "additionalProperties": false,
+        "description": "Evaluate a yes/no question. Omit criteria to use Yes and No descriptions.",
+        "example": {
+          "instructions": "Does the message describe an active production incident?",
+          "type": "noul"
+        },
+        "properties": {
+          "criteria": {
+            "$ref": "#/components/schemas/DecisionModelNoulCriteria"
+          },
+          "instructions": {
+            "$ref": "#/components/schemas/DecisionModelContent",
+            "description": "Required instructions describing what to decide about the shared state."
+          },
+          "type": {
+            "description": "Question type.",
+            "enum": [
+              "noul"
+            ],
+            "type": "string"
+          }
+        },
+        "required": [
+          "type",
+          "instructions"
+        ],
+        "type": "object"
+      },
+      "DecisionModelProbabilities": {
+        "additionalProperties": {
+          "maximum": 1,
+          "minimum": 0,
+          "type": "number"
+        },
+        "description": "Relative scores normalized across the supplied options, summing approximately to 1. These are not calibrated probabilities of correctness.",
+        "maxProperties": 64,
+        "minProperties": 2,
+        "type": "object"
+      },
+      "DecisionModelQuestion": {
+        "description": "A choice, yes/no, or ordered-score question.",
+        "discriminator": {
+          "mapping": {
+            "choice": "#/components/schemas/DecisionModelChoiceQuestion",
+            "noul": "#/components/schemas/DecisionModelNoulQuestion",
+            "score": "#/components/schemas/DecisionModelScoreQuestion"
+          },
+          "propertyName": "type"
+        },
+        "oneOf": [
+          {
+            "$ref": "#/components/schemas/DecisionModelChoiceQuestion"
+          },
+          {
+            "$ref": "#/components/schemas/DecisionModelNoulQuestion"
+          },
+          {
+            "$ref": "#/components/schemas/DecisionModelScoreQuestion"
+          }
+        ]
+      },
+      "DecisionModelRequest": {
+        "additionalProperties": false,
+        "description": "Decision Models beta request. Choose a public model alias; omitted model defaults to telnyx/decision-flash. Telnyx manages the underlying models behind these aliases.",
+        "example": {
+          "model": "telnyx/decision-flash",
+          "questions": {
+            "production_incident": {
+              "instructions": "Does the message describe an active production incident?",
+              "type": "noul"
+            },
+            "team": {
+              "criteria": {
+                "billing": "Payments and refunds",
+                "sales": "New purchases",
+                "technical_support": "Service faults and technical problems"
+              },
+              "instructions": "Choose the team that should handle this incident.",
+              "type": "choice"
+            },
+            "urgency": {
+              "criteria": [
+                "Low",
+                "Normal",
+                "High",
+                "Critical"
+              ],
+              "instructions": "Rate operational urgency.",
+              "type": "score"
+            }
+          },
+          "state": "Our production calls are failing. Every customer is affected."
+        },
+        "properties": {
+          "model": {
+            "default": "telnyx/decision-flash",
+            "description": "Public model alias. telnyx/decision-flash offers the lowest cost and latency; telnyx/decision-pro supports decisions that require long context, including inputs beyond Jev’s 32k per-decision limit. Applies to every question in the request. Other values are rejected.",
+            "enum": [
+              "telnyx/decision-flash",
+              "telnyx/decision-pro"
+            ],
+            "example": "telnyx/decision-flash",
+            "type": "string"
+          },
+          "questions": {
+            "additionalProperties": {
+              "$ref": "#/components/schemas/DecisionModelQuestion"
+            },
+            "description": "Between 1 and 64 named questions. Each key identifies the corresponding answer.",
+            "maxProperties": 64,
+            "minProperties": 1,
+            "type": "object"
+          },
+          "state": {
+            "$ref": "#/components/schemas/DecisionModelContent",
+            "description": "Shared context evaluated by every question.",
+            "example": "Our production calls are failing. Every customer is affected."
+          }
+        },
+        "required": [
+          "state",
+          "questions"
+        ],
+        "type": "object"
+      },
+      "DecisionModelResponse": {
+        "additionalProperties": false,
+        "description": "A complete synchronous evaluation. Answers are returned directly without a data wrapper.",
+        "example": {
+          "answers": {
+            "production_incident": {
+              "noul": 0.9991959141264766,
+              "type": "noul"
+            },
+            "team": {
+              "choice": "technical_support",
+              "confidence": 0.9820522416354122,
+              "probabilities": {
+                "billing": 0.0024719786572585446,
+                "sales": 0.00026054450937119613,
+                "technical_support": 0.9972674768333701
+              },
+              "type": "choice"
+            },
+            "urgency": {
+              "confidence": 0.9894200002646713,
+              "legend": {
+                "0": "Low",
+                "1": "Normal",
+                "2": "High",
+                "3": "Critical"
+              },
+              "probabilities": {
+                "0": 0.0003348349100603869,
+                "1": 0.00003529133987660637,
+                "2": 0.0015006266723396524,
+                "3": 0.9981292470777234
+              },
+              "score": 2.9974242859177265,
+              "type": "score"
+            }
+          },
+          "model": "telnyx/decision-flash",
+          "usage": {
+            "input_tokens": 267,
+            "output_tokens": 4
+          }
+        },
+        "properties": {
+          "answers": {
+            "additionalProperties": {
+              "$ref": "#/components/schemas/DecisionModelAnswer"
+            },
+            "description": "Answers keyed by exactly the question IDs in the request. Each answer type matches its question.",
+            "maxProperties": 64,
+            "minProperties": 1,
+            "type": "object"
+          },
+          "model": {
+            "description": "Public model alias used to evaluate the request. Returns telnyx/decision-flash when model was omitted. The underlying model is managed by Telnyx.",
+            "enum": [
+              "telnyx/decision-flash",
+              "telnyx/decision-pro"
+            ],
+            "example": "telnyx/decision-flash",
+            "readOnly": true,
+            "type": "string"
+          },
+          "usage": {
+            "$ref": "#/components/schemas/DecisionModelUsage"
+          }
+        },
+        "required": [
+          "model",
+          "answers",
+          "usage"
+        ],
+        "type": "object"
+      },
+      "DecisionModelScoreAnswer": {
+        "additionalProperties": false,
+        "description": "An expected rating over the ordered criteria.",
+        "example": {
+          "confidence": 0.9894200002646713,
+          "legend": {
+            "0": "Low",
+            "1": "Normal",
+            "2": "High",
+            "3": "Critical"
+          },
+          "probabilities": {
+            "0": 0.0003348349100603869,
+            "1": 0.00003529133987660637,
+            "2": 0.0015006266723396524,
+            "3": 0.9981292470777234
+          },
+          "score": 2.9974242859177265,
+          "type": "score"
+        },
+        "properties": {
+          "confidence": {
+            "$ref": "#/components/schemas/DecisionModelConfidence"
+          },
+          "legend": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "description": "Criterion descriptions keyed by stringified zero-based indices, such as \"0\", \"1\", and \"2\".",
+            "maxProperties": 64,
+            "minProperties": 2,
+            "type": "object"
+          },
+          "probabilities": {
+            "$ref": "#/components/schemas/DecisionModelProbabilities",
+            "description": "Relative scores keyed by the same stringified indices as legend."
+          },
+          "score": {
+            "description": "Expected zero-based criterion index: sum(index * probability). Ranges from 0 to N-1 for N criteria; fractional values are valid.",
+            "maximum": 63,
+            "minimum": 0,
+            "type": "number"
+          },
+          "type": {
+            "description": "Answer type.",
+            "enum": [
+              "score"
+            ],
+            "type": "string"
+          }
+        },
+        "required": [
+          "type",
+          "score",
+          "legend",
+          "probabilities",
+          "confidence"
+        ],
+        "type": "object"
+      },
+      "DecisionModelScoreQuestion": {
+        "additionalProperties": false,
+        "description": "Rate the state against an ordered rubric.",
+        "example": {
+          "criteria": [
+            "Low",
+            "Normal",
+            "High",
+            "Critical"
+          ],
+          "instructions": "Rate operational urgency.",
+          "type": "score"
+        },
+        "properties": {
+          "criteria": {
+            "description": "Between 2 and 64 description strings in ascending score order. Indices start at zero.",
+            "items": {
+              "type": "string"
+            },
+            "maxItems": 64,
+            "minItems": 2,
+            "type": "array"
+          },
+          "instructions": {
+            "$ref": "#/components/schemas/DecisionModelContent",
+            "description": "Required instructions describing what to decide about the shared state."
+          },
+          "type": {
+            "description": "Question type.",
+            "enum": [
+              "score"
+            ],
+            "type": "string"
+          }
+        },
+        "required": [
+          "type",
+          "instructions",
+          "criteria"
+        ],
+        "type": "object"
+      },
+      "DecisionModelUsage": {
+        "additionalProperties": false,
+        "description": "Token usage for the completed evaluation.",
+        "properties": {
+          "input_tokens": {
+            "description": "Input tokens processed, including shared-context preparation and question evaluation. This can exceed the token count of the unique input text.",
+            "minimum": 0,
+            "type": "integer"
+          },
+          "output_tokens": {
+            "description": "Output tokens used for the evaluation, including shared-context preparation.",
+            "minimum": 0,
+            "type": "integer"
+          }
+        },
+        "required": [
+          "input_tokens",
+          "output_tokens"
+        ],
+        "type": "object"
+      }
+    },
+    "securitySchemes": {
+      "BearerAuth": {
+        "bearerFormat": "API key",
+        "description": "Telnyx API key supplied as `Authorization: Bearer \u003ctoken\u003e`. In production, auth may be validated by the API gateway and forwarded via Telnyx auth headers.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "Payment": {
+        "description": "Machine Payment Protocol credential used on paid retries, sent as `Authorization: Payment ...`. Obtained by paying a challenge returned in the `WWW-Authenticate` header of a 402 response. This is not a Telnyx API key; initial challenge requests use standard bearer authentication instead.",
+        "in": "header",
+        "name": "Authorization",
+        "type": "apiKey"
+      },
+      "agent-memory_bearerAuth": {
+        "description": "Telnyx API key",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "bearerAuth": {
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "branded-calling_bearerAuth": {
+        "description": "Telnyx API key. Generate one at https://portal.telnyx.com/#/app/api-keys.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "collections_bearerAuth": {
+        "description": "Telnyx API key. Collections and results are automatically scoped to the authenticated user's organization.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "number-reputation_bearerAuth": {
+        "description": "Telnyx API key. Generate one at https://portal.telnyx.com/#/app/api-keys.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "oauthClientAuth": {
+        "description": "OAuth 2.0 authentication for Telnyx API and MCP integrations",
+        "flows": {
+          "authorizationCode": {
+            "authorizationUrl": "https://api.telnyx.com/v2/oauth/authorize",
+            "refreshUrl": "https://api.telnyx.com/v2/oauth/token",
+            "scopes": {
+              "admin": "Administrative access to Telnyx resources"
+            },
+            "tokenUrl": "https://api.telnyx.com/v2/oauth/token"
+          },
+          "clientCredentials": {
+            "scopes": {
+              "admin": "Administrative access to Telnyx resources"
+            },
+            "tokenUrl": "https://api.telnyx.com/v2/oauth/token"
+          }
+        },
+        "type": "oauth2"
+      },
+      "outbound-voice-profiles_bearerAuth": {
+        "bearerFormat": "JWT",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "pay-connectors_bearerAuth": {
+        "description": "Telnyx API key, not the processor bearer token.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "pronunciation-dicts_bearerAuth": {
+        "description": "Telnyx API v2 key. Obtain from https://portal.telnyx.com",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "rcs-registration_bearerAuth": {
+        "bearerFormat": "API key",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "stored-payment-transactions_bearerAuth": {
+        "bearerFormat": "JWT",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "telnyxApiKey": {
+        "description": "Management-only Telnyx account credential.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "transcriptions-search_bearerAuth": {
+        "description": "Telnyx API key. Results are automatically scoped to the authenticated user's organization.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "web-search_bearerAuth": {
+        "description": "Telnyx API key",
+        "scheme": "bearer",
+        "type": "http"
+      }
+    }
+  },
+  "info": {
+    "contact": {
+      "email": "support@telnyx.com"
+    },
+    "description": "SIP trunking, SMS, MMS, Call Control and Telephony Data Services.",
+    "title": "Telnyx API",
+    "version": "2.0.0",
+    "x-endpoint-cost": "light",
+    "x-latency-category": "responsive"
+  },
+  "openapi": "3.1.0",
+  "paths": {
+    "/ai/typesafe/v1/systemone": {
+      "post": {
+        "description": "**Beta API.** Choose telnyx/decision-flash for the lowest cost and latency, or telnyx/decision-pro for decisions that require long context, including inputs beyond Jev’s 32k per-decision limit. Omitted model defaults to telnyx/decision-flash.\n\nEvaluate shared context using named choice, noul (yes/no), and score questions. Returns TypeSafe System One-compatible answer shapes, the selected public model alias, and token usage. See the [decision model guide](https://developers.telnyx.com/docs/inference/decision-models) for examples and compatibility limits.\n\nThe supported request subset requires instructions for every question, string descriptions for criteria (or null for choice descriptions), 1–64 questions, and 2–64 options for choice and score questions. The model field accepts only telnyx/decision-flash or telnyx/decision-pro. Unsupported model values and unknown fields are rejected. The endpoint is synchronous and does not stream.\n\nUse the TypeSafe Python SDK with base_url set to https://api.telnyx.com/v2/ai/typesafe and a Telnyx API key. The SDK appends /v1/systemone; explicitly set model to a supported Telnyx alias because its own default model is not supported. Compatibility covers this operation and the documented request subset; it does not include TypeSafe model listing. Scores describe relative preference, not calibrated correctness.",
+        "operationId": "create_typesafe_systemone",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "example": {
+                "model": "telnyx/decision-flash",
+                "questions": {
+                  "production_incident": {
+                    "instructions": "Does the message describe an active production incident?",
+                    "type": "noul"
+                  },
+                  "team": {
+                    "criteria": {
+                      "billing": "Payments and refunds",
+                      "sales": "New purchases",
+                      "technical_support": "Service faults and technical problems"
+                    },
+                    "instructions": "Choose the team that should handle this incident.",
+                    "type": "choice"
+                  },
+                  "urgency": {
+                    "criteria": [
+                      "Low",
+                      "Normal",
+                      "High",
+                      "Critical"
+                    ],
+                    "instructions": "Rate operational urgency.",
+                    "type": "score"
+                  }
+                },
+                "state": "Our production calls are failing. Every customer is affected."
+              },
+              "schema": {
+                "$ref": "#/components/schemas/DecisionModelRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "answers": {
+                    "production_incident": {
+                      "noul": 0.9991959141264766,
+                      "type": "noul"
+                    },
+                    "team": {
+                      "choice": "technical_support",
+                      "confidence": 0.9820522416354122,
+                      "probabilities": {
+                        "billing": 0.0024719786572585446,
+                        "sales": 0.00026054450937119613,
+                        "technical_support": 0.9972674768333701
+                      },
+                      "type": "choice"
+                    },
+                    "urgency": {
+                      "confidence": 0.9894200002646713,
+                      "legend": {
+                        "0": "Low",
+                        "1": "Normal",
+                        "2": "High",
+                        "3": "Critical"
+                      },
+                      "probabilities": {
+                        "0": 0.0003348349100603869,
+                        "1": 0.00003529133987660637,
+                        "2": 0.0015006266723396524,
+                        "3": 0.9981292470777234
+                      },
+                      "score": 2.9974242859177265,
+                      "type": "score"
+                    }
+                  },
+                  "model": "telnyx/decision-flash",
+                  "usage": {
+                    "input_tokens": 267,
+                    "output_tokens": 4
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/DecisionModelResponse"
+                }
+              }
+            },
+            "description": "All questions evaluated successfully. The response is a complete JSON object, not a stream."
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "message": "Authentication required."
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/DecisionModelError"
+                }
+              }
+            },
+            "description": "Unauthorized. Supply a valid Telnyx API key."
+          },
+          "413": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "message": "Request body too large."
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/DecisionModelError"
+                }
+              }
+            },
+            "description": "Request body is too large or incomplete. Reduce or fix the request."
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "message": "Question \"team\" requires instructions."
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/DecisionModelError"
+                }
+              }
+            },
+            "description": "Invalid schema or input token limit exceeded. Correct or split the request before retrying."
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "message": "Too many requests."
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/DecisionModelError"
+                }
+              }
+            },
+            "description": "Too many requests. Reduce concurrency and retry with backoff.",
+            "headers": {
+              "Retry-After": {
+                "description": "When present, wait this many seconds before retrying.",
+                "schema": {
+                  "minimum": 0,
+                  "type": "integer"
+                }
+              }
+            }
+          },
+          "502": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "message": "Scoring service failed."
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/DecisionModelError"
+                }
+              }
+            },
+            "description": "The scoring service failed. Retry with bounded backoff."
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "message": "Decision model service unavailable."
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/DecisionModelError"
+                }
+              }
+            },
+            "description": "The decision model service is unavailable. Retry with bounded backoff.",
+            "headers": {
+              "Retry-After": {
+                "description": "When present, wait this many seconds before retrying.",
+                "schema": {
+                  "minimum": 0,
+                  "type": "integer"
+                }
+              }
+            }
+          },
+          "504": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "message": "Evaluation deadline exceeded."
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/DecisionModelError"
+                }
+              }
+            },
+            "description": "Evaluation deadline exceeded. Reduce request size or concurrency before retrying."
+          },
+          "529": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "message": "Decision model service at capacity."
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/DecisionModelError"
+                }
+              }
+            },
+            "description": "The decision model service is at capacity. Retry with bounded backoff.",
+            "headers": {
+              "Retry-After": {
+                "description": "When present, wait this many seconds before retrying.",
+                "schema": {
+                  "minimum": 0,
+                  "type": "integer"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Evaluate decision models (TypeSafe-compatible)",
+        "tags": [
+          "Decision Models"
+        ],
+        "x-beta": true
+      }
+    }
+  },
+  "security": [
+    {
+      "bearerAuth": []
+    }
+  ],
+  "servers": [
+    {
+      "description": "Version 2.0.0 of the Telnyx API",
+      "url": "https://api.telnyx.com/v2"
+    }
+  ]
+}

@@ -1,0 +1,701 @@
+{
+  "components": {
+    "schemas": {
+      "AccessIPAddressListResponseSchema": {
+        "properties": {
+          "data": {
+            "items": {
+              "$ref": "#/components/schemas/AccessIPAddressResponseSchema"
+            },
+            "title": "Data",
+            "type": "array"
+          },
+          "meta": {
+            "$ref": "#/components/schemas/cloudflare-ip-list-sync_PaginationMeta"
+          }
+        },
+        "required": [
+          "data",
+          "meta"
+        ],
+        "title": "AccessIPAddressListResponseSchema",
+        "type": "object"
+      },
+      "AccessIPAddressPOST": {
+        "properties": {
+          "description": {
+            "title": "Description",
+            "type": "string"
+          },
+          "ip_address": {
+            "title": "Ip Address",
+            "type": "string"
+          }
+        },
+        "required": [
+          "ip_address"
+        ],
+        "title": "AccessIPAddressPOST",
+        "type": "object"
+      },
+      "AccessIPAddressResponseSchema": {
+        "properties": {
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "description": {
+            "title": "Description",
+            "type": "string"
+          },
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "ip_address": {
+            "title": "Ip Address",
+            "type": "string"
+          },
+          "source": {
+            "title": "Source",
+            "type": "string"
+          },
+          "status": {
+            "$ref": "#/components/schemas/CloudflareSyncStatus"
+          },
+          "updated_at": {
+            "format": "date-time",
+            "title": "Updated At",
+            "type": "string"
+          },
+          "user_id": {
+            "title": "User Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "ip_address",
+          "source",
+          "status",
+          "user_id"
+        ],
+        "title": "AccessIPAddressResponseSchema",
+        "type": "object"
+      },
+      "CloudflareSyncStatus": {
+        "description": "An enumeration.",
+        "enum": [
+          "pending",
+          "added"
+        ],
+        "title": "CloudflareSyncStatus",
+        "type": "string"
+      },
+      "Error": {
+        "example": {
+          "code": "20207",
+          "description": "The street address provided is invalid.",
+          "source": {
+            "pointer": "/street_address"
+          },
+          "title": "Invalid street address"
+        },
+        "properties": {
+          "code": {
+            "type": "string",
+            "x-format": "int64"
+          },
+          "description": {
+            "type": "string"
+          },
+          "detail": {
+            "description": "A human-readable explanation of the error.",
+            "type": "string"
+          },
+          "meta": {
+            "additionalProperties": true,
+            "type": "object"
+          },
+          "source": {
+            "properties": {
+              "parameter": {
+                "description": "Indicates which query parameter caused the error.",
+                "type": "string"
+              },
+              "pointer": {
+                "description": "JSON pointer (RFC6901) to the offending entity.",
+                "format": "json-pointer",
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
+          "title": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "title"
+        ],
+        "type": "object"
+      },
+      "Errors": {
+        "properties": {
+          "errors": {
+            "items": {
+              "$ref": "#/components/schemas/Error"
+            },
+            "type": "array"
+          }
+        },
+        "type": "object"
+      },
+      "cloudflare-ip-list-sync_PaginationMeta": {
+        "properties": {
+          "page_number": {
+            "type": "integer"
+          },
+          "page_size": {
+            "type": "integer"
+          },
+          "total_pages": {
+            "type": "integer"
+          },
+          "total_results": {
+            "type": "integer"
+          }
+        },
+        "required": [
+          "page_number",
+          "page_size",
+          "total_pages",
+          "total_results"
+        ],
+        "title": "PaginationMeta",
+        "type": "object"
+      }
+    },
+    "securitySchemes": {
+      "BearerAuth": {
+        "bearerFormat": "API key",
+        "description": "Telnyx API key supplied as `Authorization: Bearer \u003ctoken\u003e`. In production, auth may be validated by the API gateway and forwarded via Telnyx auth headers.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "Payment": {
+        "description": "Machine Payment Protocol credential used on paid retries, sent as `Authorization: Payment ...`. Obtained by paying a challenge returned in the `WWW-Authenticate` header of a 402 response. This is not a Telnyx API key; initial challenge requests use standard bearer authentication instead.",
+        "in": "header",
+        "name": "Authorization",
+        "type": "apiKey"
+      },
+      "agent-memory_bearerAuth": {
+        "description": "Telnyx API key",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "bearerAuth": {
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "branded-calling_bearerAuth": {
+        "description": "Telnyx API key. Generate one at https://portal.telnyx.com/#/app/api-keys.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "collections_bearerAuth": {
+        "description": "Telnyx API key. Collections and results are automatically scoped to the authenticated user's organization.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "number-reputation_bearerAuth": {
+        "description": "Telnyx API key. Generate one at https://portal.telnyx.com/#/app/api-keys.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "oauthClientAuth": {
+        "description": "OAuth 2.0 authentication for Telnyx API and MCP integrations",
+        "flows": {
+          "authorizationCode": {
+            "authorizationUrl": "https://api.telnyx.com/v2/oauth/authorize",
+            "refreshUrl": "https://api.telnyx.com/v2/oauth/token",
+            "scopes": {
+              "admin": "Administrative access to Telnyx resources"
+            },
+            "tokenUrl": "https://api.telnyx.com/v2/oauth/token"
+          },
+          "clientCredentials": {
+            "scopes": {
+              "admin": "Administrative access to Telnyx resources"
+            },
+            "tokenUrl": "https://api.telnyx.com/v2/oauth/token"
+          }
+        },
+        "type": "oauth2"
+      },
+      "outbound-voice-profiles_bearerAuth": {
+        "bearerFormat": "JWT",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "pay-connectors_bearerAuth": {
+        "description": "Telnyx API key, not the processor bearer token.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "pronunciation-dicts_bearerAuth": {
+        "description": "Telnyx API v2 key. Obtain from https://portal.telnyx.com",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "rcs-registration_bearerAuth": {
+        "bearerFormat": "API key",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "stored-payment-transactions_bearerAuth": {
+        "bearerFormat": "JWT",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "telnyxApiKey": {
+        "description": "Management-only Telnyx account credential.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "transcriptions-search_bearerAuth": {
+        "description": "Telnyx API key. Results are automatically scoped to the authenticated user's organization.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "web-search_bearerAuth": {
+        "description": "Telnyx API key",
+        "scheme": "bearer",
+        "type": "http"
+      }
+    }
+  },
+  "info": {
+    "contact": {
+      "email": "support@telnyx.com"
+    },
+    "description": "SIP trunking, SMS, MMS, Call Control and Telephony Data Services.",
+    "title": "Telnyx API",
+    "version": "2.0.0",
+    "x-endpoint-cost": "light",
+    "x-latency-category": "responsive"
+  },
+  "openapi": "3.1.0",
+  "paths": {
+    "/access_ip_address": {
+      "get": {
+        "description": "Retrieve a paginated list of access IP addresses configured on your account.",
+        "operationId": "ListAccessIpAddresses",
+        "parameters": [
+          {
+            "description": "Consolidated filter parameter (deepObject style). Originally: filter[ip_source], filter[ip_address], filter[created_at]. Supports complex bracket operations for dynamic filtering.",
+            "examples": {
+              "Complex filtering example": {
+                "summary": "Combine multiple filters: cloudflare source IPs created within 2023",
+                "value": {
+                  "created_at": {
+                    "gt": "2023-01-01T00:00:00Z",
+                    "lt": "2023-12-31T23:59:59Z"
+                  },
+                  "ip_source": "cloudflare"
+                }
+              },
+              "filter[created_at][gt]=2023-01-01T00:00:00Z": {
+                "summary": "Filter IP addresses created after the specified date-time",
+                "value": {
+                  "created_at": {
+                    "gt": "2023-01-01T00:00:00Z"
+                  }
+                }
+              },
+              "filter[created_at][lt]=2023-12-31T23:59:59Z": {
+                "summary": "Filter IP addresses created before the specified date-time",
+                "value": {
+                  "created_at": {
+                    "lt": "2023-12-31T23:59:59Z"
+                  }
+                }
+              },
+              "filter[ip_address]=192.168.1.1": {
+                "summary": "Filter by specific IP address",
+                "value": {
+                  "ip_address": "192.168.1.1"
+                }
+              },
+              "filter[ip_source]=cloudflare": {
+                "summary": "Filter access IP addresses by source 'cloudflare'",
+                "value": {
+                  "ip_source": "cloudflare"
+                }
+              }
+            },
+            "explode": true,
+            "in": "query",
+            "name": "filter",
+            "schema": {
+              "additionalProperties": true,
+              "properties": {
+                "created_at": {
+                  "oneOf": [
+                    {
+                      "description": "Filter by exact creation date-time",
+                      "format": "date-time",
+                      "type": "string"
+                    },
+                    {
+                      "additionalProperties": false,
+                      "description": "Date range filtering operations",
+                      "properties": {
+                        "gt": {
+                          "description": "Filter for creation date-time greater than",
+                          "format": "date-time",
+                          "type": "string"
+                        },
+                        "gte": {
+                          "description": "Filter for creation date-time greater than or equal to",
+                          "format": "date-time",
+                          "type": "string"
+                        },
+                        "lt": {
+                          "description": "Filter for creation date-time less than",
+                          "format": "date-time",
+                          "type": "string"
+                        },
+                        "lte": {
+                          "description": "Filter for creation date-time less than or equal to",
+                          "format": "date-time",
+                          "type": "string"
+                        }
+                      },
+                      "title": "DateRangeFilter",
+                      "type": "object"
+                    }
+                  ]
+                },
+                "ip_address": {
+                  "description": "Filter by IP address",
+                  "type": "string"
+                },
+                "ip_source": {
+                  "description": "Filter by IP source",
+                  "type": "string"
+                }
+              },
+              "type": "object"
+            },
+            "style": "deepObject"
+          },
+          {
+            "description": "Consolidated page parameter (deepObject style). Originally: page[number], page[size]",
+            "examples": {
+              "page[number]=1\u0026page[size]=20": {
+                "summary": "Default pagination with first page and 20 records per page",
+                "value": {
+                  "number": 1,
+                  "size": 20
+                }
+              },
+              "page[number]=1\u0026page[size]=50": {
+                "summary": "First page with 50 records per page",
+                "value": {
+                  "number": 1,
+                  "size": 50
+                }
+              },
+              "page[number]=2\u0026page[size]=20": {
+                "summary": "Second page with 20 records per page",
+                "value": {
+                  "number": 2,
+                  "size": 20
+                }
+              },
+              "page[number]=5\u0026page[size]=100": {
+                "summary": "Fifth page with 100 records per page",
+                "value": {
+                  "number": 5,
+                  "size": 100
+                }
+              }
+            },
+            "explode": true,
+            "in": "query",
+            "name": "page",
+            "schema": {
+              "properties": {
+                "number": {
+                  "default": 1,
+                  "type": "integer"
+                },
+                "size": {
+                  "default": 20,
+                  "maximum": 250,
+                  "type": "integer"
+                }
+              },
+              "type": "object"
+            },
+            "style": "deepObject"
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "data": [
+                    {
+                      "created_at": "2024-01-23T18:10:02.574Z",
+                      "description": "Description",
+                      "id": "Id",
+                      "ip_address": "Ip Address",
+                      "source": "Source",
+                      "status": "pending",
+                      "updated_at": "2024-01-23T18:10:02.574Z",
+                      "user_id": "User Id"
+                    }
+                  ],
+                  "meta": {
+                    "page_number": 0,
+                    "page_size": 0,
+                    "total_pages": 0,
+                    "total_results": 0
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/AccessIPAddressListResponseSchema"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "errors": [
+                    {
+                      "code": "10027",
+                      "detail": "The server understood the syntax of the request but was unable to process the instructions.",
+                      "title": "Unprocessable Entity"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/Errors"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "List all Access IP Addresses",
+        "tags": [
+          "IP Addresses"
+        ]
+      },
+      "post": {
+        "description": "Create a new access IP address entry on your account.",
+        "operationId": "CreateAccessIpAddress",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "example": {
+                "description": "Description",
+                "ip_address": "Ip Address"
+              },
+              "schema": {
+                "$ref": "#/components/schemas/AccessIPAddressPOST"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "created_at": "2024-01-23T18:10:02.574Z",
+                  "description": "Description",
+                  "id": "Id",
+                  "ip_address": "Ip Address",
+                  "source": "Source",
+                  "status": "pending",
+                  "updated_at": "2024-01-23T18:10:02.574Z",
+                  "user_id": "User Id"
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/AccessIPAddressResponseSchema"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "errors": [
+                    {
+                      "code": "10027",
+                      "detail": "The server understood the syntax of the request but was unable to process the instructions.",
+                      "title": "Unprocessable Entity"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/Errors"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Create new Access IP Address",
+        "tags": [
+          "IP Addresses"
+        ]
+      }
+    },
+    "/access_ip_address/{access_ip_address_id}": {
+      "delete": {
+        "description": "Delete an access IP address entry from your account.",
+        "operationId": "DeleteAccessIpAddress",
+        "parameters": [
+          {
+            "description": "Unique identifier of the access ip address.",
+            "in": "path",
+            "name": "access_ip_address_id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "created_at": "2024-01-23T18:10:02.574Z",
+                  "description": "Description",
+                  "id": "Id",
+                  "ip_address": "Ip Address",
+                  "source": "Source",
+                  "status": "pending",
+                  "updated_at": "2024-01-23T18:10:02.574Z",
+                  "user_id": "User Id"
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/AccessIPAddressResponseSchema"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "errors": [
+                    {
+                      "code": "10005",
+                      "detail": "The requested resource or URL could not be found.",
+                      "title": "Resource not found"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/Errors"
+                }
+              }
+            },
+            "description": "Resource not found"
+          }
+        },
+        "summary": "Delete access IP address",
+        "tags": [
+          "IP Addresses"
+        ]
+      },
+      "get": {
+        "description": "Retrieve the details of a specific access IP address.",
+        "operationId": "GetAccessIpAddress",
+        "parameters": [
+          {
+            "description": "Unique identifier of the access ip address.",
+            "in": "path",
+            "name": "access_ip_address_id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "created_at": "2024-01-23T18:10:02.574Z",
+                  "description": "Description",
+                  "id": "Id",
+                  "ip_address": "Ip Address",
+                  "source": "Source",
+                  "status": "pending",
+                  "updated_at": "2024-01-23T18:10:02.574Z",
+                  "user_id": "User Id"
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/AccessIPAddressResponseSchema"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "errors": [
+                    {
+                      "code": "10005",
+                      "detail": "The requested resource or URL could not be found.",
+                      "title": "Resource not found"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/Errors"
+                }
+              }
+            },
+            "description": "Resource not found"
+          }
+        },
+        "summary": "Retrieve an access IP address",
+        "tags": [
+          "IP Addresses"
+        ]
+      }
+    }
+  },
+  "security": [
+    {
+      "bearerAuth": []
+    }
+  ],
+  "servers": [
+    {
+      "description": "Version 2.0.0 of the Telnyx API",
+      "url": "https://api.telnyx.com/v2"
+    }
+  ]
+}

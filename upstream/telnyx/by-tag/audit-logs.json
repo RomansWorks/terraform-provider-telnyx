@@ -1,0 +1,454 @@
+{
+  "components": {
+    "parameters": {
+      "Sort": {
+        "description": "Set the order of the results by the creation date.",
+        "in": "query",
+        "name": "sort",
+        "required": false,
+        "schema": {
+          "enum": [
+            "asc",
+            "desc"
+          ],
+          "example": "desc",
+          "type": "string"
+        }
+      },
+      "audit-logs_FilterConsolidated": {
+        "description": "Consolidated filter parameter (deepObject style). Originally: filter[created_before], filter[created_after]",
+        "explode": true,
+        "in": "query",
+        "name": "filter",
+        "schema": {
+          "properties": {
+            "created_after": {
+              "description": "Filter for audit events created after a specific date.",
+              "example": "2021-01-09T00:00:00Z",
+              "format": "date-time",
+              "type": "string"
+            },
+            "created_before": {
+              "description": "Filter for audit events created before a specific date.",
+              "example": "2021-01-09T00:00:00Z",
+              "format": "date-time",
+              "type": "string"
+            }
+          },
+          "type": "object"
+        },
+        "style": "deepObject"
+      },
+      "audit-logs_PageConsolidated": {
+        "description": "Consolidated page parameter (deepObject style). Originally: page[number], page[size]",
+        "explode": true,
+        "in": "query",
+        "name": "page",
+        "schema": {
+          "properties": {
+            "number": {
+              "description": "Page number to load.",
+              "example": 1,
+              "type": "integer"
+            },
+            "size": {
+              "description": "Number of items per page.",
+              "example": 10,
+              "type": "integer"
+            }
+          },
+          "type": "object"
+        },
+        "style": "deepObject"
+      }
+    },
+    "responses": {
+      "AuditLogsGenericErrorResponse": {
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/AuditLogsErrors"
+            }
+          }
+        },
+        "description": "Unexpected error."
+      }
+    },
+    "schemas": {
+      "AuditEventChanges": {
+        "description": "Details of the changes made to a resource.",
+        "properties": {
+          "field": {
+            "description": "The name of the field that was changed. May use the dot notation to indicate nested fields.",
+            "example": "nested.field.name",
+            "type": "string"
+          },
+          "from": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "number"
+              },
+              {
+                "type": "boolean"
+              },
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "items": {},
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "The previous value of the field. Can be any JSON type.",
+            "example": 54321
+          },
+          "to": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "number"
+              },
+              {
+                "type": "boolean"
+              },
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "items": {},
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "The new value of the field. Can be any JSON type.",
+            "example": 12345
+          }
+        },
+        "title": "Audit Event Changes",
+        "type": "object"
+      },
+      "AuditLog": {
+        "properties": {
+          "alternate_resource_id": {
+            "description": "An alternate identifier for a resource which may be considered unique enough to identify the resource but is not the primary identifier for the resource. For example, this field could be used to store the phone number value for a phone number when the primary database identifier is a separate distinct value.",
+            "example": "+14155551234",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "change_made_by": {
+            "description": "Indicates if the change was made by Telnyx on your behalf, the organization owner, a member of your organization, or in the case of managed accounts, the account manager.",
+            "enum": [
+              "telnyx",
+              "account_manager",
+              "account_owner",
+              "organization_member"
+            ],
+            "example": "organization_member",
+            "type": "string"
+          },
+          "change_type": {
+            "description": "The type of change that occurred.",
+            "example": "update",
+            "type": "string"
+          },
+          "changes": {
+            "description": "Details of the changes made to the resource.",
+            "example": [
+              {
+                "field": "field.name",
+                "from": "new value",
+                "to": "old value"
+              }
+            ],
+            "items": {
+              "$ref": "#/components/schemas/AuditEventChanges"
+            },
+            "type": [
+              "array",
+              "null"
+            ]
+          },
+          "created_at": {
+            "description": "ISO 8601 formatted date indicating when the change occurred.",
+            "example": "2026-01-03T00:00:00Z",
+            "format": "date-time",
+            "type": "string"
+          },
+          "id": {
+            "description": "Unique identifier for the audit log entry.",
+            "example": "550e8400-e29b-41d4-a716-446655440000",
+            "format": "uuid",
+            "type": "string"
+          },
+          "organization_id": {
+            "description": "Unique identifier for the organization that owns the resource.",
+            "example": "550e8400-e29b-41d4-a716-446655440003",
+            "format": "uuid",
+            "type": "string"
+          },
+          "record_type": {
+            "description": "The type of the resource being audited.",
+            "example": "audit_event",
+            "type": "string"
+          },
+          "resource_id": {
+            "description": "Unique identifier for the resource that was changed.",
+            "example": "550e8400-e29b-41d4-a716-446655440002",
+            "type": "string"
+          },
+          "user_id": {
+            "description": "Unique identifier for the user who made the change.",
+            "example": "550e8400-e29b-41d4-a716-446655440001",
+            "format": "uuid",
+            "type": "string"
+          }
+        },
+        "title": "Audit Log Entry",
+        "type": "object"
+      },
+      "AuditLogList": {
+        "properties": {
+          "data": {
+            "items": {
+              "$ref": "#/components/schemas/AuditLog"
+            },
+            "type": "array"
+          },
+          "meta": {
+            "$ref": "#/components/schemas/audit-logs_PaginationMeta"
+          }
+        },
+        "title": "Audit Log List",
+        "type": "object"
+      },
+      "AuditLogsErrors": {
+        "properties": {
+          "errors": {
+            "items": {
+              "$ref": "#/components/schemas/audit-logs_Error"
+            },
+            "type": "array"
+          }
+        },
+        "type": "object"
+      },
+      "audit-logs_Error": {
+        "properties": {
+          "code": {
+            "description": "Error code.",
+            "example": "10001",
+            "type": "string"
+          },
+          "detail": {
+            "description": "Detailed information about the error.",
+            "example": "The request requires user authentication.",
+            "type": "string"
+          },
+          "title": {
+            "description": "Short description of the error.",
+            "example": "Unauthorized",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "audit-logs_PaginationMeta": {
+        "properties": {
+          "page_number": {
+            "example": 1,
+            "type": "integer"
+          },
+          "page_size": {
+            "example": 10,
+            "type": "integer"
+          },
+          "total_pages": {
+            "example": 3,
+            "type": "integer"
+          },
+          "total_results": {
+            "example": 50,
+            "type": "integer"
+          }
+        },
+        "title": "Pagination Meta",
+        "type": "object"
+      }
+    },
+    "securitySchemes": {
+      "BearerAuth": {
+        "bearerFormat": "API key",
+        "description": "Telnyx API key supplied as `Authorization: Bearer \u003ctoken\u003e`. In production, auth may be validated by the API gateway and forwarded via Telnyx auth headers.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "Payment": {
+        "description": "Machine Payment Protocol credential used on paid retries, sent as `Authorization: Payment ...`. Obtained by paying a challenge returned in the `WWW-Authenticate` header of a 402 response. This is not a Telnyx API key; initial challenge requests use standard bearer authentication instead.",
+        "in": "header",
+        "name": "Authorization",
+        "type": "apiKey"
+      },
+      "agent-memory_bearerAuth": {
+        "description": "Telnyx API key",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "bearerAuth": {
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "branded-calling_bearerAuth": {
+        "description": "Telnyx API key. Generate one at https://portal.telnyx.com/#/app/api-keys.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "collections_bearerAuth": {
+        "description": "Telnyx API key. Collections and results are automatically scoped to the authenticated user's organization.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "number-reputation_bearerAuth": {
+        "description": "Telnyx API key. Generate one at https://portal.telnyx.com/#/app/api-keys.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "oauthClientAuth": {
+        "description": "OAuth 2.0 authentication for Telnyx API and MCP integrations",
+        "flows": {
+          "authorizationCode": {
+            "authorizationUrl": "https://api.telnyx.com/v2/oauth/authorize",
+            "refreshUrl": "https://api.telnyx.com/v2/oauth/token",
+            "scopes": {
+              "admin": "Administrative access to Telnyx resources"
+            },
+            "tokenUrl": "https://api.telnyx.com/v2/oauth/token"
+          },
+          "clientCredentials": {
+            "scopes": {
+              "admin": "Administrative access to Telnyx resources"
+            },
+            "tokenUrl": "https://api.telnyx.com/v2/oauth/token"
+          }
+        },
+        "type": "oauth2"
+      },
+      "outbound-voice-profiles_bearerAuth": {
+        "bearerFormat": "JWT",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "pay-connectors_bearerAuth": {
+        "description": "Telnyx API key, not the processor bearer token.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "pronunciation-dicts_bearerAuth": {
+        "description": "Telnyx API v2 key. Obtain from https://portal.telnyx.com",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "rcs-registration_bearerAuth": {
+        "bearerFormat": "API key",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "stored-payment-transactions_bearerAuth": {
+        "bearerFormat": "JWT",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "telnyxApiKey": {
+        "description": "Management-only Telnyx account credential.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "transcriptions-search_bearerAuth": {
+        "description": "Telnyx API key. Results are automatically scoped to the authenticated user's organization.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "web-search_bearerAuth": {
+        "description": "Telnyx API key",
+        "scheme": "bearer",
+        "type": "http"
+      }
+    }
+  },
+  "info": {
+    "contact": {
+      "email": "support@telnyx.com"
+    },
+    "description": "SIP trunking, SMS, MMS, Call Control and Telephony Data Services.",
+    "title": "Telnyx API",
+    "version": "2.0.0",
+    "x-endpoint-cost": "light",
+    "x-latency-category": "responsive"
+  },
+  "openapi": "3.1.0",
+  "paths": {
+    "/audit_events": {
+      "get": {
+        "description": "Retrieve a list of audit log entries. Audit logs are a best-effort, eventually consistent record of significant account-related changes.",
+        "operationId": "ListAuditLogs",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/audit-logs_PageConsolidated"
+          },
+          {
+            "$ref": "#/components/parameters/audit-logs_FilterConsolidated"
+          },
+          {
+            "$ref": "#/components/parameters/Sort"
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuditLogList"
+                }
+              }
+            },
+            "description": "A list of audit log entries."
+          },
+          "401": {
+            "$ref": "#/components/responses/AuditLogsGenericErrorResponse"
+          },
+          "default": {
+            "$ref": "#/components/responses/AuditLogsGenericErrorResponse"
+          }
+        },
+        "summary": "List Audit Logs",
+        "tags": [
+          "Audit Logs"
+        ]
+      }
+    }
+  },
+  "security": [
+    {
+      "bearerAuth": []
+    }
+  ],
+  "servers": [
+    {
+      "description": "Version 2.0.0 of the Telnyx API",
+      "url": "https://api.telnyx.com/v2"
+    }
+  ]
+}

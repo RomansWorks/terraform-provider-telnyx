@@ -1,0 +1,1190 @@
+{
+  "components": {
+    "parameters": {
+      "SortConnection": {
+        "description": "Specifies the sort order for results. By default sorting direction is ascending. To have the results sorted in descending order add the \u003ccode\u003e -\u003c/code\u003e prefix.\u003cbr/\u003e\u003cbr/\u003e\nThat is: \u003cul\u003e\n  \u003cli\u003e\n    \u003ccode\u003econnection_name\u003c/code\u003e: sorts the result by the\n    \u003ccode\u003econnection_name\u003c/code\u003e field in ascending order.\n  \u003c/li\u003e\n\n  \u003cli\u003e\n    \u003ccode\u003e-connection_name\u003c/code\u003e: sorts the result by the\n    \u003ccode\u003econnection_name\u003c/code\u003e field in descending order.\n  \u003c/li\u003e\n\u003c/ul\u003e \u003cbr/\u003e If not given, results are sorted by \u003ccode\u003ecreated_at\u003c/code\u003e in descending order.",
+        "in": "query",
+        "name": "sort",
+        "required": false,
+        "schema": {
+          "default": "created_at",
+          "enum": [
+            "created_at",
+            "connection_name",
+            "active"
+          ],
+          "example": "connection_name",
+          "type": "string"
+        }
+      },
+      "call-control_FilterConsolidated": {
+        "description": "Consolidated filter parameter (deepObject style). Originally: filter[application_name][contains], filter[outbound.outbound_voice_profile_id], filter[leg_id], filter[application_session_id], filter[connection_id], filter[product], filter[failed], filter[from], filter[to], filter[name], filter[type], filter[occurred_at][eq/gt/gte/lt/lte], filter[status]",
+        "explode": true,
+        "in": "query",
+        "name": "filter",
+        "schema": {
+          "properties": {
+            "application_name": {
+              "additionalProperties": false,
+              "description": "Application name filters",
+              "properties": {
+                "contains": {
+                  "default": "null",
+                  "description": "If present, applications with \u003ccode\u003eapplication_name\u003c/code\u003e containing the given value will be returned. Matching is not case-sensitive. Requires at least three characters.",
+                  "type": "string"
+                }
+              },
+              "type": "object"
+            },
+            "application_session_id": {
+              "description": "The unique identifier of the call session. A session may include multiple call leg events.",
+              "format": "uuid",
+              "type": "string"
+            },
+            "connection_id": {
+              "description": "The unique identifier of the conection.",
+              "type": "string"
+            },
+            "failed": {
+              "description": "Delivery failed or not.",
+              "example": false,
+              "type": "boolean"
+            },
+            "from": {
+              "description": "Filter by From number.",
+              "example": "+12025550142",
+              "type": "string"
+            },
+            "leg_id": {
+              "description": "The unique identifier of an individual call leg.",
+              "format": "uuid",
+              "type": "string"
+            },
+            "name": {
+              "description": "If present, conferences will be filtered to those with a matching `name` attribute. Matching is case-sensitive",
+              "type": "string"
+            },
+            "occurred_at": {
+              "additionalProperties": false,
+              "description": "Event occurred_at filters",
+              "properties": {
+                "eq": {
+                  "description": "Event occurred_at: equal",
+                  "example": "2019-03-29T11:10:00Z",
+                  "type": "string"
+                },
+                "gt": {
+                  "description": "Event occurred_at: greater than",
+                  "example": "2019-03-29T11:10:00Z",
+                  "type": "string"
+                },
+                "gte": {
+                  "description": "Event occurred_at: greater than or equal",
+                  "example": "2019-03-29T11:10:00Z",
+                  "type": "string"
+                },
+                "lt": {
+                  "description": "Event occurred_at: lower than",
+                  "example": "2019-03-29T11:10:00Z",
+                  "type": "string"
+                },
+                "lte": {
+                  "description": "Event occurred_at: lower than or equal",
+                  "example": "2019-03-29T11:10:00Z",
+                  "type": "string"
+                }
+              },
+              "type": "object"
+            },
+            "outbound.outbound_voice_profile_id": {
+              "description": "Identifies the associated outbound voice profile.",
+              "example": "1293384261075731499",
+              "type": "string",
+              "x-format": "int64"
+            },
+            "product": {
+              "description": "Filter by product.",
+              "enum": [
+                "call_control",
+                "fax",
+                "texml"
+              ],
+              "example": "texml",
+              "type": "string"
+            },
+            "status": {
+              "description": "If present, conferences will be filtered by status.",
+              "enum": [
+                "init",
+                "in_progress",
+                "completed"
+              ],
+              "type": "string"
+            },
+            "to": {
+              "description": "Filter by To number.",
+              "example": "+12025550142",
+              "type": "string"
+            },
+            "type": {
+              "description": "Event type",
+              "enum": [
+                "command",
+                "webhook"
+              ],
+              "example": "webhook",
+              "type": "string"
+            }
+          },
+          "type": "object"
+        },
+        "style": "deepObject"
+      },
+      "call-control_PageConsolidated": {
+        "description": "Consolidated page parameter (deepObject style). Originally: page[after], page[before], page[limit], page[size], page[number]",
+        "explode": true,
+        "in": "query",
+        "name": "page",
+        "schema": {
+          "properties": {
+            "after": {
+              "default": "null",
+              "description": "Opaque identifier of next page",
+              "type": "string"
+            },
+            "before": {
+              "default": "null",
+              "description": "Opaque identifier of previous page",
+              "type": "string"
+            },
+            "limit": {
+              "default": 20,
+              "description": "Limit of records per single page",
+              "maximum": 250,
+              "minimum": 1,
+              "type": "integer"
+            },
+            "number": {
+              "default": 1,
+              "description": "The page number to load",
+              "minimum": 1,
+              "type": "integer"
+            },
+            "size": {
+              "default": 20,
+              "description": "The size of the page",
+              "maximum": 250,
+              "minimum": 1,
+              "type": "integer"
+            }
+          },
+          "type": "object"
+        },
+        "style": "deepObject"
+      }
+    },
+    "responses": {
+      "UnauthorizedResponse": {
+        "content": {
+          "application/json": {
+            "example": {
+              "errors": [
+                {
+                  "code": "10009",
+                  "detail": "The required authentication headers were either invalid or not included in the request.",
+                  "meta": {
+                    "url": "https://developers.telnyx.com/docs/overview/errors/10009"
+                  },
+                  "title": "Authentication failed"
+                }
+              ]
+            },
+            "schema": {
+              "$ref": "#/components/schemas/call-control_Errors"
+            }
+          }
+        },
+        "description": "Unauthorized. Authentication failed - the required authentication headers were either invalid or not included in the request."
+      }
+    },
+    "schemas": {
+      "CallControlApplication": {
+        "example": {
+          "active": false,
+          "anchorsite_override": "Latency",
+          "application_name": "call-router",
+          "call_cost_in_webhooks": false,
+          "created_at": "2018-02-02T22:25:27.521Z",
+          "dtmf_type": "Inband",
+          "first_command_timeout": true,
+          "first_command_timeout_secs": 10,
+          "id": "1293384261075731499",
+          "inbound": {
+            "channel_limit": 10,
+            "shaken_stir_enabled": true,
+            "sip_subdomain": "example",
+            "sip_subdomain_receive_settings": "only_my_connections"
+          },
+          "outbound": {
+            "channel_limit": 10,
+            "outbound_voice_profile_id": "1293384261075731499"
+          },
+          "record_type": "call_control_application",
+          "redact_dtmf_debug_logging": true,
+          "updated_at": "2018-02-02T22:25:27.521Z",
+          "webhook_api_version": "1",
+          "webhook_event_failover_url": "https://failover.example.com",
+          "webhook_event_url": "https://example.com",
+          "webhook_timeout_secs": 25
+        },
+        "properties": {
+          "active": {
+            "default": true,
+            "description": "Specifies whether the connection can be used.",
+            "type": "boolean"
+          },
+          "anchorsite_override": {
+            "default": "Latency",
+            "description": "\u003ccode\u003eLatency\u003c/code\u003e directs Telnyx to route media through the site with the lowest round-trip time to the user's connection. Telnyx calculates this time using ICMP ping messages. This can be disabled by specifying a site to handle all media.\n",
+            "enum": [
+              "Latency",
+              "Chicago, IL",
+              "Ashburn, VA",
+              "San Jose, CA",
+              "London, UK",
+              "Chennai, IN",
+              "Amsterdam, Netherlands",
+              "Toronto, Canada",
+              "Sydney, Australia"
+            ],
+            "example": "Amsterdam, Netherlands",
+            "type": "string"
+          },
+          "application_name": {
+            "description": "A user-assigned name to help manage the application.",
+            "example": "call-router",
+            "type": "string"
+          },
+          "call_cost_in_webhooks": {
+            "default": false,
+            "description": "Specifies if call cost webhooks should be sent for this Call Control Application.",
+            "type": "boolean"
+          },
+          "created_at": {
+            "description": "ISO 8601 formatted date of when the resource was created",
+            "example": "2018-02-02T22:25:27.521Z",
+            "type": "string"
+          },
+          "dtmf_type": {
+            "default": "RFC 2833",
+            "description": "Sets the type of DTMF digits sent from Telnyx to this Connection. Note that DTMF digits sent to Telnyx will be accepted in all formats.",
+            "enum": [
+              "RFC 2833",
+              "Inband",
+              "SIP INFO"
+            ],
+            "example": "Inband",
+            "type": "string"
+          },
+          "first_command_timeout": {
+            "default": false,
+            "description": "Specifies whether calls to phone numbers associated with this connection should hangup after timing out.",
+            "example": true,
+            "type": "boolean"
+          },
+          "first_command_timeout_secs": {
+            "default": 30,
+            "description": "Specifies how many seconds to wait before timing out a dial command.",
+            "example": 10,
+            "type": "integer"
+          },
+          "id": {
+            "example": "1293384261075731499",
+            "type": "string",
+            "x-format": "int64"
+          },
+          "inbound": {
+            "$ref": "#/components/schemas/CallControlApplicationInbound"
+          },
+          "outbound": {
+            "$ref": "#/components/schemas/CallControlApplicationOutbound"
+          },
+          "record_type": {
+            "default": "call_control_application",
+            "enum": [
+              "call_control_application"
+            ],
+            "type": "string"
+          },
+          "redact_dtmf_debug_logging": {
+            "default": false,
+            "description": "When enabled, DTMF digits entered by users will be redacted in debug logs to protect PII data entered through IVR interactions.",
+            "example": true,
+            "type": "boolean"
+          },
+          "tags": {
+            "description": "Tags assigned to the Call Control Application.",
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "updated_at": {
+            "description": "ISO 8601 formatted date of when the resource was last updated",
+            "example": "2018-02-02T22:25:27.521Z",
+            "type": "string"
+          },
+          "webhook_api_version": {
+            "default": "1",
+            "description": "Determines which webhook format will be used, Telnyx API v1 or v2.",
+            "enum": [
+              "1",
+              "2"
+            ],
+            "example": "1",
+            "type": "string"
+          },
+          "webhook_event_failover_url": {
+            "default": "",
+            "description": "The failover URL where webhooks related to this connection will be sent if sending to the primary URL fails. Must include a scheme, such as `https`.",
+            "example": "https://failover.example.com",
+            "format": "url",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "webhook_event_url": {
+            "description": "The URL where webhooks related to this connection will be sent. Must include a scheme, such as `https`.",
+            "example": "https://example.com",
+            "format": "url",
+            "type": "string"
+          },
+          "webhook_timeout_secs": {
+            "default": null,
+            "example": 25,
+            "maximum": 30,
+            "minimum": 0,
+            "type": [
+              "integer",
+              "null"
+            ]
+          }
+        },
+        "title": "Call Control Application",
+        "type": "object"
+      },
+      "CallControlApplicationInbound": {
+        "properties": {
+          "channel_limit": {
+            "default": null,
+            "description": "When set, this will limit the total number of inbound calls to phone numbers associated with this connection.",
+            "example": 10,
+            "type": "integer"
+          },
+          "shaken_stir_enabled": {
+            "default": false,
+            "description": "When enabled Telnyx will include Shaken/Stir data in the Webhook for new inbound calls.",
+            "example": false,
+            "type": "boolean"
+          },
+          "sip_subdomain": {
+            "default": null,
+            "description": "Specifies a subdomain that can be used to receive Inbound calls to a Connection, in the same way a phone number is used, from a SIP endpoint. Example: the subdomain \"example.sip.telnyx.com\" can be called from any SIP endpoint by using the SIP URI \"sip:@example.sip.telnyx.com\" where the user part can be any alphanumeric value. TLS signaling is supported. SRTP media encryption requires TLS transport.",
+            "example": "example",
+            "type": "string"
+          },
+          "sip_subdomain_receive_settings": {
+            "default": "from_anyone",
+            "description": "This option can be enabled to receive calls from: \"Anyone\" (any SIP endpoint in the public Internet) or \"Only my connections\" (any connection assigned to the same Telnyx user).",
+            "enum": [
+              "only_my_connections",
+              "from_anyone"
+            ],
+            "example": "only_my_connections",
+            "type": "string"
+          }
+        },
+        "title": "Call Control Application Inbound",
+        "type": "object"
+      },
+      "CallControlApplicationOutbound": {
+        "properties": {
+          "channel_limit": {
+            "default": null,
+            "description": "When set, this will limit the total number of outbound calls to phone numbers associated with this connection.",
+            "example": 10,
+            "type": "integer"
+          },
+          "outbound_voice_profile_id": {
+            "description": "Identifies the associated outbound voice profile.",
+            "example": "1293384261075731499",
+            "type": "string",
+            "x-format": "int64"
+          }
+        },
+        "title": "Call Control Application Outbound",
+        "type": "object"
+      },
+      "CreateCallControlApplicationRequest": {
+        "example": {
+          "active": false,
+          "anchorsite_override": "Latency",
+          "application_name": "call-router",
+          "call_cost_in_webhooks": true,
+          "dtmf_type": "Inband",
+          "first_command_timeout": true,
+          "first_command_timeout_secs": 10,
+          "inbound": {
+            "channel_limit": 10,
+            "shaken_stir_enabled": true,
+            "sip_subdomain": "example",
+            "sip_subdomain_receive_settings": "only_my_connections"
+          },
+          "outbound": {
+            "channel_limit": 10,
+            "outbound_voice_profile_id": "1293384261075731499"
+          },
+          "redact_dtmf_debug_logging": true,
+          "webhook_api_version": "1",
+          "webhook_event_failover_url": "https://failover.example.com",
+          "webhook_event_url": "https://example.com",
+          "webhook_timeout_secs": 25
+        },
+        "properties": {
+          "active": {
+            "default": true,
+            "description": "Specifies whether the connection can be used.",
+            "type": "boolean"
+          },
+          "anchorsite_override": {
+            "default": "Latency",
+            "description": "\u003ccode\u003eLatency\u003c/code\u003e directs Telnyx to route media through the site with the lowest round-trip time to the user's connection. Telnyx calculates this time using ICMP ping messages. This can be disabled by specifying a site to handle all media.\n",
+            "enum": [
+              "Latency",
+              "Chicago, IL",
+              "Ashburn, VA",
+              "San Jose, CA",
+              "London, UK",
+              "Chennai, IN",
+              "Amsterdam, Netherlands",
+              "Toronto, Canada",
+              "Sydney, Australia"
+            ],
+            "example": "Amsterdam, Netherlands",
+            "type": "string"
+          },
+          "application_name": {
+            "description": "A user-assigned name to help manage the application.",
+            "example": "call-router",
+            "type": "string"
+          },
+          "call_cost_in_webhooks": {
+            "default": false,
+            "description": "Specifies if call cost webhooks should be sent for this Call Control Application.",
+            "type": "boolean"
+          },
+          "dtmf_type": {
+            "default": "RFC 2833",
+            "description": "Sets the type of DTMF digits sent from Telnyx to this Connection. Note that DTMF digits sent to Telnyx will be accepted in all formats.",
+            "enum": [
+              "RFC 2833",
+              "Inband",
+              "SIP INFO"
+            ],
+            "example": "Inband",
+            "type": "string"
+          },
+          "first_command_timeout": {
+            "default": false,
+            "description": "Specifies whether calls to phone numbers associated with this connection should hangup after timing out.",
+            "example": true,
+            "type": "boolean"
+          },
+          "first_command_timeout_secs": {
+            "default": 30,
+            "description": "Specifies how many seconds to wait before timing out a dial command.",
+            "example": 10,
+            "type": "integer"
+          },
+          "inbound": {
+            "$ref": "#/components/schemas/CallControlApplicationInbound"
+          },
+          "outbound": {
+            "$ref": "#/components/schemas/CallControlApplicationOutbound"
+          },
+          "redact_dtmf_debug_logging": {
+            "default": false,
+            "description": "When enabled, DTMF digits entered by users will be redacted in debug logs to protect PII data entered through IVR interactions.",
+            "example": true,
+            "type": "boolean"
+          },
+          "webhook_api_version": {
+            "default": "1",
+            "description": "Determines which webhook format will be used, Telnyx API v1 or v2.",
+            "enum": [
+              "1",
+              "2"
+            ],
+            "example": "1",
+            "type": "string"
+          },
+          "webhook_event_failover_url": {
+            "default": "",
+            "description": "The failover URL where webhooks related to this connection will be sent if sending to the primary URL fails. Must include a scheme, such as 'https'.",
+            "example": "https://failover.example.com",
+            "format": "url",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "webhook_event_url": {
+            "description": "The URL where webhooks related to this connection will be sent. Must include a scheme, such as 'https'.",
+            "example": "https://example.com",
+            "format": "url",
+            "type": "string"
+          },
+          "webhook_timeout_secs": {
+            "default": null,
+            "description": "Specifies how many seconds to wait before timing out a webhook.",
+            "example": 25,
+            "maximum": 30,
+            "minimum": 0,
+            "type": [
+              "integer",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "application_name",
+          "webhook_event_url"
+        ],
+        "title": "Create Call Control Application Request",
+        "type": "object"
+      },
+      "PaginationMeta": {
+        "properties": {
+          "page_number": {
+            "example": 2,
+            "type": "integer"
+          },
+          "page_size": {
+            "example": 25,
+            "type": "integer"
+          },
+          "total_pages": {
+            "example": 3,
+            "type": "integer"
+          },
+          "total_results": {
+            "example": 55,
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "UpdateCallControlApplicationRequest": {
+        "example": {
+          "active": false,
+          "anchorsite_override": "Latency",
+          "application_name": "call-router",
+          "call_cost_in_webhooks": true,
+          "dtmf_type": "Inband",
+          "first_command_timeout": true,
+          "first_command_timeout_secs": 10,
+          "inbound": {
+            "channel_limit": 10,
+            "shaken_stir_enabled": true,
+            "sip_subdomain": "example",
+            "sip_subdomain_receive_settings": "only_my_connections"
+          },
+          "outbound": {
+            "channel_limit": 10,
+            "outbound_voice_profile_id": "1293384261075731499"
+          },
+          "redact_dtmf_debug_logging": true,
+          "webhook_api_version": "1",
+          "webhook_event_failover_url": "https://failover.example.com",
+          "webhook_event_url": "https://example.com",
+          "webhook_timeout_secs": 25
+        },
+        "properties": {
+          "active": {
+            "default": true,
+            "description": "Specifies whether the connection can be used.",
+            "type": "boolean"
+          },
+          "anchorsite_override": {
+            "default": "Latency",
+            "description": "\u003ccode\u003eLatency\u003c/code\u003e directs Telnyx to route media through the site with the lowest round-trip time to the user's connection. Telnyx calculates this time using ICMP ping messages. This can be disabled by specifying a site to handle all media.\n",
+            "enum": [
+              "Latency",
+              "Chicago, IL",
+              "Ashburn, VA",
+              "San Jose, CA",
+              "London, UK",
+              "Chennai, IN",
+              "Amsterdam, Netherlands",
+              "Toronto, Canada",
+              "Sydney, Australia"
+            ],
+            "example": "Amsterdam, Netherlands",
+            "type": "string"
+          },
+          "application_name": {
+            "description": "A user-assigned name to help manage the application.",
+            "example": "call-router",
+            "type": "string"
+          },
+          "call_cost_in_webhooks": {
+            "default": false,
+            "description": "Specifies if call cost webhooks should be sent for this Call Control Application.",
+            "type": "boolean"
+          },
+          "dtmf_type": {
+            "default": "RFC 2833",
+            "description": "Sets the type of DTMF digits sent from Telnyx to this Connection. Note that DTMF digits sent to Telnyx will be accepted in all formats.",
+            "enum": [
+              "RFC 2833",
+              "Inband",
+              "SIP INFO"
+            ],
+            "example": "Inband",
+            "type": "string"
+          },
+          "first_command_timeout": {
+            "default": false,
+            "description": "Specifies whether calls to phone numbers associated with this connection should hangup after timing out.",
+            "example": true,
+            "type": "boolean"
+          },
+          "first_command_timeout_secs": {
+            "default": 30,
+            "description": "Specifies how many seconds to wait before timing out a dial command.",
+            "example": 10,
+            "type": "integer"
+          },
+          "inbound": {
+            "$ref": "#/components/schemas/CallControlApplicationInbound"
+          },
+          "outbound": {
+            "$ref": "#/components/schemas/CallControlApplicationOutbound"
+          },
+          "redact_dtmf_debug_logging": {
+            "default": false,
+            "description": "When enabled, DTMF digits entered by users will be redacted in debug logs to protect PII data entered through IVR interactions.",
+            "example": true,
+            "type": "boolean"
+          },
+          "tags": {
+            "description": "Tags assigned to the Call Control Application.",
+            "example": [
+              "tag1",
+              "tag2"
+            ],
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "webhook_api_version": {
+            "default": "1",
+            "description": "Determines which webhook format will be used, Telnyx API v1 or v2.",
+            "enum": [
+              "1",
+              "2"
+            ],
+            "example": "1",
+            "type": "string"
+          },
+          "webhook_event_failover_url": {
+            "default": "",
+            "description": "The failover URL where webhooks related to this connection will be sent if sending to the primary URL fails. Must include a scheme, such as 'https'.",
+            "example": "https://failover.example.com",
+            "format": "url",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "webhook_event_url": {
+            "description": "The URL where webhooks related to this connection will be sent. Must include a scheme, such as 'https'.",
+            "example": "https://example.com",
+            "format": "url",
+            "type": "string"
+          },
+          "webhook_timeout_secs": {
+            "default": null,
+            "description": "Specifies how many seconds to wait before timing out a webhook.",
+            "example": 25,
+            "maximum": 30,
+            "minimum": 0,
+            "type": [
+              "integer",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "application_name",
+          "webhook_event_url"
+        ],
+        "title": "Update Call Control Application Request",
+        "type": "object"
+      },
+      "call-control_Error": {
+        "properties": {
+          "code": {
+            "format": "integer",
+            "type": "string"
+          },
+          "detail": {
+            "type": "string"
+          },
+          "meta": {
+            "type": "object"
+          },
+          "source": {
+            "properties": {
+              "parameter": {
+                "description": "Indicates which query parameter caused the error.",
+                "type": "string"
+              },
+              "pointer": {
+                "description": "JSON pointer (RFC6901) to the offending entity.",
+                "format": "json-pointer",
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
+          "title": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "title"
+        ]
+      },
+      "call-control_Errors": {
+        "properties": {
+          "errors": {
+            "items": {
+              "$ref": "#/components/schemas/call-control_Error"
+            },
+            "type": "array"
+          }
+        }
+      }
+    },
+    "securitySchemes": {
+      "BearerAuth": {
+        "bearerFormat": "API key",
+        "description": "Telnyx API key supplied as `Authorization: Bearer \u003ctoken\u003e`. In production, auth may be validated by the API gateway and forwarded via Telnyx auth headers.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "Payment": {
+        "description": "Machine Payment Protocol credential used on paid retries, sent as `Authorization: Payment ...`. Obtained by paying a challenge returned in the `WWW-Authenticate` header of a 402 response. This is not a Telnyx API key; initial challenge requests use standard bearer authentication instead.",
+        "in": "header",
+        "name": "Authorization",
+        "type": "apiKey"
+      },
+      "agent-memory_bearerAuth": {
+        "description": "Telnyx API key",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "bearerAuth": {
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "branded-calling_bearerAuth": {
+        "description": "Telnyx API key. Generate one at https://portal.telnyx.com/#/app/api-keys.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "collections_bearerAuth": {
+        "description": "Telnyx API key. Collections and results are automatically scoped to the authenticated user's organization.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "number-reputation_bearerAuth": {
+        "description": "Telnyx API key. Generate one at https://portal.telnyx.com/#/app/api-keys.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "oauthClientAuth": {
+        "description": "OAuth 2.0 authentication for Telnyx API and MCP integrations",
+        "flows": {
+          "authorizationCode": {
+            "authorizationUrl": "https://api.telnyx.com/v2/oauth/authorize",
+            "refreshUrl": "https://api.telnyx.com/v2/oauth/token",
+            "scopes": {
+              "admin": "Administrative access to Telnyx resources"
+            },
+            "tokenUrl": "https://api.telnyx.com/v2/oauth/token"
+          },
+          "clientCredentials": {
+            "scopes": {
+              "admin": "Administrative access to Telnyx resources"
+            },
+            "tokenUrl": "https://api.telnyx.com/v2/oauth/token"
+          }
+        },
+        "type": "oauth2"
+      },
+      "outbound-voice-profiles_bearerAuth": {
+        "bearerFormat": "JWT",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "pay-connectors_bearerAuth": {
+        "description": "Telnyx API key, not the processor bearer token.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "pronunciation-dicts_bearerAuth": {
+        "description": "Telnyx API v2 key. Obtain from https://portal.telnyx.com",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "rcs-registration_bearerAuth": {
+        "bearerFormat": "API key",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "stored-payment-transactions_bearerAuth": {
+        "bearerFormat": "JWT",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "telnyxApiKey": {
+        "description": "Management-only Telnyx account credential.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "transcriptions-search_bearerAuth": {
+        "description": "Telnyx API key. Results are automatically scoped to the authenticated user's organization.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "web-search_bearerAuth": {
+        "description": "Telnyx API key",
+        "scheme": "bearer",
+        "type": "http"
+      }
+    }
+  },
+  "info": {
+    "contact": {
+      "email": "support@telnyx.com"
+    },
+    "description": "SIP trunking, SMS, MMS, Call Control and Telephony Data Services.",
+    "title": "Telnyx API",
+    "version": "2.0.0",
+    "x-endpoint-cost": "light",
+    "x-latency-category": "responsive"
+  },
+  "openapi": "3.1.0",
+  "paths": {
+    "/call_control_applications": {
+      "get": {
+        "description": "Return a list of call control applications.",
+        "operationId": "ListCallControlApplications",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/call-control_FilterConsolidated"
+          },
+          {
+            "$ref": "#/components/parameters/call-control_PageConsolidated"
+          },
+          {
+            "$ref": "#/components/parameters/SortConnection"
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "items": {
+                        "$ref": "#/components/schemas/CallControlApplication"
+                      },
+                      "type": "array"
+                    },
+                    "meta": {
+                      "$ref": "#/components/schemas/PaginationMeta"
+                    }
+                  },
+                  "title": "List Call Control Applications Response",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful response with a list of call control applications."
+          },
+          "400": {
+            "description": "Bad request"
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedResponse"
+          },
+          "404": {
+            "description": "Resource not found"
+          }
+        },
+        "summary": "List call control applications",
+        "tags": [
+          "Call Control Applications"
+        ],
+        "x-endpoint-cost": "medium",
+        "x-group-parameters": "true"
+      },
+      "post": {
+        "description": "Creates a call control application, which defines the webhook endpoints and settings used to control calls on associated connections.",
+        "operationId": "CreateCallControlApplication",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateCallControlApplicationRequest"
+              }
+            }
+          },
+          "description": "Create call control application request.",
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/CallControlApplication"
+                    }
+                  },
+                  "title": "Call Control Application Response",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful response with details about a call control application."
+          },
+          "422": {
+            "description": "Bad Request"
+          }
+        },
+        "summary": "Create a call control application",
+        "tags": [
+          "Call Control Applications"
+        ],
+        "x-endpoint-cost": "medium"
+      }
+    },
+    "/call_control_applications/{id}": {
+      "delete": {
+        "description": "Permanently deletes the specified call control application and its webhook configuration.",
+        "operationId": "DeleteCallControlApplication",
+        "parameters": [
+          {
+            "description": "Identifies the resource.",
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "example": "1293384261075731499",
+              "type": "string",
+              "x-format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/CallControlApplication"
+                    }
+                  },
+                  "title": "Call Control Application Response",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful response with details about a call control application."
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedResponse"
+          },
+          "404": {
+            "description": "Resource not found"
+          },
+          "422": {
+            "description": "Bad request"
+          }
+        },
+        "summary": "Delete a call control application",
+        "tags": [
+          "Call Control Applications"
+        ]
+      },
+      "get": {
+        "description": "Retrieves the details of an existing call control application.",
+        "operationId": "RetrieveCallControlApplication",
+        "parameters": [
+          {
+            "description": "Identifies the resource.",
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "example": "1293384261075731499",
+              "type": "string",
+              "x-format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/CallControlApplication"
+                    }
+                  },
+                  "title": "Call Control Application Response",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful response with details about a call control application."
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedResponse"
+          },
+          "404": {
+            "description": "Resource not found"
+          },
+          "422": {
+            "description": "Bad request"
+          }
+        },
+        "summary": "Retrieve a call control application",
+        "tags": [
+          "Call Control Applications"
+        ]
+      },
+      "patch": {
+        "description": "Updates settings of an existing call control application.",
+        "operationId": "UpdateCallControlApplication",
+        "parameters": [
+          {
+            "description": "Identifies the resource.",
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "example": "1293384261075731499",
+              "type": "string",
+              "x-format": "int64"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateCallControlApplicationRequest"
+              }
+            }
+          },
+          "description": "Update call control application request.",
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/CallControlApplication"
+                    }
+                  },
+                  "title": "Call Control Application Response",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful response with details about a call control application."
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedResponse"
+          },
+          "404": {
+            "description": "Resource not found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "errors": [
+                    {
+                      "detail": "A previous update to this connection is still in progress. Please try again later."
+                    }
+                  ]
+                },
+                "schema": {
+                  "properties": {
+                    "errors": {
+                      "items": {
+                        "properties": {
+                          "detail": {
+                            "type": "string"
+                          }
+                        },
+                        "type": "object"
+                      },
+                      "type": "array"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Conflict. Another update to this application is still in progress. Wait and retry the request later."
+          },
+          "422": {
+            "description": "Bad request"
+          }
+        },
+        "summary": "Update a call control application",
+        "tags": [
+          "Call Control Applications"
+        ]
+      }
+    }
+  },
+  "security": [
+    {
+      "bearerAuth": []
+    }
+  ],
+  "servers": [
+    {
+      "description": "Version 2.0.0 of the Telnyx API",
+      "url": "https://api.telnyx.com/v2"
+    }
+  ]
+}

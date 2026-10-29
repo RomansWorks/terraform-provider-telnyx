@@ -1,0 +1,1428 @@
+{
+  "components": {
+    "parameters": {
+      "CallControlId": {
+        "description": "Unique identifier and token for controlling the call",
+        "in": "path",
+        "name": "call_control_id",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      },
+      "ConnectionId": {
+        "description": "Telnyx connection id",
+        "in": "path",
+        "name": "connection_id",
+        "required": true,
+        "schema": {
+          "example": "1293384261075731461",
+          "type": "string"
+        }
+      },
+      "call-control_PageConsolidated": {
+        "description": "Consolidated page parameter (deepObject style). Originally: page[after], page[before], page[limit], page[size], page[number]",
+        "explode": true,
+        "in": "query",
+        "name": "page",
+        "schema": {
+          "properties": {
+            "after": {
+              "default": "null",
+              "description": "Opaque identifier of next page",
+              "type": "string"
+            },
+            "before": {
+              "default": "null",
+              "description": "Opaque identifier of previous page",
+              "type": "string"
+            },
+            "limit": {
+              "default": 20,
+              "description": "Limit of records per single page",
+              "maximum": 250,
+              "minimum": 1,
+              "type": "integer"
+            },
+            "number": {
+              "default": 1,
+              "description": "The page number to load",
+              "minimum": 1,
+              "type": "integer"
+            },
+            "size": {
+              "default": 20,
+              "description": "The size of the page",
+              "maximum": 250,
+              "minimum": 1,
+              "type": "integer"
+            }
+          },
+          "type": "object"
+        },
+        "style": "deepObject"
+      }
+    },
+    "responses": {
+      "InternalServerErrorResponse": {
+        "content": {
+          "application/json": {
+            "example": {
+              "errors": [
+                {
+                  "code": "10007",
+                  "detail": "Internal server error",
+                  "title": "Internal server error"
+                }
+              ]
+            },
+            "schema": {
+              "$ref": "#/components/schemas/call-control_Errors"
+            }
+          }
+        },
+        "description": "Internal server error. An unexpected error occurred on the server. This is typically returned for unhandled exceptions or system failures."
+      },
+      "RateLimitExceededResponse": {
+        "content": {
+          "application/json": {
+            "example": {
+              "errors": [
+                {
+                  "code": "10011",
+                  "detail": "You have exceeded the maximum number of allowed requests.",
+                  "meta": {
+                    "url": "https://developers.telnyx.com/docs/overview/errors/10011"
+                  },
+                  "title": "Too many requests"
+                }
+              ]
+            },
+            "schema": {
+              "$ref": "#/components/schemas/call-control_Errors"
+            }
+          }
+        },
+        "description": "Too many requests. The API request rate limit was exceeded. Wait before retrying; honor `Retry-After` when present. See API rate limiting. This is the request rate limit, not the dials-per-second limit of outbound calls.",
+        "headers": {
+          "Retry-After": {
+            "description": "Seconds to wait before another attempt, when supplied.",
+            "schema": {
+              "type": "integer"
+            }
+          },
+          "X-RateLimit-Limit": {
+            "description": "Request limit for the current window.",
+            "schema": {
+              "type": "integer"
+            }
+          },
+          "X-RateLimit-Remaining": {
+            "description": "Requests remaining in the current window.",
+            "schema": {
+              "type": "integer"
+            }
+          },
+          "X-RateLimit-Reset": {
+            "description": "Reset timing signal for the current window.",
+            "schema": {
+              "type": "integer"
+            }
+          }
+        }
+      },
+      "UnauthorizedResponse": {
+        "content": {
+          "application/json": {
+            "example": {
+              "errors": [
+                {
+                  "code": "10009",
+                  "detail": "The required authentication headers were either invalid or not included in the request.",
+                  "meta": {
+                    "url": "https://developers.telnyx.com/docs/overview/errors/10009"
+                  },
+                  "title": "Authentication failed"
+                }
+              ]
+            },
+            "schema": {
+              "$ref": "#/components/schemas/call-control_Errors"
+            }
+          }
+        },
+        "description": "Unauthorized. Authentication failed - the required authentication headers were either invalid or not included in the request."
+      },
+      "UnprocessableEntityResponse": {
+        "content": {
+          "application/json": {
+            "examples": {
+              "ai_assistant_already_active": {
+                "summary": "AI Assistant already active",
+                "value": {
+                  "errors": [
+                    {
+                      "code": "90061",
+                      "detail": "AI Assistant cannot be started more than once.",
+                      "title": "AI Assistant is already in progress"
+                    }
+                  ]
+                }
+              },
+              "call_already_ended": {
+                "summary": "Call has already ended",
+                "value": {
+                  "errors": [
+                    {
+                      "code": "90018",
+                      "detail": "This call is no longer active and can't receive commands.",
+                      "title": "Call has already ended"
+                    }
+                  ]
+                }
+              },
+              "call_already_in_queue": {
+                "summary": "Call already in queue",
+                "value": {
+                  "errors": [
+                    {
+                      "code": "90038",
+                      "detail": "Call can't be added to a queue it's already in.",
+                      "title": "Call already in queue"
+                    }
+                  ]
+                }
+              },
+              "call_not_answered": {
+                "summary": "Call not answered yet",
+                "value": {
+                  "errors": [
+                    {
+                      "code": "90034",
+                      "detail": "This call can't receive this command because it has not been answered yet.",
+                      "title": "Call not answered yet"
+                    }
+                  ]
+                }
+              },
+              "cannot_record_before_audio_started": {
+                "summary": "Cannot record before audio started",
+                "value": {
+                  "errors": [
+                    {
+                      "code": "90020",
+                      "detail": "Call recording cannot be started until audio has commenced on the call.",
+                      "title": "Call recording triggered before audio started"
+                    }
+                  ]
+                }
+              },
+              "conference_already_ended": {
+                "summary": "Conference has already ended",
+                "value": {
+                  "errors": [
+                    {
+                      "code": "90019",
+                      "detail": "This conference is no longer active and can't receive commands.",
+                      "title": "Conference has already ended"
+                    }
+                  ]
+                }
+              },
+              "conference_name_conflict": {
+                "summary": "Conference name conflict",
+                "value": {
+                  "errors": [
+                    {
+                      "code": "90033",
+                      "detail": "Conference with given name already exists and it's active.",
+                      "title": "Unable to execute command"
+                    }
+                  ]
+                }
+              },
+              "fork_not_found": {
+                "summary": "Call is not forked",
+                "value": {
+                  "errors": [
+                    {
+                      "code": "90031",
+                      "detail": "Can't stop forking, because the call isn't currently forked.",
+                      "title": "Call is not currently forked"
+                    }
+                  ]
+                }
+              },
+              "invalid_call_control_id": {
+                "summary": "Invalid call control ID",
+                "value": {
+                  "errors": [
+                    {
+                      "code": "90015",
+                      "detail": "The call_control_id provided was not valid.",
+                      "source": {
+                        "pointer": "/call_control_id"
+                      },
+                      "title": "Invalid Call Control ID"
+                    }
+                  ]
+                }
+              },
+              "invalid_connection_id": {
+                "summary": "Invalid connection ID",
+                "value": {
+                  "errors": [
+                    {
+                      "code": "10015",
+                      "detail": "The requested connection_id (Call Control App ID) is either invalid or does not exist. Only Call Control Apps with valid webhook URL are accepted.",
+                      "source": {
+                        "pointer": "/connection_id"
+                      },
+                      "title": "Invalid value for connection_id (Call Control App ID)"
+                    }
+                  ]
+                }
+              },
+              "invalid_enumerated_value": {
+                "summary": "Invalid enumerated value",
+                "value": {
+                  "errors": [
+                    {
+                      "code": "10032",
+                      "detail": "The value must be one of: dual, single.",
+                      "source": {
+                        "pointer": "/record_channels"
+                      },
+                      "title": "Invalid enumerated value"
+                    }
+                  ]
+                }
+              },
+              "invalid_phone_number_format": {
+                "summary": "Invalid phone number format",
+                "value": {
+                  "errors": [
+                    {
+                      "code": "10016",
+                      "detail": "The 'to' parameter must be in E164 format.",
+                      "source": {
+                        "pointer": "/to"
+                      },
+                      "title": "Phone number must be in +E164 format"
+                    }
+                  ]
+                }
+              },
+              "max_participants_reached": {
+                "summary": "Maximum participants reached",
+                "value": {
+                  "errors": [
+                    {
+                      "code": "90032",
+                      "detail": "The maximum allowed value of `max_participants` has been reached at 100.",
+                      "title": "Maximum number of participants reached"
+                    }
+                  ]
+                }
+              },
+              "media_streaming_used": {
+                "summary": "Media streaming in use",
+                "value": {
+                  "errors": [
+                    {
+                      "code": "90045",
+                      "detail": "This command can't be issued when media streaming is used.",
+                      "title": "Media Streaming is used"
+                    }
+                  ]
+                }
+              },
+              "missing_required_parameter": {
+                "summary": "Missing required parameter",
+                "value": {
+                  "errors": [
+                    {
+                      "code": "10004",
+                      "detail": "The 'to' parameter is required and cannot be blank.",
+                      "source": {
+                        "pointer": "/to"
+                      },
+                      "title": "Missing required parameter"
+                    }
+                  ]
+                }
+              },
+              "queue_full": {
+                "summary": "Queue is full",
+                "value": {
+                  "errors": [
+                    {
+                      "code": "90036",
+                      "detail": "The 'support' queue is full and can't accept more calls.",
+                      "title": "Queue full"
+                    }
+                  ]
+                }
+              },
+              "srtp_not_supported_for_pstn": {
+                "summary": "SRTP not supported for PSTN calls",
+                "value": {
+                  "errors": [
+                    {
+                      "code": "10011",
+                      "detail": "SRTP media encryption is not supported for PSTN calls.",
+                      "source": {
+                        "pointer": "/media_encryption"
+                      },
+                      "title": "Media encryption not supported for PSTN calls"
+                    }
+                  ]
+                }
+              },
+              "transcription_already_active": {
+                "summary": "Transcription already active",
+                "value": {
+                  "errors": [
+                    {
+                      "code": "90054",
+                      "detail": "Call transcription can not be started more than once.",
+                      "title": "Call transcription is already in progress"
+                    }
+                  ]
+                }
+              },
+              "value_outside_range": {
+                "summary": "Value outside of range",
+                "value": {
+                  "errors": [
+                    {
+                      "code": "10033",
+                      "detail": "The value is outside of allowed range 1 to 5000",
+                      "source": {
+                        "pointer": "/max_participants"
+                      },
+                      "title": "Value outside of range"
+                    }
+                  ]
+                }
+              }
+            },
+            "schema": {
+              "$ref": "#/components/schemas/call-control_Errors"
+            }
+          }
+        },
+        "description": "Unprocessable entity. The request was well-formed but could not be processed due to semantic errors. This includes validation errors, invalid parameter values, call state errors, conference errors, queue errors, recording/transcription errors, and business logic violations."
+      },
+      "call-control_GenericErrorResponse": {
+        "content": {
+          "application/json": {
+            "example": {
+              "errors": [
+                {
+                  "code": "10007",
+                  "detail": "An unexpected error occured.",
+                  "title": "Unexpected error"
+                }
+              ]
+            },
+            "schema": {
+              "$ref": "#/components/schemas/call-control_Errors"
+            }
+          }
+        },
+        "description": "Unexpected error"
+      }
+    },
+    "schemas": {
+      "ActiveCall": {
+        "example": {
+          "call_control_id": "v3:MdI91X4lWFEs7IgbBEOT9M4AigoY08M0WWZFISt1Yw2axZ_IiE4pqg",
+          "call_duration": 50,
+          "call_leg_id": "2dc6fc34-f9e0-11ea-b68e-02420a0f7768",
+          "call_session_id": "2dc1b3c8-f9e0-11ea-bc5a-02420a0f7768",
+          "client_state": "aGF2ZSBhIG5pY2UgZGF5ID1d",
+          "record_type": "call"
+        },
+        "properties": {
+          "call_control_id": {
+            "description": "Unique identifier and token for controlling the call.",
+            "example": "v3:MdI91X4lWFEs7IgbBEOT9M4AigoY08M0WWZFISt1Yw2axZ_IiE4pqg",
+            "type": "string"
+          },
+          "call_duration": {
+            "description": "Indicates the duration of the call in seconds",
+            "example": 50,
+            "type": "integer"
+          },
+          "call_leg_id": {
+            "description": "ID that is unique to the call and can be used to correlate webhook events",
+            "example": "428c31b6-7af4-4bcb-b7f5-5013ef9657c1",
+            "type": "string"
+          },
+          "call_session_id": {
+            "description": "ID that is unique to the call session and can be used to correlate webhook events. Call session is a group of related call legs that logically belong to the same phone call, e.g. an inbound and outbound leg of a transferred call",
+            "example": "428c31b6-7af4-4bcb-b68e-5013ef9657c1",
+            "type": "string"
+          },
+          "client_state": {
+            "description": "State received from a command.",
+            "example": "aGF2ZSBhIG5pY2UgZGF5ID1d",
+            "type": "string"
+          },
+          "record_type": {
+            "enum": [
+              "call"
+            ],
+            "example": "call",
+            "type": "string"
+          }
+        },
+        "required": [
+          "call_control_id",
+          "call_leg_id",
+          "call_session_id",
+          "client_state",
+          "record_type",
+          "call_duration"
+        ],
+        "title": "Active Call",
+        "type": "object"
+      },
+      "Call": {
+        "example": {
+          "call_control_id": "v3:MdI91X4lWFEs7IgbBEOT9M4AigoY08M0WWZFISt1Yw2axZ_IiE4pqg",
+          "call_duration": 50,
+          "call_leg_id": "2dc6fc34-f9e0-11ea-b68e-02420a0f7768",
+          "call_session_id": "2dc1b3c8-f9e0-11ea-bc5a-02420a0f7768",
+          "client_state": "aGF2ZSBhIG5pY2UgZGF5ID1d",
+          "end_time": "2019-01-23T18:11:52.574Z",
+          "is_alive": false,
+          "record_type": "call",
+          "start_time": "2019-01-23T18:10:02.574Z"
+        },
+        "properties": {
+          "call_control_id": {
+            "description": "Unique identifier and token for controlling the call.",
+            "example": "v3:MdI91X4lWFEs7IgbBEOT9M4AigoY08M0WWZFISt1Yw2axZ_IiE4pqg",
+            "type": "string"
+          },
+          "call_duration": {
+            "description": "Indicates the duration of the call in seconds",
+            "example": 50,
+            "type": "integer"
+          },
+          "call_leg_id": {
+            "description": "ID that is unique to the call and can be used to correlate webhook events",
+            "example": "428c31b6-7af4-4bcb-b7f5-5013ef9657c1",
+            "type": "string"
+          },
+          "call_session_id": {
+            "description": "ID that is unique to the call session and can be used to correlate webhook events. Call session is a group of related call legs that logically belong to the same phone call, e.g. an inbound and outbound leg of a transferred call",
+            "example": "428c31b6-7af4-4bcb-b68e-5013ef9657c1",
+            "type": "string"
+          },
+          "client_state": {
+            "description": "State received from a command.",
+            "example": "aGF2ZSBhIG5pY2UgZGF5ID1d",
+            "type": "string"
+          },
+          "end_time": {
+            "description": "ISO 8601 formatted date indicating when the call ended. Only present when the call is not alive",
+            "example": "2019-01-23T18:11:52.574Z",
+            "type": "string"
+          },
+          "is_alive": {
+            "description": "Indicates whether the call is alive or not. For Dial command it will always be `false` (dialing is asynchronous).",
+            "example": true,
+            "type": "boolean"
+          },
+          "record_type": {
+            "enum": [
+              "call"
+            ],
+            "example": "call",
+            "type": "string"
+          },
+          "start_time": {
+            "description": "ISO 8601 formatted date indicating when the call started",
+            "example": "2019-01-23T18:10:02.574Z",
+            "type": "string"
+          }
+        },
+        "required": [
+          "call_control_id",
+          "call_leg_id",
+          "call_session_id",
+          "is_alive",
+          "record_type"
+        ],
+        "title": "Call",
+        "type": "object"
+      },
+      "Cursor": {
+        "properties": {
+          "after": {
+            "description": "Opaque identifier of next page.",
+            "example": "v1:g3QAAAADZAAKdGVsbnl4X2lkc2wAAAABbQAAACRlYmRiYzdkNi1kZWRmLTExZWQtYTM3MS0wMjQyMGFlZjAwYjRqZAAJdGltZXN0YW1wbggA8Le4pGhpVxdkAAR0eXBlZAAFYWZ0ZXI=",
+            "type": "string"
+          },
+          "before": {
+            "description": "Opaque identifier of previous page.",
+            "example": "v1:g3QAAAADZAAKdGVsbnl4X2lkc2wAAAABbQAAACRlYmRiYzdkNi1kZWRmLTExZWQtYTM3MS0wMjQyMGFlZjAwYjRqZAAJdGltZXN0YW1wbggA8Le4pGhpVxdkAAR0eXBlZAAFYWZ0ZXI=",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "CursorPaginationMeta": {
+        "properties": {
+          "cursors": {
+            "$ref": "#/components/schemas/Cursor"
+          },
+          "next": {
+            "description": "Path to next page.",
+            "example": "/v2/connections/1234567890/active_calls?page[after]=v1:g3QAAAADZAAKdGVsbnl4X2lkc2wAAAABbQAAACRlYmRiYzdkNi1kZWRmLTExZWQtYTM3MS0wMjQyMGFlZjAwYjRqZAAJdGltZXN0YW1wbggA8Le4pGhpVxdkAAR0eXBlZAAFYWZ0ZXI=",
+            "type": "string"
+          },
+          "previous": {
+            "description": "Path to previous page.",
+            "example": "/v2/connections/1234567890/active_calls?page[before]=v1:g3QAAAADZAAKdGVsbnl4X2lkc2wAAAABbQAAACRlYmRiYzdkNi1kZWRmLTExZWQtYTM3MS0wMjQyMGFlZjAwYjRqZAAJdGltZXN0YW1wbggA8Le4pGhpVxdkAAR0eXBlZAAFYWZ0ZXI=",
+            "type": "string"
+          },
+          "total_items": {
+            "example": 50,
+            "type": "integer"
+          }
+        },
+        "title": "Cursor Pagination Meta",
+        "type": "object"
+      },
+      "DialMetric": {
+        "description": "Dial counts and rates for one region in one time bucket. One record per region per bucket.",
+        "properties": {
+          "average_dps": {
+            "description": "`dials.total` divided by the bucket duration in seconds, rounded to 4 decimal places. Counts every dial attempt, rejected ones included.",
+            "example": 23.7778,
+            "type": "number"
+          },
+          "dials": {
+            "description": "Dial attempt counts in the bucket.",
+            "properties": {
+              "accepted": {
+                "description": "Dial attempts that were not rejected by a limit.",
+                "example": 85240,
+                "minimum": 0,
+                "type": "integer"
+              },
+              "rejected": {
+                "description": "Dial attempts rejected by a limit.",
+                "properties": {
+                  "daily_limit": {
+                    "description": "Rejected by a daily limit.",
+                    "example": 0,
+                    "minimum": 0,
+                    "type": "integer"
+                  },
+                  "dps_limit": {
+                    "description": "Rejected by the dials-per-second limit.",
+                    "example": 360,
+                    "minimum": 0,
+                    "type": "integer"
+                  },
+                  "hourly_limit": {
+                    "description": "Rejected by an hourly limit.",
+                    "example": 0,
+                    "minimum": 0,
+                    "type": "integer"
+                  }
+                },
+                "type": "object"
+              },
+              "total": {
+                "description": "All dial attempts, rejected ones included: accepted plus every rejected count.",
+                "example": 85600,
+                "minimum": 0,
+                "type": "integer"
+              }
+            },
+            "type": "object"
+          },
+          "dps_limit": {
+            "description": "DPS limit in force during the busiest 5-second window, so it compares directly with `peak_dps`. `null` means unlimited. Enforcement near the limit is approximate; `dials.rejected.dps_limit` is the authoritative signal that the limit was reached.",
+            "example": 100,
+            "type": [
+              "integer",
+              "null"
+            ]
+          },
+          "end_time": {
+            "description": "End of the bucket (exclusive), UTC. Five seconds, one minute or one hour after `start_time`, depending on `granularity`.",
+            "example": "2026-09-29T13:00:00.000Z",
+            "format": "date-time",
+            "type": "string"
+          },
+          "peak_dps": {
+            "description": "Dials per second, rounded to 4 decimal places, in the busiest 5-second window of the bucket, summed across all call-processing nodes of the region. Counts every dial attempt, rejected ones included, so `peak_dps` above `dps_limit` is expected when dials were rejected. For `granularity=second` it equals `average_dps`.",
+            "example": 104,
+            "type": "number"
+          },
+          "record_type": {
+            "enum": [
+              "dial_metric"
+            ],
+            "example": "dial_metric",
+            "type": "string"
+          },
+          "region": {
+            "description": "Region where the dials were handled. Current values are `us`, `eu`, `australia`, `middle_east`, `canada` and `india`. New values can be added, so clients must tolerate values not listed here. Buckets of different regions are separate records.",
+            "example": "us",
+            "type": "string"
+          },
+          "start_time": {
+            "description": "Start of the bucket (inclusive), UTC.",
+            "example": "2026-09-29T12:00:00.000Z",
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "title": "Dial Metrics Bucket",
+        "type": "object"
+      },
+      "DialMetricsListMeta": {
+        "properties": {
+          "cursors": {
+            "description": "Empty on the last page. When `page[after]` matched no records, the page is empty and `after` and `before` both echo the given cursor.",
+            "properties": {
+              "after": {
+                "description": "Opaque cursor for the next page. Pass it as `page[after]`.",
+                "example": "MTc5MDY4NjgwMDpldQ",
+                "type": "string"
+              },
+              "before": {
+                "description": "Present only on an empty page for a cursor that matched nothing: echoes that cursor.",
+                "example": "MTc5MDY4MzIwMDp1cw",
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
+          "end_time": {
+            "description": "Echo of the requested `end_time`.",
+            "example": "2026-09-29T14:00:00.000Z",
+            "format": "date-time",
+            "type": "string"
+          },
+          "granularity": {
+            "description": "Echo of the requested granularity.",
+            "enum": [
+              "second",
+              "minute",
+              "hour"
+            ],
+            "example": "hour",
+            "type": "string"
+          },
+          "next": {
+            "description": "Path to the next page, repeating this request's parameters. Absent on the last page.",
+            "example": "/v2/dial_metrics?end_time=2026-09-29T14%3A00%3A00.000Z\u0026granularity=hour\u0026page%5Bafter%5D=MTc5MDY4NjgwMDpldQ\u0026page%5Blimit%5D=2\u0026sort=-start_time\u0026start_time=2026-09-29T12%3A00%3A00.000Z",
+            "type": "string"
+          },
+          "sort": {
+            "description": "Echo of the applied sort order.",
+            "enum": [
+              "-start_time",
+              "start_time"
+            ],
+            "example": "-start_time",
+            "type": "string"
+          },
+          "start_time": {
+            "description": "Start of the range actually used: the requested `start_time`, or the start of the retention window when the requested value is older.",
+            "example": "2026-09-29T12:00:00.000Z",
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "title": "Dial Metrics List Meta",
+        "type": "object"
+      },
+      "ListDialMetricsResponse": {
+        "properties": {
+          "data": {
+            "items": {
+              "$ref": "#/components/schemas/DialMetric"
+            },
+            "type": "array"
+          },
+          "meta": {
+            "$ref": "#/components/schemas/DialMetricsListMeta"
+          }
+        },
+        "title": "List Dial Metrics Response",
+        "type": "object"
+      },
+      "call-control_Error": {
+        "properties": {
+          "code": {
+            "format": "integer",
+            "type": "string"
+          },
+          "detail": {
+            "type": "string"
+          },
+          "meta": {
+            "type": "object"
+          },
+          "source": {
+            "properties": {
+              "parameter": {
+                "description": "Indicates which query parameter caused the error.",
+                "type": "string"
+              },
+              "pointer": {
+                "description": "JSON pointer (RFC6901) to the offending entity.",
+                "format": "json-pointer",
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
+          "title": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "title"
+        ]
+      },
+      "call-control_Errors": {
+        "properties": {
+          "errors": {
+            "items": {
+              "$ref": "#/components/schemas/call-control_Error"
+            },
+            "type": "array"
+          }
+        }
+      }
+    },
+    "securitySchemes": {
+      "BearerAuth": {
+        "bearerFormat": "API key",
+        "description": "Telnyx API key supplied as `Authorization: Bearer \u003ctoken\u003e`. In production, auth may be validated by the API gateway and forwarded via Telnyx auth headers.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "Payment": {
+        "description": "Machine Payment Protocol credential used on paid retries, sent as `Authorization: Payment ...`. Obtained by paying a challenge returned in the `WWW-Authenticate` header of a 402 response. This is not a Telnyx API key; initial challenge requests use standard bearer authentication instead.",
+        "in": "header",
+        "name": "Authorization",
+        "type": "apiKey"
+      },
+      "agent-memory_bearerAuth": {
+        "description": "Telnyx API key",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "bearerAuth": {
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "branded-calling_bearerAuth": {
+        "description": "Telnyx API key. Generate one at https://portal.telnyx.com/#/app/api-keys.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "collections_bearerAuth": {
+        "description": "Telnyx API key. Collections and results are automatically scoped to the authenticated user's organization.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "number-reputation_bearerAuth": {
+        "description": "Telnyx API key. Generate one at https://portal.telnyx.com/#/app/api-keys.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "oauthClientAuth": {
+        "description": "OAuth 2.0 authentication for Telnyx API and MCP integrations",
+        "flows": {
+          "authorizationCode": {
+            "authorizationUrl": "https://api.telnyx.com/v2/oauth/authorize",
+            "refreshUrl": "https://api.telnyx.com/v2/oauth/token",
+            "scopes": {
+              "admin": "Administrative access to Telnyx resources"
+            },
+            "tokenUrl": "https://api.telnyx.com/v2/oauth/token"
+          },
+          "clientCredentials": {
+            "scopes": {
+              "admin": "Administrative access to Telnyx resources"
+            },
+            "tokenUrl": "https://api.telnyx.com/v2/oauth/token"
+          }
+        },
+        "type": "oauth2"
+      },
+      "outbound-voice-profiles_bearerAuth": {
+        "bearerFormat": "JWT",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "pay-connectors_bearerAuth": {
+        "description": "Telnyx API key, not the processor bearer token.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "pronunciation-dicts_bearerAuth": {
+        "description": "Telnyx API v2 key. Obtain from https://portal.telnyx.com",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "rcs-registration_bearerAuth": {
+        "bearerFormat": "API key",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "stored-payment-transactions_bearerAuth": {
+        "bearerFormat": "JWT",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "telnyxApiKey": {
+        "description": "Management-only Telnyx account credential.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "transcriptions-search_bearerAuth": {
+        "description": "Telnyx API key. Results are automatically scoped to the authenticated user's organization.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "web-search_bearerAuth": {
+        "description": "Telnyx API key",
+        "scheme": "bearer",
+        "type": "http"
+      }
+    }
+  },
+  "info": {
+    "contact": {
+      "email": "support@telnyx.com"
+    },
+    "description": "SIP trunking, SMS, MMS, Call Control and Telephony Data Services.",
+    "title": "Telnyx API",
+    "version": "2.0.0",
+    "x-endpoint-cost": "light",
+    "x-latency-category": "responsive"
+  },
+  "openapi": "3.1.0",
+  "paths": {
+    "/calls/{call_control_id}": {
+      "get": {
+        "description": "Returns the status of a call (data is available 10 minutes after call ended).",
+        "operationId": "RetrieveCallStatus",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/CallControlId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/Call"
+                    }
+                  },
+                  "title": "Retrieve Call Status Response",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful response with details about a call status."
+          },
+          "422": {
+            "$ref": "#/components/responses/UnprocessableEntityResponse"
+          },
+          "default": {
+            "$ref": "#/components/responses/call-control_GenericErrorResponse"
+          }
+        },
+        "summary": "Retrieve a call status",
+        "tags": [
+          "Call Information"
+        ]
+      }
+    },
+    "/connections/{connection_id}/active_calls": {
+      "get": {
+        "description": "Lists all active calls for given connection. Acceptable connections are either SIP connections with webhook_url or xml_request_url, call control or texml. Returned results are cursor paginated.\n",
+        "operationId": "ListConnectionActiveCalls",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/ConnectionId"
+          },
+          {
+            "$ref": "#/components/parameters/call-control_PageConsolidated"
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "items": {
+                        "$ref": "#/components/schemas/ActiveCall"
+                      },
+                      "type": "array"
+                    },
+                    "meta": {
+                      "$ref": "#/components/schemas/CursorPaginationMeta"
+                    }
+                  },
+                  "title": "Active Calls Response",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful response with list of details about active calls."
+          },
+          "422": {
+            "$ref": "#/components/responses/UnprocessableEntityResponse"
+          },
+          "default": {
+            "$ref": "#/components/responses/call-control_GenericErrorResponse"
+          }
+        },
+        "summary": "List all active calls for given connection",
+        "tags": [
+          "Call Information"
+        ],
+        "x-group-parameters": "true",
+        "x-latency-category": "responsive"
+      }
+    },
+    "/dial_metrics": {
+      "get": {
+        "description": "Returns dials-per-second (DPS) metrics for your account's outbound dials made with the Call Control `Dial` command and TeXML, as time buckets with dial counts, accepted and rejected dials, average and peak DPS, and the DPS limit in force.\n\nThe result has one record per region per bucket, ordered by `start_time` and then `region`, newest first unless `sort=start_time`. Regions are never summed: the DPS limit is enforced per region, so a cross-region total cannot be compared with it.\n\nOnly buckets that saw dials are returned. Treat a missing bucket as zero dials.\n\nOnly complete 5-second windows are counted, and a window is counted about 15 seconds after it closes. The newest `granularity=second` record is therefore your live DPS, about 20 seconds old. Request the last minute or two with `sort=-start_time`; the first record of each `region` is that region's live rate (`page[limit]=1` would hide every region but one). If no recent record exists, the live rate is zero.\n\nResults are cursor paginated. Follow `meta.next`, or pass `meta.cursors.after` as `page[after]`, until `meta.next` is absent. No total count is returned.\n\nThis endpoint is in development and can change before general availability.\n",
+        "operationId": "ListDialMetrics",
+        "parameters": [
+          {
+            "description": "Bucket size. `second` returns 5-second buckets (the finest resolution) and is kept for the last 48 hours. `minute` and `hour` are kept for the last 30 days.",
+            "example": "hour",
+            "in": "query",
+            "name": "granularity",
+            "required": true,
+            "schema": {
+              "enum": [
+                "second",
+                "minute",
+                "hour"
+              ],
+              "type": "string"
+            }
+          },
+          {
+            "description": "Inclusive start of the range, ISO 8601 (for example `2026-09-29T12:00:00.000Z`). Buckets that start at or after this time are returned. A `start_time` older than the retention window of the chosen `granularity` is moved forward to the start of that window, and `meta.start_time` returns the start actually used.",
+            "example": "2026-09-29T12:00:00.000Z",
+            "in": "query",
+            "name": "start_time",
+            "required": true,
+            "schema": {
+              "format": "date-time",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Exclusive end of the range, ISO 8601. Must be after `start_time`. Buckets that start before this time are returned.",
+            "example": "2026-09-29T14:00:00.000Z",
+            "in": "query",
+            "name": "end_time",
+            "required": true,
+            "schema": {
+              "format": "date-time",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Sort order of the buckets by `start_time`. `-start_time` (default) returns the newest first, `start_time` the oldest first. `region` follows the same direction for buckets with the same `start_time`. To read the live rate, use `granularity=second` and `sort=-start_time`, then take the first record of each `region`.",
+            "in": "query",
+            "name": "sort",
+            "required": false,
+            "schema": {
+              "default": "-start_time",
+              "enum": [
+                "-start_time",
+                "start_time"
+              ],
+              "type": "string"
+            }
+          },
+          {
+            "description": "Opaque cursor from `meta.cursors.after` of the previous page. Do not parse or construct it. A cursor that matches no records returns an empty page whose `meta.cursors.after` and `meta.cursors.before` both echo the given cursor.",
+            "in": "query",
+            "name": "page[after]",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Maximum number of buckets per page. Values outside the range are clamped to 1-10,000.",
+            "in": "query",
+            "name": "page[limit]",
+            "required": false,
+            "schema": {
+              "default": 1000,
+              "maximum": 10000,
+              "minimum": 1,
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "empty_page": {
+                    "summary": "Cursor that matches nothing",
+                    "value": {
+                      "data": [],
+                      "meta": {
+                        "cursors": {
+                          "after": "MTc5MDY4MzIwMDp1cw",
+                          "before": "MTc5MDY4MzIwMDp1cw"
+                        },
+                        "end_time": "2026-09-29T14:00:00.000Z",
+                        "granularity": "hour",
+                        "sort": "-start_time",
+                        "start_time": "2026-09-29T12:00:00.000Z"
+                      }
+                    }
+                  },
+                  "hour": {
+                    "summary": "Hourly buckets, newest first",
+                    "value": {
+                      "data": [
+                        {
+                          "average_dps": 23.7778,
+                          "dials": {
+                            "accepted": 85240,
+                            "rejected": {
+                              "daily_limit": 0,
+                              "dps_limit": 360,
+                              "hourly_limit": 0
+                            },
+                            "total": 85600
+                          },
+                          "dps_limit": 100,
+                          "end_time": "2026-09-29T14:00:00.000Z",
+                          "peak_dps": 104,
+                          "record_type": "dial_metric",
+                          "region": "us",
+                          "start_time": "2026-09-29T13:00:00.000Z"
+                        },
+                        {
+                          "average_dps": 0.3333,
+                          "dials": {
+                            "accepted": 1200,
+                            "rejected": {
+                              "daily_limit": 0,
+                              "dps_limit": 0,
+                              "hourly_limit": 0
+                            },
+                            "total": 1200
+                          },
+                          "dps_limit": null,
+                          "end_time": "2026-09-29T14:00:00.000Z",
+                          "peak_dps": 4,
+                          "record_type": "dial_metric",
+                          "region": "eu",
+                          "start_time": "2026-09-29T13:00:00.000Z"
+                        }
+                      ],
+                      "meta": {
+                        "cursors": {
+                          "after": "MTc5MDY4NjgwMDpldQ"
+                        },
+                        "end_time": "2026-09-29T14:00:00.000Z",
+                        "granularity": "hour",
+                        "next": "/v2/dial_metrics?end_time=2026-09-29T14%3A00%3A00.000Z\u0026granularity=hour\u0026page%5Bafter%5D=MTc5MDY4NjgwMDpldQ\u0026page%5Blimit%5D=2\u0026sort=-start_time\u0026start_time=2026-09-29T12%3A00%3A00.000Z",
+                        "sort": "-start_time",
+                        "start_time": "2026-09-29T12:00:00.000Z"
+                      }
+                    }
+                  },
+                  "second": {
+                    "summary": "One 5-second bucket, DPS limit reached (granularity=second)",
+                    "value": {
+                      "data": [
+                        {
+                          "average_dps": 32.4,
+                          "dials": {
+                            "accepted": 150,
+                            "rejected": {
+                              "daily_limit": 0,
+                              "dps_limit": 12,
+                              "hourly_limit": 0
+                            },
+                            "total": 162
+                          },
+                          "dps_limit": 30,
+                          "end_time": "2026-09-29T12:00:35.000Z",
+                          "peak_dps": 32.4,
+                          "record_type": "dial_metric",
+                          "region": "us",
+                          "start_time": "2026-09-29T12:00:30.000Z"
+                        }
+                      ],
+                      "meta": {
+                        "cursors": {},
+                        "end_time": "2026-09-29T12:00:35.000Z",
+                        "granularity": "second",
+                        "sort": "-start_time",
+                        "start_time": "2026-09-29T12:00:30.000Z"
+                      }
+                    }
+                  },
+                  "second_normal": {
+                    "summary": "One 5-second bucket, no rejections (granularity=second)",
+                    "value": {
+                      "data": [
+                        {
+                          "average_dps": 19,
+                          "dials": {
+                            "accepted": 95,
+                            "rejected": {
+                              "daily_limit": 0,
+                              "dps_limit": 0,
+                              "hourly_limit": 0
+                            },
+                            "total": 95
+                          },
+                          "dps_limit": 30,
+                          "end_time": "2026-09-29T12:00:35.000Z",
+                          "peak_dps": 19,
+                          "record_type": "dial_metric",
+                          "region": "us",
+                          "start_time": "2026-09-29T12:00:30.000Z"
+                        }
+                      ],
+                      "meta": {
+                        "cursors": {},
+                        "end_time": "2026-09-29T12:00:35.000Z",
+                        "granularity": "second",
+                        "sort": "-start_time",
+                        "start_time": "2026-09-29T12:00:30.000Z"
+                      }
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ListDialMetricsResponse"
+                }
+              }
+            },
+            "description": "Successful response with a page of dial metrics buckets."
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedResponse"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "errors": [
+                    {
+                      "code": "10005",
+                      "detail": "Not Found",
+                      "meta": {
+                        "url": "https://developers.telnyx.com/docs/overview/errors/10005"
+                      },
+                      "title": "Resource not found"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/call-control_Errors"
+                }
+              }
+            },
+            "description": "Resource not found. The route does not exist."
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "end_before_start": {
+                    "summary": "end_time not after start_time",
+                    "value": {
+                      "errors": [
+                        {
+                          "code": "10033",
+                          "detail": "end_time must be after start_time",
+                          "meta": {
+                            "url": "https://developers.telnyx.com/docs/overview/errors/10033"
+                          },
+                          "source": {
+                            "parameter": "end_time"
+                          },
+                          "title": "Value outside of range"
+                        }
+                      ]
+                    }
+                  },
+                  "invalid_cursor": {
+                    "summary": "Invalid cursor",
+                    "value": {
+                      "errors": [
+                        {
+                          "code": "10026",
+                          "detail": "page[after] is not a cursor this API returned",
+                          "meta": {
+                            "url": "https://developers.telnyx.com/docs/overview/errors/10026"
+                          },
+                          "source": {
+                            "parameter": "page[after]"
+                          },
+                          "title": "Invalid parameter type"
+                        }
+                      ]
+                    }
+                  },
+                  "invalid_date_time": {
+                    "summary": "Unparseable date-time",
+                    "value": {
+                      "errors": [
+                        {
+                          "code": "10026",
+                          "detail": "start_time must be an ISO 8601 date-time, e.g. 2026-09-29T12:00:00.000Z",
+                          "meta": {
+                            "url": "https://developers.telnyx.com/docs/overview/errors/10026"
+                          },
+                          "source": {
+                            "parameter": "start_time"
+                          },
+                          "title": "Invalid parameter type"
+                        }
+                      ]
+                    }
+                  },
+                  "invalid_granularity": {
+                    "summary": "Unknown granularity",
+                    "value": {
+                      "errors": [
+                        {
+                          "code": "10032",
+                          "detail": "granularity must be one of: second, minute, hour",
+                          "meta": {
+                            "url": "https://developers.telnyx.com/docs/overview/errors/10032"
+                          },
+                          "source": {
+                            "parameter": "granularity"
+                          },
+                          "title": "Invalid enumerated value"
+                        }
+                      ]
+                    }
+                  },
+                  "invalid_sort": {
+                    "summary": "Unknown sort",
+                    "value": {
+                      "errors": [
+                        {
+                          "code": "10032",
+                          "detail": "sort must be one of: -start_time, start_time",
+                          "meta": {
+                            "url": "https://developers.telnyx.com/docs/overview/errors/10032"
+                          },
+                          "source": {
+                            "parameter": "sort"
+                          },
+                          "title": "Invalid enumerated value"
+                        }
+                      ]
+                    }
+                  },
+                  "missing_required_parameter": {
+                    "summary": "Missing required parameter",
+                    "value": {
+                      "errors": [
+                        {
+                          "code": "10004",
+                          "detail": "start_time is required",
+                          "meta": {
+                            "url": "https://developers.telnyx.com/docs/overview/errors/10004"
+                          },
+                          "source": {
+                            "parameter": "start_time"
+                          },
+                          "title": "Missing required parameter"
+                        }
+                      ]
+                    }
+                  },
+                  "outside_retention": {
+                    "summary": "Whole range outside retention",
+                    "value": {
+                      "errors": [
+                        {
+                          "code": "10033",
+                          "detail": "granularity is only available for the last 48 hours; start_time is before 2026-09-27T12:00:00.000Z, which is outside the retention window",
+                          "meta": {
+                            "url": "https://developers.telnyx.com/docs/overview/errors/10033"
+                          },
+                          "source": {
+                            "parameter": "start_time"
+                          },
+                          "title": "Value outside of range"
+                        }
+                      ]
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/call-control_Errors"
+                }
+              }
+            },
+            "description": "Unprocessable entity. A required parameter is missing, a parameter has an invalid value, or the whole range ends at or before the start of the retention window of the chosen granularity."
+          },
+          "429": {
+            "$ref": "#/components/responses/RateLimitExceededResponse"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerErrorResponse"
+          },
+          "default": {
+            "$ref": "#/components/responses/call-control_GenericErrorResponse"
+          }
+        },
+        "summary": "List dial metrics",
+        "tags": [
+          "Call Information"
+        ],
+        "x-group-parameters": "true",
+        "x-latency-category": "responsive"
+      }
+    }
+  },
+  "security": [
+    {
+      "bearerAuth": []
+    }
+  ],
+  "servers": [
+    {
+      "description": "Version 2.0.0 of the Telnyx API",
+      "url": "https://api.telnyx.com/v2"
+    }
+  ]
+}

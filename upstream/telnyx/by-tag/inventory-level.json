@@ -1,0 +1,501 @@
+{
+  "components": {
+    "responses": {
+      "GenericErrorResponse": {
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Errors"
+            }
+          }
+        },
+        "description": "Unexpected error"
+      },
+      "numbers_BadRequestResponse_73c9788e53": {
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Errors"
+            }
+          }
+        },
+        "description": "Bad request, the request was unacceptable, often due to missing a required parameter."
+      },
+      "numbers_NotFoundResponse_73c9788e53": {
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Errors"
+            }
+          }
+        },
+        "description": "The requested resource doesn't exist."
+      },
+      "numbers_UnauthorizedResponse_73c9788e53": {
+        "content": {
+          "application/json": {
+            "examples": {
+              "Authentication Failed": {
+                "value": {
+                  "errors": [
+                    {
+                      "code": "10009",
+                      "detail": "Could not understand the provided credentials.",
+                      "meta": {
+                        "url": "https://developers.telnyx.com/docs/overview/errors/10009"
+                      },
+                      "title": "Authentication failed"
+                    }
+                  ]
+                }
+              }
+            },
+            "schema": {
+              "$ref": "#/components/schemas/Errors"
+            }
+          }
+        },
+        "description": "Unauthorized"
+      },
+      "numbers_UnprocessableEntity_73c9788e53": {
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Errors"
+            }
+          }
+        },
+        "description": "Unprocessable entity. Check the 'detail' field in response for details."
+      }
+    },
+    "schemas": {
+      "Error": {
+        "example": {
+          "code": "20207",
+          "description": "The street address provided is invalid.",
+          "source": {
+            "pointer": "/street_address"
+          },
+          "title": "Invalid street address"
+        },
+        "properties": {
+          "code": {
+            "type": "string",
+            "x-format": "int64"
+          },
+          "description": {
+            "type": "string"
+          },
+          "detail": {
+            "description": "A human-readable explanation of the error.",
+            "type": "string"
+          },
+          "meta": {
+            "additionalProperties": true,
+            "type": "object"
+          },
+          "source": {
+            "properties": {
+              "parameter": {
+                "description": "Indicates which query parameter caused the error.",
+                "type": "string"
+              },
+              "pointer": {
+                "description": "JSON pointer (RFC6901) to the offending entity.",
+                "format": "json-pointer",
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
+          "title": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "title"
+        ],
+        "type": "object"
+      },
+      "Errors": {
+        "properties": {
+          "errors": {
+            "items": {
+              "$ref": "#/components/schemas/Error"
+            },
+            "type": "array"
+          }
+        },
+        "type": "object"
+      },
+      "InventoryCoverage": {
+        "example": {
+          "administrative_area": "NJ",
+          "advance_requirements": true,
+          "count": 3,
+          "coverage_type": "number",
+          "group": "318",
+          "group_type": "npa",
+          "number_range": 1,
+          "number_type": "did",
+          "phone_number_type": "local",
+          "record_type": "inventory_coverage_group"
+        },
+        "properties": {
+          "administrative_area": {
+            "example": "NJ",
+            "type": "string"
+          },
+          "advance_requirements": {
+            "description": "Indicates if the phone number requires advance requirements.",
+            "example": true,
+            "type": "boolean"
+          },
+          "count": {
+            "example": 3,
+            "type": "integer"
+          },
+          "coverage_type": {
+            "enum": [
+              "number",
+              "block"
+            ],
+            "example": "number",
+            "type": "string"
+          },
+          "group": {
+            "example": "318",
+            "type": "string"
+          },
+          "group_type": {
+            "example": "npa",
+            "type": "string"
+          },
+          "number_range": {
+            "example": 1,
+            "type": "integer"
+          },
+          "number_type": {
+            "enum": [
+              "did",
+              "toll-free"
+            ],
+            "example": "did",
+            "type": "string"
+          },
+          "phone_number_type": {
+            "enum": [
+              "local",
+              "toll_free",
+              "national",
+              "landline",
+              "shared_cost",
+              "mobile"
+            ],
+            "example": "local",
+            "type": "string"
+          },
+          "record_type": {
+            "example": "inventory_coverage_group",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "InventoryCoverageMetadata": {
+        "example": {
+          "total_results": 25
+        },
+        "properties": {
+          "total_results": {
+            "example": 25,
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      }
+    },
+    "securitySchemes": {
+      "BearerAuth": {
+        "bearerFormat": "API key",
+        "description": "Telnyx API key supplied as `Authorization: Bearer \u003ctoken\u003e`. In production, auth may be validated by the API gateway and forwarded via Telnyx auth headers.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "Payment": {
+        "description": "Machine Payment Protocol credential used on paid retries, sent as `Authorization: Payment ...`. Obtained by paying a challenge returned in the `WWW-Authenticate` header of a 402 response. This is not a Telnyx API key; initial challenge requests use standard bearer authentication instead.",
+        "in": "header",
+        "name": "Authorization",
+        "type": "apiKey"
+      },
+      "agent-memory_bearerAuth": {
+        "description": "Telnyx API key",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "bearerAuth": {
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "branded-calling_bearerAuth": {
+        "description": "Telnyx API key. Generate one at https://portal.telnyx.com/#/app/api-keys.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "collections_bearerAuth": {
+        "description": "Telnyx API key. Collections and results are automatically scoped to the authenticated user's organization.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "number-reputation_bearerAuth": {
+        "description": "Telnyx API key. Generate one at https://portal.telnyx.com/#/app/api-keys.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "oauthClientAuth": {
+        "description": "OAuth 2.0 authentication for Telnyx API and MCP integrations",
+        "flows": {
+          "authorizationCode": {
+            "authorizationUrl": "https://api.telnyx.com/v2/oauth/authorize",
+            "refreshUrl": "https://api.telnyx.com/v2/oauth/token",
+            "scopes": {
+              "admin": "Administrative access to Telnyx resources"
+            },
+            "tokenUrl": "https://api.telnyx.com/v2/oauth/token"
+          },
+          "clientCredentials": {
+            "scopes": {
+              "admin": "Administrative access to Telnyx resources"
+            },
+            "tokenUrl": "https://api.telnyx.com/v2/oauth/token"
+          }
+        },
+        "type": "oauth2"
+      },
+      "outbound-voice-profiles_bearerAuth": {
+        "bearerFormat": "JWT",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "pay-connectors_bearerAuth": {
+        "description": "Telnyx API key, not the processor bearer token.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "pronunciation-dicts_bearerAuth": {
+        "description": "Telnyx API v2 key. Obtain from https://portal.telnyx.com",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "rcs-registration_bearerAuth": {
+        "bearerFormat": "API key",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "stored-payment-transactions_bearerAuth": {
+        "bearerFormat": "JWT",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "telnyxApiKey": {
+        "description": "Management-only Telnyx account credential.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "transcriptions-search_bearerAuth": {
+        "description": "Telnyx API key. Results are automatically scoped to the authenticated user's organization.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "web-search_bearerAuth": {
+        "description": "Telnyx API key",
+        "scheme": "bearer",
+        "type": "http"
+      }
+    }
+  },
+  "info": {
+    "contact": {
+      "email": "support@telnyx.com"
+    },
+    "description": "SIP trunking, SMS, MMS, Call Control and Telephony Data Services.",
+    "title": "Telnyx API",
+    "version": "2.0.0",
+    "x-endpoint-cost": "light",
+    "x-latency-category": "responsive"
+  },
+  "openapi": "3.1.0",
+  "paths": {
+    "/inventory_coverage": {
+      "get": {
+        "description": "Creates an inventory coverage request. If locality, npa or national_destination_code is used in groupBy, and no region or locality filters are used, the whole paginated set is returned.",
+        "operationId": "CreateInventoryCoverage",
+        "parameters": [
+          {
+            "description": "Consolidated filter parameter (deepObject style). Originally: filter[npa], filter[nxx], filter[administrative_area], filter[phone_number_type], filter[country_code], filter[count], filter[features], filter[groupBy]",
+            "explode": true,
+            "in": "query",
+            "name": "filter",
+            "schema": {
+              "properties": {
+                "administrative_area": {
+                  "description": "Filter by administrative area",
+                  "type": "string"
+                },
+                "count": {
+                  "description": "Include count in the result",
+                  "type": "boolean"
+                },
+                "country_code": {
+                  "description": "Filter by country. Defaults to US",
+                  "enum": [
+                    "AT",
+                    "AU",
+                    "BE",
+                    "BG",
+                    "CA",
+                    "CH",
+                    "CN",
+                    "CY",
+                    "CZ",
+                    "DE",
+                    "DK",
+                    "EE",
+                    "ES",
+                    "FI",
+                    "FR",
+                    "GB",
+                    "GR",
+                    "HU",
+                    "HR",
+                    "IE",
+                    "IT",
+                    "LT",
+                    "LU",
+                    "LV",
+                    "NL",
+                    "NZ",
+                    "MX",
+                    "NO",
+                    "PL",
+                    "PT",
+                    "RO",
+                    "SE",
+                    "SG",
+                    "SI",
+                    "SK",
+                    "US"
+                  ],
+                  "type": "string"
+                },
+                "features": {
+                  "description": "Filter if the phone number should be used for voice, fax, mms, sms, emergency. Returns features in the response when used.",
+                  "example": [
+                    "voice",
+                    "sms"
+                  ],
+                  "items": {
+                    "enum": [
+                      "sms",
+                      "mms",
+                      "voice",
+                      "fax",
+                      "emergency"
+                    ],
+                    "type": "string"
+                  },
+                  "type": "array"
+                },
+                "groupBy": {
+                  "description": "Filter to group results",
+                  "enum": [
+                    "locality",
+                    "npa",
+                    "national_destination_code"
+                  ],
+                  "type": "string"
+                },
+                "npa": {
+                  "description": "Filter by npa",
+                  "type": "integer"
+                },
+                "nxx": {
+                  "description": "Filter by nxx",
+                  "type": "integer"
+                },
+                "phone_number_type": {
+                  "description": "Filter by phone number type",
+                  "enum": [
+                    "local",
+                    "toll_free",
+                    "national",
+                    "mobile",
+                    "landline",
+                    "shared_cost"
+                  ],
+                  "type": "string"
+                }
+              },
+              "type": "object"
+            },
+            "style": "deepObject"
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "items": {
+                        "$ref": "#/components/schemas/InventoryCoverage"
+                      },
+                      "type": "array"
+                    },
+                    "meta": {
+                      "$ref": "#/components/schemas/InventoryCoverageMetadata"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful response with a list of inventory coverage levels"
+          },
+          "400": {
+            "$ref": "#/components/responses/numbers_BadRequestResponse_73c9788e53"
+          },
+          "401": {
+            "$ref": "#/components/responses/numbers_UnauthorizedResponse_73c9788e53"
+          },
+          "404": {
+            "$ref": "#/components/responses/numbers_NotFoundResponse_73c9788e53"
+          },
+          "422": {
+            "$ref": "#/components/responses/numbers_UnprocessableEntity_73c9788e53"
+          },
+          "500": {
+            "$ref": "#/components/responses/GenericErrorResponse"
+          }
+        },
+        "summary": "Create an inventory coverage request",
+        "tags": [
+          "Inventory Level"
+        ]
+      }
+    }
+  },
+  "security": [
+    {
+      "bearerAuth": []
+    }
+  ],
+  "servers": [
+    {
+      "description": "Version 2.0.0 of the Telnyx API",
+      "url": "https://api.telnyx.com/v2"
+    }
+  ]
+}

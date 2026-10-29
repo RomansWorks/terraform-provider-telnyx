@@ -1,0 +1,1096 @@
+{
+  "components": {
+    "responses": {
+      "BadRequest": {
+        "content": {
+          "application/json": {
+            "example": {
+              "error": {
+                "code": "validation_error",
+                "message": "invalid request: policy.allowed_domains must have at least 1 item(s)",
+                "retryable": false
+              }
+            },
+            "schema": {
+              "$ref": "#/components/schemas/ErrorResponse"
+            }
+          }
+        },
+        "description": "Invalid request — validation error or invalid parameters."
+      },
+      "NotFound": {
+        "content": {
+          "application/json": {
+            "example": {
+              "error": {
+                "code": "not_found",
+                "message": "session not found",
+                "retryable": false
+              }
+            },
+            "schema": {
+              "$ref": "#/components/schemas/ErrorResponse"
+            }
+          }
+        },
+        "description": "Session or artifact not found."
+      },
+      "Unauthorized": {
+        "content": {
+          "application/json": {
+            "example": {
+              "errors": [
+                {
+                  "code": "10009",
+                  "detail": "Could not find any usable credentials in the request.",
+                  "meta": {
+                    "url": "https://developers.telnyx.com/docs/overview/errors/10009"
+                  },
+                  "source": {
+                    "pointer": "/"
+                  },
+                  "title": "Authentication failed"
+                }
+              ]
+            },
+            "schema": {
+              "$ref": "#/components/schemas/GatewayError"
+            }
+          }
+        },
+        "description": "Unauthorized — missing or invalid API key."
+      }
+    },
+    "schemas": {
+      "ActionRequest": {
+        "description": "Discriminated union on type. Variants are strict: unknown fields are rejected with 400. Reusing an idempotency_key with an identical request replays the original resource; with a different request it returns 409 idempotency_conflict.",
+        "oneOf": [
+          {
+            "$ref": "#/components/schemas/NavigateAction"
+          },
+          {
+            "$ref": "#/components/schemas/ObserveAction"
+          },
+          {
+            "$ref": "#/components/schemas/ClickAction"
+          },
+          {
+            "$ref": "#/components/schemas/FillAction"
+          },
+          {
+            "$ref": "#/components/schemas/SelectAction"
+          },
+          {
+            "$ref": "#/components/schemas/PressAction"
+          },
+          {
+            "$ref": "#/components/schemas/ScrollAction"
+          },
+          {
+            "$ref": "#/components/schemas/ScreenshotAction"
+          },
+          {
+            "$ref": "#/components/schemas/WaitForAction"
+          },
+          {
+            "$ref": "#/components/schemas/BatchAction"
+          }
+        ]
+      },
+      "ActionResponse": {
+        "properties": {
+          "completed_at": {
+            "format": "date-time",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "created_at": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "error": {
+            "description": "Null unless an execution failure is recorded. Action failures (policy_denied, stale_observation, stale_ref, navigation_blocked, timeout, execution_lost, result_too_large) are returned on the action resource with HTTP 200. An unknown action with execution_lost has retryable=false; inspect session state and reconcile possible effects before any new action. Separately, a request may return HTTP 503 with a top-level execution_lost error and retryable=true; that is not proof of safe re-execution.",
+            "properties": {
+              "code": {
+                "type": "string"
+              },
+              "retryable": {
+                "type": "boolean"
+              }
+            },
+            "required": [
+              "code",
+              "retryable"
+            ],
+            "type": [
+              "object",
+              "null"
+            ]
+          },
+          "id": {
+            "example": "bact_075cfdc9-...",
+            "type": "string"
+          },
+          "request": {
+            "additionalProperties": true,
+            "description": "Normalized request metadata; defaults may be materialized and fill values are redacted as {redacted: true, length: number}, including inside batch actions.",
+            "type": "object"
+          },
+          "result": {
+            "properties": {
+              "artifact": {
+                "properties": {
+                  "artifact_id": {
+                    "type": "string"
+                  },
+                  "content_type": {
+                    "type": "string"
+                  },
+                  "size_bytes": {
+                    "type": "integer"
+                  }
+                },
+                "type": "object"
+              },
+              "observation": {
+                "description": "Full tree and refs are delivered only in the original successful POST response when completed within wait_seconds. GET polling and idempotent replays return metadata with an empty tree and refs plus ref_count. Submit a fresh observe action to obtain usable refs.",
+                "properties": {
+                  "observation_id": {
+                    "type": "string"
+                  },
+                  "ref_count": {
+                    "description": "Number of refs in the original observation, present on stored observation metadata.",
+                    "type": "integer"
+                  },
+                  "refs": {
+                    "additionalProperties": true,
+                    "type": "object"
+                  },
+                  "title": {
+                    "type": "string"
+                  },
+                  "tree": {
+                    "type": "string"
+                  },
+                  "truncated": {
+                    "type": "boolean"
+                  },
+                  "url": {
+                    "type": "string"
+                  }
+                },
+                "type": "object"
+              },
+              "results": {
+                "description": "Present only for batch actions.",
+                "items": {
+                  "additionalProperties": true,
+                  "type": "object"
+                },
+                "type": "array"
+              },
+              "title": {
+                "type": "string"
+              },
+              "url": {
+                "type": "string"
+              }
+            },
+            "type": [
+              "object",
+              "null"
+            ]
+          },
+          "seq": {
+            "type": "integer"
+          },
+          "session_id": {
+            "type": "string"
+          },
+          "started_at": {
+            "format": "date-time",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "status": {
+            "description": "POST returns 202 for queued or running actions. Terminal states are succeeded, failed, and unknown (the execution outcome could not be determined, with error.code=execution_lost). GET returns 200 for both nonterminal and terminal states.",
+            "enum": [
+              "queued",
+              "running",
+              "succeeded",
+              "failed",
+              "unknown"
+            ],
+            "type": "string"
+          },
+          "type": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "session_id",
+          "seq",
+          "type",
+          "status",
+          "result",
+          "request",
+          "error",
+          "created_at",
+          "started_at",
+          "completed_at"
+        ],
+        "type": "object"
+      },
+      "BatchAction": {
+        "additionalProperties": false,
+        "description": "Execute 1-50 sub-actions sequentially. Non-recursive: a batch inside a batch is rejected (400). An empty array is rejected (400). A failed sub-action stops the batch; earlier browser mutations are not rolled back, but partial sub-action results are not returned.",
+        "properties": {
+          "actions": {
+            "items": {
+              "oneOf": [
+                {
+                  "$ref": "#/components/schemas/NavigateAction"
+                },
+                {
+                  "$ref": "#/components/schemas/ObserveAction"
+                },
+                {
+                  "$ref": "#/components/schemas/ClickAction"
+                },
+                {
+                  "$ref": "#/components/schemas/FillAction"
+                },
+                {
+                  "$ref": "#/components/schemas/SelectAction"
+                },
+                {
+                  "$ref": "#/components/schemas/PressAction"
+                },
+                {
+                  "$ref": "#/components/schemas/ScrollAction"
+                },
+                {
+                  "$ref": "#/components/schemas/ScreenshotAction"
+                },
+                {
+                  "$ref": "#/components/schemas/WaitForAction"
+                }
+              ]
+            },
+            "maxItems": 50,
+            "minItems": 1,
+            "type": "array"
+          },
+          "idempotency_key": {
+            "maxLength": 255,
+            "minLength": 1,
+            "type": "string"
+          },
+          "include_observation": {
+            "default": false,
+            "type": "boolean"
+          },
+          "type": {
+            "const": "batch"
+          }
+        },
+        "required": [
+          "type",
+          "actions"
+        ],
+        "type": "object"
+      },
+      "ClickAction": {
+        "additionalProperties": false,
+        "description": "Click an element identified by observation_id + ref.",
+        "properties": {
+          "idempotency_key": {
+            "maxLength": 255,
+            "minLength": 1,
+            "type": "string"
+          },
+          "include_observation": {
+            "default": false,
+            "type": "boolean"
+          },
+          "observation_id": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "ref": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "timeout_ms": {
+            "default": 5000,
+            "maximum": 15000,
+            "minimum": 100,
+            "type": "integer"
+          },
+          "type": {
+            "const": "click"
+          },
+          "wait": {
+            "default": "dom_stable",
+            "enum": [
+              "no_wait",
+              "dom_stable",
+              "url_change"
+            ],
+            "type": "string"
+          }
+        },
+        "required": [
+          "type",
+          "observation_id",
+          "ref"
+        ],
+        "type": "object"
+      },
+      "ErrorResponse": {
+        "properties": {
+          "error": {
+            "properties": {
+              "code": {
+                "type": "string"
+              },
+              "message": {
+                "type": "string"
+              },
+              "retryable": {
+                "type": "boolean"
+              }
+            },
+            "required": [
+              "code",
+              "message",
+              "retryable"
+            ],
+            "type": "object"
+          }
+        },
+        "required": [
+          "error"
+        ],
+        "type": "object"
+      },
+      "FillAction": {
+        "additionalProperties": false,
+        "description": "Type text into the element identified by observation_id + ref.",
+        "properties": {
+          "idempotency_key": {
+            "maxLength": 255,
+            "minLength": 1,
+            "type": "string"
+          },
+          "include_observation": {
+            "default": false,
+            "type": "boolean"
+          },
+          "observation_id": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "ref": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "type": {
+            "const": "fill"
+          },
+          "value": {
+            "maxLength": 4096,
+            "type": "string"
+          }
+        },
+        "required": [
+          "type",
+          "observation_id",
+          "ref",
+          "value"
+        ],
+        "type": "object"
+      },
+      "GatewayError": {
+        "properties": {
+          "errors": {
+            "items": {
+              "properties": {
+                "code": {
+                  "type": "string"
+                },
+                "detail": {
+                  "type": "string"
+                },
+                "meta": {
+                  "properties": {
+                    "url": {
+                      "format": "uri",
+                      "type": "string"
+                    }
+                  },
+                  "type": "object"
+                },
+                "source": {
+                  "properties": {
+                    "pointer": {
+                      "type": "string"
+                    }
+                  },
+                  "type": "object"
+                },
+                "title": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "code",
+                "title"
+              ],
+              "type": "object"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "errors"
+        ],
+        "type": "object"
+      },
+      "NavigateAction": {
+        "additionalProperties": false,
+        "description": "Navigate to a URL.",
+        "properties": {
+          "idempotency_key": {
+            "maxLength": 255,
+            "minLength": 1,
+            "type": "string"
+          },
+          "include_observation": {
+            "default": false,
+            "type": "boolean"
+          },
+          "type": {
+            "const": "navigate"
+          },
+          "url": {
+            "format": "uri",
+            "maxLength": 2048,
+            "type": "string"
+          },
+          "wait_until": {
+            "default": "load",
+            "enum": [
+              "load",
+              "dom_stable",
+              "none"
+            ],
+            "type": "string"
+          }
+        },
+        "required": [
+          "type",
+          "url"
+        ],
+        "type": "object"
+      },
+      "ObserveAction": {
+        "additionalProperties": false,
+        "description": "Capture an observation (DOM snapshot) of the current page.",
+        "properties": {
+          "idempotency_key": {
+            "maxLength": 255,
+            "minLength": 1,
+            "type": "string"
+          },
+          "include_observation": {
+            "default": false,
+            "type": "boolean"
+          },
+          "type": {
+            "const": "observe"
+          }
+        },
+        "required": [
+          "type"
+        ],
+        "type": "object"
+      },
+      "PressAction": {
+        "additionalProperties": false,
+        "description": "Press a keyboard key.",
+        "properties": {
+          "idempotency_key": {
+            "maxLength": 255,
+            "minLength": 1,
+            "type": "string"
+          },
+          "include_observation": {
+            "default": false,
+            "type": "boolean"
+          },
+          "key": {
+            "enum": [
+              "Enter",
+              "Tab",
+              "Escape",
+              "Backspace",
+              "ArrowUp",
+              "ArrowDown",
+              "ArrowLeft",
+              "ArrowRight",
+              "PageUp",
+              "PageDown",
+              "Home",
+              "End"
+            ],
+            "type": "string"
+          },
+          "type": {
+            "const": "press"
+          }
+        },
+        "required": [
+          "type",
+          "key"
+        ],
+        "type": "object"
+      },
+      "ScreenshotAction": {
+        "additionalProperties": false,
+        "description": "Capture a screenshot of the current page.",
+        "properties": {
+          "idempotency_key": {
+            "maxLength": 255,
+            "minLength": 1,
+            "type": "string"
+          },
+          "include_observation": {
+            "default": false,
+            "type": "boolean"
+          },
+          "type": {
+            "const": "screenshot"
+          }
+        },
+        "required": [
+          "type"
+        ],
+        "type": "object"
+      },
+      "ScrollAction": {
+        "additionalProperties": false,
+        "description": "Scroll the page.",
+        "properties": {
+          "delta_x": {
+            "default": 0,
+            "maximum": 5000,
+            "minimum": -5000,
+            "type": "integer"
+          },
+          "delta_y": {
+            "default": 0,
+            "maximum": 5000,
+            "minimum": -5000,
+            "type": "integer"
+          },
+          "idempotency_key": {
+            "maxLength": 255,
+            "minLength": 1,
+            "type": "string"
+          },
+          "include_observation": {
+            "default": false,
+            "type": "boolean"
+          },
+          "type": {
+            "const": "scroll"
+          }
+        },
+        "required": [
+          "type"
+        ],
+        "type": "object"
+      },
+      "SelectAction": {
+        "additionalProperties": false,
+        "description": "Select an option on the element identified by observation_id + ref.",
+        "properties": {
+          "idempotency_key": {
+            "maxLength": 255,
+            "minLength": 1,
+            "type": "string"
+          },
+          "include_observation": {
+            "default": false,
+            "type": "boolean"
+          },
+          "observation_id": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "ref": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "type": {
+            "const": "select"
+          },
+          "value": {
+            "maxLength": 1024,
+            "type": "string"
+          }
+        },
+        "required": [
+          "type",
+          "observation_id",
+          "ref",
+          "value"
+        ],
+        "type": "object"
+      },
+      "WaitForAction": {
+        "additionalProperties": false,
+        "description": "Wait for a condition before continuing.",
+        "properties": {
+          "condition": {
+            "oneOf": [
+              {
+                "additionalProperties": false,
+                "properties": {
+                  "kind": {
+                    "const": "url_pattern"
+                  },
+                  "pattern": {
+                    "maxLength": 1024,
+                    "minLength": 1,
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "kind",
+                  "pattern"
+                ],
+                "type": "object"
+              },
+              {
+                "additionalProperties": false,
+                "properties": {
+                  "kind": {
+                    "const": "ref"
+                  },
+                  "observation_id": {
+                    "minLength": 1,
+                    "type": "string"
+                  },
+                  "ref": {
+                    "minLength": 1,
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "kind",
+                  "observation_id",
+                  "ref"
+                ],
+                "type": "object"
+              },
+              {
+                "additionalProperties": false,
+                "properties": {
+                  "kind": {
+                    "const": "text"
+                  },
+                  "text": {
+                    "maxLength": 1024,
+                    "minLength": 1,
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "kind",
+                  "text"
+                ],
+                "type": "object"
+              },
+              {
+                "additionalProperties": false,
+                "properties": {
+                  "kind": {
+                    "const": "dom_stable"
+                  }
+                },
+                "required": [
+                  "kind"
+                ],
+                "type": "object"
+              }
+            ]
+          },
+          "idempotency_key": {
+            "maxLength": 255,
+            "minLength": 1,
+            "type": "string"
+          },
+          "include_observation": {
+            "default": false,
+            "type": "boolean"
+          },
+          "timeout_ms": {
+            "default": 5000,
+            "maximum": 15000,
+            "minimum": 100,
+            "type": "integer"
+          },
+          "type": {
+            "const": "wait_for"
+          }
+        },
+        "required": [
+          "type",
+          "condition"
+        ],
+        "type": "object"
+      }
+    },
+    "securitySchemes": {
+      "BearerAuth": {
+        "bearerFormat": "API key",
+        "description": "Telnyx API key supplied as `Authorization: Bearer \u003ctoken\u003e`. In production, auth may be validated by the API gateway and forwarded via Telnyx auth headers.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "Payment": {
+        "description": "Machine Payment Protocol credential used on paid retries, sent as `Authorization: Payment ...`. Obtained by paying a challenge returned in the `WWW-Authenticate` header of a 402 response. This is not a Telnyx API key; initial challenge requests use standard bearer authentication instead.",
+        "in": "header",
+        "name": "Authorization",
+        "type": "apiKey"
+      },
+      "agent-memory_bearerAuth": {
+        "description": "Telnyx API key",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "bearerAuth": {
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "branded-calling_bearerAuth": {
+        "description": "Telnyx API key. Generate one at https://portal.telnyx.com/#/app/api-keys.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "collections_bearerAuth": {
+        "description": "Telnyx API key. Collections and results are automatically scoped to the authenticated user's organization.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "number-reputation_bearerAuth": {
+        "description": "Telnyx API key. Generate one at https://portal.telnyx.com/#/app/api-keys.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "oauthClientAuth": {
+        "description": "OAuth 2.0 authentication for Telnyx API and MCP integrations",
+        "flows": {
+          "authorizationCode": {
+            "authorizationUrl": "https://api.telnyx.com/v2/oauth/authorize",
+            "refreshUrl": "https://api.telnyx.com/v2/oauth/token",
+            "scopes": {
+              "admin": "Administrative access to Telnyx resources"
+            },
+            "tokenUrl": "https://api.telnyx.com/v2/oauth/token"
+          },
+          "clientCredentials": {
+            "scopes": {
+              "admin": "Administrative access to Telnyx resources"
+            },
+            "tokenUrl": "https://api.telnyx.com/v2/oauth/token"
+          }
+        },
+        "type": "oauth2"
+      },
+      "outbound-voice-profiles_bearerAuth": {
+        "bearerFormat": "JWT",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "pay-connectors_bearerAuth": {
+        "description": "Telnyx API key, not the processor bearer token.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "pronunciation-dicts_bearerAuth": {
+        "description": "Telnyx API v2 key. Obtain from https://portal.telnyx.com",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "rcs-registration_bearerAuth": {
+        "bearerFormat": "API key",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "stored-payment-transactions_bearerAuth": {
+        "bearerFormat": "JWT",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "telnyxApiKey": {
+        "description": "Management-only Telnyx account credential.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "transcriptions-search_bearerAuth": {
+        "description": "Telnyx API key. Results are automatically scoped to the authenticated user's organization.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "web-search_bearerAuth": {
+        "description": "Telnyx API key",
+        "scheme": "bearer",
+        "type": "http"
+      }
+    }
+  },
+  "info": {
+    "contact": {
+      "email": "support@telnyx.com"
+    },
+    "description": "SIP trunking, SMS, MMS, Call Control and Telephony Data Services.",
+    "title": "Telnyx API",
+    "version": "2.0.0",
+    "x-endpoint-cost": "light",
+    "x-latency-category": "responsive"
+  },
+  "openapi": "3.1.0",
+  "paths": {
+    "/browser_sessions/{id}/actions": {
+      "post": {
+        "description": "Executes a browser action on the session. Returns 200 if completed within wait_seconds, 202 if still in-flight.\n\nAction types: navigate, observe, click, fill, select, press, scroll, wait_for, screenshot, batch.",
+        "operationId": "ExecuteBrowserAction",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Maximum seconds the submission request waits for completion, not an execution timeout. If still queued or running, returns 202 without cancelling execution; poll the returned action ID.",
+            "in": "query",
+            "name": "wait_seconds",
+            "required": false,
+            "schema": {
+              "default": 10,
+              "maximum": 25,
+              "minimum": 0,
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "examples": {
+                "batch": {
+                  "summary": "Batch",
+                  "value": {
+                    "actions": [
+                      {
+                        "type": "navigate",
+                        "url": "https://example.com/"
+                      },
+                      {
+                        "type": "observe"
+                      }
+                    ],
+                    "type": "batch"
+                  }
+                },
+                "click": {
+                  "summary": "Click",
+                  "value": {
+                    "observation_id": "obs_...",
+                    "ref": "e1",
+                    "type": "click"
+                  }
+                },
+                "navigate": {
+                  "summary": "Navigate",
+                  "value": {
+                    "type": "navigate",
+                    "url": "https://example.com/"
+                  }
+                },
+                "observe": {
+                  "summary": "Observe",
+                  "value": {
+                    "type": "observe"
+                  }
+                },
+                "screenshot": {
+                  "summary": "Screenshot",
+                  "value": {
+                    "type": "screenshot"
+                  }
+                }
+              },
+              "schema": {
+                "$ref": "#/components/schemas/ActionRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/ActionResponse"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Terminal action: succeeded, failed, or unknown. Inspect data.status and data.error; HTTP 200 does not imply successful execution."
+          },
+          "202": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/ActionResponse"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Action still in-flight — poll for result"
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "session_not_ready",
+                    "message": "session is provisioning",
+                    "retryable": true
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "session_not_ready: new actions require a ready session; poll while provisioning, but do not retry new actions on closing or terminal sessions. concurrent_action: wait for the in-flight action. idempotency_conflict: the key was reused with a different normalized request."
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "execution_lost",
+                    "message": "Request could not be completed reliably",
+                    "retryable": true
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "The request could not be completed reliably. Retrieve action and session state before retrying; a mutation may already have taken effect. Do not blindly repeat it with a new idempotency key or session."
+          }
+        },
+        "summary": "Execute browser action",
+        "tags": [
+          "Actions"
+        ]
+      }
+    },
+    "/browser_sessions/{id}/actions/{actionId}": {
+      "get": {
+        "description": "Returns the stored status and result of an action. Use this to poll actions that returned 202; HTTP 200 can contain any action status. Stored observations contain metadata with empty tree and refs, not the full snapshot; submit a fresh observe action to obtain current refs.",
+        "operationId": "GetBrowserAction",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "actionId",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/ActionResponse"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Action details"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          }
+        },
+        "summary": "Get action result",
+        "tags": [
+          "Actions"
+        ]
+      }
+    }
+  },
+  "security": [
+    {
+      "bearerAuth": []
+    }
+  ],
+  "servers": [
+    {
+      "description": "Version 2.0.0 of the Telnyx API",
+      "url": "https://api.telnyx.com/v2"
+    }
+  ]
+}

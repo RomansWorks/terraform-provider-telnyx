@@ -1,0 +1,726 @@
+{
+  "components": {
+    "schemas": {
+      "ErrorRecord": {
+        "properties": {
+          "code": {
+            "description": "an application-specific error code, expressed as a stringified 5-digit integer",
+            "example": "10003",
+            "type": "string"
+          },
+          "detail": {
+            "description": "a human-readable explanation specific to this occurrence of the problem. Like title, this field’s value can be localized",
+            "example": "Available metrics values for sip-trunking: connected,cost,completed,call_sec,attempted,billed_sec.",
+            "type": "string"
+          },
+          "meta": {
+            "$ref": "#/components/schemas/MetaResponse"
+          },
+          "source": {
+            "$ref": "#/components/schemas/legacy_published_account_billing_usage_reports_SourceResponse"
+          },
+          "title": {
+            "description": "a short, human-readable summary of the problem, with NO punctuation, that SHOULD NOT CHANGE from occurrence to occurrence of the problem, except for purposes of localization",
+            "example": "Metrics invalid values",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "MetaResponse": {
+        "properties": {
+          "url": {
+            "description": "This should likely be a URL to the relevant documentation",
+            "example": "https://developers.telnyx.com/docs/overview/errors/10001",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "PaginationData": {
+        "properties": {
+          "page_number": {
+            "description": "Selected page number.",
+            "example": 1,
+            "type": "integer"
+          },
+          "page_size": {
+            "description": "Records per single page",
+            "example": 20,
+            "type": "integer"
+          },
+          "total_pages": {
+            "description": "Total number of pages.",
+            "example": 5,
+            "type": "integer"
+          },
+          "total_results": {
+            "description": "Total number of results.",
+            "example": 100,
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "UsageReportsOptionsRecord": {
+        "description": "An object following one of the schemas published in https://developers.telnyx.com/docs/api/v2/detail-records",
+        "properties": {
+          "product": {
+            "description": "Telnyx Product",
+            "example": "wireless",
+            "type": "string"
+          },
+          "product_dimensions": {
+            "description": "Telnyx Product Dimensions",
+            "example": [
+              "mnc",
+              "mcc",
+              "sim_card_id",
+              "sim_group_name"
+            ],
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "product_metrics": {
+            "description": "Telnyx Product Metrics",
+            "example": [
+              "uplink_data_bytes",
+              "downlink_data",
+              "downlink_data_bytes",
+              "uplink_data",
+              "data_cost"
+            ],
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "record_types": {
+            "description": "Subproducts if applicable",
+            "items": {
+              "$ref": "#/components/schemas/usage-reports_RecordType"
+            },
+            "type": "array"
+          }
+        },
+        "type": "object"
+      },
+      "UsageReportsOptionsResponse": {
+        "description": "An object following one of the schemas published in https://developers.telnyx.com/docs/api/v2/detail-records",
+        "properties": {
+          "data": {
+            "description": "Collection of product description",
+            "items": {
+              "$ref": "#/components/schemas/UsageReportsOptionsRecord"
+            },
+            "type": "array"
+          }
+        },
+        "type": "object"
+      },
+      "UsageReportsResponse": {
+        "properties": {
+          "data": {
+            "example": [
+              {
+                "cost": 0.012,
+                "count": 8,
+                "country_iso": "LC",
+                "customer_carrier_fee": 0,
+                "direction": "outbound",
+                "parts": 12,
+                "product": "messaging",
+                "product_name": "long_code"
+              },
+              {
+                "cost": 0.021,
+                "count": 12,
+                "country_iso": "MP",
+                "customer_carrier_fee": 0,
+                "direction": "outbound",
+                "parts": 21,
+                "product": "messaging",
+                "product_name": "long_code"
+              }
+            ],
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "type": "array"
+          },
+          "meta": {
+            "$ref": "#/components/schemas/PaginationData"
+          }
+        },
+        "type": "object"
+      },
+      "legacy_published_account_billing_usage_reports_SourceResponse": {
+        "properties": {
+          "parameter": {
+            "description": "a string indicating which URI query parameter caused the error",
+            "example": "metrics",
+            "type": "string"
+          },
+          "pointer": {
+            "description": "A JSON Pointer [RFC6901] to the associated entity in the request document",
+            "example": "/title",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "usage-reports_RecordType": {
+        "description": "An object following one of the schemas published in https://developers.telnyx.com/docs/api/v2/detail-records",
+        "properties": {
+          "product_dimensions": {
+            "description": "Telnyx Product Dimensions",
+            "example": [
+              "direction",
+              "currency",
+              "message_type"
+            ],
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "product_metrics": {
+            "description": "Telnyx Product Metrics",
+            "example": [
+              "cost",
+              "billed_sec"
+            ],
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "record_type": {
+            "description": "Telnyx Product type",
+            "example": "conversation_event",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "usage_reports_usage_reports_ErrorResponse": {
+        "properties": {
+          "errors": {
+            "items": {
+              "$ref": "#/components/schemas/ErrorRecord"
+            },
+            "type": "array"
+          }
+        },
+        "type": "object"
+      }
+    },
+    "securitySchemes": {
+      "BearerAuth": {
+        "bearerFormat": "API key",
+        "description": "Telnyx API key supplied as `Authorization: Bearer \u003ctoken\u003e`. In production, auth may be validated by the API gateway and forwarded via Telnyx auth headers.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "Payment": {
+        "description": "Machine Payment Protocol credential used on paid retries, sent as `Authorization: Payment ...`. Obtained by paying a challenge returned in the `WWW-Authenticate` header of a 402 response. This is not a Telnyx API key; initial challenge requests use standard bearer authentication instead.",
+        "in": "header",
+        "name": "Authorization",
+        "type": "apiKey"
+      },
+      "agent-memory_bearerAuth": {
+        "description": "Telnyx API key",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "bearerAuth": {
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "branded-calling_bearerAuth": {
+        "description": "Telnyx API key. Generate one at https://portal.telnyx.com/#/app/api-keys.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "collections_bearerAuth": {
+        "description": "Telnyx API key. Collections and results are automatically scoped to the authenticated user's organization.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "number-reputation_bearerAuth": {
+        "description": "Telnyx API key. Generate one at https://portal.telnyx.com/#/app/api-keys.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "oauthClientAuth": {
+        "description": "OAuth 2.0 authentication for Telnyx API and MCP integrations",
+        "flows": {
+          "authorizationCode": {
+            "authorizationUrl": "https://api.telnyx.com/v2/oauth/authorize",
+            "refreshUrl": "https://api.telnyx.com/v2/oauth/token",
+            "scopes": {
+              "admin": "Administrative access to Telnyx resources"
+            },
+            "tokenUrl": "https://api.telnyx.com/v2/oauth/token"
+          },
+          "clientCredentials": {
+            "scopes": {
+              "admin": "Administrative access to Telnyx resources"
+            },
+            "tokenUrl": "https://api.telnyx.com/v2/oauth/token"
+          }
+        },
+        "type": "oauth2"
+      },
+      "outbound-voice-profiles_bearerAuth": {
+        "bearerFormat": "JWT",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "pay-connectors_bearerAuth": {
+        "description": "Telnyx API key, not the processor bearer token.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "pronunciation-dicts_bearerAuth": {
+        "description": "Telnyx API v2 key. Obtain from https://portal.telnyx.com",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "rcs-registration_bearerAuth": {
+        "bearerFormat": "API key",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "stored-payment-transactions_bearerAuth": {
+        "bearerFormat": "JWT",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "telnyxApiKey": {
+        "description": "Management-only Telnyx account credential.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "transcriptions-search_bearerAuth": {
+        "description": "Telnyx API key. Results are automatically scoped to the authenticated user's organization.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "web-search_bearerAuth": {
+        "description": "Telnyx API key",
+        "scheme": "bearer",
+        "type": "http"
+      }
+    }
+  },
+  "info": {
+    "contact": {
+      "email": "support@telnyx.com"
+    },
+    "description": "SIP trunking, SMS, MMS, Call Control and Telephony Data Services.",
+    "title": "Telnyx API",
+    "version": "2.0.0",
+    "x-endpoint-cost": "light",
+    "x-latency-category": "responsive"
+  },
+  "openapi": "3.1.0",
+  "paths": {
+    "/usage_reports": {
+      "get": {
+        "description": "Get Telnyx usage data by product, broken out by the specified dimensions",
+        "operationId": "GetUsageReports",
+        "parameters": [
+          {
+            "description": "Telnyx product",
+            "examples": {
+              "product=messaging": {
+                "summary": "messaging",
+                "value": "messaging"
+              },
+              "product=wireless": {
+                "summary": "wireless",
+                "value": "wireless"
+              }
+            },
+            "in": "query",
+            "name": "product",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Breakout by specified product dimensions",
+            "examples": {
+              "dimensions=direction,currency,message_type": {
+                "summary": "Dimensions aggregation list",
+                "value": [
+                  "direction",
+                  "currency",
+                  "message_type"
+                ]
+              }
+            },
+            "in": "query",
+            "name": "dimensions",
+            "required": true,
+            "schema": {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            }
+          },
+          {
+            "description": "Specified product usage values",
+            "examples": {
+              "metrics=cost,billed_sec": {
+                "summary": "Metrics aggregation list",
+                "value": [
+                  "cost",
+                  "billed_sec"
+                ]
+              }
+            },
+            "in": "query",
+            "name": "metrics",
+            "required": true,
+            "schema": {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            }
+          },
+          {
+            "description": "The start date for the time range you are interested in. The maximum time range is 31 days. Format: YYYY-MM-DDTHH:mm:ssZ",
+            "examples": {
+              "start_date=2024-02-01T00:00:00Z": {
+                "summary": "Aggregate for records with timestamp starting at specified date and time.",
+                "value": "2024-02-01T00:00:00Z"
+              }
+            },
+            "in": "query",
+            "name": "start_date",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "The end date for the time range you are interested in. The maximum time range is 31 days. Format: YYYY-MM-DDTHH:mm:ssZ",
+            "examples": {
+              "end_date=2024-03-01T00:00:00Z": {
+                "summary": "Aggregate for records with timestamp ending at specified date and time.",
+                "value": "2024-03-01T00:00:00Z"
+              }
+            },
+            "in": "query",
+            "name": "end_date",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "A more user-friendly way to specify the timespan you want to filter by. More options can be found in the Telnyx API Reference docs.",
+            "examples": {
+              "date_range=last_3_days": {
+                "summary": "last_3_days - Searches for records with timestamp starting at `00:00:00` since 3 days ago",
+                "value": "last_3_days"
+              },
+              "date_range=today": {
+                "summary": "today - Searches for records with timestamp starting at `00:00:00` of the current day",
+                "value": "today"
+              }
+            },
+            "in": "query",
+            "name": "date_range",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Filter records on dimensions",
+            "examples": {
+              "filter[country_code]=NLD": {
+                "summary": "Filter country code on NLD",
+                "value": "filter[country_code]=NLD"
+              },
+              "filter[currency]=USD": {
+                "summary": "Filter currency on USD",
+                "value": "filter[currency]=USD"
+              },
+              "filter[direction]=inbound": {
+                "summary": "Filter direction on Inbound",
+                "value": "filter[direction]=inbound"
+              }
+            },
+            "in": "query",
+            "name": "filter",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Return the aggregations for all Managed Accounts under the user making the request.",
+            "examples": {
+              "managed_accounts=true": {
+                "summary": "Fetch aggregations for all Managed Accounts",
+                "value": false
+              }
+            },
+            "in": "query",
+            "name": "managed_accounts",
+            "required": false,
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "description": "Specifies the sort order for results",
+            "examples": {
+              "sort=-created_at": {
+                "summary": "Sorts search results using the `-created_at` date-time in descending order",
+                "value": [
+                  "-created_at"
+                ]
+              },
+              "sort=created_at": {
+                "summary": "Sorts search results using the `created_at` date-time in ascending order",
+                "value": [
+                  "created_at"
+                ]
+              }
+            },
+            "in": "query",
+            "name": "sort",
+            "required": false,
+            "schema": {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            }
+          },
+          {
+            "description": "Specify the response format (csv or json). JSON is returned by default, even if not specified.",
+            "examples": {
+              "format=csv": {
+                "summary": "Get the response in CSV format",
+                "value": "csv"
+              },
+              "format=json": {
+                "summary": "Get the response in JSON format",
+                "value": "json"
+              }
+            },
+            "in": "query",
+            "name": "format",
+            "required": false,
+            "schema": {
+              "enum": [
+                "csv",
+                "json"
+              ],
+              "type": "string"
+            }
+          },
+          {
+            "description": "Bearer token used to authenticate the request.",
+            "in": "header",
+            "name": "authorization_bearer",
+            "schema": {
+              "description": "Authenticates the request with your Telnyx API V2 KEY",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Consolidated page parameter (deepObject style). Originally: page[number], page[size]",
+            "examples": {
+              "page[number]=1\u0026page[size]=20": {
+                "summary": "Returns the first page with 20 records per page (default pagination)",
+                "value": {
+                  "number": 1,
+                  "size": 20
+                }
+              },
+              "page[number]=1\u0026page[size]=50": {
+                "summary": "Returns the first page with 50 records per page (larger page size)",
+                "value": {
+                  "number": 1,
+                  "size": 50
+                }
+              },
+              "page[number]=2\u0026page[size]=20": {
+                "summary": "Returns the second page with 20 records per page",
+                "value": {
+                  "number": 2,
+                  "size": 20
+                }
+              },
+              "page[number]=5\u0026page[size]=100": {
+                "summary": "Returns the fifth page with 100 records per page",
+                "value": {
+                  "number": 5,
+                  "size": 100
+                }
+              }
+            },
+            "explode": true,
+            "in": "query",
+            "name": "page",
+            "schema": {
+              "properties": {
+                "number": {
+                  "default": 1,
+                  "minimum": 1,
+                  "title": "Page[Number]",
+                  "type": "integer"
+                },
+                "size": {
+                  "default": 20,
+                  "maximum": 5000,
+                  "title": "Page[Size]",
+                  "type": "integer"
+                }
+              },
+              "type": "object"
+            },
+            "style": "deepObject"
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UsageReportsResponse"
+                }
+              },
+              "text/csv": {
+                "schema": {
+                  "description": "CSV formatted data",
+                  "example": "user_id,direction,product,cost,billed_sec\n3ca7bd3d-7d82-4e07-9df4-009123068320,inbound,forking,0.000800,17.000000\n...",
+                  "type": "string"
+                }
+              }
+            },
+            "description": "Successful"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/usage_reports_usage_reports_ErrorResponse"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/usage_reports_usage_reports_ErrorResponse"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          }
+        },
+        "summary": "Get Telnyx product usage data (BETA)",
+        "tags": [
+          "Usage Reports (BETA)"
+        ],
+        "x-latency-category": "interactive"
+      }
+    },
+    "/usage_reports/options": {
+      "get": {
+        "description": "Get the Usage Reports options for querying usage, including the products available and their respective metrics and dimensions",
+        "operationId": "ListUsageReportsOptions",
+        "parameters": [
+          {
+            "description": "Options (dimensions and metrics) for a given product. If none specified, all products will be returned.",
+            "examples": {
+              "product=wireless": {
+                "summary": "Specify a product if you know what you're looking for",
+                "value": "wireless"
+              }
+            },
+            "in": "query",
+            "name": "product",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Bearer token used to authenticate the request.",
+            "in": "header",
+            "name": "authorization_bearer",
+            "schema": {
+              "description": "Authenticates the request with your Telnyx API V2 KEY",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UsageReportsOptionsResponse"
+                }
+              }
+            },
+            "description": "Successful"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/usage_reports_usage_reports_ErrorResponse"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/usage_reports_usage_reports_ErrorResponse"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          }
+        },
+        "summary": "Get Usage Reports query options (BETA)",
+        "tags": [
+          "Usage Reports (BETA)"
+        ],
+        "x-latency-category": "interactive"
+      }
+    }
+  },
+  "security": [
+    {
+      "bearerAuth": []
+    }
+  ],
+  "servers": [
+    {
+      "description": "Version 2.0.0 of the Telnyx API",
+      "url": "https://api.telnyx.com/v2"
+    }
+  ]
+}

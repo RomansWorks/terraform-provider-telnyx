@@ -1,0 +1,1151 @@
+{
+  "components": {
+    "parameters": {
+      "audio_format": {
+        "description": "Audio output format override. Supported for Telnyx models. The `Ultra` model outputs PCM at 24kHz s16le or MP3 at 128kbps 24kHz.",
+        "in": "query",
+        "name": "audio_format",
+        "required": false,
+        "schema": {
+          "enum": [
+            "pcm",
+            "wav",
+            "mp3"
+          ],
+          "type": "string"
+        }
+      },
+      "disable_cache": {
+        "description": "When `true`, bypass the audio cache and generate fresh audio.",
+        "in": "query",
+        "name": "disable_cache",
+        "required": false,
+        "schema": {
+          "default": false,
+          "type": "boolean"
+        }
+      },
+      "model_id": {
+        "description": "Model identifier for the chosen provider. Examples: `Ultra`, `KokoroTTS` (Telnyx); `Polly.Generative` (AWS).",
+        "in": "query",
+        "name": "model_id",
+        "required": false,
+        "schema": {
+          "type": "string"
+        }
+      },
+      "provider": {
+        "description": "TTS provider. Defaults to `telnyx` if not specified. Ignored when `voice` is provided.",
+        "in": "query",
+        "name": "provider",
+        "required": false,
+        "schema": {
+          "default": "telnyx",
+          "enum": [
+            "aws",
+            "telnyx",
+            "azure",
+            "elevenlabs",
+            "minimax",
+            "resemble",
+            "xai",
+            "humain",
+            "soniox"
+          ],
+          "type": "string"
+        }
+      },
+      "socket_id": {
+        "description": "Client-provided socket identifier for tracking. If not provided, one is generated server-side.",
+        "in": "query",
+        "name": "socket_id",
+        "required": false,
+        "schema": {
+          "type": "string"
+        }
+      },
+      "voice": {
+        "description": "Voice identifier in the format `provider.model_id.voice_id` or `provider.voice_id` (e.g. `Telnyx.Ultra.\u003cvoice_id\u003e`, `Telnyx.Bayan.Ahmed`, `Telnyx.Sukhan.urdu-professor`, or `azure.en-US-AvaMultilingualNeural`). When provided, the `provider`, `model_id`, and `voice_id` are extracted automatically. Takes precedence over individual `provider`/`model_id`/`voice_id` parameters.",
+        "in": "query",
+        "name": "voice",
+        "required": false,
+        "schema": {
+          "type": "string"
+        }
+      },
+      "voice_id": {
+        "description": "Voice identifier for the chosen provider.",
+        "in": "query",
+        "name": "voice_id",
+        "required": false,
+        "schema": {
+          "type": "string"
+        }
+      }
+    },
+    "schemas": {
+      "AudioChunkFrame": {
+        "description": "Server-to-client frame containing a base64-encoded audio chunk.",
+        "properties": {
+          "audio": {
+            "description": "Base64-encoded audio data. May be `null` for providers that use `drop_concatenated_audio` mode (Telnyx, Minimax, Resemble) — in that case only streamed chunks carry audio.",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "cached": {
+            "description": "Whether this audio was served from cache.",
+            "type": "boolean"
+          },
+          "isFinal": {
+            "description": "Always `false` for audio chunk frames.",
+            "type": "boolean"
+          },
+          "text": {
+            "description": "The text segment that this audio chunk corresponds to.",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "timeToFirstAudioFrameMs": {
+            "description": "Milliseconds from the start-of-speech request to the first audio frame. Only present on the first audio chunk of a synthesis request.",
+            "type": "integer"
+          },
+          "type": {
+            "const": "audio_chunk",
+            "description": "Frame type identifier.",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "AwsProviderParams": {
+        "description": "AWS Polly provider-specific parameters.",
+        "properties": {
+          "language_code": {
+            "description": "Language code (e.g. `en-US`, `es-ES`).",
+            "type": "string"
+          },
+          "lexicon_names": {
+            "description": "List of lexicon names to apply.",
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "output_format": {
+            "description": "Audio output format.",
+            "type": "string"
+          },
+          "sample_rate": {
+            "description": "Audio sample rate.",
+            "type": "string"
+          },
+          "text_type": {
+            "description": "Input text type.",
+            "enum": [
+              "text",
+              "ssml"
+            ],
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "AzureProviderParams": {
+        "description": "Azure Cognitive Services provider-specific parameters.",
+        "properties": {
+          "api_key": {
+            "description": "Custom Azure API key. If not provided, the default Telnyx key is used.",
+            "type": "string"
+          },
+          "deployment_id": {
+            "description": "Custom Azure deployment ID.",
+            "type": "string"
+          },
+          "effect": {
+            "description": "Azure audio effect to apply.",
+            "type": "string"
+          },
+          "gender": {
+            "description": "Voice gender preference.",
+            "type": "string"
+          },
+          "language_code": {
+            "default": "en-US",
+            "description": "Language code (e.g. `en-US`).",
+            "type": "string"
+          },
+          "output_format": {
+            "default": "audio-24khz-160kbitrate-mono-mp3",
+            "description": "Azure audio output format.",
+            "type": "string"
+          },
+          "region": {
+            "description": "Azure region (e.g. `eastus`, `westeurope`).",
+            "type": "string"
+          },
+          "text_type": {
+            "default": "text",
+            "description": "Input text type. Use `ssml` for SSML-formatted input.",
+            "enum": [
+              "text",
+              "ssml"
+            ],
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "Base64AudioResponse": {
+        "description": "Response when `output_type` is `base64_output`.",
+        "properties": {
+          "base64_audio": {
+            "description": "Base64-encoded audio data.",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "ClientTextFrame": {
+        "description": "Client-to-server frame containing text to synthesize.",
+        "examples": [
+          {
+            "text": " ",
+            "voice_settings": {
+              "voice_speed": 1.2
+            }
+          },
+          {
+            "text": "Hello, welcome to Telnyx text to speech."
+          },
+          {
+            "force": true,
+            "text": "New text after interruption."
+          }
+        ],
+        "properties": {
+          "force": {
+            "description": "When `true`, stops the current synthesis worker and starts a new one. Used to interrupt speech mid-stream and begin synthesizing new text.",
+            "type": "boolean"
+          },
+          "text": {
+            "description": "Text to convert to speech. Send `\" \"` (single space) as an initial handshake with optional `voice_settings`. Subsequent messages contain the actual text to synthesize.",
+            "type": "string"
+          },
+          "voice_settings": {
+            "additionalProperties": true,
+            "description": "Provider-specific voice settings sent with the initial handshake. Contents vary by provider — e.g. `{\"speed\": 1.2}` for Minimax, `{\"voice_speed\": 1.5}` for Telnyx.",
+            "type": "object"
+          }
+        },
+        "required": [
+          "text"
+        ],
+        "type": "object"
+      },
+      "ElevenLabsProviderParams": {
+        "description": "ElevenLabs provider-specific parameters.",
+        "properties": {
+          "api_key": {
+            "description": "Custom ElevenLabs API key. If not provided, the default Telnyx key is used.",
+            "type": "string"
+          },
+          "language_code": {
+            "description": "Language code.",
+            "type": "string"
+          },
+          "voice_settings": {
+            "additionalProperties": true,
+            "description": "ElevenLabs voice settings (stability, similarity_boost, etc.).",
+            "type": "object"
+          }
+        },
+        "type": "object"
+      },
+      "ErrorFrame": {
+        "description": "Server-to-client frame indicating an error during synthesis. The connection is closed shortly after.",
+        "properties": {
+          "error": {
+            "description": "Error message describing what went wrong.",
+            "type": "string"
+          },
+          "type": {
+            "const": "error",
+            "description": "Frame type identifier.",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "FinalFrame": {
+        "description": "Server-to-client frame indicating synthesis is complete for the current text.",
+        "properties": {
+          "audio": {
+            "description": "Always `null` for the final frame.",
+            "type": "null"
+          },
+          "isFinal": {
+            "const": true,
+            "description": "Always `true`.",
+            "type": "boolean"
+          },
+          "text": {
+            "description": "Empty string.",
+            "type": "string"
+          },
+          "timeToFirstAudioFrameMs": {
+            "description": "Present if this was the first response frame.",
+            "type": "integer"
+          },
+          "type": {
+            "const": "final",
+            "description": "Frame type identifier.",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "GenerateSpeechRequest": {
+        "description": "Request body for generating speech from text.",
+        "properties": {
+          "aws": {
+            "$ref": "#/components/schemas/AwsProviderParams"
+          },
+          "azure": {
+            "$ref": "#/components/schemas/AzureProviderParams"
+          },
+          "disable_cache": {
+            "default": false,
+            "description": "When `true`, bypass the audio cache and generate fresh audio.",
+            "type": "boolean"
+          },
+          "elevenlabs": {
+            "$ref": "#/components/schemas/ElevenLabsProviderParams"
+          },
+          "humain": {
+            "$ref": "#/components/schemas/HumainProviderParams"
+          },
+          "language": {
+            "description": "Language code (e.g. `en-US`). Usage varies by provider.",
+            "type": "string"
+          },
+          "minimax": {
+            "$ref": "#/components/schemas/MinimaxProviderParams"
+          },
+          "output_type": {
+            "default": "binary_output",
+            "description": "Determines the response format. `binary_output` returns raw audio bytes, `base64_output` returns base64-encoded audio in JSON.",
+            "enum": [
+              "binary_output",
+              "base64_output"
+            ],
+            "type": "string"
+          },
+          "provider": {
+            "description": "TTS provider. Required unless `voice` is provided.",
+            "enum": [
+              "aws",
+              "telnyx",
+              "azure",
+              "elevenlabs",
+              "minimax",
+              "resemble",
+              "xai",
+              "humain",
+              "soniox"
+            ],
+            "type": "string"
+          },
+          "resemble": {
+            "$ref": "#/components/schemas/ResembleProviderParams"
+          },
+          "soniox": {
+            "$ref": "#/components/schemas/SonioxProviderParams"
+          },
+          "telnyx": {
+            "$ref": "#/components/schemas/TelnyxProviderParams"
+          },
+          "text": {
+            "description": "The text to convert to speech.",
+            "type": "string"
+          },
+          "text_type": {
+            "description": "Text type. Use `ssml` for SSML-formatted input (supported by AWS and Azure).",
+            "enum": [
+              "text",
+              "ssml"
+            ],
+            "type": "string"
+          },
+          "voice": {
+            "description": "Voice identifier in the format `provider.model_id.voice_id` or `provider.voice_id`. Examples: `Telnyx.Ultra.\u003cvoice_id\u003e`, `Telnyx.Bayan.Ahmed`, `Telnyx.Sukhan.urdu-professor`, `azure.en-US-AvaMultilingualNeural`, `aws.Polly.Generative.Lucia`. When provided, `provider`, `model_id`, and `voice_id` are extracted automatically and take precedence over individual parameters.",
+            "type": "string"
+          },
+          "voice_settings": {
+            "additionalProperties": true,
+            "description": "Provider-specific voice settings. Contents vary by provider — see provider-specific parameter objects below.",
+            "type": "object"
+          },
+          "xai": {
+            "$ref": "#/components/schemas/XAIProviderParams"
+          }
+        },
+        "type": "object"
+      },
+      "HumainProviderParams": {
+        "description": "Humain provider-specific parameters. Unlike other providers, Humain has no format/sample-rate negotiation (output is always PCM16 24kHz mono) and no language parameter — language is fixed per voice.",
+        "properties": {
+          "ttfb_eagerness": {
+            "description": "Time-to-first-byte eagerness, trading synthesis latency for quality.",
+            "format": "float",
+            "maximum": 1,
+            "minimum": 0,
+            "type": "number"
+          },
+          "voice_id": {
+            "description": "Humain voice identifier.",
+            "enum": [
+              "sara-en",
+              "abdulaziz-en",
+              "sara-ar",
+              "abdulaziz-ar",
+              "nourah-ar",
+              "abdullah-ar"
+            ],
+            "type": "string"
+          }
+        },
+        "required": [
+          "voice_id"
+        ],
+        "type": "object"
+      },
+      "MinimaxProviderParams": {
+        "description": "Minimax provider-specific parameters.",
+        "properties": {
+          "language_boost": {
+            "description": "Language code to boost pronunciation for.",
+            "type": "string"
+          },
+          "pitch": {
+            "description": "Pitch adjustment.",
+            "type": "integer"
+          },
+          "response_format": {
+            "description": "Audio output format.",
+            "type": "string"
+          },
+          "speed": {
+            "description": "Speech speed multiplier.",
+            "format": "float",
+            "type": "number"
+          },
+          "vol": {
+            "description": "Volume level.",
+            "format": "float",
+            "type": "number"
+          }
+        },
+        "type": "object"
+      },
+      "ResembleProviderParams": {
+        "description": "Resemble AI provider-specific parameters.",
+        "properties": {
+          "format": {
+            "description": "Audio output format.",
+            "type": "string"
+          },
+          "precision": {
+            "description": "Synthesis precision.",
+            "type": "string"
+          },
+          "sample_rate": {
+            "description": "Audio sample rate.",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "SonioxProviderParams": {
+        "description": "Soniox provider-specific parameters. Every voice speaks all supported languages; set `language` to the language of the text.",
+        "properties": {
+          "audio_format": {
+            "default": "mp3",
+            "description": "Audio output format.",
+            "enum": [
+              "mp3",
+              "wav",
+              "pcm_s16le",
+              "pcm_mulaw",
+              "pcm_alaw"
+            ],
+            "type": "string"
+          },
+          "language": {
+            "default": "en",
+            "description": "Two-letter ISO 639-1 code of the text.",
+            "type": "string"
+          },
+          "model_id": {
+            "default": "tts-rt-v2",
+            "description": "Soniox model.",
+            "enum": [
+              "tts-rt-v2"
+            ],
+            "type": "string"
+          },
+          "reduce_silence": {
+            "default": false,
+            "description": "Shortens the pauses between words.",
+            "type": "boolean"
+          },
+          "sample_rate": {
+            "description": "Audio sample rate in Hz. `pcm_mulaw` and `pcm_alaw` accept 8000 only; `mp3` does not accept 8000. Defaults to 24000, or 8000 for `pcm_mulaw` and `pcm_alaw`.",
+            "enum": [
+              8000,
+              16000,
+              24000,
+              44100,
+              48000
+            ],
+            "type": "integer"
+          },
+          "speed": {
+            "default": 1,
+            "description": "Speaking rate. 1.0 is normal speed.",
+            "format": "float",
+            "maximum": 1.3,
+            "minimum": 0.7,
+            "type": "number"
+          },
+          "voice_id": {
+            "description": "Soniox voice name from the [voices listing](https://developers.telnyx.com/api-reference/text-to-speech-commands/list-available-voices), for example `Emma`.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "voice_id"
+        ],
+        "type": "object"
+      },
+      "TelnyxProviderParams": {
+        "description": "Telnyx provider-specific parameters. For the `Ultra` model, use `voice_speed`, `volume`, and `emotion`. `Bayan` and `Sukhan` don't use `temperature`, `volume`, or `emotion`. `Bayan` accepts `voice_speed` from 0.5 to 2.0; `Sukhan` doesn't support it. `Bayan` synthesizes at a native 16 kHz: `sampling_rate` `8000`, `22050`, or `24000` is resampled, needs `response_format: pcm`, and isn't available with `output_type: audio_id`. `Sukhan`'s `response_format` is restricted to `mp3` or `pcm` (no `wav`).",
+        "properties": {
+          "emotion": {
+            "description": "Emotion control for the Ultra model. Adjusts the emotional tone of the synthesized speech.",
+            "enum": [
+              "neutral",
+              "happy",
+              "sad",
+              "angry",
+              "fearful",
+              "disgusted",
+              "surprised"
+            ],
+            "type": "string"
+          },
+          "response_format": {
+            "default": "mp3",
+            "description": "Audio response format.",
+            "type": "string"
+          },
+          "sampling_rate": {
+            "default": 24000,
+            "description": "Audio sampling rate in Hz. `Bayan` ignores the default and synthesizes at its native 16 kHz unless `8000`, `22050`, or `24000` is set explicitly with `response_format: pcm`. Resampled rates aren't available with `output_type: audio_id`.",
+            "type": "integer"
+          },
+          "voice_speed": {
+            "default": 1,
+            "description": "Voice speed multiplier. Telnyx `Ultra` voices accept values from 0.6 to 1.5 — requests outside that range are rejected by the synthesis engine. `Bayan` accepts values from 0.5 to 2.0. `KokoroTTS` and `Qwen3TTS` accept the field but do not apply it. `Sukhan` doesn't support it.",
+            "format": "float",
+            "maximum": 2,
+            "minimum": 0.1,
+            "type": "number"
+          },
+          "volume": {
+            "default": 1,
+            "description": "Volume level for the Ultra model. Telnyx `Ultra` voices accept values from 0.5 to 2.0 — requests outside that range are rejected by the synthesis engine. `KokoroTTS`, `Qwen3TTS`, `Bayan`, and `Sukhan` voices accept the field but do not apply it.",
+            "format": "float",
+            "maximum": 2,
+            "minimum": 0,
+            "type": "number"
+          }
+        },
+        "type": "object"
+      },
+      "TtsServerEvent": {
+        "description": "Union of all server-to-client WebSocket events for TTS streaming.",
+        "discriminator": {
+          "mapping": {
+            "audio_chunk": "#/components/schemas/AudioChunkFrame",
+            "error": "#/components/schemas/ErrorFrame",
+            "final": "#/components/schemas/FinalFrame"
+          },
+          "propertyName": "type"
+        },
+        "oneOf": [
+          {
+            "$ref": "#/components/schemas/AudioChunkFrame"
+          },
+          {
+            "$ref": "#/components/schemas/FinalFrame"
+          },
+          {
+            "$ref": "#/components/schemas/ErrorFrame"
+          }
+        ]
+      },
+      "Voice": {
+        "description": "A voice available for text-to-speech synthesis.",
+        "properties": {
+          "gender": {
+            "description": "Voice gender.",
+            "type": "string"
+          },
+          "hosted": {
+            "description": "Whether this voice runs on Telnyx-hosted infrastructure (`true`) or is provided by a third-party vendor (`false`).",
+            "type": "boolean"
+          },
+          "language": {
+            "description": "Language code.",
+            "type": "string"
+          },
+          "name": {
+            "description": "Voice name.",
+            "type": "string"
+          },
+          "provider": {
+            "description": "The TTS provider.",
+            "type": "string"
+          },
+          "voice_id": {
+            "description": "Voice identifier.",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "VoicesResponse": {
+        "description": "List of available voices.",
+        "properties": {
+          "voices": {
+            "items": {
+              "$ref": "#/components/schemas/Voice"
+            },
+            "type": "array"
+          }
+        },
+        "type": "object"
+      },
+      "XAIProviderParams": {
+        "description": "xAI provider-specific parameters.",
+        "properties": {
+          "language": {
+            "default": "auto",
+            "description": "Language code, or `auto` to detect.",
+            "type": "string"
+          },
+          "output_format": {
+            "default": "mp3",
+            "description": "Audio output format.",
+            "enum": [
+              "mp3",
+              "wav",
+              "pcm",
+              "mulaw",
+              "alaw"
+            ],
+            "type": "string"
+          },
+          "sample_rate": {
+            "default": 24000,
+            "description": "Audio sample rate in Hz.",
+            "enum": [
+              8000,
+              16000,
+              22050,
+              24000,
+              44100,
+              48000
+            ],
+            "type": "integer"
+          },
+          "voice_id": {
+            "description": "xAI voice identifier.",
+            "enum": [
+              "eve",
+              "ara",
+              "rex",
+              "sal",
+              "leo"
+            ],
+            "type": "string"
+          }
+        },
+        "required": [
+          "voice_id"
+        ],
+        "type": "object"
+      },
+      "text-to-speech_ErrorResponse": {
+        "properties": {
+          "errors": {
+            "items": {
+              "properties": {
+                "code": {
+                  "description": "Error code.",
+                  "type": "string"
+                },
+                "detail": {
+                  "description": "Detailed error description.",
+                  "type": "string"
+                },
+                "title": {
+                  "description": "Error title.",
+                  "type": "string"
+                }
+              },
+              "type": "object"
+            },
+            "type": "array"
+          }
+        },
+        "type": "object"
+      },
+      "text-to-speech_ValidationErrorResponse": {
+        "properties": {
+          "errors": {
+            "additionalProperties": {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            "description": "Validation error details keyed by field name.",
+            "type": "object"
+          }
+        },
+        "type": "object"
+      }
+    },
+    "securitySchemes": {
+      "BearerAuth": {
+        "bearerFormat": "API key",
+        "description": "Telnyx API key supplied as `Authorization: Bearer \u003ctoken\u003e`. In production, auth may be validated by the API gateway and forwarded via Telnyx auth headers.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "Payment": {
+        "description": "Machine Payment Protocol credential used on paid retries, sent as `Authorization: Payment ...`. Obtained by paying a challenge returned in the `WWW-Authenticate` header of a 402 response. This is not a Telnyx API key; initial challenge requests use standard bearer authentication instead.",
+        "in": "header",
+        "name": "Authorization",
+        "type": "apiKey"
+      },
+      "agent-memory_bearerAuth": {
+        "description": "Telnyx API key",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "bearerAuth": {
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "branded-calling_bearerAuth": {
+        "description": "Telnyx API key. Generate one at https://portal.telnyx.com/#/app/api-keys.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "collections_bearerAuth": {
+        "description": "Telnyx API key. Collections and results are automatically scoped to the authenticated user's organization.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "number-reputation_bearerAuth": {
+        "description": "Telnyx API key. Generate one at https://portal.telnyx.com/#/app/api-keys.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "oauthClientAuth": {
+        "description": "OAuth 2.0 authentication for Telnyx API and MCP integrations",
+        "flows": {
+          "authorizationCode": {
+            "authorizationUrl": "https://api.telnyx.com/v2/oauth/authorize",
+            "refreshUrl": "https://api.telnyx.com/v2/oauth/token",
+            "scopes": {
+              "admin": "Administrative access to Telnyx resources"
+            },
+            "tokenUrl": "https://api.telnyx.com/v2/oauth/token"
+          },
+          "clientCredentials": {
+            "scopes": {
+              "admin": "Administrative access to Telnyx resources"
+            },
+            "tokenUrl": "https://api.telnyx.com/v2/oauth/token"
+          }
+        },
+        "type": "oauth2"
+      },
+      "outbound-voice-profiles_bearerAuth": {
+        "bearerFormat": "JWT",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "pay-connectors_bearerAuth": {
+        "description": "Telnyx API key, not the processor bearer token.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "pronunciation-dicts_bearerAuth": {
+        "description": "Telnyx API v2 key. Obtain from https://portal.telnyx.com",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "rcs-registration_bearerAuth": {
+        "bearerFormat": "API key",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "stored-payment-transactions_bearerAuth": {
+        "bearerFormat": "JWT",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "telnyxApiKey": {
+        "description": "Management-only Telnyx account credential.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "transcriptions-search_bearerAuth": {
+        "description": "Telnyx API key. Results are automatically scoped to the authenticated user's organization.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "web-search_bearerAuth": {
+        "description": "Telnyx API key",
+        "scheme": "bearer",
+        "type": "http"
+      }
+    }
+  },
+  "info": {
+    "contact": {
+      "email": "support@telnyx.com"
+    },
+    "description": "SIP trunking, SMS, MMS, Call Control and Telephony Data Services.",
+    "title": "Telnyx API",
+    "version": "2.0.0",
+    "x-endpoint-cost": "light",
+    "x-latency-category": "responsive"
+  },
+  "openapi": "3.1.0",
+  "paths": {
+    "/text-to-speech/speech": {
+      "get": {
+        "description": "Open a WebSocket connection to stream text and receive synthesized audio in real time. Authentication is provided via the standard `Authorization: Bearer \u003cAPI_KEY\u003e` header. Send JSON frames with text to synthesize; receive JSON frames containing base64-encoded audio chunks.\n\nSupported providers: `aws`, `telnyx`, `azure`, `minimax`, `resemble`, `elevenlabs`, `xai`, `humain`, `soniox`.\n\n**Connection flow:**\n1. Open WebSocket with query parameters specifying provider, voice, and model.\n2. Send an initial handshake message `{\"text\": \" \"}` (single space) with optional `voice_settings` to initialize the session.\n3. Send text messages as `{\"text\": \"Hello world\"}`.\n4. Receive audio chunks as JSON frames with base64-encoded audio.\n5. A final frame with `isFinal: true` indicates the end of audio for the current text.\n\nTo interrupt and restart synthesis mid-stream, send `{\"force\": true}` — the current worker is stopped and a new one is started.\n\n**Note:** The Telnyx `Ultra` model is not available over WebSocket. Use the HTTP POST `/text-to-speech/speech` endpoint instead.",
+        "operationId": "TextToSpeechOverWs",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/voice"
+          },
+          {
+            "$ref": "#/components/parameters/provider"
+          },
+          {
+            "$ref": "#/components/parameters/model_id"
+          },
+          {
+            "$ref": "#/components/parameters/voice_id"
+          },
+          {
+            "$ref": "#/components/parameters/disable_cache"
+          },
+          {
+            "$ref": "#/components/parameters/audio_format"
+          },
+          {
+            "$ref": "#/components/parameters/socket_id"
+          }
+        ],
+        "responses": {
+          "101": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/ClientTextFrame"
+                    },
+                    {
+                      "$ref": "#/components/schemas/TtsServerEvent"
+                    }
+                  ]
+                }
+              }
+            },
+            "description": "WebSocket connection established. Communication proceeds via JSON frames.\n\n**Client → Server:** See `ClientTextFrame` schema.\n**Server → Client:** See `AudioChunkFrame`, `FinalFrame`, and `ErrorFrame` schemas."
+          },
+          "200": {
+            "description": "WebSocket upgrade successful — this response is not returned directly. See 101 for frame documentation."
+          },
+          "400": {
+            "description": "Invalid parameters — provider not supported or missing required fields."
+          },
+          "401": {
+            "description": "Authentication failed — missing or invalid `x-telnyx-auth-rev2` header."
+          }
+        },
+        "summary": "Stream text to speech over WebSocket",
+        "tags": [
+          "Text To Speech Commands"
+        ]
+      },
+      "post": {
+        "description": "Generate synthesized speech audio from text input. Returns audio in the requested format (binary audio stream, base64-encoded JSON, or an audio URL for later retrieval).\n\nAuthentication is provided via the standard `Authorization: Bearer \u003cAPI_KEY\u003e` header.\n\nThe `voice` parameter provides a convenient shorthand to specify provider, model, and voice in a single string (e.g. `Telnyx.Ultra.\u003cvoice_id\u003e`). Alternatively, specify `provider` explicitly along with provider-specific parameters.\n\nSupported providers: `aws`, `telnyx`, `azure`, `elevenlabs`, `minimax`, `resemble`, `xai`, `humain`, `soniox`.\n\nThe Telnyx `Ultra` model supports 44 languages with emotion control, speed adjustment, and volume control. Use the `telnyx` provider-specific parameters to configure these features.",
+        "operationId": "generateSpeech",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "example": {
+                "aws": {
+                  "language_code": "string",
+                  "lexicon_names": [
+                    "string"
+                  ],
+                  "output_format": "string",
+                  "sample_rate": "string",
+                  "text_type": "text"
+                },
+                "azure": {
+                  "api_key": "string",
+                  "deployment_id": "string",
+                  "effect": "string",
+                  "gender": "string",
+                  "language_code": "en-US",
+                  "output_format": "audio-24khz-160kbitrate-mono-mp3",
+                  "region": "string",
+                  "text_type": "text"
+                },
+                "disable_cache": false,
+                "elevenlabs": {
+                  "api_key": "string",
+                  "language_code": "string"
+                },
+                "humain": {
+                  "ttfb_eagerness": 0,
+                  "voice_id": "sara-en"
+                },
+                "language": "string",
+                "minimax": {
+                  "language_boost": "string",
+                  "pitch": 0,
+                  "response_format": "string",
+                  "speed": 0,
+                  "vol": 0
+                },
+                "output_type": "binary_output",
+                "provider": "aws",
+                "resemble": {
+                  "format": "string",
+                  "precision": "string",
+                  "sample_rate": "string"
+                },
+                "soniox": {
+                  "audio_format": "mp3",
+                  "language": "en",
+                  "model_id": "tts-rt-v2",
+                  "speed": 1,
+                  "voice_id": "Emma"
+                },
+                "telnyx": {
+                  "emotion": "neutral",
+                  "response_format": "mp3",
+                  "sampling_rate": 24000,
+                  "voice_speed": 1,
+                  "volume": 1
+                },
+                "text": "string",
+                "text_type": "text",
+                "voice": "string",
+                "xai": {
+                  "language": "auto",
+                  "output_format": "mp3",
+                  "sample_rate": 24000,
+                  "voice_id": "eve"
+                }
+              },
+              "schema": {
+                "$ref": "#/components/schemas/GenerateSpeechRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "base64_audio": "string"
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/Base64AudioResponse"
+                }
+              },
+              "audio/mpeg": {
+                "schema": {
+                  "description": "Raw audio bytes. Returned when `output_type` is `binary_output` (default) for most providers.",
+                  "format": "binary",
+                  "type": "string"
+                }
+              },
+              "audio/pcm": {
+                "schema": {
+                  "description": "Raw headerless PCM16LE audio bytes, mono, 24kHz. Returned when `output_type` is `binary_output` (default) and `provider` is `humain` — Humain has no MP3 output and no format negotiation.",
+                  "format": "binary",
+                  "type": "string"
+                }
+              }
+            },
+            "description": "Speech generated successfully. The response format depends on the `output_type` parameter:\n- `binary_output` (default): Returns raw audio bytes with the appropriate `Content-Type` header. Most providers return `audio/mpeg`; `humain` has no MP3 output and always returns raw headerless PCM16LE 24kHz mono as `audio/pcm`.\n- `base64_output`: Returns a JSON object with `base64_audio` field."
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "errors": [
+                    {
+                      "code": "10015",
+                      "detail": "The request failed because it was not well-formed.",
+                      "title": "Bad Request"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/text-to-speech_ErrorResponse"
+                }
+              }
+            },
+            "description": "Bad request — invalid parameters or provider error."
+          },
+          "401": {
+            "description": "Authentication failed — missing or invalid API key."
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/text-to-speech_ValidationErrorResponse"
+                }
+              }
+            },
+            "description": "Validation failed — invalid or missing required fields."
+          }
+        },
+        "summary": "Generate speech from text",
+        "tags": [
+          "Text To Speech Commands"
+        ]
+      }
+    },
+    "/text-to-speech/voices": {
+      "get": {
+        "description": "Retrieve a list of available voices from one or all TTS providers. When `provider` is specified, returns voices for that provider only. Otherwise, returns voices from all providers.\n\nSome providers (ElevenLabs) require an API key to list voices.",
+        "operationId": "listVoices",
+        "parameters": [
+          {
+            "description": "Filter voices by provider. If omitted, voices from all providers are returned.",
+            "in": "query",
+            "name": "provider",
+            "required": false,
+            "schema": {
+              "enum": [
+                "aws",
+                "telnyx",
+                "azure",
+                "elevenlabs",
+                "minimax",
+                "resemble",
+                "xai",
+                "humain",
+                "soniox"
+              ],
+              "type": "string"
+            }
+          },
+          {
+            "description": "API key for providers that require one to list voices (e.g. ElevenLabs).",
+            "in": "query",
+            "name": "api_key",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "voices": [
+                    {
+                      "gender": "string",
+                      "language": "string",
+                      "name": "string",
+                      "provider": "string",
+                      "voice_id": "string"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/VoicesResponse"
+                }
+              }
+            },
+            "description": "List of available voices."
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "errors": [
+                    {
+                      "code": "10015",
+                      "detail": "The request failed because it was not well-formed.",
+                      "title": "Bad Request"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/text-to-speech_ErrorResponse"
+                }
+              }
+            },
+            "description": "Bad request — invalid provider or missing required API key."
+          },
+          "401": {
+            "description": "Authentication failed — missing or invalid API key."
+          }
+        },
+        "summary": "List available voices",
+        "tags": [
+          "Text To Speech Commands"
+        ]
+      }
+    }
+  },
+  "security": [
+    {
+      "bearerAuth": []
+    }
+  ],
+  "servers": [
+    {
+      "description": "Version 2.0.0 of the Telnyx API",
+      "url": "https://api.telnyx.com/v2"
+    }
+  ]
+}

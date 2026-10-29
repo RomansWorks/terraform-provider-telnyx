@@ -1,0 +1,403 @@
+{
+  "components": {
+    "schemas": {
+      "BucketAPIUsageResponse": {
+        "properties": {
+          "categories": {
+            "items": {
+              "$ref": "#/components/schemas/BucketOps"
+            },
+            "type": "array"
+          },
+          "timestamp": {
+            "description": "The time the usage was recorded",
+            "example": "2020-01-01T00:00:00Z",
+            "format": "date-time",
+            "type": "string"
+          },
+          "total": {
+            "$ref": "#/components/schemas/BucketOpsTotal"
+          }
+        },
+        "type": "object"
+      },
+      "BucketOps": {
+        "properties": {
+          "bytes_received": {
+            "description": "The number of bytes received",
+            "example": 123456,
+            "type": "integer"
+          },
+          "bytes_sent": {
+            "description": "The number of bytes sent",
+            "example": 123456,
+            "type": "integer"
+          },
+          "category": {
+            "description": "The category of the bucket operation",
+            "enum": [
+              "list_bucket",
+              "list_buckets",
+              "get-bucket_location",
+              "create_bucket",
+              "stat_bucket",
+              "get_bucket_versioning",
+              "set_bucket_versioning",
+              "get_obj",
+              "put_obj",
+              "delete_obj"
+            ],
+            "example": "put_obj",
+            "type": "string"
+          },
+          "ops": {
+            "description": "The number of operations",
+            "example": 123456,
+            "type": "integer"
+          },
+          "successful_ops": {
+            "description": "The number of successful operations",
+            "example": 123456,
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "BucketOpsTotal": {
+        "properties": {
+          "bytes_received": {
+            "description": "The number of bytes received",
+            "example": 123456,
+            "type": "integer"
+          },
+          "bytes_sent": {
+            "description": "The number of bytes sent",
+            "example": 123456,
+            "type": "integer"
+          },
+          "ops": {
+            "description": "The number of operations",
+            "example": 123456,
+            "type": "integer"
+          },
+          "successful_ops": {
+            "description": "The number of successful operations",
+            "example": 123456,
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "BucketUsage": {
+        "properties": {
+          "num_objects": {
+            "description": "The number of objects in the bucket",
+            "example": 123456,
+            "type": "integer"
+          },
+          "size": {
+            "description": "The size of the bucket in bytes",
+            "example": 123456,
+            "type": "integer"
+          },
+          "size_kb": {
+            "description": "The size of the bucket in kilobytes",
+            "example": 123456,
+            "type": "integer"
+          },
+          "timestamp": {
+            "description": "The time the snapshot was taken",
+            "example": "2020-01-01T00:00:00Z",
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "PaginationMetaSimple": {
+        "properties": {
+          "page_number": {
+            "example": 2,
+            "type": "integer"
+          },
+          "page_size": {
+            "example": 25,
+            "type": "integer"
+          },
+          "total_pages": {
+            "example": 3,
+            "type": "integer"
+          },
+          "total_results": {
+            "example": 55,
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      }
+    },
+    "securitySchemes": {
+      "BearerAuth": {
+        "bearerFormat": "API key",
+        "description": "Telnyx API key supplied as `Authorization: Bearer \u003ctoken\u003e`. In production, auth may be validated by the API gateway and forwarded via Telnyx auth headers.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "Payment": {
+        "description": "Machine Payment Protocol credential used on paid retries, sent as `Authorization: Payment ...`. Obtained by paying a challenge returned in the `WWW-Authenticate` header of a 402 response. This is not a Telnyx API key; initial challenge requests use standard bearer authentication instead.",
+        "in": "header",
+        "name": "Authorization",
+        "type": "apiKey"
+      },
+      "agent-memory_bearerAuth": {
+        "description": "Telnyx API key",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "bearerAuth": {
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "branded-calling_bearerAuth": {
+        "description": "Telnyx API key. Generate one at https://portal.telnyx.com/#/app/api-keys.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "collections_bearerAuth": {
+        "description": "Telnyx API key. Collections and results are automatically scoped to the authenticated user's organization.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "number-reputation_bearerAuth": {
+        "description": "Telnyx API key. Generate one at https://portal.telnyx.com/#/app/api-keys.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "oauthClientAuth": {
+        "description": "OAuth 2.0 authentication for Telnyx API and MCP integrations",
+        "flows": {
+          "authorizationCode": {
+            "authorizationUrl": "https://api.telnyx.com/v2/oauth/authorize",
+            "refreshUrl": "https://api.telnyx.com/v2/oauth/token",
+            "scopes": {
+              "admin": "Administrative access to Telnyx resources"
+            },
+            "tokenUrl": "https://api.telnyx.com/v2/oauth/token"
+          },
+          "clientCredentials": {
+            "scopes": {
+              "admin": "Administrative access to Telnyx resources"
+            },
+            "tokenUrl": "https://api.telnyx.com/v2/oauth/token"
+          }
+        },
+        "type": "oauth2"
+      },
+      "outbound-voice-profiles_bearerAuth": {
+        "bearerFormat": "JWT",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "pay-connectors_bearerAuth": {
+        "description": "Telnyx API key, not the processor bearer token.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "pronunciation-dicts_bearerAuth": {
+        "description": "Telnyx API v2 key. Obtain from https://portal.telnyx.com",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "rcs-registration_bearerAuth": {
+        "bearerFormat": "API key",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "stored-payment-transactions_bearerAuth": {
+        "bearerFormat": "JWT",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "telnyxApiKey": {
+        "description": "Management-only Telnyx account credential.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "transcriptions-search_bearerAuth": {
+        "description": "Telnyx API key. Results are automatically scoped to the authenticated user's organization.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "web-search_bearerAuth": {
+        "description": "Telnyx API key",
+        "scheme": "bearer",
+        "type": "http"
+      }
+    }
+  },
+  "info": {
+    "contact": {
+      "email": "support@telnyx.com"
+    },
+    "description": "SIP trunking, SMS, MMS, Call Control and Telephony Data Services.",
+    "title": "Telnyx API",
+    "version": "2.0.0",
+    "x-endpoint-cost": "light",
+    "x-latency-category": "responsive"
+  },
+  "openapi": "3.1.0",
+  "paths": {
+    "/storage/buckets/{bucketName}/usage/api": {
+      "get": {
+        "deprecated": false,
+        "description": "Returns the detail on API usage on a bucket of a particular time period, group by method category.",
+        "operationId": "GetStorageAPIUsage",
+        "parameters": [
+          {
+            "description": "The name of the bucket",
+            "example": "",
+            "in": "path",
+            "name": "bucketName",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Consolidated filter parameter (deepObject style). Originally: filter[start_time], filter[end_time]",
+            "example": {
+              "end_time": "2020-01-01T00:00:00.000Z",
+              "start_time": "2020-01-01T00:00:00.000Z"
+            },
+            "explode": true,
+            "in": "query",
+            "name": "filter",
+            "required": true,
+            "schema": {
+              "additionalProperties": false,
+              "properties": {
+                "end_time": {
+                  "description": "The end time of the period to filter the usage (ISO microsecond format)",
+                  "format": "date-time",
+                  "type": "string"
+                },
+                "start_time": {
+                  "description": "The start time of the period to filter the usage (ISO microsecond format)",
+                  "format": "date-time",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "start_time",
+                "end_time"
+              ],
+              "type": "object"
+            },
+            "style": "deepObject"
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "items": {
+                        "$ref": "#/components/schemas/BucketAPIUsageResponse"
+                      },
+                      "type": "array"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Bucket Usage",
+            "headers": {}
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Bucket not found"
+          },
+          "422": {
+            "description": "Unprocessable Entity"
+          }
+        },
+        "summary": "Get API Usage",
+        "tags": [
+          "Bucket Usage"
+        ]
+      }
+    },
+    "/storage/buckets/{bucketName}/usage/storage": {
+      "get": {
+        "deprecated": false,
+        "description": "Returns the amount of storage space and number of files a bucket takes up.",
+        "operationId": "GetBucketUsage",
+        "parameters": [
+          {
+            "description": "The name of the bucket",
+            "example": "",
+            "in": "path",
+            "name": "bucketName",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "items": {
+                        "$ref": "#/components/schemas/BucketUsage"
+                      },
+                      "type": "array"
+                    },
+                    "meta": {
+                      "$ref": "#/components/schemas/PaginationMetaSimple"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Bucket Storage Usage",
+            "headers": {}
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Bucket not found"
+          },
+          "422": {
+            "description": "Unprocessable Entity"
+          }
+        },
+        "summary": "Get Bucket Usage",
+        "tags": [
+          "Bucket Usage"
+        ]
+      }
+    }
+  },
+  "security": [
+    {
+      "bearerAuth": []
+    }
+  ],
+  "servers": [
+    {
+      "description": "Version 2.0.0 of the Telnyx API",
+      "url": "https://api.telnyx.com/v2"
+    }
+  ]
+}

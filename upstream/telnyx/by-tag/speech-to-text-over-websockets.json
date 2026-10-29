@@ -1,0 +1,588 @@
+{
+  "components": {
+    "parameters": {
+      "endpointing": {
+        "description": "Silence duration (in milliseconds) that triggers end-of-speech detection. When set, the engine uses this value to determine when a speaker has stopped talking. Supported by `xAI`, `Deepgram`, `Google`, `Speechmatics` (`speechmatics/standard` only; `speechmatics/linden-1` uses fixed service-side voice activity detection and ignores it), and `Soniox`. `Soniox` accepts values between 500 and 3000. Other engines may not support this parameter.",
+        "example": 500,
+        "in": "query",
+        "name": "endpointing",
+        "required": false,
+        "schema": {
+          "type": "integer"
+        }
+      },
+      "input_format": {
+        "description": "The format of input audio stream.",
+        "example": "mp3",
+        "in": "query",
+        "name": "input_format",
+        "required": true,
+        "schema": {
+          "enum": [
+            "mp3",
+            "wav",
+            "linear16",
+            "linear32"
+          ],
+          "type": "string"
+        }
+      },
+      "interim_results": {
+        "description": "Whether to receive interim transcription results.",
+        "example": true,
+        "in": "query",
+        "name": "interim_results",
+        "required": false,
+        "schema": {
+          "type": "boolean"
+        }
+      },
+      "keyterm": {
+        "description": "A key term to boost in the transcription. The engine will be more likely to recognize this term. Can be specified multiple times for multiple terms.",
+        "example": "Telnyx",
+        "in": "query",
+        "name": "keyterm",
+        "required": false,
+        "schema": {
+          "type": "string"
+        }
+      },
+      "keywords": {
+        "description": "Comma-separated list of keywords to boost in the transcription. The engine will prioritize recognition of these words.",
+        "example": "Telnyx,SIP,WebRTC",
+        "in": "query",
+        "name": "keywords",
+        "required": false,
+        "schema": {
+          "type": "string"
+        }
+      },
+      "language": {
+        "description": "The language spoken in the audio stream. For `cohere/ar-stt`, this must be `ar` or `en` — unlike other engines, Cohere does not auto-detect the language, and rejects unsupported values including `auto`; omitting it defaults to `ar`. For `speechmatics/linden-1`, omitting it defaults to `en`; `auto`, `auto_beta`, `multi`, or a language outside its supported list is rejected when the connection is established. `speechmatics/linden-1` also accepts `en-US`, `en-GB`, `en-AU`, `cmn-Hans`, and `cmn-Hant`, which select the spelling or script variant (`en` alone uses the default spelling).",
+        "example": "en-US",
+        "in": "query",
+        "name": "language",
+        "required": false,
+        "schema": {
+          "type": "string"
+        }
+      },
+      "model": {
+        "description": "The specific model to use within the selected transcription engine.",
+        "in": "query",
+        "name": "model",
+        "schema": {
+          "oneOf": [
+            {
+              "$ref": "#/components/schemas/azure_models"
+            },
+            {
+              "$ref": "#/components/schemas/deepgram_models"
+            },
+            {
+              "$ref": "#/components/schemas/google_models"
+            },
+            {
+              "$ref": "#/components/schemas/telnyx_models"
+            },
+            {
+              "$ref": "#/components/schemas/xai_models"
+            },
+            {
+              "$ref": "#/components/schemas/speechmatics_models"
+            },
+            {
+              "$ref": "#/components/schemas/soniox_models"
+            },
+            {
+              "$ref": "#/components/schemas/parakeet_models"
+            },
+            {
+              "$ref": "#/components/schemas/humain_models"
+            },
+            {
+              "$ref": "#/components/schemas/reson8_models"
+            },
+            {
+              "$ref": "#/components/schemas/cohere_ar_stt_models"
+            }
+          ]
+        }
+      },
+      "redact": {
+        "description": "Enable redaction of sensitive information (e.g., PCI data, SSN) from transcription results. Supported values depend on the transcription engine.",
+        "example": "pci",
+        "in": "query",
+        "name": "redact",
+        "required": false,
+        "schema": {
+          "type": "string"
+        }
+      },
+      "sample_rate": {
+        "description": "Audio sample rate in Hz. Required when `input_format` is a raw encoding (`linear16`, `linear32`) — those formats carry no header metadata. Ignored for container formats (`mp3`, `wav`), which self-describe their rate. `speechmatics/linden-1` accepts only `16000`.",
+        "example": 16000,
+        "in": "query",
+        "name": "sample_rate",
+        "required": false,
+        "schema": {
+          "type": "integer"
+        }
+      },
+      "transcription_engine": {
+        "description": "The transcription engine to use for processing the audio stream.",
+        "example": "Telnyx",
+        "in": "query",
+        "name": "transcription_engine",
+        "required": true,
+        "schema": {
+          "enum": [
+            "Azure",
+            "Deepgram",
+            "Google",
+            "Telnyx",
+            "xAI",
+            "Speechmatics",
+            "Soniox",
+            "Parakeet",
+            "Humain",
+            "Reson8",
+            "Cohere"
+          ],
+          "type": "string"
+        }
+      }
+    },
+    "responses": {
+      "speech-to-text_UnprocessableEntityResponse": {
+        "content": {
+          "application/json": {
+            "examples": {
+              "missing_required_parameter": {
+                "summary": "Missing required parameter",
+                "value": {
+                  "errors": [
+                    {
+                      "code": "10004",
+                      "detail": "The 'transcription_engine' parameter is required and cannot be blank.",
+                      "source": {
+                        "pointer": "/transcription_engine"
+                      },
+                      "title": "Missing required parameter"
+                    }
+                  ]
+                }
+              }
+            },
+            "schema": {
+              "$ref": "#/components/schemas/speech-to-text_Errors"
+            }
+          }
+        },
+        "description": "Unprocessable entity. The request was well-formed but could not be processed due to semantic errors. This includes validation errors, invalid parameter values and business logic violations."
+      }
+    },
+    "schemas": {
+      "SttClientEvent": {
+        "description": "Binary audio data in mp3, wav, linear16, or linear32 format, per `input_format`.",
+        "format": "binary",
+        "type": "string"
+      },
+      "SttErrorFrame": {
+        "description": "Server-to-client frame indicating an error during transcription. The connection may be closed shortly after.",
+        "properties": {
+          "error": {
+            "description": "Error message describing what went wrong.",
+            "type": "string"
+          },
+          "type": {
+            "const": "error",
+            "description": "Frame type identifier.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "type",
+          "error"
+        ],
+        "type": "object"
+      },
+      "SttServerEvent": {
+        "description": "Union of all server-to-client WebSocket events for STT streaming.",
+        "discriminator": {
+          "mapping": {
+            "error": "#/components/schemas/SttErrorFrame",
+            "transcript": "#/components/schemas/TranscriptFrame"
+          },
+          "propertyName": "type"
+        },
+        "oneOf": [
+          {
+            "$ref": "#/components/schemas/TranscriptFrame"
+          },
+          {
+            "$ref": "#/components/schemas/SttErrorFrame"
+          }
+        ]
+      },
+      "TranscriptFrame": {
+        "description": "Server-to-client frame containing a transcription result.",
+        "properties": {
+          "confidence": {
+            "description": "Confidence score of the transcription, ranging from 0 to 1. `cohere/ar-stt` frames return `null` here rather than omitting the field.",
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "is_final": {
+            "description": "Whether this is a final transcription result. When `false`, this is an interim result that may be refined.",
+            "type": "boolean"
+          },
+          "transcript": {
+            "description": "The transcribed text from the audio.",
+            "type": "string"
+          },
+          "type": {
+            "const": "transcript",
+            "description": "Frame type identifier.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "type",
+          "transcript"
+        ],
+        "type": "object"
+      },
+      "azure_models": {
+        "enum": [
+          "fast"
+        ],
+        "type": "string"
+      },
+      "cohere_ar_stt_models": {
+        "enum": [
+          "cohere/ar-stt"
+        ],
+        "type": "string"
+      },
+      "deepgram_models": {
+        "enum": [
+          "deepgram/nova-2",
+          "deepgram/nova-3"
+        ],
+        "type": "string"
+      },
+      "google_models": {
+        "enum": [
+          "latest_long",
+          "latest_short",
+          "command_and_search",
+          "phone_call",
+          "video",
+          "default",
+          "medical_conversation",
+          "medical_dictation"
+        ],
+        "type": "string"
+      },
+      "humain_models": {
+        "enum": [
+          "humain/realtime"
+        ],
+        "type": "string"
+      },
+      "parakeet_models": {
+        "enum": [
+          "nvidia/parakeet-v3",
+          "omi-health/omi-med-stt-v1"
+        ],
+        "type": "string"
+      },
+      "reson8_models": {
+        "enum": [
+          "reson8/turns"
+        ],
+        "type": "string"
+      },
+      "soniox_models": {
+        "enum": [
+          "soniox/stt-rt-v4"
+        ],
+        "type": "string"
+      },
+      "speech-to-text_Error": {
+        "properties": {
+          "code": {
+            "format": "integer",
+            "type": "string"
+          },
+          "detail": {
+            "type": "string"
+          },
+          "meta": {
+            "type": "object"
+          },
+          "source": {
+            "properties": {
+              "parameter": {
+                "description": "Indicates which query parameter caused the error.",
+                "type": "string"
+              },
+              "pointer": {
+                "description": "JSON pointer (RFC6901) to the offending entity.",
+                "format": "json-pointer",
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
+          "title": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "title"
+        ]
+      },
+      "speech-to-text_Errors": {
+        "properties": {
+          "errors": {
+            "items": {
+              "$ref": "#/components/schemas/speech-to-text_Error"
+            },
+            "type": "array"
+          }
+        }
+      },
+      "speechmatics_models": {
+        "description": "Available Speechmatics models. `speechmatics/linden-1` is a preview, vendor-hosted model that accepts only 16 kHz raw audio: set `input_format` to `linear16` or `linear32` and `sample_rate` to `16000`. `mp3`, `wav`, and other sample rates are not supported for this model.",
+        "enum": [
+          "speechmatics/standard",
+          "speechmatics/linden-1"
+        ],
+        "type": "string"
+      },
+      "telnyx_models": {
+        "enum": [
+          "openai/whisper-tiny",
+          "openai/whisper-large-v3-turbo"
+        ],
+        "type": "string"
+      },
+      "xai_models": {
+        "enum": [
+          "xai/grok-stt"
+        ],
+        "type": "string"
+      }
+    },
+    "securitySchemes": {
+      "BearerAuth": {
+        "bearerFormat": "API key",
+        "description": "Telnyx API key supplied as `Authorization: Bearer \u003ctoken\u003e`. In production, auth may be validated by the API gateway and forwarded via Telnyx auth headers.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "Payment": {
+        "description": "Machine Payment Protocol credential used on paid retries, sent as `Authorization: Payment ...`. Obtained by paying a challenge returned in the `WWW-Authenticate` header of a 402 response. This is not a Telnyx API key; initial challenge requests use standard bearer authentication instead.",
+        "in": "header",
+        "name": "Authorization",
+        "type": "apiKey"
+      },
+      "agent-memory_bearerAuth": {
+        "description": "Telnyx API key",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "bearerAuth": {
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "branded-calling_bearerAuth": {
+        "description": "Telnyx API key. Generate one at https://portal.telnyx.com/#/app/api-keys.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "collections_bearerAuth": {
+        "description": "Telnyx API key. Collections and results are automatically scoped to the authenticated user's organization.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "number-reputation_bearerAuth": {
+        "description": "Telnyx API key. Generate one at https://portal.telnyx.com/#/app/api-keys.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "oauthClientAuth": {
+        "description": "OAuth 2.0 authentication for Telnyx API and MCP integrations",
+        "flows": {
+          "authorizationCode": {
+            "authorizationUrl": "https://api.telnyx.com/v2/oauth/authorize",
+            "refreshUrl": "https://api.telnyx.com/v2/oauth/token",
+            "scopes": {
+              "admin": "Administrative access to Telnyx resources"
+            },
+            "tokenUrl": "https://api.telnyx.com/v2/oauth/token"
+          },
+          "clientCredentials": {
+            "scopes": {
+              "admin": "Administrative access to Telnyx resources"
+            },
+            "tokenUrl": "https://api.telnyx.com/v2/oauth/token"
+          }
+        },
+        "type": "oauth2"
+      },
+      "outbound-voice-profiles_bearerAuth": {
+        "bearerFormat": "JWT",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "pay-connectors_bearerAuth": {
+        "description": "Telnyx API key, not the processor bearer token.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "pronunciation-dicts_bearerAuth": {
+        "description": "Telnyx API v2 key. Obtain from https://portal.telnyx.com",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "rcs-registration_bearerAuth": {
+        "bearerFormat": "API key",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "stored-payment-transactions_bearerAuth": {
+        "bearerFormat": "JWT",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "telnyxApiKey": {
+        "description": "Management-only Telnyx account credential.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "transcriptions-search_bearerAuth": {
+        "description": "Telnyx API key. Results are automatically scoped to the authenticated user's organization.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "web-search_bearerAuth": {
+        "description": "Telnyx API key",
+        "scheme": "bearer",
+        "type": "http"
+      }
+    }
+  },
+  "info": {
+    "contact": {
+      "email": "support@telnyx.com"
+    },
+    "description": "SIP trunking, SMS, MMS, Call Control and Telephony Data Services.",
+    "title": "Telnyx API",
+    "version": "2.0.0",
+    "x-endpoint-cost": "light",
+    "x-latency-category": "responsive"
+  },
+  "openapi": "3.1.0",
+  "paths": {
+    "/speech-to-text/transcription": {
+      "get": {
+        "description": "Open a WebSocket connection to stream audio and receive transcriptions in real-time. Authentication is provided via the standard `Authorization: Bearer \u003cAPI_KEY\u003e` header.\n\nSupported engines: `Azure`, `Deepgram`, `Google`, `Telnyx`, `xAI`, `Speechmatics`, `Soniox`, `Parakeet`, `Humain`, `Reson8`, `Cohere`.\n\n**Connection flow:**\n1. Open WebSocket with query parameters specifying engine, input format, and language.\n2. Send binary audio frames (mp3, wav, linear16, or linear32 format, per `input_format`).\n3. Receive JSON transcript frames with `transcript`, `is_final`, and `confidence` fields.\n4. Close connection when done.",
+        "operationId": "TranscriptionOverWs",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/transcription_engine"
+          },
+          {
+            "$ref": "#/components/parameters/input_format"
+          },
+          {
+            "$ref": "#/components/parameters/sample_rate"
+          },
+          {
+            "$ref": "#/components/parameters/language"
+          },
+          {
+            "$ref": "#/components/parameters/interim_results"
+          },
+          {
+            "$ref": "#/components/parameters/model"
+          },
+          {
+            "$ref": "#/components/parameters/endpointing"
+          },
+          {
+            "$ref": "#/components/parameters/redact"
+          },
+          {
+            "$ref": "#/components/parameters/keyterm"
+          },
+          {
+            "$ref": "#/components/parameters/keywords"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/octet-stream": {
+              "schema": {
+                "$ref": "#/components/schemas/SttClientEvent"
+              }
+            }
+          },
+          "description": "Client sends binary audio frames (mp3, wav, linear16, or linear32 format, per `input_format`) over the WebSocket. See `SttClientEvent` schema."
+        },
+        "responses": {
+          "101": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SttServerEvent"
+                }
+              }
+            },
+            "description": "WebSocket connection established. Communication proceeds via binary audio frames (client) and JSON transcript frames (server).\n\n**Client → Server:** Binary audio data (mp3, wav, linear16, or linear32, per `input_format`).\n**Server → Client:** See `TranscriptFrame` and `SttErrorFrame` schemas."
+          },
+          "200": {
+            "description": "WebSocket upgrade successful — this response is not returned directly. See 101 for frame documentation."
+          },
+          "400": {
+            "description": "Invalid parameters — engine not supported or missing required fields."
+          },
+          "401": {
+            "description": "Authentication failed — missing or invalid Authorization header."
+          },
+          "422": {
+            "$ref": "#/components/responses/speech-to-text_UnprocessableEntityResponse"
+          }
+        },
+        "servers": [
+          {
+            "description": "Telnyx API v2 (WebSocket)",
+            "url": "wss://api.telnyx.com/v2"
+          }
+        ],
+        "summary": "Speech to text over WebSocket",
+        "tags": [
+          "Speech To Text over WebSockets"
+        ],
+        "x-latency-category": "interactive"
+      }
+    }
+  },
+  "security": [
+    {
+      "bearerAuth": []
+    }
+  ],
+  "servers": [
+    {
+      "description": "Version 2.0.0 of the Telnyx API",
+      "url": "https://api.telnyx.com/v2"
+    }
+  ]
+}

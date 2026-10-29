@@ -1,0 +1,977 @@
+{
+  "components": {
+    "responses": {
+      "programmable-fax_GenericErrorResponse": {
+        "content": {
+          "application/json": {
+            "example": {
+              "errors": [
+                {
+                  "code": "10007",
+                  "detail": "An unexpected error occured.",
+                  "title": "Unexpected error"
+                }
+              ]
+            },
+            "schema": {
+              "$ref": "#/components/schemas/Errors"
+            }
+          }
+        },
+        "description": "Unexpected error"
+      },
+      "programmable-fax_NotFoundResponse": {
+        "content": {
+          "application/json": {
+            "example": {
+              "errors": [
+                {
+                  "code": "404",
+                  "detail": "The requested resource does not exist",
+                  "title": "Not Found"
+                }
+              ]
+            },
+            "schema": {
+              "$ref": "#/components/schemas/Errors"
+            }
+          }
+        },
+        "description": "The requested resource does not exist"
+      },
+      "programmable-fax_UnprocessableEntityResponse": {
+        "content": {
+          "application/json": {
+            "example": {
+              "errors": [
+                {
+                  "code": "422",
+                  "detail": "The request parameters failed validation",
+                  "title": "Unprocessable Entity"
+                }
+              ]
+            },
+            "schema": {
+              "$ref": "#/components/schemas/Errors"
+            }
+          }
+        },
+        "description": "Unprocessable entity. The request was well-formed but contains semantic errors."
+      }
+    },
+    "schemas": {
+      "ConnectionId": {
+        "description": "The ID of the connection used to send the fax.",
+        "example": "234423",
+        "type": "string"
+      },
+      "Direction": {
+        "description": "The direction of the fax.",
+        "enum": [
+          "inbound",
+          "outbound"
+        ],
+        "example": "outbound",
+        "type": "string"
+      },
+      "Error": {
+        "example": {
+          "code": "20207",
+          "description": "The street address provided is invalid.",
+          "source": {
+            "pointer": "/street_address"
+          },
+          "title": "Invalid street address"
+        },
+        "properties": {
+          "code": {
+            "type": "string",
+            "x-format": "int64"
+          },
+          "description": {
+            "type": "string"
+          },
+          "detail": {
+            "description": "A human-readable explanation of the error.",
+            "type": "string"
+          },
+          "meta": {
+            "additionalProperties": true,
+            "type": "object"
+          },
+          "source": {
+            "properties": {
+              "parameter": {
+                "description": "Indicates which query parameter caused the error.",
+                "type": "string"
+              },
+              "pointer": {
+                "description": "JSON pointer (RFC6901) to the offending entity.",
+                "format": "json-pointer",
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
+          "title": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "title"
+        ],
+        "type": "object"
+      },
+      "Errors": {
+        "properties": {
+          "errors": {
+            "items": {
+              "$ref": "#/components/schemas/Error"
+            },
+            "type": "array"
+          }
+        },
+        "type": "object"
+      },
+      "Fax": {
+        "example": {
+          "client_state": "aGF2ZSBhIG5pY2UgZGF5ID1d",
+          "connection_id": "c-1",
+          "created_at": "2020-05-05T09:59:12Z",
+          "direction": "outbound",
+          "failure_reason": null,
+          "from": "+123",
+          "id": "0ccc7b54-4df3-4bca-a65a-3da1ecc777f0",
+          "internal_failure_reason": null,
+          "media_url": "http://www.example.com/fax.pdf",
+          "preview_url": "https://s3.amazonaws.com/faxes-dev/user-1/cf4a6b52-bf8e-4945-9f49-611d0d2b083b_preview.tiff?X-Amz-Algorithm=AWS4-HMAC-SHA256\u0026X-Amz-Credential=xxxxxxxxxx%2F20200505%2Fus-east-1%2Fs3%2Faws4_request\u0026X-Amz-Date=20200505T095917Z\u0026X-Amz-Expires=7200\u0026X-Amz-SignedHeaders=host\u0026X-Amz-Signature=fac2af40464fcc77673ad762db86e34f9c1b91a82699b5578c5327f53874df51",
+          "quality": "high",
+          "record_type": "fax",
+          "status": "queued",
+          "store_media": true,
+          "stored_media_url": "https://s3.amazonaws.com/faxes-dev/user-1/cf4a6b52-bf8e-4945-9f49-611d0d2b083b.pdf?X-Amz-Algorithm=AWS4-HMAC-SHA256\u0026X-Amz-Credential=xxxxxxxxxx%2F20200505%2Fus-east-1%2Fs3%2Faws4_request\u0026X-Amz-Date=20200505T095917Z\u0026X-Amz-Expires=7200\u0026X-Amz-SignedHeaders=host\u0026X-Amz-Signature=fac2af40464fcc77673ad762db86e34f9c1b91a82699b5578c5327f53874df51",
+          "to": "+456",
+          "updated_at": "2020-05-05T09:59:12Z",
+          "webhook_failover_url": "",
+          "webhook_url": "http://www.example.com/webhooks"
+        },
+        "properties": {
+          "client_state": {
+            "description": "State received from a command.",
+            "example": "aGF2ZSBhIG5pY2UgZGF5ID1d",
+            "type": "string"
+          },
+          "connection_id": {
+            "$ref": "#/components/schemas/ConnectionId"
+          },
+          "created_at": {
+            "description": "ISO 8601 timestamp when resource was created",
+            "format": "date-time",
+            "type": "string"
+          },
+          "direction": {
+            "$ref": "#/components/schemas/Direction"
+          },
+          "failure_reason": {
+            "description": "Customer-facing failure reason for the fax. Present on every fax object (null when the fax has not failed). Mapped from the more granular `internal_failure_reason`. Common values include: `receiver_call_dropped`, `sender_call_dropped`, `sender_canceled`, `carrier_lost`, `service_unavailable`, `fax_signaling_error`, `receiver_communication_error`, `sender_communication_error`, `receiver_decline`, `receiver_recovery_on_timer_expire`, `receiver_no_response`, `receiver_invalid_number_format`, `receiver_no_answer`, `receiver_incompatible_destination`, `receiver_unallocated_number`, `destination_unreachable`, `user_busy`, `invalid_ecm_response_from_receiver`, `fax_initial_communication_timeout`, `destination_not_in_service_plan`, `account_disabled`, `destination_invalid`, `no_outbound_profile`, `destination_not_in_countries_whitelist`, `user_channel_limit_exceeded`, `outbound_profile_channel_limit_exceeded`, `connection_channel_limit_exceeded`, `outbound_profile_daily_spend_limit_exceeded`, `unverified_origination_number`, `unverified_destination_not_allowed`, `file_format_invalid`, `file_download_failed`, `file_size_limit_exceeded`, `page_count_limit_exceeded`, `media_processing_exception`.",
+            "example": null,
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "from": {
+            "$ref": "#/components/schemas/From"
+          },
+          "from_display_name": {
+            "description": "The string used as the caller id name (SIP From Display Name) presented to the destination (`to` number).",
+            "example": "Company Name",
+            "type": "string"
+          },
+          "id": {
+            "$ref": "#/components/schemas/Id"
+          },
+          "internal_failure_reason": {
+            "description": "Internal, more granular failure reason for the fax. Present on every fax object (null when the fax has not failed). Useful for deeper debugging beyond the customer-facing `failure_reason`.",
+            "example": null,
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "media_name": {
+            "$ref": "#/components/schemas/MediaName"
+          },
+          "media_url": {
+            "$ref": "#/components/schemas/MediaUrl"
+          },
+          "preview_url": {
+            "description": "If `store_preview` was set to `true`, this is a link to temporary location. Link expires after 10 minutes.",
+            "type": "string"
+          },
+          "quality": {
+            "$ref": "#/components/schemas/Quality"
+          },
+          "record_type": {
+            "description": "Identifies the type of the resource.",
+            "enum": [
+              "fax"
+            ],
+            "example": "fax",
+            "type": "string"
+          },
+          "status": {
+            "description": "Status of the fax",
+            "enum": [
+              "queued",
+              "media.processed",
+              "originated",
+              "sending",
+              "delivered",
+              "failed",
+              "initiated",
+              "receiving",
+              "media.processing",
+              "received"
+            ],
+            "example": "queued",
+            "type": "string"
+          },
+          "store_media": {
+            "description": "Should fax media be stored on temporary URL. It does not support media_name.",
+            "type": "boolean"
+          },
+          "stored_media_url": {
+            "description": "If store_media was set to true, this is a link to temporary location. Link expires after 10 minutes.",
+            "type": "string"
+          },
+          "to": {
+            "$ref": "#/components/schemas/To"
+          },
+          "updated_at": {
+            "description": "ISO 8601 timestamp when resource was updated",
+            "format": "date-time",
+            "type": "string"
+          },
+          "webhook_failover_url": {
+            "description": "Optional failover URL that will receive fax webhooks if webhook_url doesn't return a 2XX response",
+            "type": "string"
+          },
+          "webhook_url": {
+            "description": "URL that will receive fax webhooks",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "From": {
+        "description": "The phone number, in E.164 format, the fax will be sent from.",
+        "example": "+13125790015",
+        "type": "string"
+      },
+      "Id": {
+        "description": "Identifies the type of resource.",
+        "example": "0ccc7b54-4df3-4bca-a65a-3da1ecc777f0",
+        "format": "uuid",
+        "type": "string"
+      },
+      "MediaName": {
+        "description": "The media_name used for the fax's media. Must point to a file previously uploaded to api.telnyx.com/v2/media by the same user/organization. Supported formats: PDF, TIFF, JPEG, PNG, DOC, DOCX, RTF, and TXT. media_name and media_url/contents can't be submitted together.",
+        "example": "my_media_uploaded_to_media_storage_api",
+        "type": "string"
+      },
+      "MediaUrl": {
+        "description": "The URL (or list of URLs) to the fax document. Supported formats: PDF, TIFF, JPEG, PNG, DOC, DOCX, RTF, and TXT. media_url and media_name/contents can't be submitted together.",
+        "example": "https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf",
+        "type": "string"
+      },
+      "Monochrome": {
+        "default": false,
+        "description": "The flag to enable monochrome, true black and white fax results.",
+        "type": "boolean"
+      },
+      "PaginationMeta": {
+        "properties": {
+          "page_number": {
+            "example": 2,
+            "type": "integer"
+          },
+          "page_size": {
+            "example": 25,
+            "type": "integer"
+          },
+          "total_pages": {
+            "example": 3,
+            "type": "integer"
+          },
+          "total_results": {
+            "example": 55,
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "Quality": {
+        "default": "high",
+        "description": "The quality of the fax. The `ultra` settings provides the highest quality available, but also present longer fax processing times. `ultra_light` is best suited for images, wihle `ultra_dark` is best suited for text.",
+        "enum": [
+          "normal",
+          "high",
+          "very_high",
+          "ultra_light",
+          "ultra_dark"
+        ],
+        "example": "high",
+        "type": "string"
+      },
+      "SendFaxMultipartRequest": {
+        "properties": {
+          "connection_id": {
+            "$ref": "#/components/schemas/ConnectionId"
+          },
+          "contents": {
+            "description": "The file you want to upload. The maximum allowed size is 20 MB. Supported formats: PDF, TIFF, JPEG, PNG, DOC, DOCX, RTF, and TXT. contents and media_name/media_url can't be submitted together.",
+            "format": "binary",
+            "type": "string"
+          },
+          "from": {
+            "$ref": "#/components/schemas/From"
+          },
+          "monochrome": {
+            "$ref": "#/components/schemas/Monochrome"
+          },
+          "quality": {
+            "$ref": "#/components/schemas/Quality"
+          },
+          "store_media": {
+            "$ref": "#/components/schemas/StoreMedia"
+          },
+          "store_preview": {
+            "$ref": "#/components/schemas/StorePreview"
+          },
+          "t38_enabled": {
+            "$ref": "#/components/schemas/T38Enabled"
+          },
+          "to": {
+            "$ref": "#/components/schemas/To"
+          }
+        },
+        "required": [
+          "connection_id",
+          "contents",
+          "from",
+          "to"
+        ],
+        "title": "Send fax multipart request",
+        "type": "object"
+      },
+      "SendFaxRequest": {
+        "properties": {
+          "black_threshold": {
+            "default": 95,
+            "description": "The black threshold percentage for monochrome faxes. Only applicable if `monochrome` is set to `true`.",
+            "maximum": 100,
+            "minimum": 1,
+            "type": "integer"
+          },
+          "client_state": {
+            "description": "Use this field to add state to every subsequent webhook. It must be a valid Base-64 encoded string.",
+            "example": "aGF2ZSBhIG5pY2UgZGF5ID1d",
+            "type": "string"
+          },
+          "connection_id": {
+            "description": "The connection ID to send the fax with.",
+            "example": "234423",
+            "type": "string"
+          },
+          "from": {
+            "$ref": "#/components/schemas/From"
+          },
+          "from_display_name": {
+            "description": "The `from_display_name` string to be used as the caller id name (SIP From Display Name) presented to the destination (`to` number). The string should have a maximum of 128 characters, containing only letters, numbers, spaces, and -_~!.+ special characters. If ommited, the display name will be the same as the number in the `from` field.",
+            "example": "Company Name",
+            "type": "string"
+          },
+          "media_name": {
+            "$ref": "#/components/schemas/MediaName"
+          },
+          "media_url": {
+            "$ref": "#/components/schemas/MediaUrl"
+          },
+          "monochrome": {
+            "default": false,
+            "description": "The flag to enable monochrome, true black and white fax results.",
+            "type": "boolean"
+          },
+          "preview_format": {
+            "default": "tiff",
+            "description": "The format for the preview file in case the `store_preview` is `true`.",
+            "enum": [
+              "pdf",
+              "tiff"
+            ],
+            "type": "string"
+          },
+          "quality": {
+            "$ref": "#/components/schemas/Quality"
+          },
+          "store_media": {
+            "default": false,
+            "description": "Should fax media be stored on temporary URL. It does not support media_name, they can't be submitted together.",
+            "type": "boolean"
+          },
+          "store_preview": {
+            "default": false,
+            "description": "Should fax preview be stored on temporary URL.",
+            "type": "boolean"
+          },
+          "t38_enabled": {
+            "default": true,
+            "description": "The flag to disable the T.38 protocol.",
+            "type": "boolean"
+          },
+          "to": {
+            "$ref": "#/components/schemas/To"
+          },
+          "webhook_url": {
+            "description": "Use this field to override the URL to which Telnyx will send subsequent webhooks for this fax.",
+            "example": "https://www.example.com/server-b/",
+            "type": "string"
+          }
+        },
+        "required": [
+          "connection_id",
+          "from",
+          "to"
+        ],
+        "title": "Send fax request",
+        "type": "object"
+      },
+      "StoreMedia": {
+        "default": false,
+        "description": "Should fax media be stored on temporary URL. It does not support media_name, they can't be submitted together.",
+        "type": "boolean"
+      },
+      "StorePreview": {
+        "default": false,
+        "description": "Should fax preview be stored on temporary URL.",
+        "type": "boolean"
+      },
+      "T38Enabled": {
+        "default": true,
+        "description": "The flag to disable the T.38 protocol.",
+        "type": "boolean"
+      },
+      "To": {
+        "description": "The phone number, in E.164 format, the fax will be sent to or SIP URI",
+        "example": "+13127367276",
+        "type": "string"
+      }
+    },
+    "securitySchemes": {
+      "BearerAuth": {
+        "bearerFormat": "API key",
+        "description": "Telnyx API key supplied as `Authorization: Bearer \u003ctoken\u003e`. In production, auth may be validated by the API gateway and forwarded via Telnyx auth headers.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "Payment": {
+        "description": "Machine Payment Protocol credential used on paid retries, sent as `Authorization: Payment ...`. Obtained by paying a challenge returned in the `WWW-Authenticate` header of a 402 response. This is not a Telnyx API key; initial challenge requests use standard bearer authentication instead.",
+        "in": "header",
+        "name": "Authorization",
+        "type": "apiKey"
+      },
+      "agent-memory_bearerAuth": {
+        "description": "Telnyx API key",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "bearerAuth": {
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "branded-calling_bearerAuth": {
+        "description": "Telnyx API key. Generate one at https://portal.telnyx.com/#/app/api-keys.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "collections_bearerAuth": {
+        "description": "Telnyx API key. Collections and results are automatically scoped to the authenticated user's organization.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "number-reputation_bearerAuth": {
+        "description": "Telnyx API key. Generate one at https://portal.telnyx.com/#/app/api-keys.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "oauthClientAuth": {
+        "description": "OAuth 2.0 authentication for Telnyx API and MCP integrations",
+        "flows": {
+          "authorizationCode": {
+            "authorizationUrl": "https://api.telnyx.com/v2/oauth/authorize",
+            "refreshUrl": "https://api.telnyx.com/v2/oauth/token",
+            "scopes": {
+              "admin": "Administrative access to Telnyx resources"
+            },
+            "tokenUrl": "https://api.telnyx.com/v2/oauth/token"
+          },
+          "clientCredentials": {
+            "scopes": {
+              "admin": "Administrative access to Telnyx resources"
+            },
+            "tokenUrl": "https://api.telnyx.com/v2/oauth/token"
+          }
+        },
+        "type": "oauth2"
+      },
+      "outbound-voice-profiles_bearerAuth": {
+        "bearerFormat": "JWT",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "pay-connectors_bearerAuth": {
+        "description": "Telnyx API key, not the processor bearer token.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "pronunciation-dicts_bearerAuth": {
+        "description": "Telnyx API v2 key. Obtain from https://portal.telnyx.com",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "rcs-registration_bearerAuth": {
+        "bearerFormat": "API key",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "stored-payment-transactions_bearerAuth": {
+        "bearerFormat": "JWT",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "telnyxApiKey": {
+        "description": "Management-only Telnyx account credential.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "transcriptions-search_bearerAuth": {
+        "description": "Telnyx API key. Results are automatically scoped to the authenticated user's organization.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "web-search_bearerAuth": {
+        "description": "Telnyx API key",
+        "scheme": "bearer",
+        "type": "http"
+      }
+    }
+  },
+  "info": {
+    "contact": {
+      "email": "support@telnyx.com"
+    },
+    "description": "SIP trunking, SMS, MMS, Call Control and Telephony Data Services.",
+    "title": "Telnyx API",
+    "version": "2.0.0",
+    "x-endpoint-cost": "light",
+    "x-latency-category": "responsive"
+  },
+  "openapi": "3.1.0",
+  "paths": {
+    "/faxes": {
+      "get": {
+        "description": "Retrieve a paginated list of faxes sent or received on your account.",
+        "operationId": "ListFaxes",
+        "parameters": [
+          {
+            "description": "Consolidated filter parameter (deepObject style). Originally: filter[created_at][gte], filter[created_at][gt], filter[created_at][lte], filter[created_at][lt], filter[direction][eq], filter[from][eq], filter[to][eq]",
+            "explode": true,
+            "in": "query",
+            "name": "filter",
+            "schema": {
+              "properties": {
+                "created_at": {
+                  "description": "Date range filtering operations for fax creation timestamp",
+                  "properties": {
+                    "gt": {
+                      "description": "ISO 8601 date time for filtering faxes created after that date",
+                      "example": "2020-02-02T22:25:27.521992Z",
+                      "format": "date-time",
+                      "type": "string"
+                    },
+                    "gte": {
+                      "description": "ISO 8601 date time for filtering faxes created after or on that date",
+                      "example": "2020-02-02T22:25:27.521992Z",
+                      "format": "date-time",
+                      "type": "string"
+                    },
+                    "lt": {
+                      "description": "ISO 8601 formatted date time for filtering faxes created before that date",
+                      "example": "2020-02-02T22:25:27.521992Z",
+                      "format": "date-time",
+                      "type": "string"
+                    },
+                    "lte": {
+                      "description": "ISO 8601 formatted date time for filtering faxes created on or before that date",
+                      "example": "2020-02-02T22:25:27.521992Z",
+                      "format": "date-time",
+                      "type": "string"
+                    }
+                  },
+                  "type": "object"
+                },
+                "direction": {
+                  "description": "Direction filtering operations",
+                  "properties": {
+                    "eq": {
+                      "description": "The direction, inbound or outbound, for filtering faxes sent from this account",
+                      "example": "inbound",
+                      "type": "string"
+                    }
+                  },
+                  "type": "object"
+                },
+                "from": {
+                  "description": "From number filtering operations",
+                  "properties": {
+                    "eq": {
+                      "description": "The phone number, in E.164 format for filtering faxes sent from this number",
+                      "example": "+13127367276",
+                      "type": "string"
+                    }
+                  },
+                  "type": "object"
+                },
+                "to": {
+                  "description": "To number filtering operations",
+                  "properties": {
+                    "eq": {
+                      "description": "The phone number, in E.164 format for filtering faxes sent to this number",
+                      "example": "+13127367276",
+                      "type": "string"
+                    }
+                  },
+                  "type": "object"
+                }
+              },
+              "type": "object"
+            },
+            "style": "deepObject"
+          },
+          {
+            "description": "Consolidated pagination parameter (deepObject style). Originally: page[size], page[number]",
+            "explode": true,
+            "in": "query",
+            "name": "page",
+            "schema": {
+              "properties": {
+                "number": {
+                  "description": "Number of the page to be retrieved",
+                  "example": 2,
+                  "type": "integer"
+                },
+                "size": {
+                  "description": "Number of fax resources for the single page returned",
+                  "example": 2,
+                  "type": "integer"
+                }
+              },
+              "type": "object"
+            },
+            "style": "deepObject"
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "items": {
+                        "$ref": "#/components/schemas/Fax"
+                      },
+                      "type": "array"
+                    },
+                    "meta": {
+                      "$ref": "#/components/schemas/PaginationMeta"
+                    }
+                  },
+                  "title": "List Faxes Response",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "List faxes response"
+          },
+          "404": {
+            "$ref": "#/components/responses/programmable-fax_NotFoundResponse"
+          },
+          "default": {
+            "$ref": "#/components/responses/programmable-fax_GenericErrorResponse"
+          }
+        },
+        "summary": "View a list of faxes",
+        "tags": [
+          "Programmable Fax Commands"
+        ],
+        "x-latency-category": "background"
+      },
+      "post": {
+        "description": "Send a fax. Files have size limits and page count limit validations. If a file is bigger than 50MB or has more than 350 pages it will fail with `file_size_limit_exceeded` and `page_count_limit_exceeded` respectively.\n\n**Supported file formats:**\n\n- PDF (`application/pdf`)\n- TIFF (`application/tiff`, `image/tiff`)\n- JPEG (`image/jpeg`)\n- PNG (`image/png`)\n- Microsoft Word `.doc` (`application/msword`)\n- Microsoft Word `.docx` (`application/vnd.openxmlformats-officedocument.wordprocessingml.document`)\n- Rich Text Format `.rtf` (`application/rtf`)\n- Plain text `.txt` (`text/plain`)\n\n**Expected Webhooks:**\n\n- `fax.queued`\n- `fax.media.processed`\n- `fax.sending.started`\n- `fax.delivered`\n- `fax.failed`",
+        "operationId": "SendFax",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SendFaxRequest"
+              }
+            },
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/SendFaxMultipartRequest"
+              }
+            }
+          },
+          "description": "Send fax request",
+          "required": true
+        },
+        "responses": {
+          "202": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/Fax"
+                    }
+                  },
+                  "title": "Send Fax Response",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Fax queued for sending. Track its progress by polling GET /faxes/{id} with the returned fax id."
+          },
+          "422": {
+            "$ref": "#/components/responses/programmable-fax_UnprocessableEntityResponse"
+          },
+          "default": {
+            "$ref": "#/components/responses/programmable-fax_GenericErrorResponse"
+          }
+        },
+        "summary": "Send a fax",
+        "tags": [
+          "Programmable Fax Commands"
+        ]
+      }
+    },
+    "/faxes/{id}": {
+      "delete": {
+        "description": "Delete a fax resource from your account.",
+        "operationId": "DeleteFax",
+        "parameters": [
+          {
+            "description": "The unique identifier of a fax.",
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "The resource was deleted successfully."
+          },
+          "404": {
+            "$ref": "#/components/responses/programmable-fax_NotFoundResponse"
+          },
+          "default": {
+            "$ref": "#/components/responses/programmable-fax_GenericErrorResponse"
+          }
+        },
+        "summary": "Delete a fax",
+        "tags": [
+          "Programmable Fax Commands"
+        ]
+      },
+      "get": {
+        "description": "Returns the details of a single fax, including its current status.",
+        "operationId": "ViewFax",
+        "parameters": [
+          {
+            "description": "The unique identifier of a fax.",
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/Fax"
+                    }
+                  },
+                  "title": "Get Fax Response",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Get fax response"
+          },
+          "404": {
+            "$ref": "#/components/responses/programmable-fax_NotFoundResponse"
+          },
+          "default": {
+            "$ref": "#/components/responses/programmable-fax_GenericErrorResponse"
+          }
+        },
+        "summary": "View a fax",
+        "tags": [
+          "Programmable Fax Commands"
+        ]
+      }
+    },
+    "/faxes/{id}/actions/cancel": {
+      "post": {
+        "description": "Cancel the outbound fax that is in one of the following states: `queued`, `media.processed`, `originated` or `sending` ",
+        "operationId": "CancelFax",
+        "parameters": [
+          {
+            "description": "The unique identifier of a fax.",
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "202": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "example": {
+                    "data": {
+                      "result": "ok"
+                    }
+                  },
+                  "properties": {
+                    "data": {
+                      "properties": {
+                        "result": {
+                          "example": "ok",
+                          "type": "string"
+                        }
+                      },
+                      "type": "object"
+                    }
+                  },
+                  "title": "Successful response upon accepting cancel fax command",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful response upon accepting cancel fax command"
+          },
+          "404": {
+            "$ref": "#/components/responses/programmable-fax_NotFoundResponse"
+          },
+          "422": {
+            "$ref": "#/components/responses/programmable-fax_UnprocessableEntityResponse"
+          },
+          "default": {
+            "$ref": "#/components/responses/programmable-fax_GenericErrorResponse"
+          }
+        },
+        "summary": "Cancel a fax",
+        "tags": [
+          "Programmable Fax Commands"
+        ]
+      }
+    },
+    "/faxes/{id}/actions/refresh": {
+      "post": {
+        "description": "Refreshes the inbound fax's media_url when it has expired",
+        "operationId": "RefreshFax",
+        "parameters": [
+          {
+            "description": "The unique identifier of a fax.",
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "example": {
+                    "data": {
+                      "result": "ok"
+                    }
+                  },
+                  "properties": {
+                    "data": {
+                      "properties": {
+                        "result": {
+                          "example": "ok",
+                          "type": "string"
+                        }
+                      },
+                      "type": "object"
+                    }
+                  },
+                  "title": "Refresh Fax Response",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Refresh fax response"
+          },
+          "404": {
+            "$ref": "#/components/responses/programmable-fax_NotFoundResponse"
+          },
+          "default": {
+            "$ref": "#/components/responses/programmable-fax_GenericErrorResponse"
+          }
+        },
+        "summary": "Refresh a fax",
+        "tags": [
+          "Programmable Fax Commands"
+        ]
+      }
+    }
+  },
+  "security": [
+    {
+      "bearerAuth": []
+    }
+  ],
+  "servers": [
+    {
+      "description": "Version 2.0.0 of the Telnyx API",
+      "url": "https://api.telnyx.com/v2"
+    }
+  ]
+}

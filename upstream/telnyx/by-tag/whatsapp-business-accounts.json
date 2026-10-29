@@ -1,0 +1,1124 @@
+{
+  "components": {
+    "parameters": {
+      "PageConsolidated": {
+        "description": "Consolidated page parameter (deepObject style). Originally: page[number], page[size]",
+        "explode": true,
+        "in": "query",
+        "name": "page",
+        "schema": {
+          "properties": {
+            "number": {
+              "default": 1,
+              "description": "The page number to load",
+              "minimum": 1,
+              "type": "integer"
+            },
+            "size": {
+              "default": 20,
+              "description": "The size of the page",
+              "maximum": 250,
+              "minimum": 1,
+              "type": "integer"
+            }
+          },
+          "type": "object"
+        },
+        "style": "deepObject"
+      },
+      "WabaId": {
+        "description": "Whatsapp Business Account ID",
+        "in": "path",
+        "name": "id",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      }
+    },
+    "responses": {
+      "WabaSettingsResponse": {
+        "content": {
+          "application/json": {
+            "schema": {
+              "properties": {
+                "data": {
+                  "$ref": "#/components/schemas/WabaSettings"
+                }
+              },
+              "type": "object"
+            }
+          }
+        },
+        "description": "Successful response with Whatsapp business account settings"
+      },
+      "WabaSingleResponse": {
+        "content": {
+          "application/json": {
+            "schema": {
+              "properties": {
+                "data": {
+                  "$ref": "#/components/schemas/WabaResponse"
+                }
+              },
+              "type": "object"
+            }
+          }
+        },
+        "description": "Successful response with Whatsapp business account"
+      },
+      "WabasListResponse": {
+        "content": {
+          "application/json": {
+            "schema": {
+              "properties": {
+                "data": {
+                  "items": {
+                    "$ref": "#/components/schemas/WabaResponse"
+                  },
+                  "type": "array"
+                },
+                "meta": {
+                  "$ref": "#/components/schemas/messaging_PaginationMeta"
+                }
+              },
+              "type": "object"
+            }
+          }
+        },
+        "description": "Successful response with list of Whatsapp business accounts"
+      },
+      "WhatsappPhonesListResponse": {
+        "content": {
+          "application/json": {
+            "schema": {
+              "properties": {
+                "data": {
+                  "items": {
+                    "$ref": "#/components/schemas/WhatsappPhoneResponse"
+                  },
+                  "type": "array"
+                },
+                "meta": {
+                  "$ref": "#/components/schemas/messaging_PaginationMeta"
+                }
+              },
+              "type": "object"
+            }
+          }
+        },
+        "description": "Successful response with Whatsapp phone numbers"
+      },
+      "WhatsappUserDataResponse": {
+        "content": {
+          "application/json": {
+            "schema": {
+              "properties": {
+                "data": {
+                  "$ref": "#/components/schemas/WhatsappUserData"
+                }
+              },
+              "type": "object"
+            }
+          }
+        },
+        "description": "Successful response with Whatsapp user data"
+      },
+      "management_messaging_GenericErrorResponse": {
+        "content": {
+          "application/json": {
+            "example": {
+              "errors": [
+                {
+                  "code": "string",
+                  "detail": "string",
+                  "source": {
+                    "parameter": "string",
+                    "pointer": "/data/attributes/phone_number"
+                  },
+                  "title": "string"
+                }
+              ]
+            },
+            "schema": {
+              "$ref": "#/components/schemas/messaging_Errors"
+            }
+          }
+        },
+        "description": "Unexpected error"
+      },
+      "messaging_GenericErrorResponse_0b38e7044b": {
+        "content": {
+          "application/json": {
+            "example": {
+              "errors": [
+                {
+                  "code": "string",
+                  "detail": "string",
+                  "source": {
+                    "parameter": "string",
+                    "pointer": "/data/attributes/phone_number"
+                  },
+                  "title": "string"
+                }
+              ]
+            },
+            "schema": {
+              "$ref": "#/components/schemas/messaging_Errors_0b38e7044b"
+            }
+          }
+        },
+        "description": "Unexpected error"
+      },
+      "messaging_WabasListResponse": {
+        "content": {
+          "application/json": {
+            "schema": {
+              "properties": {
+                "data": {
+                  "items": {
+                    "$ref": "#/components/schemas/WabaResponse"
+                  },
+                  "type": "array"
+                },
+                "meta": {
+                  "$ref": "#/components/schemas/messaging_PaginationMeta_0b38e7044b"
+                }
+              },
+              "type": "object"
+            }
+          }
+        },
+        "description": "Successful response with list of Whatsapp business accounts"
+      },
+      "messaging_WhatsappPhonesListResponse": {
+        "content": {
+          "application/json": {
+            "schema": {
+              "properties": {
+                "data": {
+                  "items": {
+                    "$ref": "#/components/schemas/WhatsappPhoneResponse"
+                  },
+                  "type": "array"
+                },
+                "meta": {
+                  "$ref": "#/components/schemas/messaging_PaginationMeta_0b38e7044b"
+                }
+              },
+              "type": "object"
+            }
+          }
+        },
+        "description": "Successful response with Whatsapp phone numbers"
+      }
+    },
+    "schemas": {
+      "PatchWabaSettingsRequest": {
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "timezone": {
+            "description": "IANA timezone identifier",
+            "example": "America/New_York",
+            "type": "string"
+          },
+          "webhook_enabled": {
+            "description": "Enable/disable receiving Whatsapp events",
+            "type": "boolean"
+          },
+          "webhook_events": {
+            "items": {
+              "description": "Whatsapp event to subscribe to",
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "webhook_failover_url": {
+            "description": "Failover URL to send Whatsapp events",
+            "format": "url",
+            "type": "string"
+          },
+          "webhook_url": {
+            "description": "URL to send Whatsapp events",
+            "format": "url",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "PatchWhatsappUserDataRequest": {
+        "properties": {
+          "webhook_failover_url": {
+            "description": "Failover URL to send Whatsapp signup events",
+            "format": "url",
+            "type": "string"
+          },
+          "webhook_url": {
+            "description": "URL to send Whatsapp signup events",
+            "format": "url",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "WabaResponse": {
+        "properties": {
+          "account_review_status": {
+            "description": "Account review status of Whatsapp business account",
+            "type": "string"
+          },
+          "business_verification_status": {
+            "description": "Business verification status of Whatsapp business account",
+            "type": "string"
+          },
+          "country": {
+            "description": "Country associated with Whatsapp business account",
+            "type": "string"
+          },
+          "created_at": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "id": {
+            "description": "Internal ID of Whatsapp business account",
+            "format": "uuid",
+            "type": "string"
+          },
+          "name": {
+            "description": "Name of Whatsapp business account",
+            "type": "string"
+          },
+          "phone_numbers_count": {
+            "description": "Count of phone numbers associated with Whatsapp business account",
+            "type": "integer"
+          },
+          "record_type": {
+            "example": "whatsapp_business_account",
+            "type": "string"
+          },
+          "status": {
+            "description": "Status of Whatsapp business account",
+            "type": "string"
+          },
+          "waba_id": {
+            "description": "WABA ID of Whatsapp business account",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "WabaSettings": {
+        "properties": {
+          "id": {
+            "description": "Internal ID of Whatsapp business account",
+            "format": "uuid",
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "record_type": {
+            "example": "whatsapp_business_account_settings",
+            "type": "string"
+          },
+          "timezone": {
+            "example": "America/Chicago",
+            "type": "string"
+          },
+          "updated_at": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "webhook_enabled": {
+            "description": "Enable/disable receiving Whatsapp events",
+            "type": "boolean"
+          },
+          "webhook_events": {
+            "items": {
+              "description": "Whatsapp event to subscribe to",
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "webhook_failover_url": {
+            "description": "Failover URL to receive Whatsapp events",
+            "format": "url",
+            "type": "string"
+          },
+          "webhook_url": {
+            "description": "URL to receive Whatsapp events",
+            "format": "url",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "WhatsappPhoneResponse": {
+        "properties": {
+          "calling_enabled": {
+            "type": "boolean"
+          },
+          "coexistence_state": {
+            "description": "Current lifecycle state for a coexistence number. This is null for a standard Cloud API number.",
+            "enum": [
+              "pending_onboarding",
+              "sync_pending",
+              "syncing",
+              "sync_complete",
+              "active",
+              "history_declined",
+              "sync_deadline_expired",
+              "offboarded",
+              "disconnected",
+              null
+            ],
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "created_at": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "display_name": {
+            "type": "string"
+          },
+          "enabled": {
+            "type": "boolean"
+          },
+          "is_on_biz_app": {
+            "description": "Indicates whether the number is connected to both the WhatsApp Business app and Cloud API through WhatsApp Coexistence.",
+            "type": "boolean"
+          },
+          "phone_number": {
+            "description": "Phone number in E164 format",
+            "type": "string"
+          },
+          "phone_number_id": {
+            "description": "Whatsapp phone number ID",
+            "type": "string"
+          },
+          "quality_rating": {
+            "description": "Whatsapp quality rating",
+            "type": "string"
+          },
+          "record_type": {
+            "example": "whatsapp_business_phone_number",
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "sync_deadline": {
+            "description": "Deadline for initiating the current coexistence synchronization cycle. This is null when no deadline applies.",
+            "format": "date-time",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "sync_progress": {
+            "description": "Synchronization progress. This object is returned only while a coexistence number is synchronizing.",
+            "properties": {
+              "contacts_status": {
+                "type": "string"
+              },
+              "history_chunk_order": {
+                "type": [
+                  "integer",
+                  "null"
+                ]
+              },
+              "history_phase": {
+                "type": [
+                  "integer",
+                  "null"
+                ]
+              },
+              "history_progress": {
+                "maximum": 100,
+                "minimum": 0,
+                "type": [
+                  "integer",
+                  "null"
+                ]
+              },
+              "history_status": {
+                "type": "string"
+              }
+            },
+            "type": [
+              "object",
+              "null"
+            ]
+          },
+          "user_id": {
+            "description": "User ID",
+            "type": "string"
+          },
+          "waba_id": {
+            "description": "WABA ID of Whatsapp business account",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "WhatsappUserData": {
+        "properties": {
+          "created_at": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "record_type": {
+            "example": "whatsapp_user_data",
+            "type": "string"
+          },
+          "updated_at": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "webhook_failover_url": {
+            "description": "Failover URL to receive Whatsapp signup events",
+            "format": "url",
+            "type": "string"
+          },
+          "webhook_url": {
+            "description": "URL to receive Whatsapp signup events",
+            "format": "url",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "messaging_Error": {
+        "properties": {
+          "code": {
+            "type": "string",
+            "x-format": "integer"
+          },
+          "detail": {
+            "type": "string"
+          },
+          "meta": {
+            "type": "object"
+          },
+          "source": {
+            "properties": {
+              "parameter": {
+                "description": "Indicates which query parameter caused the error.",
+                "type": "string"
+              },
+              "pointer": {
+                "description": "JSON pointer (RFC6901) to the offending entity.",
+                "format": "json-pointer",
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
+          "title": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "title"
+        ]
+      },
+      "messaging_Error_0b38e7044b": {
+        "properties": {
+          "code": {
+            "type": "string",
+            "x-format": "integer"
+          },
+          "detail": {
+            "type": "string"
+          },
+          "meta": {
+            "type": "object"
+          },
+          "source": {
+            "properties": {
+              "parameter": {
+                "description": "Indicates which query parameter caused the error.",
+                "type": "string"
+              },
+              "pointer": {
+                "description": "JSON pointer (RFC6901) to the offending entity.",
+                "format": "json-pointer",
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
+          "title": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "title"
+        ]
+      },
+      "messaging_Errors": {
+        "properties": {
+          "errors": {
+            "items": {
+              "$ref": "#/components/schemas/messaging_Error"
+            },
+            "type": "array"
+          }
+        }
+      },
+      "messaging_Errors_0b38e7044b": {
+        "properties": {
+          "errors": {
+            "items": {
+              "$ref": "#/components/schemas/messaging_Error_0b38e7044b"
+            },
+            "type": "array"
+          }
+        }
+      },
+      "messaging_PaginationMeta": {
+        "properties": {
+          "page_number": {
+            "example": 2,
+            "type": "integer"
+          },
+          "page_size": {
+            "example": 25,
+            "type": "integer"
+          },
+          "total_pages": {
+            "example": 3,
+            "type": "integer"
+          },
+          "total_results": {
+            "example": 55,
+            "type": "integer"
+          }
+        },
+        "required": [
+          "total_pages",
+          "total_results",
+          "page_size",
+          "page_number"
+        ],
+        "type": "object"
+      },
+      "messaging_PaginationMeta_0b38e7044b": {
+        "properties": {
+          "page_number": {
+            "example": 2,
+            "type": "integer"
+          },
+          "page_size": {
+            "example": 25,
+            "type": "integer"
+          },
+          "total_pages": {
+            "example": 3,
+            "type": "integer"
+          },
+          "total_results": {
+            "example": 55,
+            "type": "integer"
+          }
+        },
+        "required": [
+          "total_pages",
+          "total_results",
+          "page_size",
+          "page_number"
+        ],
+        "type": "object"
+      }
+    },
+    "securitySchemes": {
+      "BearerAuth": {
+        "bearerFormat": "API key",
+        "description": "Telnyx API key supplied as `Authorization: Bearer \u003ctoken\u003e`. In production, auth may be validated by the API gateway and forwarded via Telnyx auth headers.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "Payment": {
+        "description": "Machine Payment Protocol credential used on paid retries, sent as `Authorization: Payment ...`. Obtained by paying a challenge returned in the `WWW-Authenticate` header of a 402 response. This is not a Telnyx API key; initial challenge requests use standard bearer authentication instead.",
+        "in": "header",
+        "name": "Authorization",
+        "type": "apiKey"
+      },
+      "agent-memory_bearerAuth": {
+        "description": "Telnyx API key",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "bearerAuth": {
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "branded-calling_bearerAuth": {
+        "description": "Telnyx API key. Generate one at https://portal.telnyx.com/#/app/api-keys.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "collections_bearerAuth": {
+        "description": "Telnyx API key. Collections and results are automatically scoped to the authenticated user's organization.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "number-reputation_bearerAuth": {
+        "description": "Telnyx API key. Generate one at https://portal.telnyx.com/#/app/api-keys.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "oauthClientAuth": {
+        "description": "OAuth 2.0 authentication for Telnyx API and MCP integrations",
+        "flows": {
+          "authorizationCode": {
+            "authorizationUrl": "https://api.telnyx.com/v2/oauth/authorize",
+            "refreshUrl": "https://api.telnyx.com/v2/oauth/token",
+            "scopes": {
+              "admin": "Administrative access to Telnyx resources"
+            },
+            "tokenUrl": "https://api.telnyx.com/v2/oauth/token"
+          },
+          "clientCredentials": {
+            "scopes": {
+              "admin": "Administrative access to Telnyx resources"
+            },
+            "tokenUrl": "https://api.telnyx.com/v2/oauth/token"
+          }
+        },
+        "type": "oauth2"
+      },
+      "outbound-voice-profiles_bearerAuth": {
+        "bearerFormat": "JWT",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "pay-connectors_bearerAuth": {
+        "description": "Telnyx API key, not the processor bearer token.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "pronunciation-dicts_bearerAuth": {
+        "description": "Telnyx API v2 key. Obtain from https://portal.telnyx.com",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "rcs-registration_bearerAuth": {
+        "bearerFormat": "API key",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "stored-payment-transactions_bearerAuth": {
+        "bearerFormat": "JWT",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "telnyxApiKey": {
+        "description": "Management-only Telnyx account credential.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "transcriptions-search_bearerAuth": {
+        "description": "Telnyx API key. Results are automatically scoped to the authenticated user's organization.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "web-search_bearerAuth": {
+        "description": "Telnyx API key",
+        "scheme": "bearer",
+        "type": "http"
+      }
+    }
+  },
+  "info": {
+    "contact": {
+      "email": "support@telnyx.com"
+    },
+    "description": "SIP trunking, SMS, MMS, Call Control and Telephony Data Services.",
+    "title": "Telnyx API",
+    "version": "2.0.0",
+    "x-endpoint-cost": "light",
+    "x-latency-category": "responsive"
+  },
+  "openapi": "3.1.0",
+  "paths": {
+    "/v2/whatsapp/business_accounts": {
+      "get": {
+        "description": "Returns WhatsApp Business Accounts linked to the authenticated Telnyx account.",
+        "operationId": "ListWabas",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/PageConsolidated"
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/messaging_WabasListResponse",
+            "description": "List of Whatsapp Business Accounts"
+          },
+          "4XX": {
+            "$ref": "#/components/responses/messaging_GenericErrorResponse_0b38e7044b"
+          }
+        },
+        "summary": "List Whatsapp Business Accounts",
+        "tags": [
+          "Whatsapp Business Accounts"
+        ]
+      }
+    },
+    "/v2/whatsapp/business_accounts/{id}": {
+      "delete": {
+        "description": "Unlinks and deletes the specified WhatsApp Business Account resource from Telnyx.",
+        "operationId": "deleteWaba",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/WabaId"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Deleted"
+          },
+          "4XX": {
+            "$ref": "#/components/responses/messaging_GenericErrorResponse_0b38e7044b"
+          }
+        },
+        "summary": "Delete a Whatsapp Business Account",
+        "tags": [
+          "Whatsapp Business Accounts"
+        ]
+      },
+      "get": {
+        "description": "Returns the configuration and status of the specified WhatsApp Business Account.",
+        "operationId": "GetSingleWaba",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/WabaId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/WabaSingleResponse",
+            "description": "Whatsapp Business Account details"
+          },
+          "4XX": {
+            "$ref": "#/components/responses/messaging_GenericErrorResponse_0b38e7044b"
+          }
+        },
+        "summary": "Get a single Whatsapp Business Account",
+        "tags": [
+          "Whatsapp Business Accounts"
+        ]
+      }
+    },
+    "/v2/whatsapp/business_accounts/{id}/phone_numbers": {
+      "get": {
+        "description": "Returns phone numbers registered under the specified WhatsApp Business Account.",
+        "operationId": "ListWabaPhones",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/WabaId"
+          },
+          {
+            "$ref": "#/components/parameters/PageConsolidated"
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/messaging_WhatsappPhonesListResponse",
+            "description": "List of phone numbers"
+          },
+          "4XX": {
+            "$ref": "#/components/responses/messaging_GenericErrorResponse_0b38e7044b"
+          }
+        },
+        "summary": "List phone numbers for a WABA",
+        "tags": [
+          "Whatsapp Business Accounts"
+        ]
+      }
+    },
+    "/v2/whatsapp/business_accounts/{id}/settings": {
+      "get": {
+        "description": "Returns account-level settings for the specified WhatsApp Business Account.",
+        "operationId": "GetWabaSettings",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/WabaId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/WabaSettingsResponse",
+            "description": "WABA settings"
+          },
+          "4XX": {
+            "$ref": "#/components/responses/messaging_GenericErrorResponse_0b38e7044b"
+          }
+        },
+        "summary": "Get WABA settings",
+        "tags": [
+          "Whatsapp Business Accounts"
+        ]
+      },
+      "patch": {
+        "description": "Updates the supplied account-level settings for the specified WhatsApp Business Account.",
+        "operationId": "PatchWabaSettings",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/WabaId"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PatchWabaSettingsRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/WabaSettingsResponse",
+            "description": "Updated settings"
+          },
+          "4XX": {
+            "$ref": "#/components/responses/messaging_GenericErrorResponse_0b38e7044b"
+          }
+        },
+        "summary": "Update WABA settings",
+        "tags": [
+          "Whatsapp Business Accounts"
+        ]
+      }
+    },
+    "/v2/whatsapp/user_data": {
+      "get": {
+        "description": "Returns the WhatsApp user-data settings associated with the authenticated Telnyx account.",
+        "operationId": "GetWhatsappUserData",
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/WhatsappUserDataResponse",
+            "description": "Whatsapp user data"
+          },
+          "4XX": {
+            "$ref": "#/components/responses/messaging_GenericErrorResponse_0b38e7044b"
+          }
+        },
+        "summary": "Fetch Whatsapp user data",
+        "tags": [
+          "Whatsapp Business Accounts"
+        ]
+      },
+      "patch": {
+        "description": "Updates the supplied WhatsApp user-data settings for the authenticated Telnyx account.",
+        "operationId": "PatchWhatsappUserData",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "example": {
+                "webhook_failover_url": "https://example.com",
+                "webhook_url": "https://example.com"
+              },
+              "schema": {
+                "$ref": "#/components/schemas/PatchWhatsappUserDataRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/WhatsappUserDataResponse",
+            "description": "Updated user data"
+          },
+          "4XX": {
+            "$ref": "#/components/responses/messaging_GenericErrorResponse_0b38e7044b"
+          }
+        },
+        "summary": "Update Whatsapp user data",
+        "tags": [
+          "Whatsapp Business Accounts"
+        ]
+      }
+    },
+    "/whatsapp/business_accounts": {
+      "get": {
+        "description": "Retrieve a list of the WhatsApp Business Accounts (WABAs) connected to your Telnyx account.",
+        "operationId": "ListWabas",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/PageConsolidated"
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/WabasListResponse",
+            "description": "List of Whatsapp Business Accounts"
+          },
+          "4XX": {
+            "$ref": "#/components/responses/management_messaging_GenericErrorResponse"
+          }
+        },
+        "summary": "List Whatsapp Business Accounts",
+        "tags": [
+          "Whatsapp Business Accounts"
+        ],
+        "x-latency-category": "responsive"
+      }
+    },
+    "/whatsapp/business_accounts/{id}": {
+      "delete": {
+        "description": "Delete a WhatsApp Business Account connection from your Telnyx account.",
+        "operationId": "deleteWaba",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/WabaId"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Deleted"
+          },
+          "4XX": {
+            "$ref": "#/components/responses/management_messaging_GenericErrorResponse"
+          }
+        },
+        "summary": "Delete a Whatsapp Business Account",
+        "tags": [
+          "Whatsapp Business Accounts"
+        ],
+        "x-latency-category": "responsive"
+      },
+      "get": {
+        "description": "Retrieve the details of a specific WhatsApp Business Account.",
+        "operationId": "GetSingleWaba",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/WabaId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/WabaSingleResponse",
+            "description": "Whatsapp Business Account details"
+          },
+          "4XX": {
+            "$ref": "#/components/responses/management_messaging_GenericErrorResponse"
+          }
+        },
+        "summary": "Get a single Whatsapp Business Account",
+        "tags": [
+          "Whatsapp Business Accounts"
+        ],
+        "x-latency-category": "responsive"
+      }
+    },
+    "/whatsapp/business_accounts/{id}/phone_numbers": {
+      "get": {
+        "description": "List the phone numbers associated with a WhatsApp Business Account.",
+        "operationId": "ListWabaPhones",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/WabaId"
+          },
+          {
+            "$ref": "#/components/parameters/PageConsolidated"
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/WhatsappPhonesListResponse",
+            "description": "List of phone numbers"
+          },
+          "4XX": {
+            "$ref": "#/components/responses/management_messaging_GenericErrorResponse"
+          }
+        },
+        "summary": "List phone numbers for a WABA",
+        "tags": [
+          "Whatsapp Business Accounts"
+        ],
+        "x-latency-category": "responsive"
+      }
+    },
+    "/whatsapp/business_accounts/{id}/settings": {
+      "get": {
+        "description": "Retrieve the settings of a WhatsApp Business Account.",
+        "operationId": "GetWabaSettings",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/WabaId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/WabaSettingsResponse",
+            "description": "WABA settings"
+          },
+          "4XX": {
+            "$ref": "#/components/responses/management_messaging_GenericErrorResponse"
+          }
+        },
+        "summary": "Get WABA settings",
+        "tags": [
+          "Whatsapp Business Accounts"
+        ],
+        "x-latency-category": "responsive"
+      },
+      "patch": {
+        "description": "Update the settings of a WhatsApp Business Account.",
+        "operationId": "PatchWabaSettings",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/WabaId"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PatchWabaSettingsRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/WabaSettingsResponse",
+            "description": "Updated settings"
+          },
+          "4XX": {
+            "$ref": "#/components/responses/management_messaging_GenericErrorResponse"
+          }
+        },
+        "summary": "Update WABA settings",
+        "tags": [
+          "Whatsapp Business Accounts"
+        ],
+        "x-latency-category": "responsive"
+      }
+    }
+  },
+  "security": [
+    {
+      "bearerAuth": []
+    }
+  ],
+  "servers": [
+    {
+      "description": "Version 2.0.0 of the Telnyx API",
+      "url": "https://api.telnyx.com/v2"
+    }
+  ]
+}

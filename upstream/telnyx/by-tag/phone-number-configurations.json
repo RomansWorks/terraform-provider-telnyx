@@ -1,0 +1,2546 @@
+{
+  "components": {
+    "parameters": {
+      "IntId": {
+        "description": "Identifies the resource.",
+        "in": "path",
+        "name": "id",
+        "required": true,
+        "schema": {
+          "example": "1293384261075731499",
+          "type": "string"
+        }
+      },
+      "numbers_PageConsolidated_73c9788e53": {
+        "description": "Consolidated page parameter (deepObject style). Originally: page[size], page[number]",
+        "explode": true,
+        "in": "query",
+        "name": "page",
+        "schema": {
+          "properties": {
+            "number": {
+              "default": 1,
+              "description": "The page number to load",
+              "minimum": 1,
+              "type": "integer"
+            },
+            "size": {
+              "default": 20,
+              "description": "The size of the page",
+              "maximum": 250,
+              "minimum": 1,
+              "type": "integer"
+            }
+          },
+          "type": "object"
+        },
+        "style": "deepObject"
+      }
+    },
+    "responses": {
+      "GenericErrorResponse": {
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Errors"
+            }
+          }
+        },
+        "description": "Unexpected error"
+      },
+      "numbers_BadRequestResponse_73c9788e53": {
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Errors"
+            }
+          }
+        },
+        "description": "Bad request, the request was unacceptable, often due to missing a required parameter."
+      },
+      "numbers_NotFoundResponse_73c9788e53": {
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Errors"
+            }
+          }
+        },
+        "description": "The requested resource doesn't exist."
+      },
+      "numbers_UnauthorizedResponse_73c9788e53": {
+        "content": {
+          "application/json": {
+            "examples": {
+              "Authentication Failed": {
+                "value": {
+                  "errors": [
+                    {
+                      "code": "10009",
+                      "detail": "Could not understand the provided credentials.",
+                      "meta": {
+                        "url": "https://developers.telnyx.com/docs/overview/errors/10009"
+                      },
+                      "title": "Authentication failed"
+                    }
+                  ]
+                }
+              }
+            },
+            "schema": {
+              "$ref": "#/components/schemas/Errors"
+            }
+          }
+        },
+        "description": "Unauthorized"
+      },
+      "numbers_UnprocessableEntity_73c9788e53": {
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Errors"
+            }
+          }
+        },
+        "description": "Unprocessable entity. Check the 'detail' field in response for details."
+      }
+    },
+    "schemas": {
+      "CallForwarding": {
+        "description": "The call forwarding settings for a phone number.",
+        "example": {
+          "call_forwarding_enabled": true,
+          "forwarding_type": "always",
+          "forwards_to": "+13035559123"
+        },
+        "properties": {
+          "call_forwarding_enabled": {
+            "default": true,
+            "description": "Indicates if call forwarding will be enabled for this number if forwards_to and forwarding_type are filled in. Defaults to true for backwards compatibility with APIV1 use of numbers endpoints.",
+            "example": true,
+            "type": "boolean"
+          },
+          "forwarding_type": {
+            "description": "Call forwarding type. 'forwards_to' must be set for this to have an effect.",
+            "enum": [
+              "always",
+              "on-failure"
+            ],
+            "example": "always",
+            "type": "string"
+          },
+          "forwards_to": {
+            "description": "The phone number to which inbound calls to this number are forwarded. Inbound calls will not be forwarded if this field is left blank. If set, must be a +E.164-formatted phone number.",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "CallRecording": {
+        "description": "The call recording settings for a phone number.",
+        "example": {
+          "inbound_call_recording_channels": "single",
+          "inbound_call_recording_enabled": true,
+          "inbound_call_recording_format": "wav"
+        },
+        "properties": {
+          "inbound_call_recording_channels": {
+            "default": "single",
+            "description": "When using 'dual' channels, final audio file will be stereo recorded with the first leg on channel A, and the rest on channel B.",
+            "enum": [
+              "single",
+              "dual"
+            ],
+            "type": "string"
+          },
+          "inbound_call_recording_enabled": {
+            "default": false,
+            "description": "When enabled, any inbound call to this number will be recorded.",
+            "type": "boolean"
+          },
+          "inbound_call_recording_format": {
+            "default": "wav",
+            "description": "The audio file format for calls being recorded.",
+            "enum": [
+              "wav",
+              "mp3"
+            ],
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "CnamListing": {
+        "description": "The CNAM listing settings for a phone number.",
+        "example": {
+          "cnam_listing_details": "example",
+          "cnam_listing_enabled": true
+        },
+        "properties": {
+          "cnam_listing_details": {
+            "description": "The CNAM listing details for this number. Must be alphanumeric characters or spaces with a maximum length of 15. Requires cnam_listing_enabled to also be set to true.",
+            "type": "string"
+          },
+          "cnam_listing_enabled": {
+            "default": false,
+            "description": "Enables CNAM listings for this number. Requires cnam_listing_details to also be set.",
+            "type": "boolean"
+          }
+        },
+        "type": "object"
+      },
+      "EmergencySettings": {
+        "description": "The emergency services settings for a phone number.",
+        "example": {
+          "emergency_address_id": "1315261609962112019",
+          "emergency_enabled": true,
+          "emergency_status": "active"
+        },
+        "properties": {
+          "emergency_address_id": {
+            "description": "Identifies the address to be used with emergency services.",
+            "type": "string"
+          },
+          "emergency_enabled": {
+            "default": false,
+            "description": "Allows you to enable or disable emergency services on the phone number. In order to enable emergency services, you must also set an emergency_address_id.",
+            "type": "boolean"
+          },
+          "emergency_status": {
+            "default": "disabled",
+            "description": "Represents the state of the number regarding emergency activation.",
+            "enum": [
+              "disabled",
+              "active",
+              "provisioning",
+              "deprovisioning",
+              "provisioning-failed"
+            ],
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "Error": {
+        "example": {
+          "code": "20207",
+          "description": "The street address provided is invalid.",
+          "source": {
+            "pointer": "/street_address"
+          },
+          "title": "Invalid street address"
+        },
+        "properties": {
+          "code": {
+            "type": "string",
+            "x-format": "int64"
+          },
+          "description": {
+            "type": "string"
+          },
+          "detail": {
+            "description": "A human-readable explanation of the error.",
+            "type": "string"
+          },
+          "meta": {
+            "additionalProperties": true,
+            "type": "object"
+          },
+          "source": {
+            "properties": {
+              "parameter": {
+                "description": "Indicates which query parameter caused the error.",
+                "type": "string"
+              },
+              "pointer": {
+                "description": "JSON pointer (RFC6901) to the offending entity.",
+                "format": "json-pointer",
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
+          "title": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "title"
+        ],
+        "type": "object"
+      },
+      "Errors": {
+        "properties": {
+          "errors": {
+            "items": {
+              "$ref": "#/components/schemas/Error"
+            },
+            "type": "array"
+          }
+        },
+        "type": "object"
+      },
+      "MediaFeatures": {
+        "description": "The media features settings for a phone number.",
+        "example": {
+          "accept_any_rtp_packets_enabled": true,
+          "rtp_auto_adjust_enabled": true,
+          "t38_fax_gateway_enabled": true
+        },
+        "properties": {
+          "accept_any_rtp_packets_enabled": {
+            "default": false,
+            "description": "When enabled, Telnyx will accept RTP packets from any customer-side IP address and port, not just those to which Telnyx is sending RTP.",
+            "type": "boolean"
+          },
+          "rtp_auto_adjust_enabled": {
+            "default": true,
+            "description": "When RTP Auto-Adjust is enabled, the destination RTP address port will be automatically changed to match the source of the incoming RTP packets.",
+            "type": "boolean"
+          },
+          "t38_fax_gateway_enabled": {
+            "default": false,
+            "description": "Controls whether Telnyx will accept a T.38 re-INVITE for this phone number. Note that Telnyx will not send a T.38 re-INVITE; this option only controls whether one will be accepted.",
+            "type": "boolean"
+          }
+        },
+        "type": "object"
+      },
+      "PaginationMeta": {
+        "properties": {
+          "page_number": {
+            "example": 2,
+            "type": "integer"
+          },
+          "page_size": {
+            "example": 25,
+            "type": "integer"
+          },
+          "total_pages": {
+            "example": 3,
+            "type": "integer"
+          },
+          "total_results": {
+            "example": 55,
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "PhoneNumberBundleStatusChangeRequest": {
+        "example": {
+          "bundle_id": "5194d8fc-87e6-4188-baa9-1c434bbe861b"
+        },
+        "properties": {
+          "bundle_id": {
+            "description": "The new bundle_id setting for the number. If you are assigning the number to a bundle, this is the unique ID of the bundle you wish to use. If you are removing the number from a bundle, this must be null. You cannot assign a number from one bundle to another directly. You must first remove it from a bundle, and then assign it to a new bundle.",
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "bundle_id"
+        ],
+        "type": "object"
+      },
+      "PhoneNumberEnableEmergencyRequest": {
+        "example": {
+          "emergency_address_id": "53829456729313",
+          "emergency_enabled": true
+        },
+        "properties": {
+          "emergency_address_id": {
+            "description": "Identifies the address to be used with emergency services.",
+            "type": "string"
+          },
+          "emergency_enabled": {
+            "description": "Indicates whether to enable emergency services on this number.",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "emergency_enabled",
+          "emergency_address_id"
+        ],
+        "type": "object"
+      },
+      "PhoneNumberVerifyOwnershipRequest": {
+        "properties": {
+          "phone_numbers": {
+            "description": "Array of phone numbers to verify ownership for",
+            "items": {
+              "description": "Phone number in E.164 format",
+              "example": "+15551234567",
+              "type": "string"
+            },
+            "maxItems": 1000,
+            "minItems": 1,
+            "type": "array"
+          }
+        },
+        "required": [
+          "phone_numbers"
+        ],
+        "type": "object"
+      },
+      "PhoneNumberWithVoiceSettings": {
+        "example": {
+          "call_forwarding": {
+            "call_forwarding_enabled": true,
+            "forwarding_type": "always",
+            "forwards_to": "+13035559123"
+          },
+          "call_recording": {
+            "inbound_call_recording_channels": "single",
+            "inbound_call_recording_enabled": true,
+            "inbound_call_recording_format": "wav"
+          },
+          "cnam_listing": {
+            "cnam_listing_details": "example",
+            "cnam_listing_enabled": true
+          },
+          "connection_id": "1d0e6cb8-8668-462e-94c6-49ae0f0ed48b",
+          "customer_reference": "customer-reference",
+          "emergency": {
+            "emergency_address_id": "1315261609962112019",
+            "emergency_enabled": true,
+            "emergency_status": "active"
+          },
+          "id": "1293384261075731499",
+          "inbound_call_screening": "disabled",
+          "media_features": {
+            "accept_any_rtp_packets_enabled": true,
+            "rtp_auto_adjust_enabled": true,
+            "t38_fax_gateway_enabled": true
+          },
+          "record_type": "voice_settings",
+          "tech_prefix_enabled": false,
+          "translated_number": "+13035559999",
+          "usage_payment_method": "pay-per-minute"
+        },
+        "properties": {
+          "call_forwarding": {
+            "$ref": "#/components/schemas/CallForwarding"
+          },
+          "call_recording": {
+            "$ref": "#/components/schemas/CallRecording"
+          },
+          "cnam_listing": {
+            "$ref": "#/components/schemas/CnamListing"
+          },
+          "connection_id": {
+            "description": "Identifies the connection associated with this phone number.",
+            "example": "1d0e6cb8-8668-462e-94c6-49ae0f0ed48b",
+            "type": "string"
+          },
+          "customer_reference": {
+            "description": "A customer reference string for customer look ups.",
+            "example": "MY REF 001",
+            "type": "string"
+          },
+          "emergency": {
+            "$ref": "#/components/schemas/EmergencySettings"
+          },
+          "id": {
+            "description": "Identifies the type of resource.",
+            "example": "1293384261075731499",
+            "readOnly": true,
+            "type": "string"
+          },
+          "inbound_call_screening": {
+            "default": "disabled",
+            "description": "The inbound_call_screening setting is a phone number configuration option variable that allows users to configure their settings to block or flag fraudulent calls. It can be set to disabled, reject_calls, or flag_calls. This feature has an additional per-number monthly cost associated with it.",
+            "enum": [
+              "disabled",
+              "reject_calls",
+              "flag_calls"
+            ],
+            "type": "string"
+          },
+          "media_features": {
+            "$ref": "#/components/schemas/MediaFeatures"
+          },
+          "phone_number": {
+            "description": "The phone number in +E164 format.",
+            "example": "+13035551234",
+            "readOnly": true,
+            "type": "string"
+          },
+          "record_type": {
+            "description": "Identifies the type of the resource.",
+            "example": "voice_settings",
+            "readOnly": true,
+            "type": "string"
+          },
+          "tech_prefix_enabled": {
+            "default": false,
+            "description": "Controls whether a tech prefix is enabled for this phone number.",
+            "example": false,
+            "type": "boolean"
+          },
+          "translated_number": {
+            "default": "",
+            "description": "This field allows you to rewrite the destination number of an inbound call before the call is routed to you. The value of this field may be any alphanumeric value, and the value will replace the number originally dialed.",
+            "example": "+13035559999",
+            "type": "string"
+          },
+          "usage_payment_method": {
+            "default": "pay-per-minute",
+            "description": "Controls whether a number is billed per minute or uses your concurrent channels.",
+            "enum": [
+              "pay-per-minute",
+              "channel"
+            ],
+            "example": "pay-per-minute",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "UpdatePhoneNumberRequest": {
+        "example": {
+          "address_id": "dc8f39ac-953d-4520-b93b-786ae87db0da",
+          "billing_group_id": "dc8e4d67-33a0-4cbb-af74-7b58f05bd494",
+          "connection_id": "dc8e4d67-33a0-4cbb-af74-7b58f05bd494",
+          "customer_reference": "customer-reference",
+          "external_pin": "1234",
+          "hd_voice_enabled": true,
+          "id": "dc8e4d67-33a0-4cbb-af74-7b58f05bd494",
+          "tags": [
+            "tag"
+          ]
+        },
+        "properties": {
+          "address_id": {
+            "description": "Identifies the address associated with the phone number.",
+            "type": "string"
+          },
+          "billing_group_id": {
+            "description": "Identifies the billing group associated with the phone number.",
+            "type": "string"
+          },
+          "connection_id": {
+            "description": "Identifies the connection associated with the phone number.",
+            "type": "string"
+          },
+          "customer_reference": {
+            "description": "A customer reference string for customer look ups.",
+            "example": "MY REF 001",
+            "type": "string"
+          },
+          "external_pin": {
+            "description": "If someone attempts to port your phone number away from Telnyx and your phone number has an external PIN set, we will attempt to verify that you provided the correct external PIN to the winning carrier. Note that not all carriers cooperate with this security mechanism.",
+            "type": "string"
+          },
+          "hd_voice_enabled": {
+            "description": "Indicates whether HD voice is enabled for this number.",
+            "example": true,
+            "type": "boolean"
+          },
+          "id": {
+            "description": "Identifies the type of resource.",
+            "readOnly": true,
+            "type": "string"
+          },
+          "tags": {
+            "description": "A list of user-assigned tags to help organize phone numbers.",
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          }
+        },
+        "type": "object"
+      },
+      "UpdatePhoneNumberVoiceSettingsRequest": {
+        "example": {
+          "call_forwarding": {
+            "call_forwarding_enabled": true,
+            "forwarding_type": "always",
+            "forwards_to": "+13035559123"
+          },
+          "call_recording": {
+            "inbound_call_recording_channels": "single",
+            "inbound_call_recording_enabled": true,
+            "inbound_call_recording_format": "wav"
+          },
+          "caller_id_name_enabled": true,
+          "cnam_listing": {
+            "cnam_listing_details": "example",
+            "cnam_listing_enabled": true
+          },
+          "inbound_call_screening": "disabled",
+          "media_features": {
+            "accept_any_rtp_packets_enabled": true,
+            "rtp_auto_adjust_enabled": true,
+            "t38_fax_gateway_enabled": true
+          },
+          "tech_prefix_enabled": true,
+          "translated_number": "+13035559999",
+          "usage_payment_method": "pay-per-minute"
+        },
+        "properties": {
+          "call_forwarding": {
+            "$ref": "#/components/schemas/CallForwarding"
+          },
+          "call_recording": {
+            "$ref": "#/components/schemas/CallRecording"
+          },
+          "caller_id_name_enabled": {
+            "default": false,
+            "description": "Controls whether the caller ID name is enabled for this phone number.",
+            "type": "boolean"
+          },
+          "cnam_listing": {
+            "$ref": "#/components/schemas/CnamListing"
+          },
+          "inbound_call_screening": {
+            "default": "disabled",
+            "description": "The inbound_call_screening setting is a phone number configuration option variable that allows users to configure their settings to block or flag fraudulent calls. It can be set to disabled, reject_calls, or flag_calls. This feature has an additional per-number monthly cost associated with it.",
+            "enum": [
+              "disabled",
+              "reject_calls",
+              "flag_calls"
+            ],
+            "type": "string"
+          },
+          "media_features": {
+            "$ref": "#/components/schemas/MediaFeatures"
+          },
+          "tech_prefix_enabled": {
+            "default": false,
+            "description": "Controls whether a tech prefix is enabled for this phone number.",
+            "type": "boolean"
+          },
+          "translated_number": {
+            "description": "This field allows you to rewrite the destination number of an inbound call before the call is routed to you. The value of this field may be any alphanumeric value, and the value will replace the number originally dialed.",
+            "type": "string"
+          },
+          "usage_payment_method": {
+            "default": "pay-per-minute",
+            "description": "Controls whether a number is billed per minute or uses your concurrent channels.",
+            "enum": [
+              "pay-per-minute",
+              "channel"
+            ],
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "numbers_Error_73c9788e53": {
+        "properties": {
+          "code": {
+            "example": "10007",
+            "type": "string"
+          },
+          "detail": {
+            "example": "An unexpected error occured.",
+            "type": "string"
+          },
+          "meta": {
+            "properties": {
+              "url": {
+                "description": "URL with additional information on the error.",
+                "example": "https://developers.telnyx.com/docs/overview/errors/10015",
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
+          "source": {
+            "properties": {
+              "parameter": {
+                "description": "Indicates which query parameter caused the error.",
+                "type": "string"
+              },
+              "pointer": {
+                "description": "JSON pointer (RFC6901) to the offending entity.",
+                "example": "/base",
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
+          "title": {
+            "example": "Unexpected error",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "numbers_IntId_73c9788e53": {
+        "description": "Identifies the resource.",
+        "example": "1293384261075731499",
+        "readOnly": true,
+        "type": "string"
+      },
+      "numbers_PhoneNumberDeletedDetailed": {
+        "example": {
+          "activated_at": "2019-10-23T18:10:00.000Z",
+          "billing_group_id": "86f58db9-0fe3-4adc-9d1f-46e66e6e9323",
+          "call_forwarding_enabled": true,
+          "call_recording_enabled": true,
+          "caller_id_name_enabled": true,
+          "cnam_listing_enabled": true,
+          "connection_id": "1293384261075731499",
+          "connection_name": "connection-name",
+          "created_at": "2019-10-23T18:10:00.000Z",
+          "customer_reference": "customer-reference",
+          "deletion_lock_enabled": false,
+          "emergency_address_id": "1315261609962112019",
+          "emergency_enabled": true,
+          "external_pin": "1234",
+          "hd_voice_enabled": true,
+          "id": "1293384261075731499",
+          "messaging_profile_id": "abc85f64-5717-4562-b3fc-2c9600000000",
+          "messaging_profile_name": "regional-customers",
+          "phone_number": "+19705555098",
+          "phone_number_type": "local",
+          "purchased_at": "2019-10-23T18:10:00.000Z",
+          "record_type": "phone_number",
+          "status": "deleted",
+          "t38_fax_gateway_enabled": true,
+          "tags": [
+            "tag_1",
+            "tag_2"
+          ],
+          "updated_at": "2019-10-24T18:10:00.000Z"
+        },
+        "properties": {
+          "activated_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "ISO 8601 formatted date indicating when the phone number was first activated (transitioned from purchase-pending or port-pending to active). Will be null for numbers that have not yet been activated, or for legacy numbers activated before this field was tracked.",
+            "readOnly": true
+          },
+          "billing_group_id": {
+            "description": "Identifies the billing group associated with the phone number.",
+            "type": "string"
+          },
+          "call_forwarding_enabled": {
+            "default": true,
+            "description": "Indicates if call forwarding will be enabled for this number if forwards_to and forwarding_type are filled in. Defaults to true for backwards compatibility with APIV1 use of numbers endpoints.",
+            "readOnly": true,
+            "type": "boolean"
+          },
+          "call_recording_enabled": {
+            "description": "Indicates whether call recording is enabled for this number.",
+            "readOnly": true,
+            "type": "boolean"
+          },
+          "caller_id_name_enabled": {
+            "description": "Indicates whether caller ID is enabled for this number.",
+            "readOnly": true,
+            "type": "boolean"
+          },
+          "cnam_listing_enabled": {
+            "description": "Indicates whether a CNAM listing is enabled for this number.",
+            "readOnly": true,
+            "type": "boolean"
+          },
+          "connection_id": {
+            "description": "Identifies the connection associated with the phone number.",
+            "type": "string"
+          },
+          "connection_name": {
+            "description": "The user-assigned name of the connection to be associated with this phone number.",
+            "readOnly": true,
+            "type": "string"
+          },
+          "created_at": {
+            "description": "ISO 8601 formatted date indicating when the time it took to activate after the purchase.",
+            "readOnly": true,
+            "type": "string"
+          },
+          "customer_reference": {
+            "description": "A customer reference string for customer look ups.",
+            "example": "MY REF 001",
+            "type": "string"
+          },
+          "deletion_lock_enabled": {
+            "description": "Indicates whether deletion lock is enabled for this number. When enabled, this prevents the phone number from being deleted via the API or Telnyx portal.",
+            "readOnly": true,
+            "type": "boolean"
+          },
+          "emergency_address_id": {
+            "description": "Identifies the emergency address associated with the phone number.",
+            "readOnly": true,
+            "type": "string"
+          },
+          "emergency_enabled": {
+            "description": "Indicates whether emergency services are enabled for this number.",
+            "readOnly": true,
+            "type": "boolean"
+          },
+          "external_pin": {
+            "description": "If someone attempts to port your phone number away from Telnyx and your phone number has an external PIN set, Telnyx will attempt to verify that you provided the correct external PIN to the winning carrier. Note that not all carriers cooperate with this security mechanism.",
+            "type": "string"
+          },
+          "hd_voice_enabled": {
+            "description": "Indicates whether HD voice is enabled for this number.",
+            "readOnly": true,
+            "type": "boolean"
+          },
+          "id": {
+            "$ref": "#/components/schemas/numbers_IntId_73c9788e53"
+          },
+          "messaging_profile_id": {
+            "description": "Identifies the messaging profile associated with the phone number.",
+            "type": "string"
+          },
+          "messaging_profile_name": {
+            "description": "The name of the messaging profile associated with the phone number.",
+            "example": "regional-customers",
+            "type": "string"
+          },
+          "phone_number": {
+            "description": "The +E.164-formatted phone number associated with this record.",
+            "readOnly": true,
+            "type": "string"
+          },
+          "phone_number_type": {
+            "description": "The phone number's type.",
+            "enum": [
+              "local",
+              "toll_free",
+              "mobile",
+              "national",
+              "shared_cost",
+              "landline"
+            ],
+            "readOnly": true,
+            "type": "string"
+          },
+          "purchased_at": {
+            "description": "ISO 8601 formatted date indicating the time the request was made to purchase the number.",
+            "readOnly": true,
+            "type": "string"
+          },
+          "record_type": {
+            "description": "Identifies the type of the resource.",
+            "example": "phone_number",
+            "readOnly": true,
+            "type": "string"
+          },
+          "status": {
+            "description": "The phone number's current status.",
+            "enum": [
+              "purchase-pending",
+              "purchase-failed",
+              "port-pending",
+              "port-failed",
+              "active",
+              "deleted",
+              "emergency-only",
+              "ported-out",
+              "port-out-pending"
+            ],
+            "readOnly": true,
+            "type": "string"
+          },
+          "t38_fax_gateway_enabled": {
+            "description": "Indicates whether T38 Fax Gateway for inbound calls to this number.",
+            "readOnly": true,
+            "type": "boolean"
+          },
+          "tags": {
+            "description": "A list of user-assigned tags to help manage the phone number.",
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "updated_at": {
+            "description": "ISO 8601 formatted date indicating when the resource was updated.",
+            "readOnly": true,
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "numbers_PhoneNumberDetailed": {
+        "example": {
+          "activated_at": "2019-10-23T18:10:00.000Z",
+          "billing_group_id": "86f58db9-0fe3-4adc-9d1f-46e66e6e9323",
+          "call_forwarding_enabled": true,
+          "call_recording_enabled": true,
+          "caller_id_name_enabled": true,
+          "cnam_listing_enabled": true,
+          "connection_id": "1293384261075731499",
+          "connection_name": "connection-name",
+          "country_iso_alpha2": "US",
+          "created_at": "2019-10-23T18:10:00.000Z",
+          "customer_reference": "customer-reference",
+          "deletion_lock_enabled": false,
+          "emergency_address_id": "1315261609962112019",
+          "emergency_enabled": true,
+          "emergency_status": "active",
+          "external_pin": "1234",
+          "hd_voice_enabled": true,
+          "id": "1293384261075731499",
+          "inbound_call_screening": "disabled",
+          "messaging_profile_id": "abc85f64-5717-4562-b3fc-2c9600000000",
+          "messaging_profile_name": "regional-customers",
+          "phone_number": "+19705555098",
+          "phone_number_type": "local",
+          "purchased_at": "2019-10-23T18:10:00.000Z",
+          "record_type": "phone_number",
+          "source_type": "number_order",
+          "status": "active",
+          "t38_fax_gateway_enabled": true,
+          "tags": [
+            "tag_1",
+            "tag_2"
+          ],
+          "updated_at": "2019-10-24T18:10:00.000Z"
+        },
+        "properties": {
+          "activated_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "ISO 8601 formatted date indicating when the phone number was first activated (transitioned from purchase-pending or port-pending to active). Will be null for numbers that have not yet been activated, or for legacy numbers activated before this field was tracked.",
+            "readOnly": true
+          },
+          "billing_group_id": {
+            "description": "Identifies the billing group associated with the phone number.",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "call_forwarding_enabled": {
+            "default": true,
+            "description": "Indicates if call forwarding will be enabled for this number if forwards_to and forwarding_type are filled in. Defaults to true for backwards compatibility with APIV1 use of numbers endpoints.",
+            "readOnly": true,
+            "type": "boolean"
+          },
+          "call_recording_enabled": {
+            "description": "Indicates whether call recording is enabled for this number.",
+            "readOnly": true,
+            "type": "boolean"
+          },
+          "caller_id_name_enabled": {
+            "description": "Indicates whether caller ID is enabled for this number.",
+            "readOnly": true,
+            "type": "boolean"
+          },
+          "cnam_listing_enabled": {
+            "description": "Indicates whether a CNAM listing is enabled for this number.",
+            "readOnly": true,
+            "type": "boolean"
+          },
+          "connection_id": {
+            "description": "Identifies the connection associated with the phone number.",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "connection_name": {
+            "description": "The user-assigned name of the connection to be associated with this phone number.",
+            "readOnly": true,
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "country_iso_alpha2": {
+            "description": "The ISO 3166-1 alpha-2 country code of the phone number.",
+            "example": "US",
+            "readOnly": true,
+            "type": "string"
+          },
+          "created_at": {
+            "description": "ISO 8601 formatted date indicating when the resource was created.",
+            "format": "date-time",
+            "readOnly": true,
+            "type": "string"
+          },
+          "customer_reference": {
+            "description": "A customer reference string for customer look ups.",
+            "example": "MY REF 001",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "deletion_lock_enabled": {
+            "description": "Indicates whether deletion lock is enabled for this number. When enabled, this prevents the phone number from being deleted via the API or Telnyx portal.",
+            "type": "boolean"
+          },
+          "emergency_address_id": {
+            "description": "Identifies the emergency address associated with the phone number.",
+            "readOnly": true,
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "emergency_enabled": {
+            "description": "Indicates whether emergency services are enabled for this number.",
+            "readOnly": true,
+            "type": "boolean"
+          },
+          "emergency_status": {
+            "description": "Indicates the status of the provisioning of emergency services for the phone number. This field contains information about activity that may be ongoing for a number where it either is being provisioned or deprovisioned but is not yet enabled/disabled.",
+            "enum": [
+              "active",
+              "deprovisioning",
+              "disabled",
+              "provisioning",
+              "provisioning-failed"
+            ],
+            "type": "string"
+          },
+          "external_pin": {
+            "description": "If someone attempts to port your phone number away from Telnyx and your phone number has an external PIN set, Telnyx will attempt to verify that you provided the correct external PIN to the winning carrier. Note that not all carriers cooperate with this security mechanism.",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "hd_voice_enabled": {
+            "description": "Indicates whether HD voice is enabled for this number.",
+            "readOnly": true,
+            "type": "boolean"
+          },
+          "id": {
+            "$ref": "#/components/schemas/numbers_IntId_73c9788e53"
+          },
+          "inbound_call_screening": {
+            "default": "disabled",
+            "description": "The inbound_call_screening setting is a phone number configuration option variable that allows users to configure their settings to block or flag fraudulent calls. It can be set to disabled, reject_calls, or flag_calls. This feature has an additional per-number monthly cost associated with it.",
+            "enum": [
+              "disabled",
+              "reject_calls",
+              "flag_calls"
+            ],
+            "type": "string"
+          },
+          "messaging_campaign_id": {
+            "description": "Identifies the messaging campaign associated with the phone number's messaging profile. If the messaging profile details could not be retrieved, this value is the string `UNAVAILABLE`.",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "messaging_profile_id": {
+            "description": "Identifies the messaging profile associated with the phone number. If the messaging profile details could not be retrieved, this value is the string `UNAVAILABLE`.",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "messaging_profile_name": {
+            "description": "The name of the messaging profile associated with the phone number. If the messaging profile details could not be retrieved, this value is the string `UNAVAILABLE`.",
+            "example": "regional-customers",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "phone_number": {
+            "description": "The +E.164-formatted phone number associated with this record.",
+            "readOnly": true,
+            "type": "string"
+          },
+          "phone_number_type": {
+            "description": "The phone number's type.\nNote: For numbers purchased prior to July 2023 or when fetching a number's details immediately after a purchase completes, the legacy values `tollfree`, `shortcode` or `longcode` may be returned instead.",
+            "enum": [
+              "local",
+              "toll_free",
+              "mobile",
+              "national",
+              "shared_cost",
+              "landline",
+              "tollfree",
+              "shortcode",
+              "longcode"
+            ],
+            "readOnly": true,
+            "type": "string"
+          },
+          "purchased_at": {
+            "description": "ISO 8601 formatted date indicating when the resource was purchased.",
+            "readOnly": true,
+            "type": "string"
+          },
+          "record_type": {
+            "description": "Identifies the type of the resource.",
+            "example": "phone_number",
+            "readOnly": true,
+            "type": "string"
+          },
+          "source_type": {
+            "anyOf": [
+              {
+                "enum": [
+                  "number_order",
+                  "port_request"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Indicates if the phone number was purchased or ported in. For some numbers this information may not be available.",
+            "readOnly": true
+          },
+          "status": {
+            "description": "The phone number's current status.",
+            "enum": [
+              "purchase-pending",
+              "purchase-failed",
+              "port-pending",
+              "port-failed",
+              "active",
+              "deleted",
+              "emergency-only",
+              "ported-out",
+              "port-out-pending",
+              "requirement-info-pending",
+              "requirement-info-under-review",
+              "requirement-info-exception",
+              "provision-pending"
+            ],
+            "readOnly": true,
+            "type": "string"
+          },
+          "t38_fax_gateway_enabled": {
+            "description": "Indicates whether T38 Fax Gateway for inbound calls to this number.",
+            "readOnly": true,
+            "type": "boolean"
+          },
+          "tags": {
+            "description": "A list of user-assigned tags to help manage the phone number.",
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "updated_at": {
+            "description": "ISO 8601 formatted date indicating when the resource was updated.",
+            "readOnly": true,
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "record_type",
+          "phone_number",
+          "country_iso_alpha2",
+          "status",
+          "tags",
+          "external_pin",
+          "created_at",
+          "phone_number_type",
+          "purchased_at",
+          "deletion_lock_enabled"
+        ],
+        "type": "object"
+      },
+      "numbers_PhoneNumberVerifyOwnershipResponse": {
+        "properties": {
+          "found": {
+            "description": "The list of phone numbers which you own and are in an editable state",
+            "items": {
+              "properties": {
+                "id": {
+                  "$ref": "#/components/schemas/numbers_IntId_73c9788e53"
+                },
+                "number_val_e164": {
+                  "description": "The phone number in E.164 format",
+                  "example": "+15551234567",
+                  "type": "string"
+                }
+              },
+              "type": "object"
+            },
+            "type": "array"
+          },
+          "not_found": {
+            "description": "Phone numbers that are not found in the account",
+            "items": {
+              "description": "Phone number in E.164 format",
+              "example": "+15551234568",
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "record_type": {
+            "description": "Identifies the type of the resource.",
+            "example": "number_ownership_verification",
+            "readOnly": true,
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "numbers_SlimPhoneNumberDetailed": {
+        "example": {
+          "activated_at": "2019-10-23T18:10:00.000Z",
+          "billing_group_id": "86f58db9-0fe3-4adc-9d1f-46e66e6e9323",
+          "call_forwarding_enabled": true,
+          "call_recording_enabled": true,
+          "caller_id_name_enabled": true,
+          "cnam_listing_enabled": true,
+          "connection_id": "1293384261075731499",
+          "country_iso_alpha2": "US",
+          "created_at": "2019-10-23T18:10:00.000Z",
+          "customer_reference": "customer-reference",
+          "emergency_address_id": "1315261609962112019",
+          "emergency_enabled": true,
+          "emergency_status": "active",
+          "external_pin": "1234",
+          "hd_voice_enabled": true,
+          "id": "1293384261075731499",
+          "inbound_call_screening": "disabled",
+          "phone_number": "+19705555098",
+          "phone_number_type": "local",
+          "purchased_at": "2019-10-23T18:10:00.000Z",
+          "record_type": "phone_number",
+          "status": "active",
+          "t38_fax_gateway_enabled": true,
+          "updated_at": "2019-10-24T18:10:00.000Z"
+        },
+        "properties": {
+          "activated_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "ISO 8601 formatted date indicating when the phone number was first activated (transitioned from purchase-pending or port-pending to active). Will be null for numbers that have not yet been activated, or for legacy numbers activated before this field was tracked.",
+            "readOnly": true
+          },
+          "billing_group_id": {
+            "description": "Identifies the billing group associated with the phone number.",
+            "type": "string"
+          },
+          "call_forwarding_enabled": {
+            "default": true,
+            "description": "Indicates if call forwarding will be enabled for this number if forwards_to and forwarding_type are filled in. Defaults to true for backwards compatibility with APIV1 use of numbers endpoints.",
+            "readOnly": true,
+            "type": "boolean"
+          },
+          "call_recording_enabled": {
+            "description": "Indicates whether call recording is enabled for this number.",
+            "readOnly": true,
+            "type": "boolean"
+          },
+          "caller_id_name_enabled": {
+            "description": "Indicates whether caller ID is enabled for this number.",
+            "readOnly": true,
+            "type": "boolean"
+          },
+          "cnam_listing_enabled": {
+            "description": "Indicates whether a CNAM listing is enabled for this number.",
+            "readOnly": true,
+            "type": "boolean"
+          },
+          "connection_id": {
+            "description": "Identifies the connection associated with the phone number.",
+            "type": "string"
+          },
+          "country_iso_alpha2": {
+            "description": "The ISO 3166-1 alpha-2 country code of the phone number.",
+            "example": "US",
+            "readOnly": true,
+            "type": "string"
+          },
+          "created_at": {
+            "description": "ISO 8601 formatted date indicating when the resource was created.",
+            "readOnly": true,
+            "type": "string"
+          },
+          "customer_reference": {
+            "description": "A customer reference string for customer look ups.",
+            "example": "MY REF 001",
+            "type": "string"
+          },
+          "emergency_address_id": {
+            "description": "Identifies the emergency address associated with the phone number.",
+            "readOnly": true,
+            "type": "string"
+          },
+          "emergency_enabled": {
+            "description": "Indicates whether emergency services are enabled for this number.",
+            "readOnly": true,
+            "type": "boolean"
+          },
+          "emergency_status": {
+            "description": "Indicates the status of the provisioning of emergency services for the phone number. This field contains information about activity that may be ongoing for a number where it either is being provisioned or deprovisioned but is not yet enabled/disabled.",
+            "enum": [
+              "active",
+              "deprovisioning",
+              "disabled",
+              "provisioning",
+              "provisioning-failed"
+            ],
+            "type": "string"
+          },
+          "external_pin": {
+            "description": "If someone attempts to port your phone number away from Telnyx and your phone number has an external PIN set, Telnyx will attempt to verify that you provided the correct external PIN to the winning carrier. Note that not all carriers cooperate with this security mechanism.",
+            "type": "string"
+          },
+          "hd_voice_enabled": {
+            "description": "Indicates whether HD voice is enabled for this number.",
+            "readOnly": true,
+            "type": "boolean"
+          },
+          "id": {
+            "$ref": "#/components/schemas/numbers_IntId_73c9788e53"
+          },
+          "inbound_call_screening": {
+            "default": "disabled",
+            "description": "The inbound_call_screening setting is a phone number configuration option variable that allows users to configure their settings to block or flag fraudulent calls. It can be set to disabled, reject_calls, or flag_calls. This feature has an additional per-number monthly cost associated with it.",
+            "enum": [
+              "disabled",
+              "reject_calls",
+              "flag_calls"
+            ],
+            "type": "string"
+          },
+          "phone_number": {
+            "description": "The +E.164-formatted phone number associated with this record.",
+            "readOnly": true,
+            "type": "string"
+          },
+          "phone_number_type": {
+            "description": "The phone number's type.\nNote: For numbers purchased prior to July 2023 or when fetching a number's details immediately after a purchase completes, the legacy values `tollfree`, `shortcode` or `longcode` may be returned instead.",
+            "enum": [
+              "local",
+              "toll_free",
+              "mobile",
+              "national",
+              "shared_cost",
+              "landline",
+              "tollfree",
+              "shortcode",
+              "longcode"
+            ],
+            "readOnly": true,
+            "type": "string"
+          },
+          "purchased_at": {
+            "description": "ISO 8601 formatted date indicating when the resource was purchased.",
+            "readOnly": true,
+            "type": "string"
+          },
+          "record_type": {
+            "description": "Identifies the type of the resource.",
+            "example": "phone_number_slim",
+            "readOnly": true,
+            "type": "string"
+          },
+          "status": {
+            "description": "The phone number's current status.",
+            "enum": [
+              "purchase-pending",
+              "purchase-failed",
+              "port-pending",
+              "port-failed",
+              "active",
+              "deleted",
+              "emergency-only",
+              "ported-out",
+              "port-out-pending",
+              "requirement-info-pending",
+              "requirement-info-under-review",
+              "requirement-info-exception",
+              "provision-pending"
+            ],
+            "readOnly": true,
+            "type": "string"
+          },
+          "t38_fax_gateway_enabled": {
+            "description": "Indicates whether T38 Fax Gateway for inbound calls to this number.",
+            "readOnly": true,
+            "type": "boolean"
+          },
+          "updated_at": {
+            "description": "ISO 8601 formatted date indicating when the resource was updated.",
+            "readOnly": true,
+            "type": "string"
+          }
+        },
+        "type": "object"
+      }
+    },
+    "securitySchemes": {
+      "BearerAuth": {
+        "bearerFormat": "API key",
+        "description": "Telnyx API key supplied as `Authorization: Bearer \u003ctoken\u003e`. In production, auth may be validated by the API gateway and forwarded via Telnyx auth headers.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "Payment": {
+        "description": "Machine Payment Protocol credential used on paid retries, sent as `Authorization: Payment ...`. Obtained by paying a challenge returned in the `WWW-Authenticate` header of a 402 response. This is not a Telnyx API key; initial challenge requests use standard bearer authentication instead.",
+        "in": "header",
+        "name": "Authorization",
+        "type": "apiKey"
+      },
+      "agent-memory_bearerAuth": {
+        "description": "Telnyx API key",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "bearerAuth": {
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "branded-calling_bearerAuth": {
+        "description": "Telnyx API key. Generate one at https://portal.telnyx.com/#/app/api-keys.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "collections_bearerAuth": {
+        "description": "Telnyx API key. Collections and results are automatically scoped to the authenticated user's organization.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "number-reputation_bearerAuth": {
+        "description": "Telnyx API key. Generate one at https://portal.telnyx.com/#/app/api-keys.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "oauthClientAuth": {
+        "description": "OAuth 2.0 authentication for Telnyx API and MCP integrations",
+        "flows": {
+          "authorizationCode": {
+            "authorizationUrl": "https://api.telnyx.com/v2/oauth/authorize",
+            "refreshUrl": "https://api.telnyx.com/v2/oauth/token",
+            "scopes": {
+              "admin": "Administrative access to Telnyx resources"
+            },
+            "tokenUrl": "https://api.telnyx.com/v2/oauth/token"
+          },
+          "clientCredentials": {
+            "scopes": {
+              "admin": "Administrative access to Telnyx resources"
+            },
+            "tokenUrl": "https://api.telnyx.com/v2/oauth/token"
+          }
+        },
+        "type": "oauth2"
+      },
+      "outbound-voice-profiles_bearerAuth": {
+        "bearerFormat": "JWT",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "pay-connectors_bearerAuth": {
+        "description": "Telnyx API key, not the processor bearer token.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "pronunciation-dicts_bearerAuth": {
+        "description": "Telnyx API v2 key. Obtain from https://portal.telnyx.com",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "rcs-registration_bearerAuth": {
+        "bearerFormat": "API key",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "stored-payment-transactions_bearerAuth": {
+        "bearerFormat": "JWT",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "telnyxApiKey": {
+        "description": "Management-only Telnyx account credential.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "transcriptions-search_bearerAuth": {
+        "description": "Telnyx API key. Results are automatically scoped to the authenticated user's organization.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "web-search_bearerAuth": {
+        "description": "Telnyx API key",
+        "scheme": "bearer",
+        "type": "http"
+      }
+    }
+  },
+  "info": {
+    "contact": {
+      "email": "support@telnyx.com"
+    },
+    "description": "SIP trunking, SMS, MMS, Call Control and Telephony Data Services.",
+    "title": "Telnyx API",
+    "version": "2.0.0",
+    "x-endpoint-cost": "light",
+    "x-latency-category": "responsive"
+  },
+  "openapi": "3.1.0",
+  "paths": {
+    "/phone_numbers": {
+      "get": {
+        "description": "Returns phone numbers associated with the account. Results support pagination, sorting, and filters for number attributes, status, source, connections, billing groups, emergency addresses, tags, and customer references.",
+        "operationId": "ListPhoneNumbers",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/numbers_PageConsolidated_73c9788e53"
+          },
+          {
+            "description": "Specifies the sort order for results. If not given, results are sorted by created_at in descending order.",
+            "in": "query",
+            "name": "sort",
+            "required": false,
+            "schema": {
+              "enum": [
+                "purchased_at",
+                "phone_number",
+                "connection_name",
+                "usage_payment_method"
+              ],
+              "example": "connection_name",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Consolidated filter parameter (deepObject style). Originally: filter[tag], filter[phone_number], filter[status], filter[country_iso_alpha2], filter[connection_id], filter[voice.connection_name], filter[voice.usage_payment_method], filter[billing_group_id], filter[emergency_address_id], filter[customer_reference], filter[number_type], filter[source]",
+            "explode": true,
+            "in": "query",
+            "name": "filter",
+            "schema": {
+              "properties": {
+                "billing_group_id": {
+                  "description": "Filter by the billing_group_id associated with phone numbers. To filter to only phone numbers that have no billing group associated them, set the value of this filter to the string 'null'.",
+                  "example": "62e4bf2e-c278-4282-b524-488d9c9c43b2",
+                  "type": "string"
+                },
+                "connection_id": {
+                  "description": "Filter by connection_id.",
+                  "example": "1521916448077776306",
+                  "type": "string"
+                },
+                "country_iso_alpha2": {
+                  "description": "Filter by phone number country ISO alpha-2 code. Can be a single value or an array of values.",
+                  "oneOf": [
+                    {
+                      "example": "US",
+                      "type": "string"
+                    },
+                    {
+                      "example": [
+                        "US",
+                        "CA"
+                      ],
+                      "items": {
+                        "type": "string"
+                      },
+                      "type": "array"
+                    }
+                  ]
+                },
+                "customer_reference": {
+                  "description": "Filter numbers via the customer_reference set.",
+                  "type": "string"
+                },
+                "emergency_address_id": {
+                  "description": "Filter by the emergency_address_id associated with phone numbers. To filter only phone numbers that have no emergency address associated with them, set the value of this filter to the string 'null'.",
+                  "example": "9102160989215728032",
+                  "type": "string"
+                },
+                "number_type": {
+                  "additionalProperties": false,
+                  "description": "Filter phone numbers by phone number type.",
+                  "properties": {
+                    "eq": {
+                      "description": "Filter phone numbers by phone number type.",
+                      "enum": [
+                        "local",
+                        "national",
+                        "toll_free",
+                        "mobile",
+                        "shared_cost"
+                      ],
+                      "type": "string"
+                    }
+                  },
+                  "type": "object"
+                },
+                "phone_number": {
+                  "description": "Filter by phone number. Requires at least three digits.\n             Non-numerical characters will result in no values being returned.",
+                  "type": "string"
+                },
+                "source": {
+                  "description": "Filter phone numbers by their source. Use 'ported' for numbers ported from other carriers, or 'purchased' for numbers bought directly from Telnyx.",
+                  "enum": [
+                    "ported",
+                    "purchased"
+                  ],
+                  "type": "string"
+                },
+                "status": {
+                  "description": "Filter by phone number status.",
+                  "enum": [
+                    "purchase-pending",
+                    "purchase-failed",
+                    "port-pending",
+                    "active",
+                    "deleted",
+                    "port-failed",
+                    "emergency-only",
+                    "ported-out",
+                    "port-out-pending"
+                  ],
+                  "example": "active",
+                  "type": "string"
+                },
+                "tag": {
+                  "description": "Filter by phone number tags.",
+                  "type": "string"
+                },
+                "voice.connection_name": {
+                  "additionalProperties": false,
+                  "description": "Filter by voice connection name pattern matching.",
+                  "properties": {
+                    "contains": {
+                      "description": "Filter contains connection name. Requires at least three characters.",
+                      "example": "test",
+                      "type": "string"
+                    },
+                    "ends_with": {
+                      "description": "Filter ends with connection name. Requires at least three characters.",
+                      "example": "test",
+                      "type": "string"
+                    },
+                    "eq": {
+                      "description": "Filter by connection name.",
+                      "example": "test",
+                      "type": "string"
+                    },
+                    "starts_with": {
+                      "description": "Filter starts with connection name. Requires at least three characters.",
+                      "example": "test",
+                      "type": "string"
+                    }
+                  },
+                  "type": "object"
+                },
+                "voice.usage_payment_method": {
+                  "description": "Filter by usage_payment_method.",
+                  "enum": [
+                    "pay-per-minute",
+                    "channel"
+                  ],
+                  "example": "channel",
+                  "type": "string"
+                },
+                "without_tags": {
+                  "description": "When set to 'true', filters for phone numbers that do not have any tags applied. All other values are ignored.",
+                  "enum": [
+                    "true",
+                    "false"
+                  ],
+                  "type": "string"
+                }
+              },
+              "type": "object"
+            },
+            "style": "deepObject"
+          },
+          {
+            "description": "Although it is an infrequent occurrence, due to the highly distributed nature of the Telnyx platform, it is possible that there will be an issue when loading in Messaging Profile information. As such, when this parameter is set to `true` and an error in fetching this information occurs, messaging profile related fields will be omitted in the response and an error message will be included instead of returning a 503 error.",
+            "in": "query",
+            "name": "handle_messaging_profile_error",
+            "schema": {
+              "default": "false",
+              "enum": [
+                "true",
+                "false"
+              ],
+              "example": "false",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "items": {
+                        "$ref": "#/components/schemas/numbers_PhoneNumberDetailed"
+                      },
+                      "type": "array"
+                    },
+                    "errors": {
+                      "items": {
+                        "$ref": "#/components/schemas/numbers_Error_73c9788e53"
+                      },
+                      "type": "array"
+                    },
+                    "meta": {
+                      "$ref": "#/components/schemas/PaginationMeta"
+                    }
+                  },
+                  "required": [
+                    "data",
+                    "meta"
+                  ],
+                  "title": "List Phone Numbers Response",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful response with a list of phone numbers."
+          },
+          "400": {
+            "$ref": "#/components/responses/numbers_BadRequestResponse_73c9788e53"
+          },
+          "401": {
+            "$ref": "#/components/responses/numbers_UnauthorizedResponse_73c9788e53"
+          },
+          "404": {
+            "$ref": "#/components/responses/numbers_NotFoundResponse_73c9788e53"
+          },
+          "422": {
+            "$ref": "#/components/responses/numbers_UnprocessableEntity_73c9788e53"
+          },
+          "500": {
+            "$ref": "#/components/responses/GenericErrorResponse"
+          }
+        },
+        "summary": "List phone numbers",
+        "tags": [
+          "Phone Number Configurations"
+        ],
+        "x-endpoint-cost": "medium",
+        "x-group-parameters": "true"
+      }
+    },
+    "/phone_numbers/actions/verify_ownership": {
+      "post": {
+        "description": "Verifies ownership of the provided phone numbers and returns a mapping of numbers to their IDs, plus a list of numbers not found in the account.",
+        "operationId": "VerifyPhoneNumberOwnership",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PhoneNumberVerifyOwnershipRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/numbers_PhoneNumberVerifyOwnershipResponse"
+                    }
+                  },
+                  "title": "Phone Number Verify Ownership Response",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Phone number ownership verification completed."
+          },
+          "400": {
+            "$ref": "#/components/responses/numbers_BadRequestResponse_73c9788e53"
+          },
+          "401": {
+            "$ref": "#/components/responses/numbers_UnauthorizedResponse_73c9788e53"
+          },
+          "404": {
+            "$ref": "#/components/responses/numbers_NotFoundResponse_73c9788e53"
+          },
+          "422": {
+            "$ref": "#/components/responses/numbers_UnprocessableEntity_73c9788e53"
+          },
+          "500": {
+            "$ref": "#/components/responses/GenericErrorResponse"
+          }
+        },
+        "summary": "Verify ownership of phone numbers",
+        "tags": [
+          "Phone Number Configurations"
+        ],
+        "x-endpoint-cost": "light"
+      }
+    },
+    "/phone_numbers/slim": {
+      "get": {
+        "description": "List phone numbers, This endpoint is a lighter version of the /phone_numbers endpoint having higher performance and rate limit.",
+        "operationId": "SlimListPhoneNumbers",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/numbers_PageConsolidated_73c9788e53"
+          },
+          {
+            "description": "Include the connection associated with the phone number.",
+            "in": "query",
+            "name": "include_connection",
+            "required": false,
+            "schema": {
+              "default": false,
+              "type": "boolean"
+            }
+          },
+          {
+            "description": "Include the tags associated with the phone number.",
+            "in": "query",
+            "name": "include_tags",
+            "required": false,
+            "schema": {
+              "default": false,
+              "type": "boolean"
+            }
+          },
+          {
+            "description": "Specifies the sort order for results. If not given, results are sorted by created_at in descending order.",
+            "in": "query",
+            "name": "sort",
+            "required": false,
+            "schema": {
+              "enum": [
+                "purchased_at",
+                "phone_number",
+                "connection_name",
+                "usage_payment_method"
+              ],
+              "example": "connection_name",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Consolidated filter parameter (deepObject style). Originally: filter[tag], filter[phone_number], filter[status], filter[country_iso_alpha2], filter[connection_id], filter[voice.connection_name], filter[voice.usage_payment_method], filter[billing_group_id], filter[emergency_address_id], filter[customer_reference], filter[number_type], filter[source]",
+            "explode": true,
+            "in": "query",
+            "name": "filter",
+            "schema": {
+              "properties": {
+                "billing_group_id": {
+                  "description": "Filter by the billing_group_id associated with phone numbers. To filter to only phone numbers that have no billing group associated them, set the value of this filter to the string 'null'.",
+                  "example": "62e4bf2e-c278-4282-b524-488d9c9c43b2",
+                  "type": "string"
+                },
+                "connection_id": {
+                  "description": "Filter by connection_id.",
+                  "example": "1521916448077776306",
+                  "type": "string"
+                },
+                "country_iso_alpha2": {
+                  "description": "Filter by phone number country ISO alpha-2 code. Can be a single value or an array of values.",
+                  "oneOf": [
+                    {
+                      "example": "US",
+                      "type": "string"
+                    },
+                    {
+                      "example": [
+                        "US",
+                        "CA"
+                      ],
+                      "items": {
+                        "type": "string"
+                      },
+                      "type": "array"
+                    }
+                  ]
+                },
+                "customer_reference": {
+                  "description": "Filter numbers via the customer_reference set.",
+                  "type": "string"
+                },
+                "emergency_address_id": {
+                  "description": "Filter by the emergency_address_id associated with phone numbers. To filter only phone numbers that have no emergency address associated with them, set the value of this filter to the string 'null'.",
+                  "example": "9102160989215728032",
+                  "type": "string"
+                },
+                "number_type": {
+                  "additionalProperties": false,
+                  "description": "Filter phone numbers by phone number type.",
+                  "properties": {
+                    "eq": {
+                      "description": "Filter phone numbers by phone number type.",
+                      "enum": [
+                        "local",
+                        "national",
+                        "toll_free",
+                        "mobile",
+                        "shared_cost"
+                      ],
+                      "type": "string"
+                    }
+                  },
+                  "type": "object"
+                },
+                "phone_number": {
+                  "description": "Filter by phone number. Requires at least three digits.\n             Non-numerical characters will result in no values being returned.",
+                  "type": "string"
+                },
+                "source": {
+                  "description": "Filter phone numbers by their source. Use 'ported' for numbers ported from other carriers, or 'purchased' for numbers bought directly from Telnyx.",
+                  "enum": [
+                    "ported",
+                    "purchased"
+                  ],
+                  "type": "string"
+                },
+                "status": {
+                  "description": "Filter by phone number status.",
+                  "enum": [
+                    "purchase-pending",
+                    "purchase-failed",
+                    "port_pending",
+                    "active",
+                    "deleted",
+                    "port-failed",
+                    "emergency-only",
+                    "ported-out",
+                    "port-out-pending"
+                  ],
+                  "example": "active",
+                  "type": "string"
+                },
+                "tag": {
+                  "description": "Filter by phone number tags. (This requires the include_tags param)",
+                  "type": "string"
+                },
+                "voice.connection_name": {
+                  "additionalProperties": false,
+                  "description": "Filter by voice connection name pattern matching (requires include_connection param).",
+                  "properties": {
+                    "contains": {
+                      "description": "Filter contains connection name. Requires at least three characters and the include_connection param.",
+                      "example": "test",
+                      "type": "string"
+                    },
+                    "ends_with": {
+                      "description": "Filter ends with connection name. Requires at least three characters and the include_connection param.",
+                      "example": "test",
+                      "type": "string"
+                    },
+                    "eq": {
+                      "description": "Filter by connection name.",
+                      "example": "test",
+                      "type": "string"
+                    },
+                    "starts_with": {
+                      "description": "Filter starts with connection name. Requires at least three characters and the include_connection param.",
+                      "example": "test",
+                      "type": "string"
+                    }
+                  },
+                  "type": "object"
+                },
+                "voice.usage_payment_method": {
+                  "description": "Filter by usage_payment_method.",
+                  "enum": [
+                    "pay-per-minute",
+                    "channel"
+                  ],
+                  "example": "channel",
+                  "type": "string"
+                }
+              },
+              "type": "object"
+            },
+            "style": "deepObject"
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "items": {
+                        "$ref": "#/components/schemas/numbers_SlimPhoneNumberDetailed"
+                      },
+                      "type": "array"
+                    },
+                    "meta": {
+                      "$ref": "#/components/schemas/PaginationMeta"
+                    }
+                  },
+                  "title": "List Phone Numbers Response",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful response with a list of phone numbers."
+          },
+          "400": {
+            "$ref": "#/components/responses/numbers_BadRequestResponse_73c9788e53"
+          },
+          "401": {
+            "$ref": "#/components/responses/numbers_UnauthorizedResponse_73c9788e53"
+          },
+          "404": {
+            "$ref": "#/components/responses/numbers_NotFoundResponse_73c9788e53"
+          },
+          "422": {
+            "$ref": "#/components/responses/numbers_UnprocessableEntity_73c9788e53"
+          },
+          "500": {
+            "$ref": "#/components/responses/GenericErrorResponse"
+          }
+        },
+        "summary": "Slim List phone numbers",
+        "tags": [
+          "Phone Number Configurations"
+        ],
+        "x-endpoint-cost": "medium",
+        "x-group-parameters": "true"
+      }
+    },
+    "/phone_numbers/voice": {
+      "get": {
+        "description": "Returns account phone numbers together with their voice settings. Results support pagination, sorting, and filters for number, connection name, customer reference, and voice usage payment method.",
+        "operationId": "ListPhoneNumbersWithVoiceSettings",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/numbers_PageConsolidated_73c9788e53"
+          },
+          {
+            "description": "Specifies the sort order for results. If not given, results are sorted by created_at in descending order.",
+            "in": "query",
+            "name": "sort",
+            "required": false,
+            "schema": {
+              "enum": [
+                "purchased_at",
+                "phone_number",
+                "connection_name",
+                "usage_payment_method"
+              ],
+              "example": "connection_name",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Consolidated filter parameter (deepObject style). Originally: filter[phone_number], filter[connection_name], filter[customer_reference], filter[voice.usage_payment_method]",
+            "explode": true,
+            "in": "query",
+            "name": "filter",
+            "schema": {
+              "properties": {
+                "connection_name": {
+                  "additionalProperties": false,
+                  "description": "Filter by connection name pattern matching.",
+                  "properties": {
+                    "contains": {
+                      "description": "Filter contains connection name. Requires at least three characters.",
+                      "example": "test",
+                      "type": "string"
+                    }
+                  },
+                  "type": "object"
+                },
+                "customer_reference": {
+                  "description": "Filter numbers via the customer_reference set.",
+                  "type": "string"
+                },
+                "phone_number": {
+                  "description": "Filter by phone number. Requires at least three digits.\n             Non-numerical characters will result in no values being returned.",
+                  "type": "string"
+                },
+                "voice.usage_payment_method": {
+                  "description": "Filter by usage_payment_method.",
+                  "enum": [
+                    "pay-per-minute",
+                    "channel"
+                  ],
+                  "example": "channel",
+                  "type": "string"
+                }
+              },
+              "type": "object"
+            },
+            "style": "deepObject"
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "items": {
+                        "$ref": "#/components/schemas/PhoneNumberWithVoiceSettings"
+                      },
+                      "type": "array"
+                    },
+                    "meta": {
+                      "$ref": "#/components/schemas/PaginationMeta"
+                    }
+                  },
+                  "title": "List Phone Numbers With Voice Settings Response",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful response with a list of phone numbers with voice settings."
+          },
+          "400": {
+            "$ref": "#/components/responses/numbers_BadRequestResponse_73c9788e53"
+          },
+          "401": {
+            "$ref": "#/components/responses/numbers_UnauthorizedResponse_73c9788e53"
+          },
+          "404": {
+            "$ref": "#/components/responses/numbers_NotFoundResponse_73c9788e53"
+          },
+          "422": {
+            "$ref": "#/components/responses/numbers_UnprocessableEntity_73c9788e53"
+          },
+          "500": {
+            "$ref": "#/components/responses/GenericErrorResponse"
+          }
+        },
+        "summary": "List phone numbers with voice settings",
+        "tags": [
+          "Phone Number Configurations"
+        ],
+        "x-endpoint-cost": "medium",
+        "x-group-parameters": "true"
+      }
+    },
+    "/phone_numbers/{id}": {
+      "delete": {
+        "description": "Deletes the specified phone number from the account. The response contains the phone number's final deleted representation.",
+        "operationId": "DeletePhoneNumber",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/IntId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/numbers_PhoneNumberDeletedDetailed"
+                    }
+                  },
+                  "title": "Phone Number Response",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful response with details about a phone number."
+          },
+          "400": {
+            "$ref": "#/components/responses/numbers_BadRequestResponse_73c9788e53"
+          },
+          "401": {
+            "$ref": "#/components/responses/numbers_UnauthorizedResponse_73c9788e53"
+          },
+          "404": {
+            "$ref": "#/components/responses/numbers_NotFoundResponse_73c9788e53"
+          },
+          "422": {
+            "$ref": "#/components/responses/numbers_UnprocessableEntity_73c9788e53"
+          },
+          "500": {
+            "$ref": "#/components/responses/GenericErrorResponse"
+          }
+        },
+        "summary": "Delete a phone number",
+        "tags": [
+          "Phone Number Configurations"
+        ],
+        "x-endpoint-cost": "medium"
+      },
+      "get": {
+        "description": "Returns the detailed configuration and current state of the phone number identified by `id`.",
+        "operationId": "RetrievePhoneNumber",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/IntId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/numbers_PhoneNumberDetailed"
+                    }
+                  },
+                  "title": "Phone Number Response",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful response with details about a phone number."
+          },
+          "400": {
+            "$ref": "#/components/responses/numbers_BadRequestResponse_73c9788e53"
+          },
+          "401": {
+            "$ref": "#/components/responses/numbers_UnauthorizedResponse_73c9788e53"
+          },
+          "404": {
+            "$ref": "#/components/responses/numbers_NotFoundResponse_73c9788e53"
+          },
+          "422": {
+            "$ref": "#/components/responses/numbers_UnprocessableEntity_73c9788e53"
+          },
+          "500": {
+            "$ref": "#/components/responses/GenericErrorResponse"
+          }
+        },
+        "summary": "Retrieve a phone number",
+        "tags": [
+          "Phone Number Configurations"
+        ],
+        "x-endpoint-cost": "medium"
+      },
+      "patch": {
+        "description": "Updates the configurable settings of the specified phone number. The response contains the complete updated phone-number representation.",
+        "operationId": "UpdatePhoneNumber",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/IntId"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdatePhoneNumberRequest"
+              }
+            }
+          },
+          "description": "Updated settings for the phone number.",
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/numbers_PhoneNumberDetailed"
+                    }
+                  },
+                  "title": "Phone Number Response",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful response with details about a phone number."
+          },
+          "400": {
+            "$ref": "#/components/responses/numbers_BadRequestResponse_73c9788e53"
+          },
+          "401": {
+            "$ref": "#/components/responses/numbers_UnauthorizedResponse_73c9788e53"
+          },
+          "404": {
+            "$ref": "#/components/responses/numbers_NotFoundResponse_73c9788e53"
+          },
+          "422": {
+            "$ref": "#/components/responses/numbers_UnprocessableEntity_73c9788e53"
+          },
+          "500": {
+            "$ref": "#/components/responses/GenericErrorResponse"
+          }
+        },
+        "summary": "Update a phone number",
+        "tags": [
+          "Phone Number Configurations"
+        ],
+        "x-endpoint-cost": "medium"
+      }
+    },
+    "/phone_numbers/{id}/actions/bundle_status_change": {
+      "patch": {
+        "description": "Adds the specified phone number to a bundle or removes it from a bundle according to the requested status change. The response contains the phone number with its updated bundle state.",
+        "operationId": "PhoneNumberBundleStatusChange",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/IntId"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PhoneNumberBundleStatusChangeRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/PhoneNumberWithVoiceSettings"
+                    }
+                  },
+                  "title": "Phone Number Bundle Status Change",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Phone number bundle status change success"
+          },
+          "400": {
+            "$ref": "#/components/responses/numbers_BadRequestResponse_73c9788e53"
+          },
+          "401": {
+            "$ref": "#/components/responses/numbers_UnauthorizedResponse_73c9788e53"
+          },
+          "404": {
+            "$ref": "#/components/responses/numbers_NotFoundResponse_73c9788e53"
+          },
+          "422": {
+            "$ref": "#/components/responses/numbers_UnprocessableEntity_73c9788e53"
+          },
+          "500": {
+            "$ref": "#/components/responses/GenericErrorResponse"
+          }
+        },
+        "summary": "Change the bundle status for a phone number (set to being in a bundle or remove from a bundle)",
+        "tags": [
+          "Phone Number Configurations"
+        ],
+        "x-endpoint-cost": "medium"
+      }
+    },
+    "/phone_numbers/{id}/actions/enable_emergency": {
+      "post": {
+        "description": "Associates emergency-service settings with the specified phone number. The operation returns the updated phone-number configuration when completed immediately or an accepted state when processing continues asynchronously.",
+        "operationId": "EnablePhoneNumberEmergency",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/IntId"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PhoneNumberEnableEmergencyRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/PhoneNumberWithVoiceSettings"
+                    }
+                  },
+                  "title": "Phone Number Enable Emergency",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Phone number emergency enabled."
+          },
+          "202": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/PhoneNumberWithVoiceSettings"
+                    }
+                  },
+                  "title": "Phone Number Enable Emergency",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Phone number emergency requested."
+          },
+          "400": {
+            "$ref": "#/components/responses/numbers_BadRequestResponse_73c9788e53"
+          },
+          "401": {
+            "$ref": "#/components/responses/numbers_UnauthorizedResponse_73c9788e53"
+          },
+          "404": {
+            "$ref": "#/components/responses/numbers_NotFoundResponse_73c9788e53"
+          },
+          "422": {
+            "$ref": "#/components/responses/numbers_UnprocessableEntity_73c9788e53"
+          },
+          "500": {
+            "$ref": "#/components/responses/GenericErrorResponse"
+          }
+        },
+        "summary": "Enable emergency for a phone number",
+        "tags": [
+          "Phone Number Configurations"
+        ],
+        "x-endpoint-cost": "medium"
+      }
+    },
+    "/phone_numbers/{id}/voice": {
+      "get": {
+        "description": "Returns the specified phone number together with its current voice configuration.",
+        "operationId": "GetPhoneNumberVoiceSettings",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/IntId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/PhoneNumberWithVoiceSettings"
+                    }
+                  },
+                  "title": "Retrieve Phone Number Voice Response",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful response with details about a phone number including voice settings."
+          },
+          "400": {
+            "$ref": "#/components/responses/numbers_BadRequestResponse_73c9788e53"
+          },
+          "401": {
+            "$ref": "#/components/responses/numbers_UnauthorizedResponse_73c9788e53"
+          },
+          "404": {
+            "$ref": "#/components/responses/numbers_NotFoundResponse_73c9788e53"
+          },
+          "422": {
+            "$ref": "#/components/responses/numbers_UnprocessableEntity_73c9788e53"
+          },
+          "500": {
+            "$ref": "#/components/responses/GenericErrorResponse"
+          }
+        },
+        "summary": "Retrieve a phone number with voice settings",
+        "tags": [
+          "Phone Number Configurations"
+        ],
+        "x-endpoint-cost": "medium"
+      },
+      "patch": {
+        "description": "Updates the voice configuration for the specified phone number. The response contains the phone number with its updated voice settings.",
+        "operationId": "UpdatePhoneNumberVoiceSettings",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/IntId"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdatePhoneNumberVoiceSettingsRequest"
+              }
+            }
+          },
+          "description": "Updated voice settings for the phone number.",
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/PhoneNumberWithVoiceSettings"
+                    }
+                  },
+                  "title": "Retrieve Phone Number Voice Response",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful response with details about a phone number including voice settings."
+          },
+          "400": {
+            "$ref": "#/components/responses/numbers_BadRequestResponse_73c9788e53"
+          },
+          "401": {
+            "$ref": "#/components/responses/numbers_UnauthorizedResponse_73c9788e53"
+          },
+          "404": {
+            "$ref": "#/components/responses/numbers_NotFoundResponse_73c9788e53"
+          },
+          "422": {
+            "$ref": "#/components/responses/numbers_UnprocessableEntity_73c9788e53"
+          },
+          "500": {
+            "$ref": "#/components/responses/GenericErrorResponse"
+          }
+        },
+        "summary": "Update a phone number with voice settings",
+        "tags": [
+          "Phone Number Configurations"
+        ],
+        "x-endpoint-cost": "medium"
+      }
+    }
+  },
+  "security": [
+    {
+      "bearerAuth": []
+    }
+  ],
+  "servers": [
+    {
+      "description": "Version 2.0.0 of the Telnyx API",
+      "url": "https://api.telnyx.com/v2"
+    }
+  ]
+}

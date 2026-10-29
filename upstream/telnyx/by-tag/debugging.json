@@ -1,0 +1,757 @@
+{
+  "components": {
+    "parameters": {
+      "call-control_FilterConsolidated": {
+        "description": "Consolidated filter parameter (deepObject style). Originally: filter[application_name][contains], filter[outbound.outbound_voice_profile_id], filter[leg_id], filter[application_session_id], filter[connection_id], filter[product], filter[failed], filter[from], filter[to], filter[name], filter[type], filter[occurred_at][eq/gt/gte/lt/lte], filter[status]",
+        "explode": true,
+        "in": "query",
+        "name": "filter",
+        "schema": {
+          "properties": {
+            "application_name": {
+              "additionalProperties": false,
+              "description": "Application name filters",
+              "properties": {
+                "contains": {
+                  "default": "null",
+                  "description": "If present, applications with \u003ccode\u003eapplication_name\u003c/code\u003e containing the given value will be returned. Matching is not case-sensitive. Requires at least three characters.",
+                  "type": "string"
+                }
+              },
+              "type": "object"
+            },
+            "application_session_id": {
+              "description": "The unique identifier of the call session. A session may include multiple call leg events.",
+              "format": "uuid",
+              "type": "string"
+            },
+            "connection_id": {
+              "description": "The unique identifier of the conection.",
+              "type": "string"
+            },
+            "failed": {
+              "description": "Delivery failed or not.",
+              "example": false,
+              "type": "boolean"
+            },
+            "from": {
+              "description": "Filter by From number.",
+              "example": "+12025550142",
+              "type": "string"
+            },
+            "leg_id": {
+              "description": "The unique identifier of an individual call leg.",
+              "format": "uuid",
+              "type": "string"
+            },
+            "name": {
+              "description": "If present, conferences will be filtered to those with a matching `name` attribute. Matching is case-sensitive",
+              "type": "string"
+            },
+            "occurred_at": {
+              "additionalProperties": false,
+              "description": "Event occurred_at filters",
+              "properties": {
+                "eq": {
+                  "description": "Event occurred_at: equal",
+                  "example": "2019-03-29T11:10:00Z",
+                  "type": "string"
+                },
+                "gt": {
+                  "description": "Event occurred_at: greater than",
+                  "example": "2019-03-29T11:10:00Z",
+                  "type": "string"
+                },
+                "gte": {
+                  "description": "Event occurred_at: greater than or equal",
+                  "example": "2019-03-29T11:10:00Z",
+                  "type": "string"
+                },
+                "lt": {
+                  "description": "Event occurred_at: lower than",
+                  "example": "2019-03-29T11:10:00Z",
+                  "type": "string"
+                },
+                "lte": {
+                  "description": "Event occurred_at: lower than or equal",
+                  "example": "2019-03-29T11:10:00Z",
+                  "type": "string"
+                }
+              },
+              "type": "object"
+            },
+            "outbound.outbound_voice_profile_id": {
+              "description": "Identifies the associated outbound voice profile.",
+              "example": "1293384261075731499",
+              "type": "string",
+              "x-format": "int64"
+            },
+            "product": {
+              "description": "Filter by product.",
+              "enum": [
+                "call_control",
+                "fax",
+                "texml"
+              ],
+              "example": "texml",
+              "type": "string"
+            },
+            "status": {
+              "description": "If present, conferences will be filtered by status.",
+              "enum": [
+                "init",
+                "in_progress",
+                "completed"
+              ],
+              "type": "string"
+            },
+            "to": {
+              "description": "Filter by To number.",
+              "example": "+12025550142",
+              "type": "string"
+            },
+            "type": {
+              "description": "Event type",
+              "enum": [
+                "command",
+                "webhook"
+              ],
+              "example": "webhook",
+              "type": "string"
+            }
+          },
+          "type": "object"
+        },
+        "style": "deepObject"
+      },
+      "call-control_PageConsolidated": {
+        "description": "Consolidated page parameter (deepObject style). Originally: page[after], page[before], page[limit], page[size], page[number]",
+        "explode": true,
+        "in": "query",
+        "name": "page",
+        "schema": {
+          "properties": {
+            "after": {
+              "default": "null",
+              "description": "Opaque identifier of next page",
+              "type": "string"
+            },
+            "before": {
+              "default": "null",
+              "description": "Opaque identifier of previous page",
+              "type": "string"
+            },
+            "limit": {
+              "default": 20,
+              "description": "Limit of records per single page",
+              "maximum": 250,
+              "minimum": 1,
+              "type": "integer"
+            },
+            "number": {
+              "default": 1,
+              "description": "The page number to load",
+              "minimum": 1,
+              "type": "integer"
+            },
+            "size": {
+              "default": 20,
+              "description": "The size of the page",
+              "maximum": 250,
+              "minimum": 1,
+              "type": "integer"
+            }
+          },
+          "type": "object"
+        },
+        "style": "deepObject"
+      }
+    },
+    "responses": {
+      "UnprocessableEntityResponse": {
+        "content": {
+          "application/json": {
+            "examples": {
+              "ai_assistant_already_active": {
+                "summary": "AI Assistant already active",
+                "value": {
+                  "errors": [
+                    {
+                      "code": "90061",
+                      "detail": "AI Assistant cannot be started more than once.",
+                      "title": "AI Assistant is already in progress"
+                    }
+                  ]
+                }
+              },
+              "call_already_ended": {
+                "summary": "Call has already ended",
+                "value": {
+                  "errors": [
+                    {
+                      "code": "90018",
+                      "detail": "This call is no longer active and can't receive commands.",
+                      "title": "Call has already ended"
+                    }
+                  ]
+                }
+              },
+              "call_already_in_queue": {
+                "summary": "Call already in queue",
+                "value": {
+                  "errors": [
+                    {
+                      "code": "90038",
+                      "detail": "Call can't be added to a queue it's already in.",
+                      "title": "Call already in queue"
+                    }
+                  ]
+                }
+              },
+              "call_not_answered": {
+                "summary": "Call not answered yet",
+                "value": {
+                  "errors": [
+                    {
+                      "code": "90034",
+                      "detail": "This call can't receive this command because it has not been answered yet.",
+                      "title": "Call not answered yet"
+                    }
+                  ]
+                }
+              },
+              "cannot_record_before_audio_started": {
+                "summary": "Cannot record before audio started",
+                "value": {
+                  "errors": [
+                    {
+                      "code": "90020",
+                      "detail": "Call recording cannot be started until audio has commenced on the call.",
+                      "title": "Call recording triggered before audio started"
+                    }
+                  ]
+                }
+              },
+              "conference_already_ended": {
+                "summary": "Conference has already ended",
+                "value": {
+                  "errors": [
+                    {
+                      "code": "90019",
+                      "detail": "This conference is no longer active and can't receive commands.",
+                      "title": "Conference has already ended"
+                    }
+                  ]
+                }
+              },
+              "conference_name_conflict": {
+                "summary": "Conference name conflict",
+                "value": {
+                  "errors": [
+                    {
+                      "code": "90033",
+                      "detail": "Conference with given name already exists and it's active.",
+                      "title": "Unable to execute command"
+                    }
+                  ]
+                }
+              },
+              "fork_not_found": {
+                "summary": "Call is not forked",
+                "value": {
+                  "errors": [
+                    {
+                      "code": "90031",
+                      "detail": "Can't stop forking, because the call isn't currently forked.",
+                      "title": "Call is not currently forked"
+                    }
+                  ]
+                }
+              },
+              "invalid_call_control_id": {
+                "summary": "Invalid call control ID",
+                "value": {
+                  "errors": [
+                    {
+                      "code": "90015",
+                      "detail": "The call_control_id provided was not valid.",
+                      "source": {
+                        "pointer": "/call_control_id"
+                      },
+                      "title": "Invalid Call Control ID"
+                    }
+                  ]
+                }
+              },
+              "invalid_connection_id": {
+                "summary": "Invalid connection ID",
+                "value": {
+                  "errors": [
+                    {
+                      "code": "10015",
+                      "detail": "The requested connection_id (Call Control App ID) is either invalid or does not exist. Only Call Control Apps with valid webhook URL are accepted.",
+                      "source": {
+                        "pointer": "/connection_id"
+                      },
+                      "title": "Invalid value for connection_id (Call Control App ID)"
+                    }
+                  ]
+                }
+              },
+              "invalid_enumerated_value": {
+                "summary": "Invalid enumerated value",
+                "value": {
+                  "errors": [
+                    {
+                      "code": "10032",
+                      "detail": "The value must be one of: dual, single.",
+                      "source": {
+                        "pointer": "/record_channels"
+                      },
+                      "title": "Invalid enumerated value"
+                    }
+                  ]
+                }
+              },
+              "invalid_phone_number_format": {
+                "summary": "Invalid phone number format",
+                "value": {
+                  "errors": [
+                    {
+                      "code": "10016",
+                      "detail": "The 'to' parameter must be in E164 format.",
+                      "source": {
+                        "pointer": "/to"
+                      },
+                      "title": "Phone number must be in +E164 format"
+                    }
+                  ]
+                }
+              },
+              "max_participants_reached": {
+                "summary": "Maximum participants reached",
+                "value": {
+                  "errors": [
+                    {
+                      "code": "90032",
+                      "detail": "The maximum allowed value of `max_participants` has been reached at 100.",
+                      "title": "Maximum number of participants reached"
+                    }
+                  ]
+                }
+              },
+              "media_streaming_used": {
+                "summary": "Media streaming in use",
+                "value": {
+                  "errors": [
+                    {
+                      "code": "90045",
+                      "detail": "This command can't be issued when media streaming is used.",
+                      "title": "Media Streaming is used"
+                    }
+                  ]
+                }
+              },
+              "missing_required_parameter": {
+                "summary": "Missing required parameter",
+                "value": {
+                  "errors": [
+                    {
+                      "code": "10004",
+                      "detail": "The 'to' parameter is required and cannot be blank.",
+                      "source": {
+                        "pointer": "/to"
+                      },
+                      "title": "Missing required parameter"
+                    }
+                  ]
+                }
+              },
+              "queue_full": {
+                "summary": "Queue is full",
+                "value": {
+                  "errors": [
+                    {
+                      "code": "90036",
+                      "detail": "The 'support' queue is full and can't accept more calls.",
+                      "title": "Queue full"
+                    }
+                  ]
+                }
+              },
+              "srtp_not_supported_for_pstn": {
+                "summary": "SRTP not supported for PSTN calls",
+                "value": {
+                  "errors": [
+                    {
+                      "code": "10011",
+                      "detail": "SRTP media encryption is not supported for PSTN calls.",
+                      "source": {
+                        "pointer": "/media_encryption"
+                      },
+                      "title": "Media encryption not supported for PSTN calls"
+                    }
+                  ]
+                }
+              },
+              "transcription_already_active": {
+                "summary": "Transcription already active",
+                "value": {
+                  "errors": [
+                    {
+                      "code": "90054",
+                      "detail": "Call transcription can not be started more than once.",
+                      "title": "Call transcription is already in progress"
+                    }
+                  ]
+                }
+              },
+              "value_outside_range": {
+                "summary": "Value outside of range",
+                "value": {
+                  "errors": [
+                    {
+                      "code": "10033",
+                      "detail": "The value is outside of allowed range 1 to 5000",
+                      "source": {
+                        "pointer": "/max_participants"
+                      },
+                      "title": "Value outside of range"
+                    }
+                  ]
+                }
+              }
+            },
+            "schema": {
+              "$ref": "#/components/schemas/call-control_Errors"
+            }
+          }
+        },
+        "description": "Unprocessable entity. The request was well-formed but could not be processed due to semantic errors. This includes validation errors, invalid parameter values, call state errors, conference errors, queue errors, recording/transcription errors, and business logic violations."
+      },
+      "call-control_GenericErrorResponse": {
+        "content": {
+          "application/json": {
+            "example": {
+              "errors": [
+                {
+                  "code": "10007",
+                  "detail": "An unexpected error occured.",
+                  "title": "Unexpected error"
+                }
+              ]
+            },
+            "schema": {
+              "$ref": "#/components/schemas/call-control_Errors"
+            }
+          }
+        },
+        "description": "Unexpected error"
+      }
+    },
+    "schemas": {
+      "CallEvent": {
+        "example": {
+          "call_leg_id": "308fe500-5213-11e9-ace7-02420a0f0668",
+          "call_session_id": "308fec30-5213-11e9-9d3f-02420a0f0668",
+          "event_timestamp": "2019-03-29T11:10:19.127783Z",
+          "metadata": {},
+          "name": "call.hangup",
+          "record_type": "call_event",
+          "type": "webhook"
+        },
+        "properties": {
+          "call_leg_id": {
+            "description": "Uniquely identifies an individual call leg.",
+            "example": "308fe500-5213-11e9-ace7-02420a0f0668",
+            "type": "string"
+          },
+          "call_session_id": {
+            "description": "Uniquely identifies the call control session. A session may include multiple call leg events.",
+            "example": "308fec30-5213-11e9-9d3f-02420a0f0668",
+            "type": "string"
+          },
+          "event_timestamp": {
+            "description": "Event timestamp",
+            "example": "2019-03-29T11:10:19.127783Z",
+            "type": "string"
+          },
+          "metadata": {
+            "description": "Event metadata, which includes raw event, and extra information based on event type",
+            "type": "object"
+          },
+          "name": {
+            "description": "Event name",
+            "example": "call.hangup",
+            "type": "string"
+          },
+          "record_type": {
+            "enum": [
+              "call_event"
+            ],
+            "example": "call_event",
+            "type": "string"
+          },
+          "type": {
+            "description": "Event type",
+            "enum": [
+              "command",
+              "webhook"
+            ],
+            "example": "webhook",
+            "type": "string"
+          }
+        },
+        "required": [
+          "record_type",
+          "call_leg_id",
+          "call_session_id",
+          "event_timestamp",
+          "name",
+          "type",
+          "metadata"
+        ],
+        "title": "Call Event",
+        "type": "object"
+      },
+      "PaginationMeta": {
+        "properties": {
+          "page_number": {
+            "example": 2,
+            "type": "integer"
+          },
+          "page_size": {
+            "example": 25,
+            "type": "integer"
+          },
+          "total_pages": {
+            "example": 3,
+            "type": "integer"
+          },
+          "total_results": {
+            "example": 55,
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "call-control_Error": {
+        "properties": {
+          "code": {
+            "format": "integer",
+            "type": "string"
+          },
+          "detail": {
+            "type": "string"
+          },
+          "meta": {
+            "type": "object"
+          },
+          "source": {
+            "properties": {
+              "parameter": {
+                "description": "Indicates which query parameter caused the error.",
+                "type": "string"
+              },
+              "pointer": {
+                "description": "JSON pointer (RFC6901) to the offending entity.",
+                "format": "json-pointer",
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
+          "title": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "title"
+        ]
+      },
+      "call-control_Errors": {
+        "properties": {
+          "errors": {
+            "items": {
+              "$ref": "#/components/schemas/call-control_Error"
+            },
+            "type": "array"
+          }
+        }
+      }
+    },
+    "securitySchemes": {
+      "BearerAuth": {
+        "bearerFormat": "API key",
+        "description": "Telnyx API key supplied as `Authorization: Bearer \u003ctoken\u003e`. In production, auth may be validated by the API gateway and forwarded via Telnyx auth headers.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "Payment": {
+        "description": "Machine Payment Protocol credential used on paid retries, sent as `Authorization: Payment ...`. Obtained by paying a challenge returned in the `WWW-Authenticate` header of a 402 response. This is not a Telnyx API key; initial challenge requests use standard bearer authentication instead.",
+        "in": "header",
+        "name": "Authorization",
+        "type": "apiKey"
+      },
+      "agent-memory_bearerAuth": {
+        "description": "Telnyx API key",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "bearerAuth": {
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "branded-calling_bearerAuth": {
+        "description": "Telnyx API key. Generate one at https://portal.telnyx.com/#/app/api-keys.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "collections_bearerAuth": {
+        "description": "Telnyx API key. Collections and results are automatically scoped to the authenticated user's organization.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "number-reputation_bearerAuth": {
+        "description": "Telnyx API key. Generate one at https://portal.telnyx.com/#/app/api-keys.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "oauthClientAuth": {
+        "description": "OAuth 2.0 authentication for Telnyx API and MCP integrations",
+        "flows": {
+          "authorizationCode": {
+            "authorizationUrl": "https://api.telnyx.com/v2/oauth/authorize",
+            "refreshUrl": "https://api.telnyx.com/v2/oauth/token",
+            "scopes": {
+              "admin": "Administrative access to Telnyx resources"
+            },
+            "tokenUrl": "https://api.telnyx.com/v2/oauth/token"
+          },
+          "clientCredentials": {
+            "scopes": {
+              "admin": "Administrative access to Telnyx resources"
+            },
+            "tokenUrl": "https://api.telnyx.com/v2/oauth/token"
+          }
+        },
+        "type": "oauth2"
+      },
+      "outbound-voice-profiles_bearerAuth": {
+        "bearerFormat": "JWT",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "pay-connectors_bearerAuth": {
+        "description": "Telnyx API key, not the processor bearer token.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "pronunciation-dicts_bearerAuth": {
+        "description": "Telnyx API v2 key. Obtain from https://portal.telnyx.com",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "rcs-registration_bearerAuth": {
+        "bearerFormat": "API key",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "stored-payment-transactions_bearerAuth": {
+        "bearerFormat": "JWT",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "telnyxApiKey": {
+        "description": "Management-only Telnyx account credential.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "transcriptions-search_bearerAuth": {
+        "description": "Telnyx API key. Results are automatically scoped to the authenticated user's organization.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "web-search_bearerAuth": {
+        "description": "Telnyx API key",
+        "scheme": "bearer",
+        "type": "http"
+      }
+    }
+  },
+  "info": {
+    "contact": {
+      "email": "support@telnyx.com"
+    },
+    "description": "SIP trunking, SMS, MMS, Call Control and Telephony Data Services.",
+    "title": "Telnyx API",
+    "version": "2.0.0",
+    "x-endpoint-cost": "light",
+    "x-latency-category": "responsive"
+  },
+  "openapi": "3.1.0",
+  "paths": {
+    "/call_events": {
+      "get": {
+        "description": "Filters call events by given filter parameters. Events are ordered by `occurred_at`. If filter for `leg_id` or `application_session_id` is not present, it only filters events from the last 24 hours.\n\n**Note**: Only one `filter[occurred_at]` can be passed.\n",
+        "operationId": "ListCallEvents",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/call-control_FilterConsolidated"
+          },
+          {
+            "$ref": "#/components/parameters/call-control_PageConsolidated"
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "items": {
+                        "$ref": "#/components/schemas/CallEvent"
+                      },
+                      "type": "array"
+                    },
+                    "meta": {
+                      "$ref": "#/components/schemas/PaginationMeta"
+                    }
+                  },
+                  "title": "List Call Events Response",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful response with a list of call events."
+          },
+          "422": {
+            "$ref": "#/components/responses/UnprocessableEntityResponse"
+          },
+          "default": {
+            "$ref": "#/components/responses/call-control_GenericErrorResponse"
+          }
+        },
+        "summary": "List call events",
+        "tags": [
+          "Debugging"
+        ],
+        "x-group-parameters": "true",
+        "x-latency-category": "responsive"
+      }
+    }
+  },
+  "security": [
+    {
+      "bearerAuth": []
+    }
+  ],
+  "servers": [
+    {
+      "description": "Version 2.0.0 of the Telnyx API",
+      "url": "https://api.telnyx.com/v2"
+    }
+  ]
+}

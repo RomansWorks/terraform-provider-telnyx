@@ -1,0 +1,635 @@
+{
+  "components": {
+    "schemas": {
+      "CreateKvNamespaceRequest": {
+        "properties": {
+          "name": {
+            "description": "Namespace name. May contain lowercase letters, numbers, and hyphens only.",
+            "example": "my-cache",
+            "maxLength": 255,
+            "minLength": 1,
+            "pattern": "^[a-z0-9-]+$",
+            "type": "string"
+          }
+        },
+        "required": [
+          "name"
+        ],
+        "type": "object"
+      },
+      "Error": {
+        "example": {
+          "code": "20207",
+          "description": "The street address provided is invalid.",
+          "source": {
+            "pointer": "/street_address"
+          },
+          "title": "Invalid street address"
+        },
+        "properties": {
+          "code": {
+            "type": "string",
+            "x-format": "int64"
+          },
+          "description": {
+            "type": "string"
+          },
+          "detail": {
+            "description": "A human-readable explanation of the error.",
+            "type": "string"
+          },
+          "meta": {
+            "additionalProperties": true,
+            "type": "object"
+          },
+          "source": {
+            "properties": {
+              "parameter": {
+                "description": "Indicates which query parameter caused the error.",
+                "type": "string"
+              },
+              "pointer": {
+                "description": "JSON pointer (RFC6901) to the offending entity.",
+                "format": "json-pointer",
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
+          "title": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "title"
+        ],
+        "type": "object"
+      },
+      "ErrorMeta": {
+        "properties": {
+          "url": {
+            "example": "https://docs.telnyx.com/api/errors/10005",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "ErrorSource": {
+        "properties": {
+          "parameter": {
+            "example": "id",
+            "type": "string"
+          },
+          "pointer": {
+            "example": "/id",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "Errors": {
+        "properties": {
+          "errors": {
+            "items": {
+              "$ref": "#/components/schemas/Error"
+            },
+            "type": "array"
+          }
+        },
+        "type": "object"
+      },
+      "GenericErrorResponse": {
+        "properties": {
+          "errors": {
+            "items": {
+              "$ref": "#/components/schemas/edge-compute_Error"
+            },
+            "type": "array"
+          }
+        },
+        "type": "object"
+      },
+      "KvNamespace": {
+        "properties": {
+          "created_at": {
+            "example": "2026-06-18T14:48:17Z",
+            "format": "date-time",
+            "type": "string"
+          },
+          "id": {
+            "example": "550e8400-e29b-41d4-a716-446655440000",
+            "format": "uuid",
+            "type": "string"
+          },
+          "name": {
+            "example": "my-cache",
+            "type": "string"
+          },
+          "record_type": {
+            "example": "storage_kv",
+            "type": "string"
+          },
+          "status": {
+            "description": "Provisioning status. A namespace is usable once `status` is `provision_ok`. Once deletion completes, the namespace no longer appears in the API.",
+            "enum": [
+              "pending",
+              "provision_ok",
+              "provision_failed",
+              "deleting",
+              "delete_failed"
+            ],
+            "example": "provision_ok",
+            "type": "string"
+          },
+          "updated_at": {
+            "example": "2026-06-18T14:48:17Z",
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "KvNamespaceListResponseWrapper": {
+        "properties": {
+          "data": {
+            "items": {
+              "$ref": "#/components/schemas/KvNamespace"
+            },
+            "type": "array"
+          },
+          "meta": {
+            "$ref": "#/components/schemas/edge-compute_PaginationMeta"
+          }
+        },
+        "type": "object"
+      },
+      "KvNamespaceResponseWrapper": {
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/KvNamespace"
+          }
+        },
+        "type": "object"
+      },
+      "edge-compute_Error": {
+        "properties": {
+          "code": {
+            "example": "10005",
+            "type": "string"
+          },
+          "detail": {
+            "example": "The requested function does not exist or you don't have access to it",
+            "type": "string"
+          },
+          "meta": {
+            "$ref": "#/components/schemas/ErrorMeta"
+          },
+          "source": {
+            "$ref": "#/components/schemas/ErrorSource"
+          },
+          "title": {
+            "example": "Function not found",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "edge-compute_PaginationMeta": {
+        "properties": {
+          "page_number": {
+            "example": 1,
+            "type": "integer"
+          },
+          "page_size": {
+            "example": 20,
+            "type": "integer"
+          },
+          "total_pages": {
+            "example": 3,
+            "type": "integer"
+          },
+          "total_results": {
+            "example": 52,
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      }
+    },
+    "securitySchemes": {
+      "BearerAuth": {
+        "bearerFormat": "API key",
+        "description": "Telnyx API key supplied as `Authorization: Bearer \u003ctoken\u003e`. In production, auth may be validated by the API gateway and forwarded via Telnyx auth headers.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "Payment": {
+        "description": "Machine Payment Protocol credential used on paid retries, sent as `Authorization: Payment ...`. Obtained by paying a challenge returned in the `WWW-Authenticate` header of a 402 response. This is not a Telnyx API key; initial challenge requests use standard bearer authentication instead.",
+        "in": "header",
+        "name": "Authorization",
+        "type": "apiKey"
+      },
+      "agent-memory_bearerAuth": {
+        "description": "Telnyx API key",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "bearerAuth": {
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "branded-calling_bearerAuth": {
+        "description": "Telnyx API key. Generate one at https://portal.telnyx.com/#/app/api-keys.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "collections_bearerAuth": {
+        "description": "Telnyx API key. Collections and results are automatically scoped to the authenticated user's organization.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "number-reputation_bearerAuth": {
+        "description": "Telnyx API key. Generate one at https://portal.telnyx.com/#/app/api-keys.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "oauthClientAuth": {
+        "description": "OAuth 2.0 authentication for Telnyx API and MCP integrations",
+        "flows": {
+          "authorizationCode": {
+            "authorizationUrl": "https://api.telnyx.com/v2/oauth/authorize",
+            "refreshUrl": "https://api.telnyx.com/v2/oauth/token",
+            "scopes": {
+              "admin": "Administrative access to Telnyx resources"
+            },
+            "tokenUrl": "https://api.telnyx.com/v2/oauth/token"
+          },
+          "clientCredentials": {
+            "scopes": {
+              "admin": "Administrative access to Telnyx resources"
+            },
+            "tokenUrl": "https://api.telnyx.com/v2/oauth/token"
+          }
+        },
+        "type": "oauth2"
+      },
+      "outbound-voice-profiles_bearerAuth": {
+        "bearerFormat": "JWT",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "pay-connectors_bearerAuth": {
+        "description": "Telnyx API key, not the processor bearer token.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "pronunciation-dicts_bearerAuth": {
+        "description": "Telnyx API v2 key. Obtain from https://portal.telnyx.com",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "rcs-registration_bearerAuth": {
+        "bearerFormat": "API key",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "stored-payment-transactions_bearerAuth": {
+        "bearerFormat": "JWT",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "telnyxApiKey": {
+        "description": "Management-only Telnyx account credential.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "transcriptions-search_bearerAuth": {
+        "description": "Telnyx API key. Results are automatically scoped to the authenticated user's organization.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "web-search_bearerAuth": {
+        "description": "Telnyx API key",
+        "scheme": "bearer",
+        "type": "http"
+      }
+    }
+  },
+  "info": {
+    "contact": {
+      "email": "support@telnyx.com"
+    },
+    "description": "SIP trunking, SMS, MMS, Call Control and Telephony Data Services.",
+    "title": "Telnyx API",
+    "version": "2.0.0",
+    "x-endpoint-cost": "light",
+    "x-latency-category": "responsive"
+  },
+  "openapi": "3.1.0",
+  "paths": {
+    "/storage/kvs": {
+      "get": {
+        "description": "Lists the KV namespaces for the authenticated user's organization. Results use page-based pagination (`page[number]`/`page[size]`).",
+        "operationId": "ListKvNamespaces",
+        "parameters": [
+          {
+            "description": "The page number to load.",
+            "in": "query",
+            "name": "page[number]",
+            "schema": {
+              "default": 1,
+              "minimum": 1,
+              "type": "integer"
+            }
+          },
+          {
+            "description": "The size of the page. Values above 250 are treated as 250.",
+            "in": "query",
+            "name": "page[size]",
+            "schema": {
+              "default": 20,
+              "maximum": 250,
+              "minimum": 1,
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/KvNamespaceListResponseWrapper"
+                }
+              }
+            },
+            "description": "KV namespaces retrieved successfully"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Errors"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GenericErrorResponse"
+                }
+              }
+            },
+            "description": "Internal server error"
+          }
+        },
+        "summary": "List KV namespaces",
+        "tags": [
+          "kv namespaces"
+        ]
+      },
+      "post": {
+        "description": "Creates a new KV namespace. Provisioning is asynchronous: the namespace is returned with status `pending` and becomes usable once it reaches `provision_ok`.",
+        "operationId": "CreateKvNamespace",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateKvNamespaceRequest"
+              }
+            }
+          },
+          "description": "KV namespace creation request",
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/KvNamespaceResponseWrapper"
+                }
+              }
+            },
+            "description": "KV namespace created successfully"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Errors"
+                }
+              }
+            },
+            "description": "Bad request — missing or invalid `name`"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Errors"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Errors"
+                }
+              }
+            },
+            "description": "Conflict — a namespace with this name already exists for your organization"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GenericErrorResponse"
+                }
+              }
+            },
+            "description": "Internal server error"
+          }
+        },
+        "summary": "Create a KV namespace",
+        "tags": [
+          "kv namespaces"
+        ]
+      }
+    },
+    "/storage/kvs/{id}": {
+      "delete": {
+        "description": "Deletes a KV namespace and all of the keys it contains. Deletion is asynchronous: the namespace is returned with status `deleting`. Deleting a namespace whose deletion is already in progress returns a `409`.",
+        "operationId": "DeleteKvNamespace",
+        "parameters": [
+          {
+            "description": "KV namespace ID",
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/KvNamespaceResponseWrapper"
+                }
+              }
+            },
+            "description": "KV namespace deletion initiated"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Errors"
+                }
+              }
+            },
+            "description": "Bad request — `id` is not a valid UUID"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Errors"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Errors"
+                }
+              }
+            },
+            "description": "KV namespace not found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Errors"
+                }
+              }
+            },
+            "description": "Conflict — the namespace is already being deleted"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GenericErrorResponse"
+                }
+              }
+            },
+            "description": "Internal server error"
+          }
+        },
+        "summary": "Delete a KV namespace",
+        "tags": [
+          "kv namespaces"
+        ]
+      },
+      "get": {
+        "description": "Retrieves a KV namespace by its ID, including its provisioning status.",
+        "operationId": "GetKvNamespace",
+        "parameters": [
+          {
+            "description": "KV namespace ID",
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/KvNamespaceResponseWrapper"
+                }
+              }
+            },
+            "description": "KV namespace retrieved successfully"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Errors"
+                }
+              }
+            },
+            "description": "Bad request — `id` is not a valid UUID"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Errors"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Errors"
+                }
+              }
+            },
+            "description": "KV namespace not found"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GenericErrorResponse"
+                }
+              }
+            },
+            "description": "Internal server error"
+          }
+        },
+        "summary": "Get a KV namespace",
+        "tags": [
+          "kv namespaces"
+        ]
+      }
+    }
+  },
+  "security": [
+    {
+      "bearerAuth": []
+    }
+  ],
+  "servers": [
+    {
+      "description": "Version 2.0.0 of the Telnyx API",
+      "url": "https://api.telnyx.com/v2"
+    }
+  ]
+}

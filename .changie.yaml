@@ -1,0 +1,33 @@
+# Changelog entries: run `changie new` in every pull request that changes
+# provider behaviour. `changie batch <version> && changie merge` at release.
+changesDir: .changes
+unreleasedDir: unreleased
+headerPath: header.tpl.md
+changelogPath: CHANGELOG.md
+versionExt: md
+versionFormat: '## {{.Version}} ({{.Time.Format "January 2, 2006"}})'
+kindFormat: '### {{.Kind}}'
+changeFormat: '* {{.Body}}{{if .Custom.Issue}} ([#{{.Custom.Issue}}](https://github.com/RomansWorks/terraform-provider-telnyx/issues/{{.Custom.Issue}})){{end}}'
+custom:
+  - key: Issue
+    label: Issue or PR number (optional)
+    type: string
+    optional: true
+kinds:
+  - label: BREAKING CHANGES
+    auto: major
+  - label: NOTES
+    auto: patch
+  - label: FEATURES
+    auto: minor
+  - label: ENHANCEMENTS
+    auto: minor
+  - label: BUG FIXES
+    auto: patch
+  - label: DEPRECATIONS
+    auto: minor
+newlines:
+  afterChangelogHeader: 1
+  beforeChangelogVersion: 1
+  endOfVersion: 1
+envPrefix: CHANGIE_

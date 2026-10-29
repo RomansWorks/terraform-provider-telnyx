@@ -1,0 +1,682 @@
+{
+  "components": {
+    "parameters": {
+      "numbers_PageConsolidated_73c9788e53": {
+        "description": "Consolidated page parameter (deepObject style). Originally: page[size], page[number]",
+        "explode": true,
+        "in": "query",
+        "name": "page",
+        "schema": {
+          "properties": {
+            "number": {
+              "default": 1,
+              "description": "The page number to load",
+              "minimum": 1,
+              "type": "integer"
+            },
+            "size": {
+              "default": 20,
+              "description": "The size of the page",
+              "maximum": 250,
+              "minimum": 1,
+              "type": "integer"
+            }
+          },
+          "type": "object"
+        },
+        "style": "deepObject"
+      }
+    },
+    "responses": {
+      "GenericErrorResponse": {
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Errors"
+            }
+          }
+        },
+        "description": "Unexpected error"
+      },
+      "numbers_BadRequestResponse_73c9788e53": {
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Errors"
+            }
+          }
+        },
+        "description": "Bad request, the request was unacceptable, often due to missing a required parameter."
+      },
+      "numbers_NotFoundResponse_73c9788e53": {
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Errors"
+            }
+          }
+        },
+        "description": "The requested resource doesn't exist."
+      },
+      "numbers_UnauthorizedResponse_73c9788e53": {
+        "content": {
+          "application/json": {
+            "examples": {
+              "Authentication Failed": {
+                "value": {
+                  "errors": [
+                    {
+                      "code": "10009",
+                      "detail": "Could not understand the provided credentials.",
+                      "meta": {
+                        "url": "https://developers.telnyx.com/docs/overview/errors/10009"
+                      },
+                      "title": "Authentication failed"
+                    }
+                  ]
+                }
+              }
+            },
+            "schema": {
+              "$ref": "#/components/schemas/Errors"
+            }
+          }
+        },
+        "description": "Unauthorized"
+      },
+      "numbers_UnprocessableEntity_73c9788e53": {
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Errors"
+            }
+          }
+        },
+        "description": "Unprocessable entity. Check the 'detail' field in response for details."
+      }
+    },
+    "schemas": {
+      "Error": {
+        "example": {
+          "code": "20207",
+          "description": "The street address provided is invalid.",
+          "source": {
+            "pointer": "/street_address"
+          },
+          "title": "Invalid street address"
+        },
+        "properties": {
+          "code": {
+            "type": "string",
+            "x-format": "int64"
+          },
+          "description": {
+            "type": "string"
+          },
+          "detail": {
+            "description": "A human-readable explanation of the error.",
+            "type": "string"
+          },
+          "meta": {
+            "additionalProperties": true,
+            "type": "object"
+          },
+          "source": {
+            "properties": {
+              "parameter": {
+                "description": "Indicates which query parameter caused the error.",
+                "type": "string"
+              },
+              "pointer": {
+                "description": "JSON pointer (RFC6901) to the offending entity.",
+                "format": "json-pointer",
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
+          "title": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "title"
+        ],
+        "type": "object"
+      },
+      "Errors": {
+        "properties": {
+          "errors": {
+            "items": {
+              "$ref": "#/components/schemas/Error"
+            },
+            "type": "array"
+          }
+        },
+        "type": "object"
+      },
+      "PaginationMeta": {
+        "properties": {
+          "page_number": {
+            "example": 2,
+            "type": "integer"
+          },
+          "page_size": {
+            "example": 25,
+            "type": "integer"
+          },
+          "total_pages": {
+            "example": 3,
+            "type": "integer"
+          },
+          "total_results": {
+            "example": 55,
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "PhoneNumberBlocksJob": {
+        "example": {
+          "created_at": "2020-10-23T18:10:00.000Z",
+          "etc": "2020-10-30T18:10:00.000Z",
+          "failed_operations": [],
+          "id": "42587e44-3a3e-46de-9255-0c9a7a1d1ec7",
+          "record_type": "phone_numbers_job",
+          "status": "pending",
+          "successful_operations": [],
+          "type": "delete_phone_number_block",
+          "updated_at": "2020-10-23T18:10:01.000Z"
+        },
+        "properties": {
+          "created_at": {
+            "description": "ISO 8601 formatted date indicating when the resource was created.",
+            "readOnly": true,
+            "type": "string"
+          },
+          "etc": {
+            "description": "ISO 8601 formatted date indicating when the estimated time of completion of the background job.",
+            "format": "date-time",
+            "readOnly": true,
+            "type": "string"
+          },
+          "failed_operations": {
+            "items": {
+              "$ref": "#/components/schemas/PhoneNumberBlocksJobFailedOperation"
+            },
+            "readOnly": true,
+            "type": "array"
+          },
+          "id": {
+            "description": "Identifies the resource.",
+            "example": "42587e44-3a3e-46de-9255-0c9a7a1d1ec7",
+            "format": "uuid",
+            "readOnly": true,
+            "type": "string"
+          },
+          "record_type": {
+            "description": "Identifies the type of the resource.",
+            "example": "phone_number_block_job",
+            "readOnly": true,
+            "type": "string"
+          },
+          "status": {
+            "default": "pending",
+            "description": "Indicates the completion status of the background operation.",
+            "enum": [
+              "pending",
+              "in_progress",
+              "completed",
+              "failed"
+            ],
+            "example": "pending",
+            "readOnly": true,
+            "type": "string"
+          },
+          "successful_operations": {
+            "items": {
+              "$ref": "#/components/schemas/PhoneNumberBlocksJobSuccessfulOperation",
+              "description": "The phone numbers successfully updated."
+            },
+            "readOnly": true,
+            "type": "array"
+          },
+          "type": {
+            "description": "Identifies the type of the background job.",
+            "enum": [
+              "delete_phone_number_block"
+            ],
+            "example": "delete_phone_number_block",
+            "readOnly": true,
+            "type": "string"
+          },
+          "updated_at": {
+            "description": "ISO 8601 formatted date indicating when the resource was updated.",
+            "readOnly": true,
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "PhoneNumberBlocksJobDeletePhoneNumberBlockRequest": {
+        "example": {
+          "phone_number_block_id": "f3946371-7199-4261-9c3d-81a0d7935146"
+        },
+        "properties": {
+          "phone_number_block_id": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "phone_number_block_id"
+        ],
+        "type": "object"
+      },
+      "PhoneNumberBlocksJobFailedOperation": {
+        "properties": {
+          "errors": {
+            "items": {
+              "$ref": "#/components/schemas/numbers_Error"
+            },
+            "type": "array"
+          },
+          "id": {
+            "description": "The phone number's ID",
+            "type": "string"
+          },
+          "phone_number": {
+            "description": "The phone number in e164 format.",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "PhoneNumberBlocksJobSuccessfulOperation": {
+        "properties": {
+          "id": {
+            "description": "The phone number's ID",
+            "type": "string"
+          },
+          "phone_number": {
+            "description": "The phone number in e164 format.",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "numbers_Error": {
+        "properties": {
+          "code": {
+            "example": "10007",
+            "type": "string"
+          },
+          "detail": {
+            "example": "An unexpected error occured.",
+            "type": "string"
+          },
+          "meta": {
+            "properties": {
+              "url": {
+                "description": "URL with additional information on the error.",
+                "example": "https://developers.telnyx.com/docs/overview/errors/10015",
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
+          "source": {
+            "properties": {
+              "parameter": {
+                "description": "Indicates which query parameter caused the error.",
+                "type": "string"
+              },
+              "pointer": {
+                "description": "JSON pointer (RFC6901) to the offending entity.",
+                "example": "/base",
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
+          "title": {
+            "example": "Unexpected error",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      }
+    },
+    "securitySchemes": {
+      "BearerAuth": {
+        "bearerFormat": "API key",
+        "description": "Telnyx API key supplied as `Authorization: Bearer \u003ctoken\u003e`. In production, auth may be validated by the API gateway and forwarded via Telnyx auth headers.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "Payment": {
+        "description": "Machine Payment Protocol credential used on paid retries, sent as `Authorization: Payment ...`. Obtained by paying a challenge returned in the `WWW-Authenticate` header of a 402 response. This is not a Telnyx API key; initial challenge requests use standard bearer authentication instead.",
+        "in": "header",
+        "name": "Authorization",
+        "type": "apiKey"
+      },
+      "agent-memory_bearerAuth": {
+        "description": "Telnyx API key",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "bearerAuth": {
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "branded-calling_bearerAuth": {
+        "description": "Telnyx API key. Generate one at https://portal.telnyx.com/#/app/api-keys.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "collections_bearerAuth": {
+        "description": "Telnyx API key. Collections and results are automatically scoped to the authenticated user's organization.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "number-reputation_bearerAuth": {
+        "description": "Telnyx API key. Generate one at https://portal.telnyx.com/#/app/api-keys.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "oauthClientAuth": {
+        "description": "OAuth 2.0 authentication for Telnyx API and MCP integrations",
+        "flows": {
+          "authorizationCode": {
+            "authorizationUrl": "https://api.telnyx.com/v2/oauth/authorize",
+            "refreshUrl": "https://api.telnyx.com/v2/oauth/token",
+            "scopes": {
+              "admin": "Administrative access to Telnyx resources"
+            },
+            "tokenUrl": "https://api.telnyx.com/v2/oauth/token"
+          },
+          "clientCredentials": {
+            "scopes": {
+              "admin": "Administrative access to Telnyx resources"
+            },
+            "tokenUrl": "https://api.telnyx.com/v2/oauth/token"
+          }
+        },
+        "type": "oauth2"
+      },
+      "outbound-voice-profiles_bearerAuth": {
+        "bearerFormat": "JWT",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "pay-connectors_bearerAuth": {
+        "description": "Telnyx API key, not the processor bearer token.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "pronunciation-dicts_bearerAuth": {
+        "description": "Telnyx API v2 key. Obtain from https://portal.telnyx.com",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "rcs-registration_bearerAuth": {
+        "bearerFormat": "API key",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "stored-payment-transactions_bearerAuth": {
+        "bearerFormat": "JWT",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "telnyxApiKey": {
+        "description": "Management-only Telnyx account credential.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "transcriptions-search_bearerAuth": {
+        "description": "Telnyx API key. Results are automatically scoped to the authenticated user's organization.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "web-search_bearerAuth": {
+        "description": "Telnyx API key",
+        "scheme": "bearer",
+        "type": "http"
+      }
+    }
+  },
+  "info": {
+    "contact": {
+      "email": "support@telnyx.com"
+    },
+    "description": "SIP trunking, SMS, MMS, Call Control and Telephony Data Services.",
+    "title": "Telnyx API",
+    "version": "2.0.0",
+    "x-endpoint-cost": "light",
+    "x-latency-category": "responsive"
+  },
+  "openapi": "3.1.0",
+  "paths": {
+    "/phone_number_blocks/jobs": {
+      "get": {
+        "description": "Returns background jobs that operate on phone-number blocks. Results can be filtered by job type and status, sorted by creation time, and include pagination metadata.",
+        "operationId": "ListPhoneNumberBlocksJobs",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/numbers_PageConsolidated_73c9788e53"
+          },
+          {
+            "description": "Specifies the sort order for results. If not given, results are sorted by created_at in descending order.",
+            "in": "query",
+            "name": "sort",
+            "required": false,
+            "schema": {
+              "enum": [
+                "created_at"
+              ],
+              "example": "created_at",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Consolidated filter parameter (deepObject style). Originally: filter[type], filter[status]",
+            "explode": true,
+            "in": "query",
+            "name": "filter",
+            "schema": {
+              "properties": {
+                "status": {
+                  "description": "Identifies the status of the background job.",
+                  "enum": [
+                    "pending",
+                    "in_progress",
+                    "completed",
+                    "failed"
+                  ],
+                  "example": "in_progress",
+                  "type": "string"
+                },
+                "type": {
+                  "description": "Identifies the type of the background job.",
+                  "enum": [
+                    "delete_phone_number_block"
+                  ],
+                  "example": "delete_phone_number_block",
+                  "type": "string"
+                }
+              },
+              "type": "object"
+            },
+            "style": "deepObject"
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "items": {
+                        "$ref": "#/components/schemas/PhoneNumberBlocksJob"
+                      },
+                      "type": "array"
+                    },
+                    "meta": {
+                      "$ref": "#/components/schemas/PaginationMeta"
+                    }
+                  },
+                  "title": "List Phone Number Blocks Background Jobs Response",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful response with a list of phone number blocks background jobs."
+          },
+          "400": {
+            "$ref": "#/components/responses/numbers_BadRequestResponse_73c9788e53"
+          },
+          "401": {
+            "$ref": "#/components/responses/numbers_UnauthorizedResponse_73c9788e53"
+          },
+          "404": {
+            "$ref": "#/components/responses/numbers_NotFoundResponse_73c9788e53"
+          },
+          "422": {
+            "$ref": "#/components/responses/numbers_UnprocessableEntity_73c9788e53"
+          },
+          "500": {
+            "$ref": "#/components/responses/GenericErrorResponse"
+          }
+        },
+        "summary": "Lists the phone number blocks jobs",
+        "tags": [
+          "Phone Number Blocks Background Jobs"
+        ],
+        "x-group-parameters": "true"
+      }
+    },
+    "/phone_number_blocks/jobs/delete_phone_number_block": {
+      "post": {
+        "description": "Creates a new background job to delete all the phone numbers associated with the given block. We will only consider the phone number block as deleted after all phone numbers associated with it are removed, so multiple executions of this job may be necessary in case some of the phone numbers present errors during the deletion process.",
+        "operationId": "CreatePhoneNumberBlockDeletionJob",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PhoneNumberBlocksJobDeletePhoneNumberBlockRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "202": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/PhoneNumberBlocksJob"
+                    }
+                  },
+                  "title": "Phone Number Blocks Job Delete Phone Number Block",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Block deletion job accepted. The response contains a background job; poll GET /phone_numbers/jobs/{id} with the job id until it completes."
+          },
+          "400": {
+            "$ref": "#/components/responses/numbers_BadRequestResponse_73c9788e53"
+          },
+          "401": {
+            "$ref": "#/components/responses/numbers_UnauthorizedResponse_73c9788e53"
+          },
+          "404": {
+            "$ref": "#/components/responses/numbers_NotFoundResponse_73c9788e53"
+          },
+          "422": {
+            "$ref": "#/components/responses/numbers_UnprocessableEntity_73c9788e53"
+          },
+          "500": {
+            "$ref": "#/components/responses/GenericErrorResponse"
+          }
+        },
+        "summary": "Deletes all numbers associated with a phone number block",
+        "tags": [
+          "Phone Number Blocks Background Jobs"
+        ],
+        "x-group-parameters": "true",
+        "x-latency-category": "background"
+      }
+    },
+    "/phone_number_blocks/jobs/{id}": {
+      "get": {
+        "description": "Returns the status and details of the phone-number-block background job identified by `id`.",
+        "operationId": "GetPhoneNumberBlocksJob",
+        "parameters": [
+          {
+            "description": "Identifies the Phone Number Blocks Job.",
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/PhoneNumberBlocksJob"
+                    }
+                  },
+                  "title": "Phone Number Blocks Job",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Phone number blocks job details."
+          },
+          "400": {
+            "$ref": "#/components/responses/numbers_BadRequestResponse_73c9788e53"
+          },
+          "401": {
+            "$ref": "#/components/responses/numbers_UnauthorizedResponse_73c9788e53"
+          },
+          "404": {
+            "$ref": "#/components/responses/numbers_NotFoundResponse_73c9788e53"
+          },
+          "422": {
+            "$ref": "#/components/responses/numbers_UnprocessableEntity_73c9788e53"
+          },
+          "500": {
+            "$ref": "#/components/responses/GenericErrorResponse"
+          }
+        },
+        "summary": "Retrieves a phone number blocks job",
+        "tags": [
+          "Phone Number Blocks Background Jobs"
+        ],
+        "x-group-parameters": "true"
+      }
+    }
+  },
+  "security": [
+    {
+      "bearerAuth": []
+    }
+  ],
+  "servers": [
+    {
+      "description": "Version 2.0.0 of the Telnyx API",
+      "url": "https://api.telnyx.com/v2"
+    }
+  ]
+}

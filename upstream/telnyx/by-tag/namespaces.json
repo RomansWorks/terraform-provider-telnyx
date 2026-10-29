@@ -1,0 +1,505 @@
+{
+  "components": {
+    "schemas": {
+      "Namespace": {
+        "description": "An isolated memory store within your organization.",
+        "properties": {
+          "id": {
+            "description": "The namespace's unique identifier.",
+            "title": "Id",
+            "type": "string"
+          },
+          "name": {
+            "description": "The namespace's name, used in the path. `default` exists for every organization.",
+            "title": "Name",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "name"
+        ],
+        "title": "Namespace",
+        "type": "object"
+      },
+      "NamespaceCreate": {
+        "properties": {
+          "name": {
+            "description": "A name for the new namespace, unique within your organization.",
+            "title": "Name",
+            "type": "string"
+          }
+        },
+        "required": [
+          "name"
+        ],
+        "title": "NamespaceCreate",
+        "type": "object"
+      },
+      "NamespaceListResponse": {
+        "properties": {
+          "data": {
+            "items": {
+              "$ref": "#/components/schemas/Namespace"
+            },
+            "title": "Data",
+            "type": "array"
+          }
+        },
+        "required": [
+          "data"
+        ],
+        "title": "NamespaceListResponse",
+        "type": "object"
+      },
+      "NamespaceResponse": {
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/Namespace"
+          }
+        },
+        "required": [
+          "data"
+        ],
+        "title": "NamespaceResponse",
+        "type": "object"
+      },
+      "TelnyxError": {
+        "properties": {
+          "code": {
+            "type": "string"
+          },
+          "detail": {
+            "type": "string"
+          },
+          "meta": {
+            "properties": {
+              "url": {
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
+          "source": {
+            "properties": {
+              "pointer": {
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
+          "title": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "TelnyxErrors": {
+        "properties": {
+          "errors": {
+            "items": {
+              "$ref": "#/components/schemas/TelnyxError"
+            },
+            "type": "array"
+          }
+        },
+        "type": "object"
+      }
+    },
+    "securitySchemes": {
+      "BearerAuth": {
+        "bearerFormat": "API key",
+        "description": "Telnyx API key supplied as `Authorization: Bearer \u003ctoken\u003e`. In production, auth may be validated by the API gateway and forwarded via Telnyx auth headers.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "Payment": {
+        "description": "Machine Payment Protocol credential used on paid retries, sent as `Authorization: Payment ...`. Obtained by paying a challenge returned in the `WWW-Authenticate` header of a 402 response. This is not a Telnyx API key; initial challenge requests use standard bearer authentication instead.",
+        "in": "header",
+        "name": "Authorization",
+        "type": "apiKey"
+      },
+      "agent-memory_bearerAuth": {
+        "description": "Telnyx API key",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "bearerAuth": {
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "branded-calling_bearerAuth": {
+        "description": "Telnyx API key. Generate one at https://portal.telnyx.com/#/app/api-keys.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "collections_bearerAuth": {
+        "description": "Telnyx API key. Collections and results are automatically scoped to the authenticated user's organization.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "number-reputation_bearerAuth": {
+        "description": "Telnyx API key. Generate one at https://portal.telnyx.com/#/app/api-keys.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "oauthClientAuth": {
+        "description": "OAuth 2.0 authentication for Telnyx API and MCP integrations",
+        "flows": {
+          "authorizationCode": {
+            "authorizationUrl": "https://api.telnyx.com/v2/oauth/authorize",
+            "refreshUrl": "https://api.telnyx.com/v2/oauth/token",
+            "scopes": {
+              "admin": "Administrative access to Telnyx resources"
+            },
+            "tokenUrl": "https://api.telnyx.com/v2/oauth/token"
+          },
+          "clientCredentials": {
+            "scopes": {
+              "admin": "Administrative access to Telnyx resources"
+            },
+            "tokenUrl": "https://api.telnyx.com/v2/oauth/token"
+          }
+        },
+        "type": "oauth2"
+      },
+      "outbound-voice-profiles_bearerAuth": {
+        "bearerFormat": "JWT",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "pay-connectors_bearerAuth": {
+        "description": "Telnyx API key, not the processor bearer token.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "pronunciation-dicts_bearerAuth": {
+        "description": "Telnyx API v2 key. Obtain from https://portal.telnyx.com",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "rcs-registration_bearerAuth": {
+        "bearerFormat": "API key",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "stored-payment-transactions_bearerAuth": {
+        "bearerFormat": "JWT",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "telnyxApiKey": {
+        "description": "Management-only Telnyx account credential.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "transcriptions-search_bearerAuth": {
+        "description": "Telnyx API key. Results are automatically scoped to the authenticated user's organization.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "web-search_bearerAuth": {
+        "description": "Telnyx API key",
+        "scheme": "bearer",
+        "type": "http"
+      }
+    }
+  },
+  "info": {
+    "contact": {
+      "email": "support@telnyx.com"
+    },
+    "description": "SIP trunking, SMS, MMS, Call Control and Telephony Data Services.",
+    "title": "Telnyx API",
+    "version": "2.0.0",
+    "x-endpoint-cost": "light",
+    "x-latency-category": "responsive"
+  },
+  "openapi": "3.1.0",
+  "paths": {
+    "/ai/memory/namespaces": {
+      "get": {
+        "description": "Every namespace in your organization, `default` among them.",
+        "operationId": "ListNamespaces",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "data": [
+                    {
+                      "id": "1f815759-d4d8-5548-aa5b-077a60b9f8dd",
+                      "name": "default"
+                    },
+                    {
+                      "id": "b3c17d90-2e4f-5a1b-9c8d-6f0a2b3c4d5e",
+                      "name": "staging"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/NamespaceListResponse"
+                }
+              }
+            },
+            "description": "Your namespaces"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "errors": [
+                    {
+                      "code": "10009",
+                      "detail": "Could not find any usable credentials in the request.",
+                      "meta": {
+                        "url": "https://developers.telnyx.com/docs/overview/errors/10009"
+                      },
+                      "source": {
+                        "pointer": "/"
+                      },
+                      "title": "Authentication failed"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/TelnyxErrors"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "502": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "errors": [
+                    {
+                      "code": "upstream_error",
+                      "detail": "the memory dataplane is unavailable"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/TelnyxErrors"
+                }
+              }
+            },
+            "description": "Upstream error"
+          }
+        },
+        "summary": "List your namespaces",
+        "tags": [
+          "Namespaces"
+        ]
+      },
+      "post": {
+        "description": "Create a namespace. An organization can have at most five, `default` among them — a sixth returns `403`.",
+        "operationId": "CreateNamespace",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "example": {
+                "name": "staging"
+              },
+              "schema": {
+                "$ref": "#/components/schemas/NamespaceCreate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "data": {
+                    "id": "b3c17d90-2e4f-5a1b-9c8d-6f0a2b3c4d5e",
+                    "name": "staging"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/NamespaceResponse"
+                }
+              }
+            },
+            "description": "The created namespace"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "errors": [
+                    {
+                      "code": "10009",
+                      "detail": "Could not find any usable credentials in the request.",
+                      "meta": {
+                        "url": "https://developers.telnyx.com/docs/overview/errors/10009"
+                      },
+                      "source": {
+                        "pointer": "/"
+                      },
+                      "title": "Authentication failed"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/TelnyxErrors"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "errors": [
+                    {
+                      "code": "10039",
+                      "detail": "an organization can have 5 namespaces, `default` among them, and this one already has that many",
+                      "meta": {
+                        "url": "https://developers.telnyx.com/docs/overview/errors/10039"
+                      },
+                      "title": "Forbidden"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/TelnyxErrors"
+                }
+              }
+            },
+            "description": "Namespace limit reached"
+          },
+          "502": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "errors": [
+                    {
+                      "code": "upstream_error",
+                      "detail": "the memory dataplane is unavailable"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/TelnyxErrors"
+                }
+              }
+            },
+            "description": "Upstream error"
+          }
+        },
+        "summary": "Create a namespace",
+        "tags": [
+          "Namespaces"
+        ]
+      }
+    },
+    "/ai/memory/namespaces/{namespace}": {
+      "delete": {
+        "description": "Delete a namespace and every profile and memory in it. `default` cannot be deleted. This cannot be undone.",
+        "operationId": "DeleteNamespace",
+        "parameters": [
+          {
+            "description": "The namespace to delete. `default` cannot be deleted.",
+            "in": "path",
+            "name": "namespace",
+            "required": true,
+            "schema": {
+              "description": "The namespace to delete. `default` cannot be deleted.",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "The namespace was deleted"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "errors": [
+                    {
+                      "code": "10009",
+                      "detail": "Could not find any usable credentials in the request.",
+                      "meta": {
+                        "url": "https://developers.telnyx.com/docs/overview/errors/10009"
+                      },
+                      "source": {
+                        "pointer": "/"
+                      },
+                      "title": "Authentication failed"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/TelnyxErrors"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "errors": [
+                    {
+                      "code": "10005",
+                      "detail": "no such namespace",
+                      "meta": {
+                        "url": "https://developers.telnyx.com/docs/overview/errors/10005"
+                      },
+                      "title": "Resource not found"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/TelnyxErrors"
+                }
+              }
+            },
+            "description": "No such namespace"
+          },
+          "502": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "errors": [
+                    {
+                      "code": "upstream_error",
+                      "detail": "the memory dataplane is unavailable"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/TelnyxErrors"
+                }
+              }
+            },
+            "description": "Upstream error"
+          }
+        },
+        "summary": "Delete a namespace",
+        "tags": [
+          "Namespaces"
+        ]
+      }
+    }
+  },
+  "security": [
+    {
+      "bearerAuth": []
+    }
+  ],
+  "servers": [
+    {
+      "description": "Version 2.0.0 of the Telnyx API",
+      "url": "https://api.telnyx.com/v2"
+    }
+  ]
+}

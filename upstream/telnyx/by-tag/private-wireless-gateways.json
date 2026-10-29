@@ -1,0 +1,736 @@
+{
+  "components": {
+    "parameters": {
+      "PrivateWirelessGatewayId": {
+        "description": "Identifies the private wireless gateway.",
+        "in": "path",
+        "name": "id",
+        "required": true,
+        "schema": {
+          "example": "6a09cdc3-8948-47f0-aa62-74ac943d6c58",
+          "format": "uuid",
+          "type": "string"
+        }
+      },
+      "wireless_PageNumber_c5290d5308": {
+        "description": "The page number to load.",
+        "in": "query",
+        "name": "page[number]",
+        "schema": {
+          "default": 1,
+          "minimum": 1,
+          "type": "integer"
+        }
+      },
+      "wireless_PageSize_c5290d5308": {
+        "description": "The size of the page.",
+        "in": "query",
+        "name": "page[size]",
+        "schema": {
+          "default": 20,
+          "maximum": 250,
+          "minimum": 1,
+          "type": "integer"
+        }
+      }
+    },
+    "responses": {
+      "ResourceNotFound": {
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/documents_Error"
+            }
+          }
+        },
+        "description": "Resource not found"
+      },
+      "wireless_GenericErrorResponse_c5290d5308": {
+        "content": {
+          "application/json": {
+            "examples": {
+              "unexpectedError": {
+                "summary": "Unexpected API error",
+                "value": {
+                  "errors": [
+                    {
+                      "code": "10007",
+                      "detail": "An unexpected error occured.",
+                      "title": "Unexpected error"
+                    }
+                  ]
+                }
+              }
+            },
+            "schema": {
+              "$ref": "#/components/schemas/Errors"
+            }
+          }
+        },
+        "description": "Unexpected error"
+      },
+      "wireless_UnprocessableEntity_c5290d5308": {
+        "content": {
+          "application/json": {
+            "examples": {
+              "unprocessableEntity": {
+                "summary": "Request could not be processed",
+                "value": {
+                  "errors": [
+                    {
+                      "code": "10027",
+                      "detail": "The server understood the syntax of the request but was unable to process the instructions.",
+                      "title": "Unprocessable Entity"
+                    }
+                  ]
+                }
+              }
+            },
+            "schema": {
+              "$ref": "#/components/schemas/Errors"
+            }
+          }
+        },
+        "description": "Unprocessable entity. Check the 'detail' field in response for details."
+      }
+    },
+    "schemas": {
+      "Error": {
+        "example": {
+          "code": "20207",
+          "description": "The street address provided is invalid.",
+          "source": {
+            "pointer": "/street_address"
+          },
+          "title": "Invalid street address"
+        },
+        "properties": {
+          "code": {
+            "type": "string",
+            "x-format": "int64"
+          },
+          "description": {
+            "type": "string"
+          },
+          "detail": {
+            "description": "A human-readable explanation of the error.",
+            "type": "string"
+          },
+          "meta": {
+            "additionalProperties": true,
+            "type": "object"
+          },
+          "source": {
+            "properties": {
+              "parameter": {
+                "description": "Indicates which query parameter caused the error.",
+                "type": "string"
+              },
+              "pointer": {
+                "description": "JSON pointer (RFC6901) to the offending entity.",
+                "format": "json-pointer",
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
+          "title": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "title"
+        ],
+        "type": "object"
+      },
+      "Errors": {
+        "properties": {
+          "errors": {
+            "items": {
+              "$ref": "#/components/schemas/Error"
+            },
+            "type": "array"
+          }
+        },
+        "type": "object"
+      },
+      "PWGAssignedResourcesSummary": {
+        "description": "The summary of the resource that have been assigned to the Private Wireless Gateway.",
+        "properties": {
+          "count": {
+            "description": "The current count of a resource type assigned to the Private Wireless Gateway.",
+            "example": 1,
+            "readOnly": true,
+            "type": "integer"
+          },
+          "record_type": {
+            "description": "The type of the resource assigned to the Private Wireless Gateway.",
+            "example": "sim_card_group",
+            "readOnly": true,
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "PaginationMeta": {
+        "properties": {
+          "page_number": {
+            "example": 2,
+            "type": "integer"
+          },
+          "page_size": {
+            "example": 25,
+            "type": "integer"
+          },
+          "total_pages": {
+            "example": 3,
+            "type": "integer"
+          },
+          "total_results": {
+            "example": 55,
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "PrivateWirelessGatewayStatus": {
+        "description": "The current status or failure details of the Private Wireless Gateway.",
+        "properties": {
+          "error_code": {
+            "default": null,
+            "description": "This attribute is an [error code](https://developers.telnyx.com/docs/development/api-fundamentals/api-errors) related to the failure reason.",
+            "example": null,
+            "readOnly": true,
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "error_description": {
+            "default": null,
+            "description": "This attribute provides a human-readable explanation of why a failure happened.",
+            "example": null,
+            "readOnly": true,
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "value": {
+            "default": "provisioning",
+            "description": "The current status or failure details of the Private Wireless Gateway. \u003cul\u003e\n \u003cli\u003e\u003ccode\u003eprovisioning\u003c/code\u003e - the Private Wireless Gateway is being provisioned.\u003c/li\u003e\n \u003cli\u003e\u003ccode\u003eprovisioned\u003c/code\u003e - the Private Wireless Gateway was provisioned and able to receive connections.\u003c/li\u003e\n \u003cli\u003e\u003ccode\u003efailed\u003c/code\u003e - the provisioning had failed for a reason and it requires an intervention.\u003c/li\u003e\n \u003cli\u003e\u003ccode\u003edecommissioning\u003c/code\u003e - the Private Wireless Gateway is being removed from the network.\u003c/li\u003e\n \u003c/ul\u003e\n Transitioning between the provisioning and provisioned states may take some time.",
+            "enum": [
+              "provisioning",
+              "provisioned",
+              "failed",
+              "decommissioning"
+            ],
+            "example": "provisioned",
+            "readOnly": true,
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "documents_Error": {
+        "properties": {
+          "code": {
+            "type": "string"
+          },
+          "detail": {
+            "type": "string"
+          },
+          "meta": {
+            "additionalProperties": true,
+            "type": "object"
+          },
+          "source": {
+            "properties": {
+              "parameter": {
+                "description": "Indicates which query parameter caused the error.",
+                "type": "string"
+              },
+              "pointer": {
+                "description": "JSON pointer (RFC6901) to the offending entity.",
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
+          "title": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "title"
+        ],
+        "type": "object"
+      },
+      "wireless_PrivateWirelessGateway": {
+        "properties": {
+          "address_mode": {
+            "description": "The address mode of the private wireless gateway. With static, each SIM card gets a fixed IP address from the gateway's IP range that is preserved across sessions. With dynamic, IP addresses are assigned by the network at attach time and may change between sessions.",
+            "enum": [
+              "static",
+              "dynamic"
+            ],
+            "example": "dynamic",
+            "type": "string"
+          },
+          "assigned_resources": {
+            "description": "A list of the resources that have been assigned to the Private Wireless Gateway.",
+            "items": {
+              "$ref": "#/components/schemas/PWGAssignedResourcesSummary"
+            },
+            "type": "array"
+          },
+          "created_at": {
+            "description": "ISO 8601 formatted date-time indicating when the resource was created.",
+            "example": "2018-02-02T22:25:27.521Z",
+            "readOnly": true,
+            "type": "string"
+          },
+          "id": {
+            "description": "Identifies the resource.",
+            "example": "6a09cdc3-8948-47f0-aa62-74ac943d6c58",
+            "format": "uuid",
+            "readOnly": true,
+            "type": "string"
+          },
+          "ip_range": {
+            "default": null,
+            "description": "IP block used to assign IPs to the SIM cards in the Private Wireless Gateway.",
+            "example": "100.64.1.0/24",
+            "readOnly": true,
+            "type": "string"
+          },
+          "name": {
+            "description": "The private wireless gateway name.",
+            "example": "My private wireless gateway",
+            "type": "string"
+          },
+          "network_id": {
+            "description": "The identification of the related network resource.",
+            "example": "6a09cdc3-8948-47f0-aa62-74ac943d6c58",
+            "format": "uuid",
+            "type": "string"
+          },
+          "record_type": {
+            "example": "private_wireless_gateway",
+            "readOnly": true,
+            "type": "string"
+          },
+          "region_code": {
+            "default": null,
+            "description": "The name of the region where the Private Wireless Gateway is deployed.",
+            "example": "dc2",
+            "type": "string"
+          },
+          "status": {
+            "$ref": "#/components/schemas/PrivateWirelessGatewayStatus"
+          },
+          "updated_at": {
+            "description": "ISO 8601 formatted date-time indicating when the resource was updated.",
+            "example": "2018-02-02T22:25:27.521Z",
+            "readOnly": true,
+            "type": "string"
+          }
+        },
+        "type": "object"
+      }
+    },
+    "securitySchemes": {
+      "BearerAuth": {
+        "bearerFormat": "API key",
+        "description": "Telnyx API key supplied as `Authorization: Bearer \u003ctoken\u003e`. In production, auth may be validated by the API gateway and forwarded via Telnyx auth headers.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "Payment": {
+        "description": "Machine Payment Protocol credential used on paid retries, sent as `Authorization: Payment ...`. Obtained by paying a challenge returned in the `WWW-Authenticate` header of a 402 response. This is not a Telnyx API key; initial challenge requests use standard bearer authentication instead.",
+        "in": "header",
+        "name": "Authorization",
+        "type": "apiKey"
+      },
+      "agent-memory_bearerAuth": {
+        "description": "Telnyx API key",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "bearerAuth": {
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "branded-calling_bearerAuth": {
+        "description": "Telnyx API key. Generate one at https://portal.telnyx.com/#/app/api-keys.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "collections_bearerAuth": {
+        "description": "Telnyx API key. Collections and results are automatically scoped to the authenticated user's organization.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "number-reputation_bearerAuth": {
+        "description": "Telnyx API key. Generate one at https://portal.telnyx.com/#/app/api-keys.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "oauthClientAuth": {
+        "description": "OAuth 2.0 authentication for Telnyx API and MCP integrations",
+        "flows": {
+          "authorizationCode": {
+            "authorizationUrl": "https://api.telnyx.com/v2/oauth/authorize",
+            "refreshUrl": "https://api.telnyx.com/v2/oauth/token",
+            "scopes": {
+              "admin": "Administrative access to Telnyx resources"
+            },
+            "tokenUrl": "https://api.telnyx.com/v2/oauth/token"
+          },
+          "clientCredentials": {
+            "scopes": {
+              "admin": "Administrative access to Telnyx resources"
+            },
+            "tokenUrl": "https://api.telnyx.com/v2/oauth/token"
+          }
+        },
+        "type": "oauth2"
+      },
+      "outbound-voice-profiles_bearerAuth": {
+        "bearerFormat": "JWT",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "pay-connectors_bearerAuth": {
+        "description": "Telnyx API key, not the processor bearer token.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "pronunciation-dicts_bearerAuth": {
+        "description": "Telnyx API v2 key. Obtain from https://portal.telnyx.com",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "rcs-registration_bearerAuth": {
+        "bearerFormat": "API key",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "stored-payment-transactions_bearerAuth": {
+        "bearerFormat": "JWT",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "telnyxApiKey": {
+        "description": "Management-only Telnyx account credential.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "transcriptions-search_bearerAuth": {
+        "description": "Telnyx API key. Results are automatically scoped to the authenticated user's organization.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "web-search_bearerAuth": {
+        "description": "Telnyx API key",
+        "scheme": "bearer",
+        "type": "http"
+      }
+    }
+  },
+  "info": {
+    "contact": {
+      "email": "support@telnyx.com"
+    },
+    "description": "SIP trunking, SMS, MMS, Call Control and Telephony Data Services.",
+    "title": "Telnyx API",
+    "version": "2.0.0",
+    "x-endpoint-cost": "light",
+    "x-latency-category": "responsive"
+  },
+  "openapi": "3.1.0",
+  "paths": {
+    "/private_wireless_gateways": {
+      "get": {
+        "description": "Get all Private Wireless Gateways belonging to the user.",
+        "operationId": "GetPrivateWirelessGateways",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/wireless_PageNumber_c5290d5308"
+          },
+          {
+            "$ref": "#/components/parameters/wireless_PageSize_c5290d5308"
+          },
+          {
+            "description": "The name of the Private Wireless Gateway.",
+            "example": "my private gateway",
+            "in": "query",
+            "name": "filter[name]",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "The IP address range of the Private Wireless Gateway.",
+            "example": "192.168.0.0/24",
+            "in": "query",
+            "name": "filter[ip_range]",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "The name of the region where the Private Wireless Gateway is deployed.",
+            "example": "dc2",
+            "in": "query",
+            "name": "filter[region_code]",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Private Wireless Gateway resource creation date.",
+            "example": "2018-02-02T22:25:27.521Z",
+            "in": "query",
+            "name": "filter[created_at]",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "When the Private Wireless Gateway was last updated.",
+            "example": "2018-02-02T22:25:27.521Z",
+            "in": "query",
+            "name": "filter[updated_at]",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "items": {
+                        "$ref": "#/components/schemas/wireless_PrivateWirelessGateway"
+                      },
+                      "type": "array"
+                    },
+                    "meta": {
+                      "$ref": "#/components/schemas/PaginationMeta"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "default": {
+            "$ref": "#/components/responses/wireless_GenericErrorResponse_c5290d5308"
+          }
+        },
+        "summary": "Get all Private Wireless Gateways",
+        "tags": [
+          "Private Wireless Gateways"
+        ]
+      },
+      "post": {
+        "description": "Asynchronously create a Private Wireless Gateway for SIM cards for a previously created network. This operation may take several minutes so you can check the Private Wireless Gateway status at the section Get a Private Wireless Gateway.",
+        "operationId": "CreatePrivateWirelessGateway",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "address_mode": {
+                    "default": "dynamic",
+                    "description": "Determines how IP addresses are assigned to SIM cards using this gateway. With static, each SIM card gets a fixed IP address from the gateway's IP range that is preserved across sessions. With dynamic, an IP address is assigned by the network at attach time and may change between sessions. If omitted, the gateway is created with the default address mode, dynamic.",
+                    "enum": [
+                      "static",
+                      "dynamic"
+                    ],
+                    "example": "static",
+                    "type": "string"
+                  },
+                  "name": {
+                    "description": "The private wireless gateway name.",
+                    "example": "My private wireless gateway",
+                    "type": "string"
+                  },
+                  "network_id": {
+                    "description": "The identification of the related network resource.",
+                    "example": "6a09cdc3-8948-47f0-aa62-74ac943d6c58",
+                    "format": "uuid",
+                    "type": "string"
+                  },
+                  "region_code": {
+                    "description": "The code of the region where the private wireless gateway will be assigned. A list of available regions can be found at the regions endpoint",
+                    "example": "dc2",
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "network_id",
+                  "name"
+                ],
+                "type": "object"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "202": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "example": {
+                    "data": {
+                      "address_mode": "dynamic",
+                      "assigned_resources": [
+                        {
+                          "count": 1,
+                          "record_type": "sim_card_group"
+                        }
+                      ],
+                      "created_at": "2018-02-02T22:25:27.521Z",
+                      "id": "6a09cdc3-8948-47f0-aa62-74ac943d6c58",
+                      "ip_range": "100.64.1.0/24",
+                      "name": "My private wireless gateway",
+                      "network_id": "6a09cdc3-8948-47f0-aa62-74ac943d6c58",
+                      "record_type": "private_wireless_gateway",
+                      "region_code": "dc2",
+                      "status": {
+                        "error_code": null,
+                        "error_description": null,
+                        "value": "provisioning"
+                      },
+                      "updated_at": "2018-02-02T22:25:27.521Z"
+                    }
+                  },
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/wireless_PrivateWirelessGateway"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Creation request accepted. Provisioning is asynchronous; poll GET /private_wireless_gateways/{id} with the returned id to check status."
+          },
+          "422": {
+            "$ref": "#/components/responses/wireless_UnprocessableEntity_c5290d5308"
+          },
+          "default": {
+            "$ref": "#/components/responses/wireless_GenericErrorResponse_c5290d5308"
+          }
+        },
+        "summary": "Create a Private Wireless Gateway",
+        "tags": [
+          "Private Wireless Gateways"
+        ],
+        "x-latency-category": "background"
+      }
+    },
+    "/private_wireless_gateways/{id}": {
+      "delete": {
+        "description": "Permanently deletes the specified Private Wireless Gateway from your account.",
+        "operationId": "DeleteWirelessGateway",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/PrivateWirelessGatewayId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/wireless_PrivateWirelessGateway"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "404": {
+            "$ref": "#/components/responses/ResourceNotFound"
+          },
+          "default": {
+            "$ref": "#/components/responses/wireless_GenericErrorResponse_c5290d5308"
+          }
+        },
+        "summary": "Delete a Private Wireless Gateway",
+        "tags": [
+          "Private Wireless Gateways"
+        ]
+      },
+      "get": {
+        "description": "Retrieve information about a Private Wireless Gateway.",
+        "operationId": "GetPrivateWirelessGateway",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/PrivateWirelessGatewayId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/wireless_PrivateWirelessGateway"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "404": {
+            "$ref": "#/components/responses/ResourceNotFound"
+          },
+          "default": {
+            "$ref": "#/components/responses/wireless_GenericErrorResponse_c5290d5308"
+          }
+        },
+        "summary": "Get a Private Wireless Gateway",
+        "tags": [
+          "Private Wireless Gateways"
+        ]
+      }
+    }
+  },
+  "security": [
+    {
+      "bearerAuth": []
+    }
+  ],
+  "servers": [
+    {
+      "description": "Version 2.0.0 of the Telnyx API",
+      "url": "https://api.telnyx.com/v2"
+    }
+  ]
+}

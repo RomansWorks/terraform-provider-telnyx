@@ -1,0 +1,1020 @@
+{
+  "components": {
+    "parameters": {
+      "BrandId": {
+        "description": "The Telnyx-assigned brand identifier.",
+        "in": "path",
+        "name": "id",
+        "required": true,
+        "schema": {
+          "format": "uuid",
+          "type": "string"
+        }
+      }
+    },
+    "responses": {
+      "DependencyUnavailable": {
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/rcs-registration_ErrorResponse"
+            }
+          }
+        },
+        "description": "A registration dependency is temporarily unavailable."
+      },
+      "ValidationError": {
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/ValidationErrorResponse"
+            }
+          }
+        },
+        "description": "The request body or parameters failed validation."
+      },
+      "rcs-registration_Conflict": {
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/rcs-registration_ErrorResponse"
+            }
+          }
+        },
+        "description": "The operation is not allowed in the current lifecycle state or the idempotency key was used for a different request."
+      },
+      "rcs-registration_NotFound": {
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/rcs-registration_ErrorResponse"
+            }
+          }
+        },
+        "description": "The resource does not exist, is not owned by the organization, or the provider does not support the requested capability."
+      },
+      "rcs-registration_Unauthorized": {
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/rcs-registration_ErrorResponse"
+            }
+          }
+        },
+        "description": "The request is not authenticated."
+      }
+    },
+    "schemas": {
+      "BrandAddress": {
+        "additionalProperties": false,
+        "properties": {
+          "administrative_area": {
+            "maxLength": 100,
+            "minLength": 1,
+            "type": "string"
+          },
+          "city": {
+            "maxLength": 100,
+            "minLength": 1,
+            "type": "string"
+          },
+          "country_code": {
+            "description": "The two-letter ISO 3166-1 country code.",
+            "pattern": "^[A-Z]{2}$",
+            "type": "string"
+          },
+          "line_1": {
+            "maxLength": 255,
+            "minLength": 1,
+            "type": "string"
+          },
+          "line_2": {
+            "maxLength": 255,
+            "minLength": 1,
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "postal_code": {
+            "maxLength": 32,
+            "minLength": 1,
+            "type": "string"
+          }
+        },
+        "required": [
+          "line_1",
+          "city",
+          "administrative_area",
+          "postal_code",
+          "country_code"
+        ],
+        "type": "object"
+      },
+      "BrandContact": {
+        "properties": {
+          "contact_type": {
+            "$ref": "#/components/schemas/BrandContactType"
+          },
+          "email": {
+            "format": "email",
+            "maxLength": 254,
+            "minLength": 3,
+            "pattern": "^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$",
+            "type": "string"
+          },
+          "first_name": {
+            "maxLength": 100,
+            "minLength": 1,
+            "type": "string"
+          },
+          "last_name": {
+            "maxLength": 100,
+            "minLength": 1,
+            "type": "string"
+          },
+          "phone_number": {
+            "maxLength": 16,
+            "pattern": "^\\+[1-9][0-9]{1,14}$",
+            "type": "string"
+          },
+          "title": {
+            "maxLength": 100,
+            "minLength": 1,
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "propertyNames": {
+          "enum": [
+            "contact_type",
+            "first_name",
+            "last_name",
+            "title",
+            "email",
+            "phone_number"
+          ]
+        },
+        "required": [
+          "contact_type",
+          "first_name",
+          "last_name",
+          "email",
+          "phone_number"
+        ],
+        "type": "object"
+      },
+      "BrandContactType": {
+        "enum": [
+          "BRAND",
+          "PRIMARY",
+          "OFFICER",
+          "AGENT",
+          "RESPONSIBLE_PARTY",
+          "BILLING",
+          "UNKNOWN"
+        ],
+        "type": "string"
+      },
+      "BrandContacts": {
+        "additionalProperties": {
+          "$ref": "#/components/schemas/BrandContact"
+        },
+        "description": "Named business contacts. Use the `brand` key for the required BRAND contact.",
+        "minProperties": 1,
+        "properties": {
+          "brand": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/BrandContact"
+              },
+              {
+                "properties": {
+                  "contact_type": {
+                    "const": "BRAND"
+                  }
+                }
+              }
+            ]
+          }
+        },
+        "required": [
+          "brand"
+        ],
+        "type": "object"
+      },
+      "BrandCreateRequest": {
+        "additionalProperties": false,
+        "allOf": [
+          {
+            "if": {
+              "properties": {
+                "organization_type": {
+                  "const": "PUBLIC_PROFIT"
+                }
+              },
+              "required": [
+                "organization_type"
+              ]
+            },
+            "then": {
+              "properties": {
+                "identifiers": {
+                  "properties": {
+                    "stock_symbol": {
+                      "$ref": "#/components/schemas/BrandIdentifier"
+                    }
+                  },
+                  "required": [
+                    "stock_symbol"
+                  ]
+                }
+              }
+            }
+          }
+        ],
+        "example": {
+          "addresses": {
+            "primary": {
+              "administrative_area": "IL",
+              "city": "Chicago",
+              "country_code": "US",
+              "line_1": "1 Main Street",
+              "postal_code": "60601"
+            }
+          },
+          "contacts": {
+            "brand": {
+              "contact_type": "BRAND",
+              "email": "jane@example.com",
+              "first_name": "Jane",
+              "last_name": "Doe",
+              "phone_number": "+13125550100",
+              "title": "Messaging Operations Manager"
+            }
+          },
+          "display_name": "Acme",
+          "identifiers": {
+            "ein": {
+              "identifier_type": "EIN",
+              "value": "12-3456789"
+            }
+          },
+          "legal_entity_type": "LIMITED_LIABILITY_COMPANY",
+          "legal_name": "Acme LLC",
+          "organization_type": "PRIVATE_PROFIT",
+          "profile_id": "40000000-0000-0000-0000-000000000001",
+          "website_url": "https://www.example.com"
+        },
+        "properties": {
+          "addresses": {
+            "additionalProperties": {
+              "$ref": "#/components/schemas/BrandAddress"
+            },
+            "minProperties": 1,
+            "type": "object"
+          },
+          "contacts": {
+            "$ref": "#/components/schemas/BrandContacts"
+          },
+          "display_name": {
+            "maxLength": 100,
+            "minLength": 1,
+            "type": "string"
+          },
+          "identifiers": {
+            "$ref": "#/components/schemas/BrandIdentifiers"
+          },
+          "legal_entity_type": {
+            "$ref": "#/components/schemas/BrandLegalEntityType"
+          },
+          "legal_name": {
+            "maxLength": 100,
+            "minLength": 1,
+            "type": "string"
+          },
+          "organization_type": {
+            "$ref": "#/components/schemas/BrandOrganizationType"
+          },
+          "profile_id": {
+            "description": "A Messaging Profile owned by the authenticated organization. Agents inherit this value when they do not provide their own profile.",
+            "maxLength": 36,
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "website_url": {
+            "$ref": "#/components/schemas/HttpUrl"
+          }
+        },
+        "required": [
+          "display_name",
+          "legal_name",
+          "legal_entity_type",
+          "organization_type",
+          "website_url",
+          "identifiers",
+          "addresses",
+          "contacts"
+        ],
+        "type": "object"
+      },
+      "BrandIdentifier": {
+        "oneOf": [
+          {
+            "$ref": "#/components/schemas/EinBrandIdentifier"
+          },
+          {
+            "$ref": "#/components/schemas/StockSymbolBrandIdentifier"
+          }
+        ]
+      },
+      "BrandIdentifiers": {
+        "additionalProperties": {
+          "$ref": "#/components/schemas/BrandIdentifier"
+        },
+        "description": "Named business identifiers. Use the `ein` key for the required EIN and `stock_symbol` for a public-profit brand's stock symbol.",
+        "minProperties": 1,
+        "properties": {
+          "ein": {
+            "$ref": "#/components/schemas/EinBrandIdentifier"
+          },
+          "stock_symbol": {
+            "$ref": "#/components/schemas/StockSymbolBrandIdentifier"
+          }
+        },
+        "required": [
+          "ein"
+        ],
+        "type": "object"
+      },
+      "BrandLegalEntityType": {
+        "enum": [
+          "LIMITED_LIABILITY_COMPANY",
+          "SOLE_PROPRIETORSHIP",
+          "PARTNERSHIP",
+          "CORPORATION",
+          "S_CORPORATION"
+        ],
+        "type": "string"
+      },
+      "BrandOrganizationType": {
+        "enum": [
+          "PRIVATE_PROFIT",
+          "PUBLIC_PROFIT",
+          "NON_PROFIT",
+          "GOVERNMENT",
+          "UNKNOWN"
+        ],
+        "type": "string"
+      },
+      "BrandResponse": {
+        "additionalProperties": false,
+        "example": {
+          "addresses": {
+            "primary": {
+              "administrative_area": "IL",
+              "city": "Chicago",
+              "country_code": "US",
+              "line_1": "1 Main Street",
+              "postal_code": "60601"
+            }
+          },
+          "brand_id": "11111111-1111-4111-8111-111111111111",
+          "capabilities": {
+            "brand_entity": true,
+            "brand_verification": true,
+            "campaigns": false,
+            "distinct_launch_phase": false,
+            "invite_test_devices": false,
+            "per_carrier_approval": false,
+            "submission_sections": true,
+            "templates": false,
+            "vendor_webhooks": false
+          },
+          "contacts": {
+            "brand": {
+              "contact_type": "BRAND",
+              "email": "jane@example.com",
+              "first_name": "Jane",
+              "last_name": "Doe",
+              "phone_number": "+13125550100",
+              "title": "Messaging Operations Manager"
+            }
+          },
+          "display_name": "Acme",
+          "identifiers": {
+            "ein": {
+              "identifier_type": "EIN",
+              "value": "12-3456789"
+            }
+          },
+          "legal_entity_type": "LIMITED_LIABILITY_COMPANY",
+          "legal_name": "Acme LLC",
+          "organization_type": "PRIVATE_PROFIT",
+          "profile_id": "40000000-0000-0000-0000-000000000001",
+          "status": "CREATED",
+          "website_url": "https://www.example.com"
+        },
+        "properties": {
+          "addresses": {
+            "additionalProperties": {
+              "$ref": "#/components/schemas/BrandAddress"
+            },
+            "type": "object"
+          },
+          "brand_id": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "capabilities": {
+            "$ref": "#/components/schemas/CapabilitiesResponse"
+          },
+          "contacts": {
+            "additionalProperties": {
+              "$ref": "#/components/schemas/BrandContact"
+            },
+            "type": "object"
+          },
+          "display_name": {
+            "type": "string"
+          },
+          "identifiers": {
+            "additionalProperties": {
+              "$ref": "#/components/schemas/BrandIdentifier"
+            },
+            "type": "object"
+          },
+          "legal_entity_type": {
+            "type": "string"
+          },
+          "legal_name": {
+            "type": "string"
+          },
+          "organization_type": {
+            "type": "string"
+          },
+          "profile_id": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "status": {
+            "$ref": "#/components/schemas/BrandState"
+          },
+          "website_url": {
+            "$ref": "#/components/schemas/HttpUrl"
+          }
+        },
+        "required": [
+          "brand_id",
+          "display_name",
+          "legal_name",
+          "legal_entity_type",
+          "organization_type",
+          "website_url",
+          "status",
+          "profile_id",
+          "identifiers",
+          "addresses",
+          "contacts",
+          "capabilities"
+        ],
+        "type": "object"
+      },
+      "BrandState": {
+        "enum": [
+          "CREATED",
+          "CONFIGURED",
+          "SUBMITTED",
+          "REVIEWING",
+          "VETTING",
+          "VERIFIED",
+          "REJECTED",
+          "FAILED"
+        ],
+        "type": "string"
+      },
+      "BrandUpdateRequest": {
+        "additionalProperties": false,
+        "example": {
+          "display_name": "Acme Communications"
+        },
+        "minProperties": 1,
+        "properties": {
+          "addresses": {
+            "additionalProperties": {
+              "$ref": "#/components/schemas/BrandAddress"
+            },
+            "minProperties": 1,
+            "type": "object"
+          },
+          "contacts": {
+            "$ref": "#/components/schemas/BrandContacts"
+          },
+          "display_name": {
+            "maxLength": 100,
+            "minLength": 1,
+            "type": "string"
+          },
+          "identifiers": {
+            "$ref": "#/components/schemas/BrandIdentifiers"
+          },
+          "legal_entity_type": {
+            "$ref": "#/components/schemas/BrandLegalEntityType"
+          },
+          "legal_name": {
+            "maxLength": 100,
+            "minLength": 1,
+            "type": "string"
+          },
+          "organization_type": {
+            "$ref": "#/components/schemas/BrandOrganizationType"
+          },
+          "profile_id": {
+            "maxLength": 36,
+            "type": "string"
+          },
+          "website_url": {
+            "$ref": "#/components/schemas/HttpUrl"
+          }
+        },
+        "type": "object"
+      },
+      "CapabilitiesResponse": {
+        "additionalProperties": false,
+        "properties": {
+          "brand_entity": {
+            "type": "boolean"
+          },
+          "brand_verification": {
+            "type": "boolean"
+          },
+          "campaigns": {
+            "type": "boolean"
+          },
+          "distinct_launch_phase": {
+            "type": "boolean"
+          },
+          "invite_test_devices": {
+            "type": "boolean"
+          },
+          "per_carrier_approval": {
+            "type": "boolean"
+          },
+          "submission_sections": {
+            "type": "boolean"
+          },
+          "templates": {
+            "type": "boolean"
+          },
+          "vendor_webhooks": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "brand_entity",
+          "brand_verification",
+          "submission_sections",
+          "distinct_launch_phase",
+          "per_carrier_approval",
+          "templates",
+          "campaigns",
+          "vendor_webhooks",
+          "invite_test_devices"
+        ],
+        "type": "object"
+      },
+      "EinBrandIdentifier": {
+        "additionalProperties": false,
+        "properties": {
+          "identifier_type": {
+            "const": "EIN"
+          },
+          "value": {
+            "description": "Nine digits, optionally formatted as NN-NNNNNNN.",
+            "maxLength": 255,
+            "minLength": 1,
+            "pattern": "^(?:[0-9]{9}|[0-9]{2}-[0-9]{7})$",
+            "type": "string"
+          }
+        },
+        "required": [
+          "identifier_type",
+          "value"
+        ],
+        "type": "object"
+      },
+      "HttpUrl": {
+        "format": "uri",
+        "minLength": 1,
+        "pattern": "^[Hh][Tt][Tt][Pp][Ss]?://",
+        "type": "string"
+      },
+      "StockSymbolBrandIdentifier": {
+        "additionalProperties": false,
+        "properties": {
+          "identifier_type": {
+            "const": "STOCK_SYMBOL"
+          },
+          "value": {
+            "description": "A stock symbol using EXCHANGE:SYMBOL.",
+            "maxLength": 255,
+            "minLength": 1,
+            "pattern": "^\\S+:\\S+$",
+            "type": "string"
+          }
+        },
+        "required": [
+          "identifier_type",
+          "value"
+        ],
+        "type": "object"
+      },
+      "ValidationErrorResponse": {
+        "additionalProperties": true,
+        "example": {
+          "detail": [
+            {
+              "loc": [
+                "body",
+                "display_name"
+              ],
+              "msg": "Field required",
+              "type": "missing"
+            }
+          ]
+        },
+        "properties": {
+          "detail": {
+            "items": {
+              "properties": {
+                "loc": {
+                  "items": {
+                    "oneOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "integer"
+                      }
+                    ]
+                  },
+                  "type": "array"
+                },
+                "msg": {
+                  "type": "string"
+                },
+                "type": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "loc",
+                "msg",
+                "type"
+              ],
+              "type": "object"
+            },
+            "type": "array"
+          }
+        },
+        "type": "object"
+      },
+      "rcs-registration_ErrorResponse": {
+        "additionalProperties": true,
+        "example": {
+          "detail": "The requested RCS resource was not found."
+        },
+        "properties": {
+          "detail": {
+            "type": "string"
+          },
+          "errors": {
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "type": "array"
+          }
+        },
+        "type": "object"
+      }
+    },
+    "securitySchemes": {
+      "BearerAuth": {
+        "bearerFormat": "API key",
+        "description": "Telnyx API key supplied as `Authorization: Bearer \u003ctoken\u003e`. In production, auth may be validated by the API gateway and forwarded via Telnyx auth headers.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "Payment": {
+        "description": "Machine Payment Protocol credential used on paid retries, sent as `Authorization: Payment ...`. Obtained by paying a challenge returned in the `WWW-Authenticate` header of a 402 response. This is not a Telnyx API key; initial challenge requests use standard bearer authentication instead.",
+        "in": "header",
+        "name": "Authorization",
+        "type": "apiKey"
+      },
+      "agent-memory_bearerAuth": {
+        "description": "Telnyx API key",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "bearerAuth": {
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "branded-calling_bearerAuth": {
+        "description": "Telnyx API key. Generate one at https://portal.telnyx.com/#/app/api-keys.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "collections_bearerAuth": {
+        "description": "Telnyx API key. Collections and results are automatically scoped to the authenticated user's organization.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "number-reputation_bearerAuth": {
+        "description": "Telnyx API key. Generate one at https://portal.telnyx.com/#/app/api-keys.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "oauthClientAuth": {
+        "description": "OAuth 2.0 authentication for Telnyx API and MCP integrations",
+        "flows": {
+          "authorizationCode": {
+            "authorizationUrl": "https://api.telnyx.com/v2/oauth/authorize",
+            "refreshUrl": "https://api.telnyx.com/v2/oauth/token",
+            "scopes": {
+              "admin": "Administrative access to Telnyx resources"
+            },
+            "tokenUrl": "https://api.telnyx.com/v2/oauth/token"
+          },
+          "clientCredentials": {
+            "scopes": {
+              "admin": "Administrative access to Telnyx resources"
+            },
+            "tokenUrl": "https://api.telnyx.com/v2/oauth/token"
+          }
+        },
+        "type": "oauth2"
+      },
+      "outbound-voice-profiles_bearerAuth": {
+        "bearerFormat": "JWT",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "pay-connectors_bearerAuth": {
+        "description": "Telnyx API key, not the processor bearer token.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "pronunciation-dicts_bearerAuth": {
+        "description": "Telnyx API v2 key. Obtain from https://portal.telnyx.com",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "rcs-registration_bearerAuth": {
+        "bearerFormat": "API key",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "stored-payment-transactions_bearerAuth": {
+        "bearerFormat": "JWT",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "telnyxApiKey": {
+        "description": "Management-only Telnyx account credential.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "transcriptions-search_bearerAuth": {
+        "description": "Telnyx API key. Results are automatically scoped to the authenticated user's organization.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "web-search_bearerAuth": {
+        "description": "Telnyx API key",
+        "scheme": "bearer",
+        "type": "http"
+      }
+    }
+  },
+  "info": {
+    "contact": {
+      "email": "support@telnyx.com"
+    },
+    "description": "SIP trunking, SMS, MMS, Call Control and Telephony Data Services.",
+    "title": "Telnyx API",
+    "version": "2.0.0",
+    "x-endpoint-cost": "light",
+    "x-latency-category": "responsive"
+  },
+  "openapi": "3.1.0",
+  "paths": {
+    "/rcs/brands": {
+      "get": {
+        "description": "Lists RCS brands owned by the authenticated organization.",
+        "operationId": "ListRcsBrands",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/BrandResponse"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": "RCS brands owned by the organization."
+          },
+          "401": {
+            "$ref": "#/components/responses/rcs-registration_Unauthorized"
+          }
+        },
+        "summary": "List RCS brands",
+        "tags": [
+          "RCS Brands"
+        ]
+      },
+      "post": {
+        "description": "Creates an editable RCS brand draft. Creating the draft does not begin external review.",
+        "operationId": "CreateRcsBrand",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BrandCreateRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BrandResponse"
+                }
+              }
+            },
+            "description": "The brand draft was created."
+          },
+          "401": {
+            "$ref": "#/components/responses/rcs-registration_Unauthorized"
+          },
+          "409": {
+            "$ref": "#/components/responses/rcs-registration_Conflict"
+          },
+          "422": {
+            "$ref": "#/components/responses/ValidationError"
+          },
+          "503": {
+            "$ref": "#/components/responses/DependencyUnavailable"
+          }
+        },
+        "summary": "Create an RCS brand",
+        "tags": [
+          "RCS Brands"
+        ]
+      }
+    },
+    "/rcs/brands/{id}": {
+      "get": {
+        "description": "Retrieves an RCS brand and its current lifecycle status.",
+        "operationId": "RetrieveRcsBrand",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/BrandId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BrandResponse"
+                }
+              }
+            },
+            "description": "The requested RCS brand."
+          },
+          "401": {
+            "$ref": "#/components/responses/rcs-registration_Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/rcs-registration_NotFound"
+          }
+        },
+        "summary": "Retrieve an RCS brand",
+        "tags": [
+          "RCS Brands"
+        ]
+      },
+      "patch": {
+        "description": "Updates one or more fields on a brand while its status is `CREATED`. Submitted brands cannot be changed.",
+        "operationId": "UpdateRcsBrand",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/BrandId"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BrandUpdateRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BrandResponse"
+                }
+              }
+            },
+            "description": "The updated RCS brand."
+          },
+          "401": {
+            "$ref": "#/components/responses/rcs-registration_Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/rcs-registration_NotFound"
+          },
+          "409": {
+            "$ref": "#/components/responses/rcs-registration_Conflict"
+          },
+          "422": {
+            "$ref": "#/components/responses/ValidationError"
+          },
+          "503": {
+            "$ref": "#/components/responses/DependencyUnavailable"
+          }
+        },
+        "summary": "Update an RCS brand",
+        "tags": [
+          "RCS Brands"
+        ]
+      }
+    },
+    "/rcs/brands/{id}/submit": {
+      "post": {
+        "description": "Starts asynchronous provider provisioning and external review for a brand. Repeating this request for an in-progress brand returns its current state without creating new work.",
+        "operationId": "SubmitRcsBrand",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/BrandId"
+          }
+        ],
+        "responses": {
+          "202": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BrandResponse"
+                }
+              }
+            },
+            "description": "The brand submission was accepted."
+          },
+          "401": {
+            "$ref": "#/components/responses/rcs-registration_Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/rcs-registration_NotFound"
+          },
+          "409": {
+            "$ref": "#/components/responses/rcs-registration_Conflict"
+          }
+        },
+        "summary": "Submit an RCS brand",
+        "tags": [
+          "RCS Brands"
+        ]
+      }
+    }
+  },
+  "security": [
+    {
+      "bearerAuth": []
+    }
+  ],
+  "servers": [
+    {
+      "description": "Version 2.0.0 of the Telnyx API",
+      "url": "https://api.telnyx.com/v2"
+    }
+  ]
+}

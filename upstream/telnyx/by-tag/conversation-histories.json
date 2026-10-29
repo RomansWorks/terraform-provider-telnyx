@@ -1,0 +1,631 @@
+{
+  "components": {
+    "schemas": {
+      "ConversationHistoryRecord": {
+        "description": "A single search result representing one chunk of a conversation history record. Records are split into chunks of up to 480 tokens with 64-token overlap at ingestion time.",
+        "properties": {
+          "chunk_index": {
+            "description": "Zero-based index of this chunk within the parent record.",
+            "example": 0,
+            "type": "integer"
+          },
+          "chunk_total": {
+            "description": "Total number of chunks the parent record was split into.",
+            "example": 3,
+            "type": "integer"
+          },
+          "id": {
+            "description": "Unique chunk identifier.",
+            "example": "rec-001_chunk_0",
+            "type": "string"
+          },
+          "ingested_at": {
+            "description": "When the record was chunked, embedded, and indexed (ISO 8601).",
+            "example": "2026-05-28T12:01:00Z",
+            "format": "date-time",
+            "type": "string"
+          },
+          "metadata": {
+            "additionalProperties": true,
+            "default": {},
+            "description": "Arbitrary metadata attached to the record at ingestion time. Filterable via filter[field]=value query parameters.",
+            "example": {
+              "language": "en",
+              "source": "call-center"
+            },
+            "type": "object"
+          },
+          "organization_id": {
+            "description": "Identifier of the organization that owns this record.",
+            "example": "org-456",
+            "type": "string"
+          },
+          "record_created_at": {
+            "description": "When the original record was created (ISO 8601).",
+            "example": "2026-05-28T12:00:00Z",
+            "format": "date-time",
+            "type": "string"
+          },
+          "record_id": {
+            "description": "Identifier of the parent record. Multiple chunks from the same record share this ID.",
+            "example": "rec-001",
+            "type": "string"
+          },
+          "region": {
+            "description": "The region where this record is stored.",
+            "enum": [
+              "USA",
+              "DEU",
+              "AUS",
+              "UAE"
+            ],
+            "example": "USA",
+            "type": "string"
+          },
+          "score": {
+            "description": "Cosine similarity score between the query vector and this chunk's vector. Higher values indicate greater semantic relevance.",
+            "example": 0.92,
+            "format": "float",
+            "type": "number"
+          },
+          "text": {
+            "description": "The text content of this chunk (up to 480 tokens).",
+            "example": "Customer called regarding a billing discrepancy on their latest invoice.",
+            "type": "string"
+          },
+          "user_id": {
+            "description": "Identifier of the user who owns this record.",
+            "example": "user-123",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "record_id",
+          "chunk_index",
+          "chunk_total",
+          "text",
+          "score",
+          "region",
+          "user_id",
+          "organization_id",
+          "record_created_at",
+          "ingested_at"
+        ],
+        "type": "object"
+      },
+      "ConversationHistoryResponse": {
+        "description": "Search response following the standard Telnyx V2 API format.",
+        "properties": {
+          "data": {
+            "description": "Ranked list of matching text chunks, sorted by cosine similarity score descending.",
+            "items": {
+              "$ref": "#/components/schemas/ConversationHistoryRecord"
+            },
+            "type": "array"
+          },
+          "meta": {
+            "$ref": "#/components/schemas/transcriptions-search_PaginationMeta"
+          }
+        },
+        "required": [
+          "data",
+          "meta"
+        ],
+        "type": "object"
+      },
+      "Error": {
+        "example": {
+          "code": "20207",
+          "description": "The street address provided is invalid.",
+          "source": {
+            "pointer": "/street_address"
+          },
+          "title": "Invalid street address"
+        },
+        "properties": {
+          "code": {
+            "type": "string",
+            "x-format": "int64"
+          },
+          "description": {
+            "type": "string"
+          },
+          "detail": {
+            "description": "A human-readable explanation of the error.",
+            "type": "string"
+          },
+          "meta": {
+            "additionalProperties": true,
+            "type": "object"
+          },
+          "source": {
+            "properties": {
+              "parameter": {
+                "description": "Indicates which query parameter caused the error.",
+                "type": "string"
+              },
+              "pointer": {
+                "description": "JSON pointer (RFC6901) to the offending entity.",
+                "format": "json-pointer",
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
+          "title": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "title"
+        ],
+        "type": "object"
+      },
+      "Errors": {
+        "properties": {
+          "errors": {
+            "items": {
+              "$ref": "#/components/schemas/Error"
+            },
+            "type": "array"
+          }
+        },
+        "type": "object"
+      },
+      "transcriptions-search_PaginationMeta": {
+        "description": "Pagination metadata following the standard Telnyx V2 API format.",
+        "properties": {
+          "page_number": {
+            "description": "Current page number (1-based), matching the requested page[number].",
+            "example": 1,
+            "type": "integer"
+          },
+          "page_size": {
+            "description": "Number of results per page, matching the requested page[size].",
+            "example": 20,
+            "type": "integer"
+          },
+          "total_pages": {
+            "description": "Total number of pages.",
+            "example": 1,
+            "type": "integer"
+          },
+          "total_results": {
+            "description": "Total number of matching results across all queried regions.",
+            "example": 42,
+            "type": "integer"
+          }
+        },
+        "required": [
+          "total_pages",
+          "total_results",
+          "page_number",
+          "page_size"
+        ],
+        "type": "object"
+      }
+    },
+    "securitySchemes": {
+      "BearerAuth": {
+        "bearerFormat": "API key",
+        "description": "Telnyx API key supplied as `Authorization: Bearer \u003ctoken\u003e`. In production, auth may be validated by the API gateway and forwarded via Telnyx auth headers.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "Payment": {
+        "description": "Machine Payment Protocol credential used on paid retries, sent as `Authorization: Payment ...`. Obtained by paying a challenge returned in the `WWW-Authenticate` header of a 402 response. This is not a Telnyx API key; initial challenge requests use standard bearer authentication instead.",
+        "in": "header",
+        "name": "Authorization",
+        "type": "apiKey"
+      },
+      "agent-memory_bearerAuth": {
+        "description": "Telnyx API key",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "bearerAuth": {
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "branded-calling_bearerAuth": {
+        "description": "Telnyx API key. Generate one at https://portal.telnyx.com/#/app/api-keys.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "collections_bearerAuth": {
+        "description": "Telnyx API key. Collections and results are automatically scoped to the authenticated user's organization.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "number-reputation_bearerAuth": {
+        "description": "Telnyx API key. Generate one at https://portal.telnyx.com/#/app/api-keys.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "oauthClientAuth": {
+        "description": "OAuth 2.0 authentication for Telnyx API and MCP integrations",
+        "flows": {
+          "authorizationCode": {
+            "authorizationUrl": "https://api.telnyx.com/v2/oauth/authorize",
+            "refreshUrl": "https://api.telnyx.com/v2/oauth/token",
+            "scopes": {
+              "admin": "Administrative access to Telnyx resources"
+            },
+            "tokenUrl": "https://api.telnyx.com/v2/oauth/token"
+          },
+          "clientCredentials": {
+            "scopes": {
+              "admin": "Administrative access to Telnyx resources"
+            },
+            "tokenUrl": "https://api.telnyx.com/v2/oauth/token"
+          }
+        },
+        "type": "oauth2"
+      },
+      "outbound-voice-profiles_bearerAuth": {
+        "bearerFormat": "JWT",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "pay-connectors_bearerAuth": {
+        "description": "Telnyx API key, not the processor bearer token.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "pronunciation-dicts_bearerAuth": {
+        "description": "Telnyx API v2 key. Obtain from https://portal.telnyx.com",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "rcs-registration_bearerAuth": {
+        "bearerFormat": "API key",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "stored-payment-transactions_bearerAuth": {
+        "bearerFormat": "JWT",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "telnyxApiKey": {
+        "description": "Management-only Telnyx account credential.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "transcriptions-search_bearerAuth": {
+        "description": "Telnyx API key. Results are automatically scoped to the authenticated user's organization.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "web-search_bearerAuth": {
+        "description": "Telnyx API key",
+        "scheme": "bearer",
+        "type": "http"
+      }
+    }
+  },
+  "info": {
+    "contact": {
+      "email": "support@telnyx.com"
+    },
+    "description": "SIP trunking, SMS, MMS, Call Control and Telephony Data Services.",
+    "title": "Telnyx API",
+    "version": "2.0.0",
+    "x-endpoint-cost": "light",
+    "x-latency-category": "responsive"
+  },
+  "openapi": "3.1.0",
+  "paths": {
+    "/ai/conversation_histories": {
+      "get": {
+        "description": "Performs semantic vector search across conversation history records.\n\n**How it works:**\n1. The query text is embedded into a 1024-dimensional vector using the multilingual-e5-large model.\n2. The vector is compared against indexed record chunks using semantic similarity search.\n3. When no region is specified, all regions are queried in parallel (fan-out) and results are merged by score.\n4. Results are ranked by similarity score (descending) and paginated via `page[number]` / `page[size]`.\n\n**Authentication:** Requires a Telnyx API key via `Authorization: Bearer \u003ckey\u003e`. Results are automatically scoped to the caller's organization — `organization_id` is injected from the auth token and cannot be overridden.\n\n**Chunking:** Records are split into chunks of up to 480 tokens with 64-token overlap at ingestion time. Each search result represents a single chunk, with `chunk_index` and `chunk_total` indicating its position within the original record.\n\n**Filtering:** Use `filter[field][operator]=value` query parameters to narrow results before vector search.\n\nTop-level filterable fields: `user_id`, `region`, `record_id`, `record_created_at`, `ingested_at`, `retention`\n\nNote: `retention` is filter-only — it can be used to narrow results but is not returned in the response body.\n\nMetadata fields: any field not in the list above is resolved to `data.metadata.\u003cfield\u003e` (e.g., `filter[language]=en` → `data.metadata.language`).\n\nSupported filter operators:\n- `eq` — exact match (default when no operator specified)\n- `in` — match any of comma-separated values\n- `gte`, `gt`, `lte`, `lt` — range comparisons (useful for date filtering)\n- `contains` — wildcard substring match\n\n**Examples:**\n- `GET /v2/ai/conversation_histories?q=billing+issue\u0026page[size]=10`\n- `GET /v2/ai/conversation_histories?q=setup+guide\u0026region=USA\u0026min_score=0.5`\n- `GET /v2/ai/conversation_histories?q=refund\u0026filter[record_created_at][gte]=2026-01-01T00:00:00Z`\n- `GET /v2/ai/conversation_histories?q=outage\u0026filter[region][in]=USA,DEU`\n- `GET /v2/ai/conversation_histories?q=hold+time\u0026filter[language]=en`",
+        "operationId": "SearchConversationHistories",
+        "parameters": [
+          {
+            "description": "Natural language search query. The text is embedded into a 1024-dimensional vector and compared against indexed record chunks using semantic similarity.",
+            "in": "query",
+            "name": "q",
+            "required": true,
+            "schema": {
+              "example": "customer called about billing issue",
+              "minLength": 1,
+              "type": "string"
+            }
+          },
+          {
+            "description": "Restrict search to a specific region. When omitted, all regions are queried in parallel (fan-out) and results are merged by similarity score.",
+            "in": "query",
+            "name": "region",
+            "required": false,
+            "schema": {
+              "enum": [
+                "USA",
+                "DEU",
+                "AUS",
+                "UAE"
+              ],
+              "example": "USA",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Page number to return (1-based). Defaults to 1.",
+            "in": "query",
+            "name": "page[number]",
+            "required": false,
+            "schema": {
+              "default": 1,
+              "example": 1,
+              "minimum": 1,
+              "type": "integer"
+            }
+          },
+          {
+            "description": "Number of results per page. Defaults to 20, maximum 100.",
+            "in": "query",
+            "name": "page[size]",
+            "required": false,
+            "schema": {
+              "default": 20,
+              "example": 10,
+              "maximum": 100,
+              "minimum": 1,
+              "type": "integer"
+            }
+          },
+          {
+            "description": "Minimum cosine similarity score threshold (0.0 to 1.0). Results below this threshold are excluded.",
+            "in": "query",
+            "name": "min_score",
+            "required": false,
+            "schema": {
+              "default": 0,
+              "example": 0.5,
+              "format": "float",
+              "maximum": 1,
+              "minimum": 0,
+              "type": "number"
+            }
+          },
+          {
+            "description": "Filter to records owned by a specific user (exact match).",
+            "in": "query",
+            "name": "filter[user_id]",
+            "required": false,
+            "schema": {
+              "example": "user-123",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Filter to chunks belonging to a specific parent record (exact match).",
+            "in": "query",
+            "name": "filter[record_id]",
+            "required": false,
+            "schema": {
+              "example": "rec-001",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Filter by the region stored on the record. Comma-separated to match multiple regions (USA, DEU, AUS, UAE). Distinct from the `region` parameter, which selects which cluster(s) are queried.",
+            "in": "query",
+            "name": "filter[region][in]",
+            "required": false,
+            "schema": {
+              "example": "USA,DEU",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Only include records whose original creation time is on or after this ISO 8601 timestamp.",
+            "in": "query",
+            "name": "filter[record_created_at][gte]",
+            "required": false,
+            "schema": {
+              "example": "2026-01-01T00:00:00Z",
+              "format": "date-time",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Only include records whose original creation time is on or before this ISO 8601 timestamp.",
+            "in": "query",
+            "name": "filter[record_created_at][lte]",
+            "required": false,
+            "schema": {
+              "example": "2026-12-31T23:59:59Z",
+              "format": "date-time",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Only include records ingested (chunked, embedded, and indexed) on or after this ISO 8601 timestamp.",
+            "in": "query",
+            "name": "filter[ingested_at][gte]",
+            "required": false,
+            "schema": {
+              "example": "2026-01-01T00:00:00Z",
+              "format": "date-time",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Only include records ingested (chunked, embedded, and indexed) on or before this ISO 8601 timestamp.",
+            "in": "query",
+            "name": "filter[ingested_at][lte]",
+            "required": false,
+            "schema": {
+              "example": "2026-12-31T23:59:59Z",
+              "format": "date-time",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Filter by retention policy (exact match). Filter-only: not returned in the response body.",
+            "in": "query",
+            "name": "filter[retention]",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "data": [
+                    {
+                      "chunk_index": 0,
+                      "chunk_total": 3,
+                      "id": "rec-001_chunk_0",
+                      "ingested_at": "2026-05-28T12:01:00Z",
+                      "metadata": {
+                        "language": "en",
+                        "source": "call-center"
+                      },
+                      "organization_id": "org-456",
+                      "record_created_at": "2026-05-28T12:00:00Z",
+                      "record_id": "rec-001",
+                      "region": "USA",
+                      "score": 0.92,
+                      "text": "Customer called regarding a billing discrepancy on their latest invoice. Agent confirmed the charge was correct and explained the prorated amount.",
+                      "user_id": "user-123"
+                    }
+                  ],
+                  "meta": {
+                    "page_number": 1,
+                    "page_size": 20,
+                    "total_pages": 1,
+                    "total_results": 1
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ConversationHistoryResponse"
+                }
+              }
+            },
+            "description": "Successful search response with ranked conversation history chunks."
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "errors": [
+                    {
+                      "code": "400",
+                      "detail": "Invalid region: invalid. Must be one of: USA, DEU, AUS, UAE",
+                      "title": "Bad Request"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/Errors"
+                }
+              }
+            },
+            "description": "Invalid request parameters — invalid region or malformed filter expression."
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "errors": [
+                    {
+                      "code": "10004",
+                      "detail": "The required authentication headers were either invalid or not included in the request.",
+                      "title": "Authentication failed"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/Errors"
+                }
+              }
+            },
+            "description": "Missing or invalid authentication. Provide a valid Telnyx API key via the Authorization: Bearer header."
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "errors": [
+                    {
+                      "code": "10027",
+                      "detail": "The server understood the syntax of the request but was unable to process the instructions.",
+                      "title": "Unprocessable Entity"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/Errors"
+                }
+              }
+            },
+            "description": "Request validation failed (e.g., missing required parameter)."
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "errors": [
+                    {
+                      "code": "10007",
+                      "detail": "An unexpected error occured.",
+                      "meta": {
+                        "url": "https://developers.telnyx.com/docs/overview/errors/10007"
+                      },
+                      "title": "Unexpected error"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/Errors"
+                }
+              }
+            },
+            "description": "Server-side error — embeddings service unavailable, search backend unreachable, or internal processing failure."
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "errors": [
+                    {
+                      "code": "10037",
+                      "detail": "Service is unavailable.",
+                      "title": "Service unavailable"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/Errors"
+                }
+              }
+            },
+            "description": "Service not initialized — bootstrap still in progress."
+          }
+        },
+        "summary": "Search conversation histories",
+        "tags": [
+          "Conversation Histories"
+        ]
+      }
+    }
+  },
+  "security": [
+    {
+      "bearerAuth": []
+    }
+  ],
+  "servers": [
+    {
+      "description": "Version 2.0.0 of the Telnyx API",
+      "url": "https://api.telnyx.com/v2"
+    }
+  ]
+}

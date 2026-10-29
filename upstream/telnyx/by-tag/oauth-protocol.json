@@ -1,0 +1,1079 @@
+{
+  "components": {
+    "schemas": {
+      "ConsentTokenResponse": {
+        "properties": {
+          "data": {
+            "properties": {
+              "client_id": {
+                "description": "Client ID",
+                "type": "string"
+              },
+              "logo_uri": {
+                "description": "URL of the client logo",
+                "format": "uri",
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "name": {
+                "description": "Client name",
+                "type": "string"
+              },
+              "policy_uri": {
+                "description": "URL of the client's privacy policy",
+                "format": "uri",
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "redirect_uri": {
+                "description": "The redirect URI for this authorization",
+                "format": "uri",
+                "type": "string"
+              },
+              "requested_scopes": {
+                "items": {
+                  "properties": {
+                    "description": {
+                      "description": "Scope description",
+                      "type": "string"
+                    },
+                    "id": {
+                      "description": "Scope ID",
+                      "type": "string"
+                    },
+                    "name": {
+                      "description": "Scope name",
+                      "type": "string"
+                    }
+                  },
+                  "type": "object"
+                },
+                "type": "array"
+              },
+              "tos_uri": {
+                "description": "URL of the client's terms of service",
+                "format": "uri",
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "verified": {
+                "description": "Whether the client is verified",
+                "type": "boolean"
+              }
+            },
+            "type": "object"
+          }
+        },
+        "type": "object"
+      },
+      "CreateGrantResponse": {
+        "properties": {
+          "redirect_uri": {
+            "description": "Redirect URI with authorization code or error",
+            "format": "uri",
+            "type": "string"
+          }
+        },
+        "required": [
+          "redirect_uri"
+        ],
+        "type": "object"
+      },
+      "CreateOAuthGrantRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "allowed": {
+            "description": "Whether the grant is allowed",
+            "type": "boolean"
+          },
+          "consent_token": {
+            "description": "Consent token",
+            "type": "string"
+          }
+        },
+        "required": [
+          "allowed",
+          "consent_token"
+        ],
+        "type": "object"
+      },
+      "IntrospectRequest": {
+        "properties": {
+          "token": {
+            "description": "The token to introspect",
+            "type": "string"
+          }
+        },
+        "required": [
+          "token"
+        ],
+        "type": "object"
+      },
+      "IntrospectResponse": {
+        "properties": {
+          "active": {
+            "description": "Whether the token is active",
+            "type": "boolean"
+          },
+          "aud": {
+            "description": "Audience",
+            "type": "string"
+          },
+          "client_id": {
+            "description": "Client identifier",
+            "type": "string"
+          },
+          "exp": {
+            "description": "Expiration timestamp",
+            "type": "integer"
+          },
+          "iat": {
+            "description": "Issued at timestamp",
+            "type": "integer"
+          },
+          "iss": {
+            "description": "Issuer",
+            "type": "string"
+          },
+          "scope": {
+            "description": "Space-separated list of scopes",
+            "type": "string"
+          }
+        },
+        "required": [
+          "active"
+        ],
+        "type": "object"
+      },
+      "JWKSet": {
+        "properties": {
+          "keys": {
+            "items": {
+              "properties": {
+                "alg": {
+                  "description": "Algorithm",
+                  "type": "string"
+                },
+                "kid": {
+                  "description": "Key ID",
+                  "type": "string"
+                },
+                "kty": {
+                  "description": "Key type",
+                  "type": "string"
+                },
+                "use": {
+                  "description": "Key use",
+                  "type": "string"
+                }
+              },
+              "type": "object"
+            },
+            "type": "array"
+          }
+        },
+        "type": "object"
+      },
+      "OAuthDynamicRegistrationRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "client_name": {
+            "description": "Human-readable string name of the client to be presented to the end-user",
+            "example": "My OAuth Application",
+            "type": "string"
+          },
+          "grant_types": {
+            "default": [
+              "authorization_code"
+            ],
+            "description": "Array of OAuth 2.0 grant type strings that the client may use",
+            "items": {
+              "enum": [
+                "authorization_code",
+                "client_credentials",
+                "refresh_token"
+              ],
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "logo_uri": {
+            "description": "URL of the client logo",
+            "format": "uri",
+            "type": "string"
+          },
+          "policy_uri": {
+            "description": "URL of the client's privacy policy",
+            "format": "uri",
+            "type": "string"
+          },
+          "redirect_uris": {
+            "description": "Array of redirection URI strings for use in redirect-based flows",
+            "example": [
+              "https://example.com/callback"
+            ],
+            "items": {
+              "format": "uri",
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "response_types": {
+            "default": [
+              "code"
+            ],
+            "description": "Array of the OAuth 2.0 response type strings that the client may use",
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "scope": {
+            "description": "Space-separated string of scope values that the client may use",
+            "example": "admin",
+            "type": "string"
+          },
+          "token_endpoint_auth_method": {
+            "default": "client_secret_basic",
+            "description": "Authentication method for the token endpoint",
+            "enum": [
+              "none",
+              "client_secret_basic",
+              "client_secret_post"
+            ],
+            "type": "string"
+          },
+          "tos_uri": {
+            "description": "URL of the client's terms of service",
+            "format": "uri",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "OAuthDynamicRegistrationResponse": {
+        "properties": {
+          "client_id": {
+            "description": "Unique client identifier",
+            "example": "abc123def456",
+            "type": "string"
+          },
+          "client_id_issued_at": {
+            "description": "Unix timestamp of when the client ID was issued",
+            "type": "integer"
+          },
+          "client_name": {
+            "description": "Human-readable client name",
+            "type": "string"
+          },
+          "client_secret": {
+            "description": "Client secret (only for confidential clients)",
+            "type": "string"
+          },
+          "grant_types": {
+            "description": "Array of allowed grant types",
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "logo_uri": {
+            "description": "URL of the client logo",
+            "format": "uri",
+            "type": "string"
+          },
+          "policy_uri": {
+            "description": "URL of the client's privacy policy",
+            "format": "uri",
+            "type": "string"
+          },
+          "redirect_uris": {
+            "description": "Array of redirection URIs",
+            "items": {
+              "format": "uri",
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "response_types": {
+            "description": "Array of allowed response types",
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "scope": {
+            "description": "Space-separated scope values",
+            "type": "string"
+          },
+          "token_endpoint_auth_method": {
+            "description": "Token endpoint authentication method",
+            "type": "string"
+          },
+          "tos_uri": {
+            "description": "URL of the client's terms of service",
+            "format": "uri",
+            "type": "string"
+          }
+        },
+        "required": [
+          "client_id",
+          "client_id_issued_at"
+        ],
+        "type": "object"
+      },
+      "TokenRequest": {
+        "properties": {
+          "client_id": {
+            "description": "OAuth client ID (if not using HTTP Basic auth)",
+            "type": "string"
+          },
+          "client_secret": {
+            "description": "OAuth client secret (if not using HTTP Basic auth)",
+            "type": "string"
+          },
+          "code": {
+            "description": "Authorization code (for authorization_code flow)",
+            "type": "string"
+          },
+          "code_verifier": {
+            "description": "PKCE code verifier (for authorization_code flow)",
+            "type": "string"
+          },
+          "grant_type": {
+            "description": "OAuth 2.0 grant type",
+            "enum": [
+              "client_credentials",
+              "authorization_code",
+              "refresh_token"
+            ],
+            "type": "string"
+          },
+          "redirect_uri": {
+            "description": "Redirect URI (for authorization_code flow)",
+            "format": "uri",
+            "type": "string"
+          },
+          "refresh_token": {
+            "description": "Refresh token (for refresh_token flow)",
+            "type": "string"
+          },
+          "scope": {
+            "description": "Space-separated list of requested scopes (for client_credentials)",
+            "example": "admin",
+            "type": "string"
+          }
+        },
+        "required": [
+          "grant_type"
+        ],
+        "type": "object"
+      },
+      "TokenResponse": {
+        "properties": {
+          "access_token": {
+            "description": "The access token",
+            "type": "string"
+          },
+          "expires_in": {
+            "description": "Token lifetime in seconds",
+            "type": "integer"
+          },
+          "refresh_token": {
+            "description": "Refresh token (if applicable)",
+            "type": "string"
+          },
+          "scope": {
+            "description": "Space-separated list of granted scopes",
+            "type": "string"
+          },
+          "token_type": {
+            "description": "Token type",
+            "enum": [
+              "Bearer"
+            ],
+            "type": "string"
+          }
+        },
+        "required": [
+          "access_token",
+          "token_type",
+          "expires_in"
+        ],
+        "type": "object"
+      },
+      "oauth_oauth_Error": {
+        "properties": {
+          "error": {
+            "description": "Error code",
+            "type": "string"
+          },
+          "error_description": {
+            "description": "Human-readable error description",
+            "type": "string"
+          }
+        },
+        "required": [
+          "error"
+        ],
+        "type": "object"
+      }
+    },
+    "securitySchemes": {
+      "BearerAuth": {
+        "bearerFormat": "API key",
+        "description": "Telnyx API key supplied as `Authorization: Bearer \u003ctoken\u003e`. In production, auth may be validated by the API gateway and forwarded via Telnyx auth headers.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "Payment": {
+        "description": "Machine Payment Protocol credential used on paid retries, sent as `Authorization: Payment ...`. Obtained by paying a challenge returned in the `WWW-Authenticate` header of a 402 response. This is not a Telnyx API key; initial challenge requests use standard bearer authentication instead.",
+        "in": "header",
+        "name": "Authorization",
+        "type": "apiKey"
+      },
+      "agent-memory_bearerAuth": {
+        "description": "Telnyx API key",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "bearerAuth": {
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "branded-calling_bearerAuth": {
+        "description": "Telnyx API key. Generate one at https://portal.telnyx.com/#/app/api-keys.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "collections_bearerAuth": {
+        "description": "Telnyx API key. Collections and results are automatically scoped to the authenticated user's organization.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "number-reputation_bearerAuth": {
+        "description": "Telnyx API key. Generate one at https://portal.telnyx.com/#/app/api-keys.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "oauthClientAuth": {
+        "description": "OAuth 2.0 authentication for Telnyx API and MCP integrations",
+        "flows": {
+          "authorizationCode": {
+            "authorizationUrl": "https://api.telnyx.com/v2/oauth/authorize",
+            "refreshUrl": "https://api.telnyx.com/v2/oauth/token",
+            "scopes": {
+              "admin": "Administrative access to Telnyx resources"
+            },
+            "tokenUrl": "https://api.telnyx.com/v2/oauth/token"
+          },
+          "clientCredentials": {
+            "scopes": {
+              "admin": "Administrative access to Telnyx resources"
+            },
+            "tokenUrl": "https://api.telnyx.com/v2/oauth/token"
+          }
+        },
+        "type": "oauth2"
+      },
+      "outbound-voice-profiles_bearerAuth": {
+        "bearerFormat": "JWT",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "pay-connectors_bearerAuth": {
+        "description": "Telnyx API key, not the processor bearer token.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "pronunciation-dicts_bearerAuth": {
+        "description": "Telnyx API v2 key. Obtain from https://portal.telnyx.com",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "rcs-registration_bearerAuth": {
+        "bearerFormat": "API key",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "stored-payment-transactions_bearerAuth": {
+        "bearerFormat": "JWT",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "telnyxApiKey": {
+        "description": "Management-only Telnyx account credential.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "transcriptions-search_bearerAuth": {
+        "description": "Telnyx API key. Results are automatically scoped to the authenticated user's organization.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "web-search_bearerAuth": {
+        "description": "Telnyx API key",
+        "scheme": "bearer",
+        "type": "http"
+      }
+    }
+  },
+  "info": {
+    "contact": {
+      "email": "support@telnyx.com"
+    },
+    "description": "SIP trunking, SMS, MMS, Call Control and Telephony Data Services.",
+    "title": "Telnyx API",
+    "version": "2.0.0",
+    "x-endpoint-cost": "light",
+    "x-latency-category": "responsive"
+  },
+  "openapi": "3.1.0",
+  "paths": {
+    "/oauth/authorize": {
+      "get": {
+        "description": "OAuth 2.0 authorization endpoint for the authorization code flow",
+        "operationId": "AuthorizeOAuth",
+        "parameters": [
+          {
+            "description": "OAuth response type",
+            "in": "query",
+            "name": "response_type",
+            "required": true,
+            "schema": {
+              "enum": [
+                "code"
+              ],
+              "type": "string"
+            }
+          },
+          {
+            "description": "OAuth client identifier",
+            "in": "query",
+            "name": "client_id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Redirect URI",
+            "in": "query",
+            "name": "redirect_uri",
+            "required": true,
+            "schema": {
+              "format": "uri",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Space-separated list of requested scopes",
+            "example": "admin",
+            "in": "query",
+            "name": "scope",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "State parameter for CSRF protection",
+            "in": "query",
+            "name": "state",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "PKCE code challenge",
+            "in": "query",
+            "name": "code_challenge",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "PKCE code challenge method",
+            "in": "query",
+            "name": "code_challenge_method",
+            "schema": {
+              "enum": [
+                "plain",
+                "S256"
+              ],
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "text/html": {
+                "example": "\u003c!DOCTYPE html\u003e\u003chtml\u003e\u003chead\u003e\u003ctitle\u003eAuthorize application\u003c/title\u003e\u003c/head\u003e\u003cbody\u003e\u003ch1\u003eAuthorize My App\u003c/h1\u003e\u003cp\u003eMy App is requesting access to your Telnyx account.\u003c/p\u003e\u003cbutton\u003eAllow\u003c/button\u003e \u003cbutton\u003eDeny\u003c/button\u003e\u003c/body\u003e\u003c/html\u003e",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "description": "Consent page displayed (when consent UI is embedded)"
+          },
+          "302": {
+            "description": "Redirect to consent page or client with authorization code/error"
+          },
+          "400": {
+            "content": {
+              "text/html": {
+                "example": "\u003chtml\u003e\u003cbody\u003eAuthorization consent page\u003c/body\u003e\u003c/html\u003e",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "description": "Invalid request"
+          },
+          "404": {
+            "content": {
+              "text/html": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "description": "Client not found"
+          },
+          "422": {
+            "content": {
+              "text/html": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "description": "Invalid redirect URI"
+          }
+        },
+        "security": [],
+        "summary": "OAuth authorization endpoint",
+        "tags": [
+          "OAuth Protocol"
+        ]
+      }
+    },
+    "/oauth/consent/{consent_token}": {
+      "get": {
+        "description": "Retrieve details about an OAuth consent token",
+        "operationId": "GetOAuthConsentToken",
+        "parameters": [
+          {
+            "description": "OAuth consent token",
+            "in": "path",
+            "name": "consent_token",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "data": {
+                    "client_id": "string",
+                    "name": "string",
+                    "redirect_uri": "https://example.com",
+                    "requested_scopes": [
+                      {
+                        "description": "string",
+                        "id": "string",
+                        "name": "string"
+                      }
+                    ],
+                    "verified": false
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ConsentTokenResponse"
+                }
+              }
+            },
+            "description": "Consent token details"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/oauth_oauth_Error"
+                }
+              }
+            },
+            "description": "Invalid consent token"
+          }
+        },
+        "summary": "Get OAuth consent token",
+        "tags": [
+          "OAuth Protocol"
+        ]
+      }
+    },
+    "/oauth/grants": {
+      "post": {
+        "description": "Creates an OAuth authorization grant and returns the grant response for completing the authorization flow.",
+        "operationId": "CreateOAuthGrant",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "example": {
+                "allowed": false,
+                "consent_token": "string"
+              },
+              "schema": {
+                "$ref": "#/components/schemas/CreateOAuthGrantRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "redirect_uri": "https://example.com"
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/CreateGrantResponse"
+                }
+              }
+            },
+            "description": "Grant created successfully"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/oauth_oauth_Error"
+                }
+              }
+            },
+            "description": "Invalid consent token"
+          }
+        },
+        "summary": "Create OAuth grant",
+        "tags": [
+          "OAuth Protocol"
+        ]
+      }
+    },
+    "/oauth/introspect": {
+      "post": {
+        "description": "Introspect an OAuth access token to check its validity and metadata",
+        "operationId": "IntrospectOAuthToken",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "example": {
+                "token": "string"
+              },
+              "schema": {
+                "$ref": "#/components/schemas/IntrospectRequest"
+              }
+            },
+            "application/x-www-form-urlencoded": {
+              "example": {
+                "token": "string"
+              },
+              "schema": {
+                "$ref": "#/components/schemas/IntrospectRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "active": false,
+                  "aud": "string",
+                  "client_id": "string",
+                  "exp": 0,
+                  "iat": 0,
+                  "iss": "string",
+                  "scope": "string"
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/IntrospectResponse"
+                }
+              }
+            },
+            "description": "Introspection response"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": "invalid_request"
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/oauth_oauth_Error"
+                }
+              }
+            },
+            "description": "Invalid request"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": "invalid_client"
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/oauth_oauth_Error"
+                }
+              }
+            },
+            "description": "Invalid client credentials"
+          }
+        },
+        "security": [
+          {
+            "oauthClientAuth": []
+          }
+        ],
+        "summary": "Token introspection",
+        "tags": [
+          "OAuth Protocol"
+        ]
+      }
+    },
+    "/oauth/jwks": {
+      "get": {
+        "description": "Retrieve the JSON Web Key Set for token verification",
+        "operationId": "GetOAuthJWKS",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "keys": [
+                    {
+                      "alg": "string",
+                      "kid": "string",
+                      "kty": "string",
+                      "use": "string"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/JWKSet"
+                }
+              }
+            },
+            "description": "JSON Web Key Set"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/oauth_oauth_Error"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/oauth_oauth_Error"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          }
+        },
+        "security": [],
+        "summary": "JSON Web Key Set",
+        "tags": [
+          "OAuth Protocol"
+        ]
+      }
+    },
+    "/oauth/register": {
+      "post": {
+        "description": "Register a new OAuth client dynamically (RFC 7591)",
+        "operationId": "RegisterOAuthClient",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/OAuthDynamicRegistrationRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OAuthDynamicRegistrationResponse"
+                }
+              }
+            },
+            "description": "Client registered successfully"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "error": {
+                      "example": "invalid_client_metadata",
+                      "type": "string"
+                    },
+                    "error_description": {
+                      "example": "The client metadata was invalid",
+                      "type": "string"
+                    },
+                    "invalid_fields": {
+                      "additionalProperties": {
+                        "items": {
+                          "type": "string"
+                        },
+                        "type": "array"
+                      },
+                      "type": "object"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Invalid client metadata"
+          }
+        },
+        "security": [],
+        "summary": "Dynamic client registration",
+        "tags": [
+          "OAuth Protocol"
+        ]
+      }
+    },
+    "/oauth/token": {
+      "post": {
+        "description": "Exchange authorization code, client credentials, or refresh token for access token",
+        "operationId": "ExchangeOAuthToken",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TokenRequest"
+              }
+            },
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "$ref": "#/components/schemas/TokenRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "access_token": "string",
+                  "expires_in": 0,
+                  "refresh_token": "string",
+                  "scope": "string",
+                  "token_type": "Bearer"
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/TokenResponse"
+                }
+              }
+            },
+            "description": "Token response"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "invalid_grant": {
+                    "value": {
+                      "error": "invalid_grant"
+                    }
+                  },
+                  "invalid_request": {
+                    "value": {
+                      "error": "invalid_request"
+                    }
+                  },
+                  "invalid_scope": {
+                    "value": {
+                      "error": "invalid_scope"
+                    }
+                  },
+                  "unsupported_grant_type": {
+                    "value": {
+                      "error": "unsupported_grant_type"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/oauth_oauth_Error"
+                }
+              }
+            },
+            "description": "Invalid request"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": "invalid_client"
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/oauth_oauth_Error"
+                }
+              }
+            },
+            "description": "Invalid client credentials"
+          }
+        },
+        "security": [
+          {
+            "oauthClientAuth": []
+          },
+          {}
+        ],
+        "summary": "OAuth token endpoint",
+        "tags": [
+          "OAuth Protocol"
+        ]
+      }
+    }
+  },
+  "security": [
+    {
+      "bearerAuth": []
+    }
+  ],
+  "servers": [
+    {
+      "description": "Version 2.0.0 of the Telnyx API",
+      "url": "https://api.telnyx.com/v2"
+    }
+  ]
+}

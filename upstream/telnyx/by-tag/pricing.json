@@ -1,0 +1,553 @@
+{
+  "components": {
+    "schemas": {
+      "PricingEntry": {
+        "description": "A single pricing entry. Standard products include rate, unit, currency, type, country_iso, direction, and tiers. Inference products include model, input_rate, output_rate, cached_input_rate, and their respective tier arrays. Rate-deck products include pricing_type and note fields with null rate and empty tiers.",
+        "properties": {
+          "cached_input_rate": {
+            "description": "Cached input token rate. Present only on inference product entries.",
+            "type": "string"
+          },
+          "cached_input_tiers": {
+            "description": "Cached input token tiered pricing. Present only on inference product entries.",
+            "items": {
+              "$ref": "#/components/schemas/PricingTier"
+            },
+            "type": "array"
+          },
+          "country_iso": {
+            "description": "ISO country code. Null for non-geographic products.",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "currency": {
+            "description": "ISO currency code (e.g., USD).",
+            "type": "string"
+          },
+          "direction": {
+            "description": "Direction (e.g., termination). Null for non-directional products.",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "input_rate": {
+            "description": "Input token rate. Present only on inference product entries.",
+            "type": "string"
+          },
+          "input_tiers": {
+            "description": "Input token tiered pricing. Present only on inference product entries.",
+            "items": {
+              "$ref": "#/components/schemas/PricingTier"
+            },
+            "type": "array"
+          },
+          "model": {
+            "description": "Model identifier. Present only on inference product entries.",
+            "type": "string"
+          },
+          "name": {
+            "description": "Human-readable name describing the pricing entry.",
+            "type": "string"
+          },
+          "note": {
+            "description": "Additional note for rate-deck products (e.g., \"Pricing is determined by the WhatsApp rate deck.\").",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "output_rate": {
+            "description": "Output token rate. Present only on inference product entries.",
+            "type": "string"
+          },
+          "output_tiers": {
+            "description": "Output token tiered pricing. Present only on inference product entries.",
+            "items": {
+              "$ref": "#/components/schemas/PricingTier"
+            },
+            "type": "array"
+          },
+          "pricing_type": {
+            "description": "Pricing type for non-standard products (e.g., rate_deck). Absent on standard products.",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "rate": {
+            "description": "Per-unit rate. Numeric for standard products, string for inference products. Null for rate-deck products.",
+            "oneOf": [
+              {
+                "description": "Rate for standard products (e.g., 0.004).",
+                "type": "number"
+              },
+              {
+                "description": "Rate for inference products (e.g., \"0.001\").",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "tiers": {
+            "description": "Volume-based tiered pricing. Empty for rate-deck products.",
+            "items": {
+              "$ref": "#/components/schemas/PricingTier"
+            },
+            "type": "array"
+          },
+          "type": {
+            "description": "Pricing type (e.g., usage).",
+            "type": "string"
+          },
+          "unit": {
+            "description": "Unit of measurement (e.g., part, message, GB, per_1k_tokens).",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "PricingEntryListResponse": {
+        "properties": {
+          "data": {
+            "items": {
+              "$ref": "#/components/schemas/PricingEntry"
+            },
+            "type": "array"
+          },
+          "meta": {
+            "$ref": "#/components/schemas/pricing_PaginationMeta"
+          }
+        },
+        "required": [
+          "data",
+          "meta"
+        ],
+        "type": "object"
+      },
+      "PricingProduct": {
+        "properties": {
+          "description": {
+            "description": "Human-readable description of the product.",
+            "type": "string"
+          },
+          "name": {
+            "description": "Display name of the product.",
+            "type": "string"
+          },
+          "slug": {
+            "description": "Product identifier used in the per-product pricing endpoint.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "slug",
+          "name",
+          "description"
+        ],
+        "type": "object"
+      },
+      "PricingProductListResponse": {
+        "properties": {
+          "data": {
+            "items": {
+              "$ref": "#/components/schemas/PricingProduct"
+            },
+            "type": "array"
+          },
+          "meta": {
+            "$ref": "#/components/schemas/pricing_PaginationMeta"
+          }
+        },
+        "required": [
+          "data",
+          "meta"
+        ],
+        "type": "object"
+      },
+      "PricingTier": {
+        "properties": {
+          "max": {
+            "description": "Upper bound of the tier (exclusive). Null means no upper limit.",
+            "type": [
+              "integer",
+              "null"
+            ]
+          },
+          "min": {
+            "description": "Lower bound of the tier (inclusive).",
+            "minimum": 0,
+            "type": "integer"
+          },
+          "rate": {
+            "description": "Rate for this tier. Numeric for standard products, string for inference products.",
+            "oneOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "string"
+              }
+            ]
+          }
+        },
+        "required": [
+          "min",
+          "max",
+          "rate"
+        ],
+        "type": "object"
+      },
+      "pricing_PaginationMeta": {
+        "properties": {
+          "page_number": {
+            "type": "integer"
+          },
+          "page_size": {
+            "type": "integer"
+          },
+          "total_pages": {
+            "type": "integer"
+          },
+          "total_results": {
+            "type": "integer"
+          }
+        },
+        "required": [
+          "page_number",
+          "page_size",
+          "total_pages",
+          "total_results"
+        ],
+        "type": "object"
+      }
+    },
+    "securitySchemes": {
+      "BearerAuth": {
+        "bearerFormat": "API key",
+        "description": "Telnyx API key supplied as `Authorization: Bearer \u003ctoken\u003e`. In production, auth may be validated by the API gateway and forwarded via Telnyx auth headers.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "Payment": {
+        "description": "Machine Payment Protocol credential used on paid retries, sent as `Authorization: Payment ...`. Obtained by paying a challenge returned in the `WWW-Authenticate` header of a 402 response. This is not a Telnyx API key; initial challenge requests use standard bearer authentication instead.",
+        "in": "header",
+        "name": "Authorization",
+        "type": "apiKey"
+      },
+      "agent-memory_bearerAuth": {
+        "description": "Telnyx API key",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "bearerAuth": {
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "branded-calling_bearerAuth": {
+        "description": "Telnyx API key. Generate one at https://portal.telnyx.com/#/app/api-keys.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "collections_bearerAuth": {
+        "description": "Telnyx API key. Collections and results are automatically scoped to the authenticated user's organization.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "number-reputation_bearerAuth": {
+        "description": "Telnyx API key. Generate one at https://portal.telnyx.com/#/app/api-keys.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "oauthClientAuth": {
+        "description": "OAuth 2.0 authentication for Telnyx API and MCP integrations",
+        "flows": {
+          "authorizationCode": {
+            "authorizationUrl": "https://api.telnyx.com/v2/oauth/authorize",
+            "refreshUrl": "https://api.telnyx.com/v2/oauth/token",
+            "scopes": {
+              "admin": "Administrative access to Telnyx resources"
+            },
+            "tokenUrl": "https://api.telnyx.com/v2/oauth/token"
+          },
+          "clientCredentials": {
+            "scopes": {
+              "admin": "Administrative access to Telnyx resources"
+            },
+            "tokenUrl": "https://api.telnyx.com/v2/oauth/token"
+          }
+        },
+        "type": "oauth2"
+      },
+      "outbound-voice-profiles_bearerAuth": {
+        "bearerFormat": "JWT",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "pay-connectors_bearerAuth": {
+        "description": "Telnyx API key, not the processor bearer token.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "pronunciation-dicts_bearerAuth": {
+        "description": "Telnyx API v2 key. Obtain from https://portal.telnyx.com",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "rcs-registration_bearerAuth": {
+        "bearerFormat": "API key",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "stored-payment-transactions_bearerAuth": {
+        "bearerFormat": "JWT",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "telnyxApiKey": {
+        "description": "Management-only Telnyx account credential.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "transcriptions-search_bearerAuth": {
+        "description": "Telnyx API key. Results are automatically scoped to the authenticated user's organization.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "web-search_bearerAuth": {
+        "description": "Telnyx API key",
+        "scheme": "bearer",
+        "type": "http"
+      }
+    }
+  },
+  "info": {
+    "contact": {
+      "email": "support@telnyx.com"
+    },
+    "description": "SIP trunking, SMS, MMS, Call Control and Telephony Data Services.",
+    "title": "Telnyx API",
+    "version": "2.0.0",
+    "x-endpoint-cost": "light",
+    "x-latency-category": "responsive"
+  },
+  "openapi": "3.1.0",
+  "paths": {
+    "/pricing/products": {
+      "get": {
+        "description": "Returns the full product catalog with pagination. Each entry contains a slug, display name, and description. Use the slug to fetch per-product pricing via GET /pricing/products/{slug}.",
+        "operationId": "listPricingProducts",
+        "parameters": [
+          {
+            "description": "Page number (1-based).",
+            "in": "query",
+            "name": "page[number]",
+            "required": false,
+            "schema": {
+              "default": 1,
+              "minimum": 1,
+              "title": "Page Number",
+              "type": "integer"
+            }
+          },
+          {
+            "description": "Number of items per page (max 100).",
+            "in": "query",
+            "name": "page[size]",
+            "required": false,
+            "schema": {
+              "default": 20,
+              "maximum": 100,
+              "minimum": 1,
+              "title": "Page Size",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "data": [
+                    {
+                      "description": "string",
+                      "name": "string",
+                      "slug": "string"
+                    }
+                  ],
+                  "meta": {
+                    "page_number": 0,
+                    "page_size": 0,
+                    "total_pages": 0,
+                    "total_results": 0
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/PricingProductListResponse"
+                }
+              }
+            },
+            "description": "Product catalog listing"
+          },
+          "400": {
+            "description": "Invalid pagination parameters"
+          }
+        },
+        "security": [],
+        "summary": "List products",
+        "tags": [
+          "Pricing"
+        ],
+        "x-latency-category": "responsive"
+      }
+    },
+    "/pricing/products/{slug}": {
+      "get": {
+        "description": "Returns pricing entries for a single product. Most products return standard rate entries with fields like rate, unit, country_iso, direction, and tiers. Inference products return model-specific fields (model, input_rate, output_rate, cached_input_rate) with tiered pricing. Some products use rate decks (pricing_type: rate_deck) where rates are determined dynamically.",
+        "operationId": "getProductPricing",
+        "parameters": [
+          {
+            "description": "Product slug from the catalog listing.",
+            "in": "path",
+            "name": "slug",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Page number (1-based).",
+            "in": "query",
+            "name": "page[number]",
+            "required": false,
+            "schema": {
+              "default": 1,
+              "minimum": 1,
+              "title": "Page Number",
+              "type": "integer"
+            }
+          },
+          {
+            "description": "Number of items per page (max 100).",
+            "in": "query",
+            "name": "page[size]",
+            "required": false,
+            "schema": {
+              "default": 20,
+              "maximum": 100,
+              "minimum": 1,
+              "title": "Page Size",
+              "type": "integer"
+            }
+          },
+          {
+            "description": "Two-letter ISO 3166-1 alpha-2 country code (uppercase, e.g. US) to filter pricing to a single country.",
+            "in": "query",
+            "name": "filter[country_iso]",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 2,
+                  "minLength": 2,
+                  "pattern": "^[A-Z]{2}$",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Filter[Country Iso]"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "data": [
+                    {
+                      "cached_input_rate": "string",
+                      "cached_input_tiers": [
+                        {
+                          "max": 1000000,
+                          "min": 0,
+                          "rate": 0
+                        }
+                      ],
+                      "currency": "string",
+                      "input_rate": "string",
+                      "input_tiers": [
+                        {
+                          "max": 1000000,
+                          "min": 0,
+                          "rate": 0
+                        }
+                      ],
+                      "model": "string",
+                      "name": "string",
+                      "output_rate": "string",
+                      "output_tiers": [
+                        {
+                          "max": 1000000,
+                          "min": 0,
+                          "rate": 0
+                        }
+                      ],
+                      "rate": 0,
+                      "tiers": [
+                        {
+                          "max": 1000000,
+                          "min": 0,
+                          "rate": 0
+                        }
+                      ],
+                      "type": "string",
+                      "unit": "string"
+                    }
+                  ],
+                  "meta": {
+                    "page_number": 0,
+                    "page_size": 0,
+                    "total_pages": 0,
+                    "total_results": 0
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/PricingEntryListResponse"
+                }
+              }
+            },
+            "description": "Product pricing entries"
+          },
+          "404": {
+            "description": "Product not found"
+          }
+        },
+        "security": [],
+        "summary": "Get product pricing",
+        "tags": [
+          "Pricing"
+        ],
+        "x-latency-category": "responsive"
+      }
+    }
+  },
+  "security": [
+    {
+      "bearerAuth": []
+    }
+  ],
+  "servers": [
+    {
+      "description": "Version 2.0.0 of the Telnyx API",
+      "url": "https://api.telnyx.com/v2"
+    }
+  ]
+}

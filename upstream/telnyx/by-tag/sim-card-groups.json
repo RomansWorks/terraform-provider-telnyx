@@ -1,0 +1,1133 @@
+{
+  "components": {
+    "parameters": {
+      "IncludeICCIDs": {
+        "description": "It includes a list of associated ICCIDs.",
+        "in": "query",
+        "name": "include_iccids",
+        "schema": {
+          "default": false,
+          "example": true,
+          "type": "boolean"
+        }
+      },
+      "SIMCardGroupId": {
+        "description": "Identifies the SIM group.",
+        "in": "path",
+        "name": "id",
+        "required": true,
+        "schema": {
+          "example": "6a09cdc3-8948-47f0-aa62-74ac943d6c58",
+          "format": "uuid",
+          "type": "string"
+        }
+      },
+      "wireless_PageNumber_c5290d5308": {
+        "description": "The page number to load.",
+        "in": "query",
+        "name": "page[number]",
+        "schema": {
+          "default": 1,
+          "minimum": 1,
+          "type": "integer"
+        }
+      },
+      "wireless_PageSize_c5290d5308": {
+        "description": "The size of the page.",
+        "in": "query",
+        "name": "page[size]",
+        "schema": {
+          "default": 20,
+          "maximum": 250,
+          "minimum": 1,
+          "type": "integer"
+        }
+      }
+    },
+    "responses": {
+      "wireless_GenericErrorResponse_c5290d5308": {
+        "content": {
+          "application/json": {
+            "examples": {
+              "unexpectedError": {
+                "summary": "Unexpected API error",
+                "value": {
+                  "errors": [
+                    {
+                      "code": "10007",
+                      "detail": "An unexpected error occured.",
+                      "title": "Unexpected error"
+                    }
+                  ]
+                }
+              }
+            },
+            "schema": {
+              "$ref": "#/components/schemas/Errors"
+            }
+          }
+        },
+        "description": "Unexpected error"
+      }
+    },
+    "schemas": {
+      "ConsumedData": {
+        "description": "Represents the amount of data consumed.",
+        "properties": {
+          "amount": {
+            "example": "2048.1",
+            "type": "string"
+          },
+          "unit": {
+            "default": "MB",
+            "example": "MB",
+            "type": "string"
+          }
+        },
+        "title": "ConsumedData",
+        "type": "object"
+      },
+      "Error": {
+        "example": {
+          "code": "20207",
+          "description": "The street address provided is invalid.",
+          "source": {
+            "pointer": "/street_address"
+          },
+          "title": "Invalid street address"
+        },
+        "properties": {
+          "code": {
+            "type": "string",
+            "x-format": "int64"
+          },
+          "description": {
+            "type": "string"
+          },
+          "detail": {
+            "description": "A human-readable explanation of the error.",
+            "type": "string"
+          },
+          "meta": {
+            "additionalProperties": true,
+            "type": "object"
+          },
+          "source": {
+            "properties": {
+              "parameter": {
+                "description": "Indicates which query parameter caused the error.",
+                "type": "string"
+              },
+              "pointer": {
+                "description": "JSON pointer (RFC6901) to the offending entity.",
+                "format": "json-pointer",
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
+          "title": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "title"
+        ],
+        "type": "object"
+      },
+      "Errors": {
+        "properties": {
+          "errors": {
+            "items": {
+              "$ref": "#/components/schemas/Error"
+            },
+            "type": "array"
+          }
+        },
+        "type": "object"
+      },
+      "PaginationMeta": {
+        "properties": {
+          "page_number": {
+            "example": 2,
+            "type": "integer"
+          },
+          "page_size": {
+            "example": 25,
+            "type": "integer"
+          },
+          "total_pages": {
+            "example": 3,
+            "type": "integer"
+          },
+          "total_results": {
+            "example": 55,
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "SIMCardGroup": {
+        "properties": {
+          "consumed_data": {
+            "$ref": "#/components/schemas/ConsumedData"
+          },
+          "created_at": {
+            "description": "ISO 8601 formatted date-time indicating when the resource was created.",
+            "example": "2018-02-02T22:25:27.521Z",
+            "readOnly": true,
+            "type": "string"
+          },
+          "data_limit": {
+            "description": "Upper limit on the amount of data the SIM cards, within the group, can use.",
+            "properties": {
+              "amount": {
+                "example": "2048.1",
+                "type": "string"
+              },
+              "unit": {
+                "example": "MB",
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
+          "default": {
+            "description": "Indicates whether the SIM card group is the users default group.\u003cbr/\u003eThe default group is created for the user and can not be removed.",
+            "example": true,
+            "readOnly": true,
+            "type": "boolean"
+          },
+          "id": {
+            "description": "Identifies the resource.",
+            "example": "6a09cdc3-8948-47f0-aa62-74ac943d6c58",
+            "format": "uuid",
+            "readOnly": true,
+            "type": "string"
+          },
+          "name": {
+            "description": "A user friendly name for the SIM card group.",
+            "example": "My Test Group",
+            "type": "string"
+          },
+          "private_wireless_gateway_id": {
+            "default": null,
+            "description": "The identification of the related Private Wireless Gateway resource.",
+            "example": "6a09cdc3-8948-47f0-aa62-74ac943d6c58",
+            "format": "uuid",
+            "type": "string"
+          },
+          "record_type": {
+            "description": "Identifies the type of the resource.",
+            "example": "sim_card_group",
+            "readOnly": true,
+            "type": "string"
+          },
+          "updated_at": {
+            "description": "ISO 8601 formatted date-time indicating when the resource was updated.",
+            "example": "2018-02-02T22:25:27.521Z",
+            "readOnly": true,
+            "type": "string"
+          },
+          "wireless_blocklist_id": {
+            "default": null,
+            "description": "The identification of the related Wireless Blocklist resource.",
+            "example": "a13bc415-7966-43bf-90d4-63cc76275289",
+            "format": "uuid",
+            "type": "string"
+          }
+        },
+        "title": "SIMCardGroup",
+        "type": "object"
+      },
+      "SIMCardGroupAction": {
+        "description": "This object represents a SIM card group action request. It allows tracking the current status of an operation that impacts the SIM card group and SIM card in it.",
+        "properties": {
+          "created_at": {
+            "description": "ISO 8601 formatted date-time indicating when the resource was created.",
+            "example": "2018-02-02T22:25:27.521Z",
+            "readOnly": true,
+            "type": "string"
+          },
+          "id": {
+            "description": "Identifies the resource.",
+            "example": "6a09cdc3-8948-47f0-aa62-74ac943d6c58",
+            "format": "uuid",
+            "readOnly": true,
+            "type": "string"
+          },
+          "record_type": {
+            "example": "sim_card_group_action",
+            "readOnly": true,
+            "type": "string"
+          },
+          "settings": {
+            "description": "A JSON object representation of the action params.",
+            "properties": {
+              "private_wireless_gateway_id": {
+                "description": "The identification of the related Private Wireless Gateway resource.",
+                "example": "6a09cdc3-8948-47f0-aa62-74ac943d6c58",
+                "format": "uuid",
+                "type": "string"
+              },
+              "wireless_blocklist_id": {
+                "description": "The identification of the related Wireless Blocklist resource.",
+                "example": "6a09cdc3-8948-47f0-aa62-74ac943d6c58",
+                "format": "uuid",
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
+          "sim_card_group_id": {
+            "description": "The SIM card group identification.",
+            "example": "6a09cdc3-8948-47f0-aa62-74ac943d6c58",
+            "format": "uuid",
+            "type": "string"
+          },
+          "status": {
+            "enum": [
+              "in-progress",
+              "completed",
+              "failed"
+            ],
+            "example": "in-progress",
+            "type": "string"
+          },
+          "type": {
+            "description": "Represents the type of the operation requested.",
+            "enum": [
+              "set_private_wireless_gateway",
+              "remove_private_wireless_gateway",
+              "set_wireless_blocklist",
+              "remove_wireless_blocklist"
+            ],
+            "example": "set_private_wireless_gateway",
+            "type": "string"
+          },
+          "updated_at": {
+            "description": "ISO 8601 formatted date-time indicating when the resource was updated.",
+            "example": "2018-02-02T22:25:27.521Z",
+            "readOnly": true,
+            "type": "string"
+          }
+        },
+        "title": "SIMCardGroupAction",
+        "type": "object"
+      },
+      "SIMCardGroupCreate": {
+        "properties": {
+          "data_limit": {
+            "description": "Upper limit on the amount of data the SIM cards, within the group, can use.",
+            "properties": {
+              "amount": {
+                "example": "2048.1",
+                "type": "string"
+              },
+              "unit": {
+                "example": "MB",
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
+          "name": {
+            "description": "A user friendly name for the SIM card group.",
+            "example": "My Test Group",
+            "type": "string"
+          }
+        },
+        "required": [
+          "name"
+        ],
+        "title": "SIMCardGroupCreate",
+        "type": "object"
+      },
+      "SIMCardGroupPatch": {
+        "properties": {
+          "data_limit": {
+            "description": "Upper limit on the amount of data the SIM cards, within the group, can use.",
+            "properties": {
+              "amount": {
+                "example": "2048.1",
+                "type": "string"
+              },
+              "unit": {
+                "example": "MB",
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
+          "name": {
+            "description": "A user friendly name for the SIM card group.",
+            "example": "My Test Group",
+            "type": "string"
+          }
+        },
+        "title": "SIMCardGroupPatch",
+        "type": "object"
+      },
+      "SearchedSIMCardGroup": {
+        "properties": {
+          "consumed_data": {
+            "$ref": "#/components/schemas/ConsumedData"
+          },
+          "created_at": {
+            "description": "ISO 8601 formatted date-time indicating when the resource was created.",
+            "example": "2018-02-02T22:25:27.521Z",
+            "readOnly": true,
+            "type": "string"
+          },
+          "data_limit": {
+            "description": "Upper limit on the amount of data the SIM cards, within the group, can use.",
+            "properties": {
+              "amount": {
+                "example": "2048.1",
+                "type": "string"
+              },
+              "unit": {
+                "example": "MB",
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
+          "default": {
+            "description": "Indicates whether the SIM card group is the users default group.\u003cbr/\u003eThe default group is created for the user and can not be removed.",
+            "example": true,
+            "readOnly": true,
+            "type": "boolean"
+          },
+          "id": {
+            "description": "Identifies the resource.",
+            "example": "6a09cdc3-8948-47f0-aa62-74ac943d6c58",
+            "format": "uuid",
+            "readOnly": true,
+            "type": "string"
+          },
+          "name": {
+            "description": "A user friendly name for the SIM card group.",
+            "example": "My Test Group",
+            "type": "string"
+          },
+          "private_wireless_gateway_id": {
+            "default": null,
+            "description": "The identification of the related Private Wireless Gateway resource.",
+            "example": "6a09cdc3-8948-47f0-aa62-74ac943d6c58",
+            "format": "uuid",
+            "type": "string"
+          },
+          "record_type": {
+            "description": "Identifies the type of the resource.",
+            "example": "sim_card_group",
+            "readOnly": true,
+            "type": "string"
+          },
+          "sim_card_count": {
+            "default": 0,
+            "description": "The number of SIM cards associated with the group.",
+            "example": 10,
+            "type": "integer"
+          },
+          "updated_at": {
+            "description": "ISO 8601 formatted date-time indicating when the resource was updated.",
+            "example": "2018-02-02T22:25:27.521Z",
+            "readOnly": true,
+            "type": "string"
+          },
+          "wireless_blocklist_id": {
+            "default": null,
+            "description": "The identification of the related Wireless Blocklist resource.",
+            "example": "5aa584f6-14b1-41b2-8e01-1c04d1ee77c1",
+            "format": "uuid",
+            "type": "string"
+          }
+        },
+        "title": "SIMCardGroup",
+        "type": "object"
+      }
+    },
+    "securitySchemes": {
+      "BearerAuth": {
+        "bearerFormat": "API key",
+        "description": "Telnyx API key supplied as `Authorization: Bearer \u003ctoken\u003e`. In production, auth may be validated by the API gateway and forwarded via Telnyx auth headers.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "Payment": {
+        "description": "Machine Payment Protocol credential used on paid retries, sent as `Authorization: Payment ...`. Obtained by paying a challenge returned in the `WWW-Authenticate` header of a 402 response. This is not a Telnyx API key; initial challenge requests use standard bearer authentication instead.",
+        "in": "header",
+        "name": "Authorization",
+        "type": "apiKey"
+      },
+      "agent-memory_bearerAuth": {
+        "description": "Telnyx API key",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "bearerAuth": {
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "branded-calling_bearerAuth": {
+        "description": "Telnyx API key. Generate one at https://portal.telnyx.com/#/app/api-keys.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "collections_bearerAuth": {
+        "description": "Telnyx API key. Collections and results are automatically scoped to the authenticated user's organization.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "number-reputation_bearerAuth": {
+        "description": "Telnyx API key. Generate one at https://portal.telnyx.com/#/app/api-keys.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "oauthClientAuth": {
+        "description": "OAuth 2.0 authentication for Telnyx API and MCP integrations",
+        "flows": {
+          "authorizationCode": {
+            "authorizationUrl": "https://api.telnyx.com/v2/oauth/authorize",
+            "refreshUrl": "https://api.telnyx.com/v2/oauth/token",
+            "scopes": {
+              "admin": "Administrative access to Telnyx resources"
+            },
+            "tokenUrl": "https://api.telnyx.com/v2/oauth/token"
+          },
+          "clientCredentials": {
+            "scopes": {
+              "admin": "Administrative access to Telnyx resources"
+            },
+            "tokenUrl": "https://api.telnyx.com/v2/oauth/token"
+          }
+        },
+        "type": "oauth2"
+      },
+      "outbound-voice-profiles_bearerAuth": {
+        "bearerFormat": "JWT",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "pay-connectors_bearerAuth": {
+        "description": "Telnyx API key, not the processor bearer token.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "pronunciation-dicts_bearerAuth": {
+        "description": "Telnyx API v2 key. Obtain from https://portal.telnyx.com",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "rcs-registration_bearerAuth": {
+        "bearerFormat": "API key",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "stored-payment-transactions_bearerAuth": {
+        "bearerFormat": "JWT",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "telnyxApiKey": {
+        "description": "Management-only Telnyx account credential.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "transcriptions-search_bearerAuth": {
+        "description": "Telnyx API key. Results are automatically scoped to the authenticated user's organization.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "web-search_bearerAuth": {
+        "description": "Telnyx API key",
+        "scheme": "bearer",
+        "type": "http"
+      }
+    }
+  },
+  "info": {
+    "contact": {
+      "email": "support@telnyx.com"
+    },
+    "description": "SIP trunking, SMS, MMS, Call Control and Telephony Data Services.",
+    "title": "Telnyx API",
+    "version": "2.0.0",
+    "x-endpoint-cost": "light",
+    "x-latency-category": "responsive"
+  },
+  "openapi": "3.1.0",
+  "paths": {
+    "/sim_card_groups": {
+      "get": {
+        "description": "Get all SIM card groups belonging to the user that match the given filters.",
+        "operationId": "GetAllSimCardGroups",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/wireless_PageNumber_c5290d5308"
+          },
+          {
+            "$ref": "#/components/parameters/wireless_PageSize_c5290d5308"
+          },
+          {
+            "description": "A valid SIM card group name.",
+            "in": "query",
+            "name": "filter[name]",
+            "schema": {
+              "example": "My Test Group",
+              "type": "string"
+            }
+          },
+          {
+            "description": "A Private Wireless Gateway ID associated with the group.",
+            "in": "query",
+            "name": "filter[private_wireless_gateway_id]",
+            "schema": {
+              "example": "7606c6d3-ff7c-49c1-943d-68879e9d584d",
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "description": "A Wireless Blocklist ID associated with the group.",
+            "in": "query",
+            "name": "filter[wireless_blocklist_id]",
+            "schema": {
+              "example": "0f3f490e-c4d3-4cf5-838a-9970f10ee259",
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "items": {
+                        "$ref": "#/components/schemas/SearchedSIMCardGroup"
+                      },
+                      "type": "array"
+                    },
+                    "meta": {
+                      "$ref": "#/components/schemas/PaginationMeta"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "default": {
+            "$ref": "#/components/responses/wireless_GenericErrorResponse_c5290d5308"
+          }
+        },
+        "summary": "Get all SIM card groups",
+        "tags": [
+          "SIM Card Groups"
+        ]
+      },
+      "post": {
+        "description": "Creates a new SIM card group and returns it. Groups let you apply shared settings to a set of SIM cards.",
+        "operationId": "CreateSimCardGroup",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SIMCardGroupCreate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/SIMCardGroup"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "default": {
+            "$ref": "#/components/responses/wireless_GenericErrorResponse_c5290d5308"
+          }
+        },
+        "summary": "Create a SIM card group",
+        "tags": [
+          "SIM Card Groups"
+        ]
+      }
+    },
+    "/sim_card_groups/{id}": {
+      "delete": {
+        "description": "Permanently deletes the specified SIM card group from your account.",
+        "operationId": "DeleteSimCardGroup",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/SIMCardGroupId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/SIMCardGroup"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "default": {
+            "$ref": "#/components/responses/wireless_GenericErrorResponse_c5290d5308"
+          }
+        },
+        "summary": "Delete a SIM card group",
+        "tags": [
+          "SIM Card Groups"
+        ]
+      },
+      "get": {
+        "description": "Returns the details regarding a specific SIM card group",
+        "operationId": "GetSimCardGroup",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/SIMCardGroupId"
+          },
+          {
+            "$ref": "#/components/parameters/IncludeICCIDs"
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/SIMCardGroup"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "default": {
+            "$ref": "#/components/responses/wireless_GenericErrorResponse_c5290d5308"
+          }
+        },
+        "summary": "Get SIM card group",
+        "tags": [
+          "SIM Card Groups"
+        ]
+      },
+      "patch": {
+        "description": "Updates the specified SIM card group's attributes and returns the updated group.",
+        "operationId": "UpdateSimCardGroup",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/SIMCardGroupId"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SIMCardGroupPatch"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/SIMCardGroup"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "default": {
+            "$ref": "#/components/responses/wireless_GenericErrorResponse_c5290d5308"
+          }
+        },
+        "summary": "Update a SIM card group",
+        "tags": [
+          "SIM Card Groups"
+        ]
+      }
+    },
+    "/sim_card_groups/{id}/actions/remove_private_wireless_gateway": {
+      "post": {
+        "description": "This action will asynchronously remove an existing Private Wireless Gateway definition from a SIM card group. Completing this operation defines that all SIM cards in the SIM card group will get their traffic handled by Telnyx's default mobile network configuration.",
+        "operationId": "RemoveSimCardGroupPrivateWirelessGateway",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/SIMCardGroupId"
+          }
+        ],
+        "responses": {
+          "202": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/SIMCardGroupAction"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "default": {
+            "$ref": "#/components/responses/wireless_GenericErrorResponse_c5290d5308"
+          }
+        },
+        "summary": "Request Private Wireless Gateway removal from SIM card group",
+        "tags": [
+          "SIM Card Groups"
+        ],
+        "x-latency-category": "background"
+      }
+    },
+    "/sim_card_groups/{id}/actions/remove_wireless_blocklist": {
+      "post": {
+        "description": "This action asynchronously removes the Wireless Blocklist assigned to a SIM Card Group. The request returns `404` when the SIM Card Group does not exist and `422` when no Wireless Blocklist is assigned.",
+        "operationId": "RemoveWirelessBlocklistForSimCardGroup",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/SIMCardGroupId"
+          }
+        ],
+        "responses": {
+          "202": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/SIMCardGroupAction"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "simCardGroupNotFound": {
+                    "summary": "SIM Card Group not found",
+                    "value": {
+                      "errors": [
+                        {
+                          "code": "10005",
+                          "detail": "The requested resource or URL could not be found.",
+                          "meta": {
+                            "url": "https://developers.telnyx.com/api/errors/10005"
+                          },
+                          "source": {
+                            "pointer": "/"
+                          },
+                          "title": "Resource not found"
+                        }
+                      ]
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/Errors"
+                }
+              }
+            },
+            "description": "SIM Card Group not found"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "wirelessBlocklistNotAssigned": {
+                    "summary": "No Wireless Blocklist is assigned",
+                    "value": {
+                      "errors": [
+                        {
+                          "code": "10005",
+                          "detail": "The requested resource or URL could not be found.",
+                          "meta": {
+                            "url": "https://developers.telnyx.com/api/errors/10005"
+                          },
+                          "source": {
+                            "pointer": "/wireless_blocklist_id"
+                          },
+                          "title": "Resource not found"
+                        }
+                      ]
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/Errors"
+                }
+              }
+            },
+            "description": "No Wireless Blocklist is assigned to the SIM Card Group"
+          },
+          "default": {
+            "$ref": "#/components/responses/wireless_GenericErrorResponse_c5290d5308"
+          }
+        },
+        "summary": "Request Wireless Blocklist removal from SIM card group",
+        "tags": [
+          "SIM Card Groups"
+        ],
+        "x-latency-category": "background"
+      }
+    },
+    "/sim_card_groups/{id}/actions/set_private_wireless_gateway": {
+      "post": {
+        "description": "This action will asynchronously assign a provisioned Private Wireless Gateway to the SIM card group. Completing this operation defines that all SIM cards in the SIM card group will get their traffic controlled by the associated Private Wireless Gateway. This operation will also imply that new SIM cards assigned to a group will inherit its network definitions. If it's moved to a different group that doesn't have a Private Wireless Gateway, it'll use Telnyx's default mobile network configuration.",
+        "operationId": "SetPrivateWirelessGatewayForSimCardGroup",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/SIMCardGroupId"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "private_wireless_gateway_id": {
+                    "description": "The identification of the related Private Wireless Gateway resource.",
+                    "example": "6a09cdc3-8948-47f0-aa62-74ac943d6c58",
+                    "format": "uuid",
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "private_wireless_gateway_id"
+                ],
+                "type": "object"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "202": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/SIMCardGroupAction"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "default": {
+            "$ref": "#/components/responses/wireless_GenericErrorResponse_c5290d5308"
+          }
+        },
+        "summary": "Request Private Wireless Gateway assignment for SIM card group",
+        "tags": [
+          "SIM Card Groups"
+        ],
+        "x-latency-category": "background"
+      }
+    },
+    "/sim_card_groups/{id}/actions/set_wireless_blocklist": {
+      "post": {
+        "description": "This action asynchronously assigns a Wireless Blocklist to all SIMs in the SIM Card Group. The request returns `404` when the SIM Card Group does not exist and `422` when the Wireless Blocklist does not exist.",
+        "operationId": "SetWirelessBlocklistForSimCardGroup",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/SIMCardGroupId"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "wireless_blocklist_id": {
+                    "description": "The identification of the related Wireless Blocklist resource.",
+                    "example": "6a09cdc3-8948-47f0-aa62-74ac943d6c58",
+                    "format": "uuid",
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "wireless_blocklist_id"
+                ],
+                "type": "object"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "202": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/SIMCardGroupAction"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "simCardGroupNotFound": {
+                    "summary": "SIM Card Group not found",
+                    "value": {
+                      "errors": [
+                        {
+                          "code": "10005",
+                          "detail": "The requested resource or URL could not be found.",
+                          "meta": {
+                            "url": "https://developers.telnyx.com/api/errors/10005"
+                          },
+                          "source": {
+                            "pointer": "/"
+                          },
+                          "title": "Resource not found"
+                        }
+                      ]
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/Errors"
+                }
+              }
+            },
+            "description": "SIM Card Group not found"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "wirelessBlocklistNotFound": {
+                    "summary": "Wireless Blocklist not found",
+                    "value": {
+                      "errors": [
+                        {
+                          "code": "10005",
+                          "detail": "The requested resource or URL could not be found.",
+                          "meta": {
+                            "url": "https://developers.telnyx.com/api/errors/10005"
+                          },
+                          "source": {
+                            "pointer": "/wireless_blocklist_id"
+                          },
+                          "title": "Resource not found"
+                        }
+                      ]
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/Errors"
+                }
+              }
+            },
+            "description": "Wireless Blocklist not found"
+          },
+          "default": {
+            "$ref": "#/components/responses/wireless_GenericErrorResponse_c5290d5308"
+          }
+        },
+        "summary": "Request Wireless Blocklist assignment for SIM card group",
+        "tags": [
+          "SIM Card Groups"
+        ],
+        "x-latency-category": "background"
+      }
+    }
+  },
+  "security": [
+    {
+      "bearerAuth": []
+    }
+  ],
+  "servers": [
+    {
+      "description": "Version 2.0.0 of the Telnyx API",
+      "url": "https://api.telnyx.com/v2"
+    }
+  ]
+}

@@ -1,0 +1,2091 @@
+{
+  "components": {
+    "parameters": {
+      "FqdnConnectionId": {
+        "description": "The ID of the FQDN connection.",
+        "in": "path",
+        "name": "fqdn_connection_id",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      },
+      "connections_FilterConsolidated": {
+        "description": "Consolidated filter parameter (deepObject style). Originally: filter[connection_name], filter[fqdn], filter[outbound_voice_profile_id], filter[outbound.outbound_voice_profile_id]",
+        "explode": true,
+        "in": "query",
+        "name": "filter",
+        "schema": {
+          "properties": {
+            "connection_name": {
+              "description": "Filter by connection_name using nested operations",
+              "properties": {
+                "contains": {
+                  "default": null,
+                  "description": "If present, connections with \u003ccode\u003econnection_name\u003c/code\u003e containing the given value will be returned. Matching is not case-sensitive. Requires at least three characters.",
+                  "type": "string"
+                }
+              },
+              "type": "object"
+            },
+            "fqdn": {
+              "default": null,
+              "description": "If present, connections with an `fqdn` that equals the given value will be returned. Matching is case-sensitive, and the full string must match.",
+              "type": "string"
+            },
+            "outbound_voice_profile_id": {
+              "description": "Identifies the associated outbound voice profile.",
+              "example": "1293384261075731499",
+              "type": "string",
+              "x-format": "int64"
+            }
+          },
+          "type": "object"
+        },
+        "style": "deepObject"
+      },
+      "connections_PageConsolidated": {
+        "description": "Consolidated page parameter (deepObject style). Originally: page[size], page[number]",
+        "explode": true,
+        "in": "query",
+        "name": "page",
+        "schema": {
+          "properties": {
+            "number": {
+              "default": 1,
+              "description": "The page number to load",
+              "minimum": 1,
+              "type": "integer"
+            },
+            "size": {
+              "default": 250,
+              "description": "The size of the page",
+              "maximum": 250,
+              "minimum": 1,
+              "type": "integer"
+            }
+          },
+          "type": "object"
+        },
+        "style": "deepObject"
+      },
+      "connections_SortConnection": {
+        "description": "Specifies the sort order for results. By default sorting direction is ascending. To have the results sorted in descending order add the \u003ccode\u003e -\u003c/code\u003e prefix.\u003cbr/\u003e\u003cbr/\u003e\nThat is: \u003cul\u003e\n  \u003cli\u003e\n    \u003ccode\u003econnection_name\u003c/code\u003e: sorts the result by the\n    \u003ccode\u003econnection_name\u003c/code\u003e field in ascending order.\n  \u003c/li\u003e\n\n  \u003cli\u003e\n    \u003ccode\u003e-connection_name\u003c/code\u003e: sorts the result by the\n    \u003ccode\u003econnection_name\u003c/code\u003e field in descending order.\n  \u003c/li\u003e\n\u003c/ul\u003e \u003cbr/\u003e If not given, results are sorted by \u003ccode\u003ecreated_at\u003c/code\u003e in descending order.",
+        "in": "query",
+        "name": "sort",
+        "schema": {
+          "default": "created_at",
+          "enum": [
+            "created_at",
+            "connection_name",
+            "active"
+          ],
+          "example": "connection_name",
+          "type": "string"
+        }
+      },
+      "connections_id": {
+        "description": "Identifies the resource.",
+        "in": "path",
+        "name": "id",
+        "required": true,
+        "schema": {
+          "example": "1293384261075731499",
+          "type": "string",
+          "x-format": "int64"
+        }
+      }
+    },
+    "responses": {
+      "UnauthenticatedResponse": {
+        "content": {
+          "application/json": {
+            "examples": {
+              "Authentication Failed": {
+                "value": {
+                  "errors": [
+                    {
+                      "code": "10009",
+                      "detail": "Could not understand the provided credentials.",
+                      "meta": {
+                        "url": "https://developers.telnyx.com/docs/overview/errors/10009"
+                      },
+                      "title": "Authentication failed"
+                    }
+                  ]
+                }
+              }
+            },
+            "schema": {
+              "$ref": "#/components/schemas/call-scripting_ErrorResponse"
+            }
+          }
+        },
+        "description": "Unauthorized"
+      },
+      "connections_BadRequestResponse": {
+        "content": {
+          "application/json": {
+            "examples": {
+              "missingParameter": {
+                "value": {
+                  "errors": [
+                    {
+                      "code": "10015",
+                      "detail": "The request failed because it was not well-formed.",
+                      "meta": {
+                        "url": "https://developers.telnyx.com/docs/overview/errors/10015"
+                      },
+                      "source": {
+                        "pointer": "/"
+                      },
+                      "title": "Bad Request"
+                    }
+                  ]
+                }
+              }
+            },
+            "schema": {
+              "$ref": "#/components/schemas/connections_ErrorResponse"
+            }
+          }
+        },
+        "description": "Bad request, the request was unacceptable, often due to missing a required parameter."
+      },
+      "connections_NotFoundResponse": {
+        "content": {
+          "application/json": {
+            "examples": {
+              "notFound": {
+                "value": {
+                  "errors": [
+                    {
+                      "code": "10005",
+                      "detail": "The requested resource or URL could not be found.",
+                      "meta": {
+                        "url": "https://developers.telnyx.com/docs/overview/errors/10005"
+                      },
+                      "source": {
+                        "pointer": "/"
+                      },
+                      "title": "Resource not found"
+                    }
+                  ]
+                }
+              }
+            },
+            "schema": {
+              "$ref": "#/components/schemas/connections_ErrorResponse"
+            }
+          }
+        },
+        "description": "The requested resource doesn't exist."
+      },
+      "connections_UnauthorizedResponse": {
+        "content": {
+          "application/json": {
+            "examples": {
+              "notAuthorized": {
+                "value": {
+                  "errors": [
+                    {
+                      "code": "10010",
+                      "detail": "You are not authorized to access the requested resource.",
+                      "meta": {
+                        "url": "https://developers.telnyx.com/docs/overview/errors/10010"
+                      },
+                      "source": {
+                        "pointer": "/"
+                      },
+                      "title": "Not authorized"
+                    }
+                  ]
+                }
+              }
+            },
+            "schema": {
+              "$ref": "#/components/schemas/connections_ErrorResponse"
+            }
+          }
+        },
+        "description": "The user doesn't have the required permissions to perform the requested action."
+      },
+      "connections_UnprocessableEntityResponse": {
+        "content": {
+          "application/json": {
+            "examples": {
+              "unprocessableEntity": {
+                "value": {
+                  "errors": [
+                    {
+                      "code": "10015",
+                      "detail": "Invalid dnis_format: test, was provided. Acceptable formats are +e164, e164, national, sip_username",
+                      "meta": {
+                        "url": "https://developers.telnyx.com/docs/overview/errors/10015"
+                      },
+                      "source": {
+                        "pointer": "/inbound/dnis_number_format"
+                      },
+                      "title": "Bad Request"
+                    }
+                  ]
+                }
+              }
+            },
+            "schema": {
+              "$ref": "#/components/schemas/connections_ErrorResponse"
+            }
+          }
+        },
+        "description": "The request was well-formed but was unable to be followed due to semantic errors."
+      }
+    },
+    "schemas": {
+      "AnchorsiteOverride": {
+        "default": "Latency",
+        "description": "`Latency` directs Telnyx to route media through the site with the lowest round-trip time to the user's connection. Telnyx calculates this time using ICMP ping messages. This can be disabled by specifying a site to handle all media.",
+        "enum": [
+          "Latency",
+          "Chicago, IL",
+          "Ashburn, VA",
+          "San Jose, CA",
+          "Sydney, Australia",
+          "Amsterdam, Netherlands",
+          "London, UK",
+          "Toronto, Canada",
+          "Vancouver, Canada",
+          "Frankfurt, Germany"
+        ],
+        "example": "Amsterdam, Netherlands",
+        "title": "Anchorsite Override",
+        "type": "string"
+      },
+      "ConnectionAndroidPushCredentialId": {
+        "default": null,
+        "description": "The uuid of the push credential for Android",
+        "example": "06b09dfd-7154-4980-8b75-cebf7a9d4f8e",
+        "title": "Android Push Credential Id",
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "ConnectionIosPushCredentialId": {
+        "default": null,
+        "description": "The uuid of the push credential for Ios",
+        "example": "ec0c8e5d-439e-4620-a0c1-9d9c8d02a836",
+        "title": "Ios Push Credential Id",
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "ConnectionJitterBuffer": {
+        "description": "Configuration options for Jitter Buffer. Enables Jitter Buffer for RTP streams of SIP Trunking calls. The feature is off unless enabled. You may define min and max values in msec for customized buffering behaviors. Larger values add latency but tolerate more jitter, while smaller values reduce latency but are more sensitive to jitter and reordering.",
+        "properties": {
+          "enable_jitter_buffer": {
+            "default": false,
+            "description": "Enables Jitter Buffer for RTP streams of SIP Trunking calls. The feature is off unless enabled.",
+            "example": true,
+            "type": "boolean"
+          },
+          "jitterbuffer_msec_max": {
+            "default": 200,
+            "description": "The maximum jitter buffer size in milliseconds. Must be between 40 and 400. Has no effect if enable_jitter_buffer is not true.",
+            "example": 200,
+            "maximum": 400,
+            "minimum": 40,
+            "type": "integer"
+          },
+          "jitterbuffer_msec_min": {
+            "default": 60,
+            "description": "The minimum jitter buffer size in milliseconds. Must be between 40 and 400. Has no effect if enable_jitter_buffer is not true.",
+            "example": 60,
+            "maximum": 400,
+            "minimum": 40,
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "ConnectionName": {
+        "description": "A user-assigned name to help manage the connection.",
+        "example": "office-connection",
+        "title": "Connection Name",
+        "type": "string"
+      },
+      "ConnectionNoiseSuppression": {
+        "description": "Controls when noise suppression is applied to calls. When set to 'inbound', noise suppression is applied to incoming audio. When set to 'outbound', it's applied to outgoing audio. When set to 'both', it's applied in both directions. When set to 'disabled', noise suppression is turned off.",
+        "enum": [
+          "inbound",
+          "outbound",
+          "both",
+          "disabled"
+        ],
+        "example": "both",
+        "type": "string"
+      },
+      "ConnectionNoiseSuppressionDetails": {
+        "description": "Configuration options for noise suppression. These settings are stored regardless of the noise_suppression value, but only take effect when noise_suppression is not 'disabled'. If you disable noise suppression and later re-enable it, the previously configured settings will be used.",
+        "properties": {
+          "attenuation_limit": {
+            "description": "The attenuation limit value for the selected engine. Default values vary by engine: 0 for 'denoiser', 80 for 'deep_filter_net', 'deep_filter_net_large', and all Krisp engines ('krisp_viva_tel', 'krisp_viva_tel_lite', 'krisp_viva_promodel', 'krisp_viva_ss'), 100 for 'quail_voice_focus'.",
+            "example": 80,
+            "maximum": 100,
+            "minimum": 0,
+            "multipleOf": 10,
+            "type": "integer"
+          },
+          "engine": {
+            "default": "denoiser",
+            "description": "The noise suppression engine to use. 'denoiser' is the default engine. 'deep_filter_net' and 'deep_filter_net_large' are alternative engines with different performance characteristics. Krisp engines ('krisp_viva_tel', 'krisp_viva_tel_lite', 'krisp_viva_promodel', 'krisp_viva_ss') provide advanced noise suppression capabilities. 'quail_voice_focus' provides Quail-based voice focus noise suppression.",
+            "enum": [
+              "denoiser",
+              "deep_filter_net",
+              "deep_filter_net_large",
+              "krisp_viva_tel",
+              "krisp_viva_tel_lite",
+              "krisp_viva_promodel",
+              "krisp_viva_ss",
+              "quail_voice_focus"
+            ],
+            "example": "deep_filter_net",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "ConnectionRtcpSettings": {
+        "example": {
+          "capture_enabled": true,
+          "port": "rtcp-mux",
+          "report_frequency_secs": 10
+        },
+        "properties": {
+          "capture_enabled": {
+            "default": false,
+            "description": "Enable the capture and storage of RTCP messages to create QoS reports on the Telnyx Mission Control Portal.",
+            "example": true,
+            "type": "boolean"
+          },
+          "port": {
+            "default": "rtp+1",
+            "description": "RTCP port by default is rtp+1, it can also be set to rtcp-mux",
+            "enum": [
+              "rtcp-mux",
+              "rtp+1"
+            ],
+            "type": "string"
+          },
+          "report_frequency_secs": {
+            "default": 5,
+            "description": "RTCP reports are sent to customers based on the frequency set. Frequency is in seconds and it can be set to values from 5 to 3000 seconds.",
+            "example": 10,
+            "type": "integer"
+          }
+        },
+        "title": "Connection RTCP Settings",
+        "type": "object"
+      },
+      "CreateFqdnConnectionRequest": {
+        "example": {
+          "active": true,
+          "anchorsite_override": "Latency",
+          "android_push_credential_id": "06b09dfd-7154-4980-8b75-cebf7a9d4f8e",
+          "bridge_generate_comfort_noise_on_cn": false,
+          "call_cost_in_webhooks": false,
+          "connection_name": "string",
+          "default_on_hold_comfort_noise_enabled": true,
+          "dtmf_type": "RFC 2833",
+          "encode_contact_header_enabled": true,
+          "encrypted_media": "SRTP",
+          "inbound": {
+            "ani_number_format": "+E.164",
+            "channel_limit": 10,
+            "codecs": [
+              "G722"
+            ],
+            "dnis_number_format": "+e164",
+            "generate_ringback_tone": true,
+            "isup_headers_enabled": true,
+            "prack_enabled": true,
+            "shaken_stir_enabled": true,
+            "sip_compact_headers_enabled": true,
+            "sip_region": "US",
+            "sip_subdomain": "string",
+            "sip_subdomain_receive_settings": "only_my_connections",
+            "timeout_1xx_secs": 10,
+            "timeout_2xx_secs": 10
+          },
+          "ios_push_credential_id": "ec0c8e5d-439e-4620-a0c1-9d9c8d02a836",
+          "jitter_buffer": {
+            "enable_jitter_buffer": true,
+            "jitterbuffer_msec_max": 200,
+            "jitterbuffer_msec_min": 60
+          },
+          "noise_suppression": "both",
+          "noise_suppression_details": {
+            "attenuation_limit": 80,
+            "engine": "deep_filter_net"
+          },
+          "onnet_t38_passthrough_enabled": true,
+          "outbound": {
+            "ani_override": "+1234567890",
+            "ani_override_type": "always",
+            "call_parking_enabled": true,
+            "channel_limit": 10,
+            "encrypted_media": "SRTP",
+            "generate_ringback_tone": true,
+            "instant_ringback_enabled": true,
+            "ip_authentication_method": "credential-authentication",
+            "ip_authentication_token": "aBcD1234",
+            "localization": "string",
+            "outbound_voice_profile_id": "1293384261075731499",
+            "t38_reinvite_source": "customer",
+            "tech_prefix": "0123",
+            "timeout_1xx_secs": 10,
+            "timeout_2xx_secs": 10
+          },
+          "rtcp_settings": {
+            "capture_enabled": true,
+            "port": "rtcp-mux",
+            "report_frequency_secs": 10
+          },
+          "tags": [
+            "tag1",
+            "tag2"
+          ],
+          "transport_protocol": "TLS",
+          "webhook_api_version": "1",
+          "webhook_event_failover_url": "https://failover.example.com",
+          "webhook_event_url": "https://example.com",
+          "webhook_timeout_secs": 25
+        },
+        "properties": {
+          "active": {
+            "default": true,
+            "description": "Defaults to true",
+            "type": "boolean"
+          },
+          "anchorsite_override": {
+            "$ref": "#/components/schemas/AnchorsiteOverride"
+          },
+          "android_push_credential_id": {
+            "$ref": "#/components/schemas/ConnectionAndroidPushCredentialId"
+          },
+          "bridge_generate_comfort_noise_on_cn": {
+            "default": false,
+            "description": "Stores the connection preference for generating silent RTP toward the opposite call leg when comfort-noise packets (CN, payload type 13) are received during hold. Optional; defaults to false when omitted on creation. Only JSON true and false are accepted; null and non-boolean values are rejected. This preference is independent of default_on_hold_comfort_noise_enabled and does not modify that setting. This API provisions the preference; call-processing behavior is implemented separately.",
+            "example": false,
+            "type": "boolean"
+          },
+          "call_cost_in_webhooks": {
+            "default": false,
+            "description": "Specifies if call cost webhooks should be sent for this connection.",
+            "type": "boolean"
+          },
+          "connection_name": {
+            "$ref": "#/components/schemas/ConnectionName"
+          },
+          "default_on_hold_comfort_noise_enabled": {
+            "default": true,
+            "description": "When enabled, Telnyx will generate comfort noise when you place the call on hold. If disabled, you will need to generate comfort noise or on hold music to avoid RTP timeout.",
+            "type": "boolean"
+          },
+          "dtmf_type": {
+            "$ref": "#/components/schemas/DtmfType"
+          },
+          "encode_contact_header_enabled": {
+            "default": false,
+            "description": "Encode the SIP contact header sent by Telnyx to avoid issues for NAT or ALG scenarios.",
+            "type": "boolean"
+          },
+          "encrypted_media": {
+            "$ref": "#/components/schemas/EncryptedMedia"
+          },
+          "inbound": {
+            "$ref": "#/components/schemas/InboundFqdn"
+          },
+          "ios_push_credential_id": {
+            "$ref": "#/components/schemas/ConnectionIosPushCredentialId"
+          },
+          "jitter_buffer": {
+            "$ref": "#/components/schemas/ConnectionJitterBuffer"
+          },
+          "microsoft_teams_sbc": {
+            "default": false,
+            "description": "When enabled, the connection will be created for Microsoft Teams Direct Routing. A *.mstsbc.telnyx.tech FQDN will be created for the connection automatically.",
+            "type": "boolean"
+          },
+          "noise_suppression": {
+            "$ref": "#/components/schemas/ConnectionNoiseSuppression"
+          },
+          "noise_suppression_details": {
+            "$ref": "#/components/schemas/ConnectionNoiseSuppressionDetails"
+          },
+          "onnet_t38_passthrough_enabled": {
+            "default": false,
+            "description": "Enable on-net T38 if you prefer the sender and receiver negotiating T38 directly if both are on the Telnyx network. If this is disabled, Telnyx will be able to use T38 on just one leg of the call depending on each leg's settings.",
+            "type": "boolean"
+          },
+          "outbound": {
+            "$ref": "#/components/schemas/OutboundFqdn"
+          },
+          "rtcp_settings": {
+            "$ref": "#/components/schemas/ConnectionRtcpSettings"
+          },
+          "tags": {
+            "description": "Tags associated with the connection.",
+            "example": [
+              "tag1",
+              "tag2"
+            ],
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "transport_protocol": {
+            "$ref": "#/components/schemas/FqdnConnectionTransportProtocol"
+          },
+          "webhook_api_version": {
+            "$ref": "#/components/schemas/WebhookApiVersion"
+          },
+          "webhook_event_failover_url": {
+            "$ref": "#/components/schemas/WebhookEventFailoverUrl"
+          },
+          "webhook_event_url": {
+            "$ref": "#/components/schemas/WebhookEventUrl"
+          },
+          "webhook_timeout_secs": {
+            "$ref": "#/components/schemas/WebhookTimeoutSecs"
+          }
+        },
+        "required": [
+          "connection_name"
+        ],
+        "title": "Create FQDN Connection Request",
+        "type": "object"
+      },
+      "CreatedAt": {
+        "description": "ISO 8601 formatted date indicating when the resource was created.",
+        "example": "2020-02-02T22:25:27.521Z",
+        "title": "Created At",
+        "type": "string"
+      },
+      "DtmfType": {
+        "default": "RFC 2833",
+        "description": "Sets the type of DTMF digits sent from Telnyx to this Connection. Note that DTMF digits sent to Telnyx will be accepted in all formats.",
+        "enum": [
+          "RFC 2833",
+          "Inband",
+          "SIP INFO"
+        ],
+        "example": "Inband",
+        "title": "DTMF Type",
+        "type": "string"
+      },
+      "EncryptedMedia": {
+        "description": "Enable use of SRTP for encryption. Can only be set when the SIP signaling transport protocol is TLS.",
+        "enum": [
+          "SRTP",
+          null
+        ],
+        "example": "SRTP",
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "FqdnAuthentication": {
+        "properties": {
+          "connection_id": {
+            "description": "The ID of the FQDN connection this authentication strategy belongs to.",
+            "example": "1293384261075731499",
+            "type": "string"
+          },
+          "failover_url": {
+            "description": "The failover webhook URL.",
+            "format": "uri",
+            "type": "string"
+          },
+          "fqdn_outbound_authentication": {
+            "description": "The outbound authentication type.",
+            "enum": [
+              "ip-authentication",
+              "credential-authentication"
+            ],
+            "type": "string"
+          },
+          "id": {
+            "description": "Identifies the resource.",
+            "example": "1293384261075731499",
+            "type": "string"
+          },
+          "ip_authentication_method": {
+            "description": "The IP authentication method.",
+            "enum": [
+              "token",
+              "p-charge-info"
+            ],
+            "type": "string"
+          },
+          "microsoft_teams_sbc": {
+            "default": false,
+            "description": "Whether the connection is a Microsoft Teams SBC.",
+            "type": "boolean"
+          },
+          "password": {
+            "description": "The password for authentication. For primary accounts created on or after September 8, 2026, this password is returned as `********`. The password is returned in full on create, and on update only when that update changed the password. Accounts created before September 8, 2026 are unaffected.",
+            "type": "string"
+          },
+          "record_type": {
+            "description": "Identifies the type of the resource.",
+            "example": "fqdn_authentication",
+            "type": "string"
+          },
+          "txt_name": {
+            "description": "The TXT record name for Microsoft Teams SBC DNS verification.",
+            "type": "string"
+          },
+          "txt_ttl": {
+            "description": "The TTL for the TXT record.",
+            "type": "integer"
+          },
+          "txt_value": {
+            "description": "The TXT record value for Microsoft Teams SBC DNS verification.",
+            "type": "string"
+          },
+          "user_name": {
+            "description": "The username for authentication.",
+            "type": "string"
+          },
+          "webhook_url": {
+            "description": "The webhook URL for authentication events.",
+            "format": "uri",
+            "type": "string"
+          }
+        },
+        "title": "FQDN Authentication",
+        "type": "object"
+      },
+      "FqdnConnection": {
+        "example": {
+          "active": true,
+          "anchorsite_override": "Latency",
+          "android_push_credential_id": "06b09dfd-7154-4980-8b75-cebf7a9d4f8e",
+          "bridge_generate_comfort_noise_on_cn": false,
+          "call_cost_in_webhooks": false,
+          "connection_name": "string",
+          "created_at": "2018-02-02T22:25:27.521Z",
+          "default_on_hold_comfort_noise_enabled": true,
+          "dtmf_type": "RFC 2833",
+          "encode_contact_header_enabled": true,
+          "encrypted_media": "SRTP",
+          "id": "1293384261075731499",
+          "inbound": {
+            "ani_number_format": "+E.164",
+            "channel_limit": 10,
+            "codecs": [
+              "G722"
+            ],
+            "dnis_number_format": "+e164",
+            "generate_ringback_tone": true,
+            "isup_headers_enabled": true,
+            "prack_enabled": true,
+            "shaken_stir_enabled": true,
+            "sip_compact_headers_enabled": true,
+            "sip_region": "US",
+            "sip_subdomain": "string",
+            "sip_subdomain_receive_settings": "only_my_connections",
+            "timeout_1xx_secs": 10,
+            "timeout_2xx_secs": 10
+          },
+          "ios_push_credential_id": "ec0c8e5d-439e-4620-a0c1-9d9c8d02a836",
+          "jitter_buffer": {
+            "enable_jitter_buffer": true,
+            "jitterbuffer_msec_max": 200,
+            "jitterbuffer_msec_min": 60
+          },
+          "noise_suppression": "both",
+          "noise_suppression_details": {
+            "attenuation_limit": 80,
+            "engine": "deep_filter_net"
+          },
+          "onnet_t38_passthrough_enabled": true,
+          "outbound": {
+            "ani_override": "string",
+            "ani_override_type": "always",
+            "call_parking_enabled": true,
+            "channel_limit": 10,
+            "generate_ringback_tone": true,
+            "instant_ringback_enabled": true,
+            "ip_authentication_method": "credential-authentication",
+            "ip_authentication_token": "string",
+            "localization": "string",
+            "outbound_voice_profile_id": "1293384261075731499",
+            "t38_reinvite_source": "customer",
+            "tech_prefix": "string"
+          },
+          "record_type": "fqdn_connection",
+          "rtcp_settings": {
+            "capture_enabled": true,
+            "port": "rtcp-mux",
+            "report_frequency_secs": 10
+          },
+          "tags": [
+            "tag1",
+            "tag2"
+          ],
+          "transport_protocol": "TLS",
+          "updated_at": "2018-02-02T22:25:27.521Z",
+          "webhook_api_version": "1",
+          "webhook_event_failover_url": "https://failover.example.com",
+          "webhook_event_url": "https://example.com",
+          "webhook_timeout_secs": 25
+        },
+        "properties": {
+          "active": {
+            "description": "Defaults to true",
+            "type": "boolean"
+          },
+          "adjust_dtmf_timestamp": {
+            "description": "Indicates whether DTMF timestamp adjustment is enabled.",
+            "type": "boolean"
+          },
+          "anchorsite_override": {
+            "$ref": "#/components/schemas/AnchorsiteOverride"
+          },
+          "android_push_credential_id": {
+            "$ref": "#/components/schemas/ConnectionAndroidPushCredentialId"
+          },
+          "bridge_generate_comfort_noise_on_cn": {
+            "default": false,
+            "description": "Stores the connection preference for generating silent RTP toward the opposite call leg when comfort-noise packets (CN, payload type 13) are received during hold. Defaults to false and returns the saved value. Only JSON true and false are accepted; null and non-boolean values are rejected. This preference is independent of default_on_hold_comfort_noise_enabled and does not modify that setting. This API provisions the preference; call-processing behavior is implemented separately.",
+            "example": false,
+            "type": "boolean"
+          },
+          "call_cost_enabled": {
+            "description": "Indicates whether call cost calculation is enabled.",
+            "type": "boolean"
+          },
+          "call_cost_in_webhooks": {
+            "default": false,
+            "description": "Specifies if call cost webhooks should be sent for this connection.",
+            "type": "boolean"
+          },
+          "connection_name": {
+            "$ref": "#/components/schemas/ConnectionName"
+          },
+          "conversation_persistence": {
+            "description": "Whether conversation persistence is enabled for this connection. When enabled, calls handled by the connection are transcribed, stored, and indexed. Defaults to false.",
+            "type": "boolean"
+          },
+          "created_at": {
+            "$ref": "#/components/schemas/CreatedAt"
+          },
+          "default_on_hold_comfort_noise_enabled": {
+            "default": true,
+            "description": "When enabled, Telnyx will generate comfort noise when you place the call on hold. If disabled, you will need to generate comfort noise or on hold music to avoid RTP timeout.",
+            "type": "boolean"
+          },
+          "dtmf_type": {
+            "$ref": "#/components/schemas/DtmfType"
+          },
+          "encode_contact_header_enabled": {
+            "default": false,
+            "description": "Encode the SIP contact header sent by Telnyx to avoid issues for NAT or ALG scenarios.",
+            "type": "boolean"
+          },
+          "encrypted_media": {
+            "$ref": "#/components/schemas/EncryptedMedia"
+          },
+          "id": {
+            "description": "Identifies the resource.",
+            "example": "1293384261075731499",
+            "type": "string",
+            "x-format": "int64"
+          },
+          "ignore_dtmf_duration": {
+            "description": "Indicates whether DTMF duration should be ignored.",
+            "type": "boolean"
+          },
+          "ignore_mark_bit": {
+            "description": "Indicates whether the mark bit should be ignored.",
+            "type": "boolean"
+          },
+          "inbound": {
+            "$ref": "#/components/schemas/InboundFqdn"
+          },
+          "ios_push_credential_id": {
+            "$ref": "#/components/schemas/ConnectionIosPushCredentialId"
+          },
+          "jitter_buffer": {
+            "$ref": "#/components/schemas/ConnectionJitterBuffer"
+          },
+          "microsoft_teams_sbc": {
+            "default": false,
+            "description": "The connection is enabled for Microsoft Teams Direct Routing.",
+            "type": "boolean"
+          },
+          "noise_suppression": {
+            "$ref": "#/components/schemas/ConnectionNoiseSuppression"
+          },
+          "noise_suppression_details": {
+            "$ref": "#/components/schemas/ConnectionNoiseSuppressionDetails"
+          },
+          "onnet_t38_passthrough_enabled": {
+            "default": false,
+            "description": "Enable on-net T38 if you prefer that the sender and receiver negotiate T38 directly when both are on the Telnyx network. If this is disabled, Telnyx will be able to use T38 on just one leg of the call according to each leg's settings.",
+            "type": "boolean"
+          },
+          "outbound": {
+            "$ref": "#/components/schemas/OutboundFqdn"
+          },
+          "password": {
+            "description": "The password for the FQDN connection. For primary accounts created on or after September 8, 2026, this password is returned as `********`. The password is returned in full on create, and on update only when that update changed the password. Accounts created before September 8, 2026 are unaffected.",
+            "type": "string"
+          },
+          "record_type": {
+            "description": "Identifies the type of the resource.",
+            "example": "fqdn_connection",
+            "type": "string"
+          },
+          "rtcp_settings": {
+            "$ref": "#/components/schemas/ConnectionRtcpSettings"
+          },
+          "rtp_pass_codecs_on_stream_change": {
+            "description": "Defines if codecs should be passed on stream change.",
+            "type": "boolean"
+          },
+          "send_normalized_timestamps": {
+            "description": "Indicates whether normalized timestamps should be sent.",
+            "type": "boolean"
+          },
+          "tags": {
+            "description": "Tags associated with the connection.",
+            "example": [
+              "tag1",
+              "tag2"
+            ],
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "third_party_control_enabled": {
+            "description": "Indicates whether third-party control is enabled.",
+            "type": "boolean"
+          },
+          "transport_protocol": {
+            "$ref": "#/components/schemas/FqdnConnectionTransportProtocol"
+          },
+          "txt_name": {
+            "description": "The name for the TXT record associated with the FQDN connection.",
+            "type": "string"
+          },
+          "txt_ttl": {
+            "description": "The time to live for the TXT record associated with the FQDN connection.",
+            "type": "integer"
+          },
+          "txt_value": {
+            "description": "The value for the TXT record associated with the FQDN connection.",
+            "type": "string"
+          },
+          "updated_at": {
+            "$ref": "#/components/schemas/UpdatedAt"
+          },
+          "user_name": {
+            "description": "The username for the FQDN connection.",
+            "type": "string"
+          },
+          "webhook_api_version": {
+            "$ref": "#/components/schemas/WebhookApiVersion"
+          },
+          "webhook_event_failover_url": {
+            "$ref": "#/components/schemas/WebhookEventFailoverUrl"
+          },
+          "webhook_event_url": {
+            "$ref": "#/components/schemas/WebhookEventUrl"
+          },
+          "webhook_timeout_secs": {
+            "$ref": "#/components/schemas/WebhookTimeoutSecs"
+          }
+        },
+        "required": [
+          "connection_name"
+        ],
+        "title": "FQDN Connection",
+        "type": "object"
+      },
+      "FqdnConnectionTransportProtocol": {
+        "default": "UDP",
+        "description": "One of UDP, TLS, or TCP. Applies only to connections with IP authentication or FQDN authentication.",
+        "enum": [
+          "UDP",
+          "TCP",
+          "TLS"
+        ],
+        "type": "string"
+      },
+      "InboundFqdn": {
+        "example": {
+          "ani_number_format": "+E.164",
+          "channel_limit": 10,
+          "codecs": [
+            "G722"
+          ],
+          "default_primary_fqdn_id": "1293384261075731497",
+          "default_routing_method": "sequential",
+          "default_secondary_fqdn_id": "1293384261075731498",
+          "default_tertiary_fqdn_id": "1293384261075731499",
+          "dnis_number_format": "+e164",
+          "generate_ringback_tone": true,
+          "isup_headers_enabled": true,
+          "prack_enabled": true,
+          "shaken_stir_enabled": true,
+          "sip_compact_headers_enabled": true,
+          "sip_region": "US",
+          "sip_subdomain": "test",
+          "sip_subdomain_receive_settings": "only_my_connections",
+          "timeout_1xx_secs": 10,
+          "timeout_2xx_secs": 20
+        },
+        "properties": {
+          "ani_number_format": {
+            "default": "E.164-national",
+            "description": "This setting allows you to set the format with which the caller's number (ANI) is sent for inbound phone calls.",
+            "enum": [
+              "+E.164",
+              "E.164",
+              "+E.164-national",
+              "E.164-national"
+            ],
+            "type": "string"
+          },
+          "channel_limit": {
+            "default": null,
+            "description": "When set, this will limit the total number of inbound calls to phone numbers associated with this connection.",
+            "type": [
+              "integer",
+              "null"
+            ]
+          },
+          "codecs": {
+            "default": [
+              "G722",
+              "G711U",
+              "G711A",
+              "G729",
+              "OPUS",
+              "H.264"
+            ],
+            "description": "Defines the list of codecs that Telnyx will send for inbound calls to a specific number on your portal account, in priority order. This only works when the Connection the number is assigned to uses Media Handling mode: default. OPUS and H.264 codecs are available only when using TCP or TLS transport for SIP.",
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "default_primary_fqdn_id": {
+            "default": null,
+            "description": "The default primary FQDN to use for the number. Only settable if the connection is\nof FQDN type. Value must be the ID of an FQDN set on the connection.",
+            "type": [
+              "string",
+              "null"
+            ],
+            "x-format": "int64"
+          },
+          "default_routing_method": {
+            "default": "sequential",
+            "description": "Default routing method to be used when a number is associated with the connection. Must be one of the routing method types or null, other values are not allowed.",
+            "enum": [
+              "sequential",
+              "round-robin",
+              null
+            ],
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "default_secondary_fqdn_id": {
+            "default": null,
+            "description": "The default secondary FQDN to use for the number. Only settable if the connection is\nof FQDN type. Value must be the ID of an FQDN set on the connection.",
+            "type": [
+              "string",
+              "null"
+            ],
+            "x-format": "int64"
+          },
+          "default_tertiary_fqdn_id": {
+            "default": null,
+            "description": "The default tertiary FQDN to use for the number. Only settable if the connection is\nof FQDN type. Value must be the ID of an FQDN set on the connection.",
+            "type": [
+              "string",
+              "null"
+            ],
+            "x-format": "int64"
+          },
+          "dnis_number_format": {
+            "default": "e164",
+            "enum": [
+              "+e164",
+              "e164",
+              "national",
+              "sip_username"
+            ],
+            "type": "string"
+          },
+          "generate_ringback_tone": {
+            "default": false,
+            "description": "Generate ringback tone through 183 session progress message with early media.",
+            "type": "boolean"
+          },
+          "isup_headers_enabled": {
+            "default": false,
+            "description": "When set, inbound phone calls will receive ISUP parameters via SIP headers. (Only when available and only when using TCP or TLS transport.)",
+            "type": "boolean"
+          },
+          "prack_enabled": {
+            "default": false,
+            "description": "Enable PRACK messages as defined in RFC3262.",
+            "type": "boolean"
+          },
+          "shaken_stir_enabled": {
+            "default": false,
+            "description": "When enabled the SIP Connection will receive the Identity header with Shaken/Stir data in the SIP INVITE message of inbound calls, even when using UDP transport.",
+            "type": "boolean"
+          },
+          "sip_compact_headers_enabled": {
+            "default": true,
+            "description": "Defaults to true.",
+            "type": "boolean"
+          },
+          "sip_region": {
+            "default": "US",
+            "description": "Selects which `sip_region` to receive inbound calls from. If null, the default region (US) will be used.",
+            "enum": [
+              "US",
+              "Europe",
+              "Australia"
+            ],
+            "type": "string"
+          },
+          "sip_subdomain": {
+            "default": null,
+            "description": "Specifies a subdomain that can be used to receive Inbound calls to a Connection, in the same way a phone number is used, from a SIP endpoint. Example: the subdomain \"example.sip.telnyx.com\" can be called from any SIP endpoint by using the SIP URI \"sip:@example.sip.telnyx.com\" where the user part can be any alphanumeric value. TLS signaling is supported. SRTP media encryption requires TLS transport.",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "sip_subdomain_receive_settings": {
+            "default": "from_anyone",
+            "description": "This option can be enabled to receive calls from: \"Anyone\" (any SIP endpoint in the public Internet) or \"Only my connections\" (any connection assigned to the same Telnyx user).",
+            "enum": [
+              "only_my_connections",
+              "from_anyone"
+            ],
+            "type": "string"
+          },
+          "timeout_1xx_secs": {
+            "default": 3,
+            "description": "Time(sec) before aborting if connection is not made.",
+            "maximum": 120,
+            "minimum": 1,
+            "type": "integer"
+          },
+          "timeout_2xx_secs": {
+            "default": 90,
+            "description": "Time(sec) before aborting if call is unanswered (min: 1, max: 600).",
+            "maximum": 600,
+            "minimum": 1,
+            "type": "integer"
+          }
+        },
+        "title": "Inbound FQDN",
+        "type": "object"
+      },
+      "OutboundFqdn": {
+        "properties": {
+          "ani_override": {
+            "description": "Set a phone number as the ani_override value to override caller id number on outbound calls.",
+            "title": "ANI override type",
+            "type": "string",
+            "x-format": "E.164"
+          },
+          "ani_override_type": {
+            "default": "always",
+            "description": "Specifies when we should apply your ani_override setting. Only applies when ani_override is not blank.",
+            "enum": [
+              "always",
+              "normal",
+              "emergency"
+            ],
+            "example": "normal",
+            "title": "ANI override type",
+            "type": "string"
+          },
+          "call_parking_enabled": {
+            "default": false,
+            "description": "Forces all SIP calls originated on this connection to be \\\"parked\\\" instead of \\\"bridged\\\" to the destination specified on the URI. Parked calls will return ringback to the caller and will await for a Call Control command to define which action will be taken next.",
+            "type": [
+              "boolean",
+              "null"
+            ]
+          },
+          "channel_limit": {
+            "description": "When set, this will limit the total number of inbound calls to phone numbers associated with this connection.",
+            "type": "integer"
+          },
+          "encrypted_media": {
+            "$ref": "#/components/schemas/EncryptedMedia"
+          },
+          "generate_ringback_tone": {
+            "default": false,
+            "description": "Generate ringback tone through 183 session progress message with early media.",
+            "type": "boolean"
+          },
+          "instant_ringback_enabled": {
+            "default": false,
+            "description": "When set, ringback will not wait for indication before sending ringback tone to calling party.",
+            "type": "boolean"
+          },
+          "ip_authentication_method": {
+            "default": "ip-authentication",
+            "enum": [
+              "credential-authentication",
+              "ip-authentication"
+            ],
+            "example": "credential-authentication",
+            "type": "string"
+          },
+          "ip_authentication_token": {
+            "type": "string"
+          },
+          "localization": {
+            "default": "US",
+            "description": "A 2-character country code specifying the country whose national dialing rules should be used. For example, if set to `US` then any US number can be dialed without preprending +1 to the number. When left blank, Telnyx will try US and GB dialing rules, in that order, by default.\",",
+            "example": "US",
+            "type": "string"
+          },
+          "outbound_voice_profile_id": {
+            "$ref": "#/components/schemas/connections_OutboundVoiceProfileId"
+          },
+          "t38_reinvite_source": {
+            "default": "customer",
+            "description": "This setting only affects connections with Fax-type Outbound Voice Profiles. The setting dictates whether or not Telnyx sends a t.38 reinvite. By default, Telnyx will send the re-invite. If set to `customer`, the caller is expected to send the t.38 reinvite.",
+            "enum": [
+              "telnyx",
+              "customer",
+              "disabled",
+              "passthru",
+              "caller-passthru",
+              "callee-passthru"
+            ],
+            "type": "string"
+          },
+          "tech_prefix": {
+            "description": "Numerical chars only, exactly 4 characters.",
+            "type": "string"
+          },
+          "timeout_1xx_secs": {
+            "default": 3,
+            "description": "Time(sec) before aborting if connection is not made.",
+            "maximum": 120,
+            "minimum": 1,
+            "type": "integer"
+          },
+          "timeout_2xx_secs": {
+            "default": 90,
+            "description": "Time(sec) before aborting if call is unanswered (min: 1, max: 600).",
+            "maximum": 600,
+            "minimum": 1,
+            "type": "integer"
+          }
+        },
+        "title": "Connection Outbound Settings",
+        "type": "object"
+      },
+      "UpdateFqdnAuthenticationRequest": {
+        "example": {
+          "failover_url": "https://failover.example.com",
+          "fqdn_outbound_authentication": "ip-authentication",
+          "ip_authentication_method": "p-charge-info",
+          "password": "new_password",
+          "txt_name": "new_txt_name",
+          "txt_ttl": 300,
+          "txt_value": "new_txt_value",
+          "user_name": "newusername",
+          "webhook_url": "https://example.com"
+        },
+        "properties": {
+          "failover_url": {
+            "description": "The failover webhook URL.",
+            "format": "uri",
+            "type": "string"
+          },
+          "fqdn_outbound_authentication": {
+            "description": "The outbound authentication type.",
+            "enum": [
+              "ip-authentication",
+              "credential-authentication"
+            ],
+            "type": "string"
+          },
+          "ip_authentication_method": {
+            "description": "The IP authentication method.",
+            "enum": [
+              "token",
+              "p-charge-info"
+            ],
+            "type": "string"
+          },
+          "password": {
+            "description": "The password for authentication.",
+            "type": "string"
+          },
+          "txt_name": {
+            "description": "The TXT record name for Microsoft Teams SBC DNS verification.",
+            "type": "string"
+          },
+          "txt_ttl": {
+            "description": "The TTL for the TXT record.",
+            "type": "integer"
+          },
+          "txt_value": {
+            "description": "The TXT record value for Microsoft Teams SBC DNS verification.",
+            "type": "string"
+          },
+          "user_name": {
+            "description": "The username for authentication.",
+            "type": "string"
+          },
+          "webhook_url": {
+            "description": "The webhook URL for authentication events.",
+            "format": "uri",
+            "type": "string"
+          }
+        },
+        "title": "Update FQDN Authentication Request",
+        "type": "object"
+      },
+      "UpdateFqdnConnectionRequest": {
+        "example": {
+          "active": true,
+          "anchorsite_override": "Latency",
+          "android_push_credential_id": "06b09dfd-7154-4980-8b75-cebf7a9d4f8e",
+          "bridge_generate_comfort_noise_on_cn": false,
+          "call_cost_in_webhooks": true,
+          "connection_name": "string",
+          "default_on_hold_comfort_noise_enabled": true,
+          "dtmf_type": "RFC 2833",
+          "encode_contact_header_enabled": true,
+          "encrypted_media": "SRTP",
+          "inbound": {
+            "ani_number_format": "+E.164",
+            "channel_limit": 10,
+            "codecs": [
+              "G722"
+            ],
+            "dnis_number_format": "+e164",
+            "generate_ringback_tone": true,
+            "isup_headers_enabled": true,
+            "prack_enabled": true,
+            "shaken_stir_enabled": true,
+            "sip_compact_headers_enabled": true,
+            "sip_region": "US",
+            "sip_subdomain": "string",
+            "sip_subdomain_receive_settings": "only_my_connections",
+            "timeout_1xx_secs": 10,
+            "timeout_2xx_secs": 10
+          },
+          "ios_push_credential_id": "ec0c8e5d-439e-4620-a0c1-9d9c8d02a836",
+          "jitter_buffer": {
+            "enable_jitter_buffer": true,
+            "jitterbuffer_msec_max": 200,
+            "jitterbuffer_msec_min": 60
+          },
+          "noise_suppression": "both",
+          "noise_suppression_details": {
+            "attenuation_limit": 80,
+            "engine": "deep_filter_net"
+          },
+          "onnet_t38_passthrough_enabled": true,
+          "rtcp_settings": {
+            "capture_enabled": true,
+            "port": "rtcp-mux",
+            "report_frequency_secs": 10
+          },
+          "tags": [
+            "tag1",
+            "tag2"
+          ],
+          "transport_protocol": "TLS",
+          "webhook_api_version": "1",
+          "webhook_event_failover_url": "https://failover.example.com",
+          "webhook_event_url": "https://example.com",
+          "webhook_timeout_secs": 25
+        },
+        "properties": {
+          "active": {
+            "description": "Defaults to true",
+            "type": "boolean"
+          },
+          "anchorsite_override": {
+            "$ref": "#/components/schemas/AnchorsiteOverride"
+          },
+          "android_push_credential_id": {
+            "$ref": "#/components/schemas/ConnectionAndroidPushCredentialId"
+          },
+          "bridge_generate_comfort_noise_on_cn": {
+            "default": false,
+            "description": "Stores the connection preference for generating silent RTP toward the opposite call leg when comfort-noise packets (CN, payload type 13) are received during hold. Optional; omitting this field preserves the saved value. Only JSON true and false are accepted; null and non-boolean values are rejected. This preference is independent of default_on_hold_comfort_noise_enabled and does not modify that setting. This API provisions the preference; call-processing behavior is implemented separately.",
+            "example": false,
+            "type": "boolean"
+          },
+          "call_cost_in_webhooks": {
+            "default": false,
+            "description": "Specifies if call cost webhooks should be sent for this connection.",
+            "type": "boolean"
+          },
+          "connection_name": {
+            "$ref": "#/components/schemas/ConnectionName"
+          },
+          "conversation_persistence": {
+            "description": "Whether conversation persistence is enabled for this connection. When enabled, calls handled by the connection are transcribed, stored, and indexed. Defaults to false.",
+            "type": "boolean"
+          },
+          "default_on_hold_comfort_noise_enabled": {
+            "default": true,
+            "description": "When enabled, Telnyx will generate comfort noise when you place the call on hold. If disabled, you will need to generate comfort noise or on hold music to avoid RTP timeout.",
+            "type": "boolean"
+          },
+          "dtmf_type": {
+            "$ref": "#/components/schemas/DtmfType"
+          },
+          "encode_contact_header_enabled": {
+            "default": false,
+            "description": "Encode the SIP contact header sent by Telnyx to avoid issues for NAT or ALG scenarios.",
+            "type": "boolean"
+          },
+          "encrypted_media": {
+            "$ref": "#/components/schemas/EncryptedMedia"
+          },
+          "inbound": {
+            "$ref": "#/components/schemas/InboundFqdn"
+          },
+          "ios_push_credential_id": {
+            "$ref": "#/components/schemas/ConnectionIosPushCredentialId"
+          },
+          "jitter_buffer": {
+            "$ref": "#/components/schemas/ConnectionJitterBuffer"
+          },
+          "noise_suppression": {
+            "$ref": "#/components/schemas/ConnectionNoiseSuppression"
+          },
+          "noise_suppression_details": {
+            "$ref": "#/components/schemas/ConnectionNoiseSuppressionDetails"
+          },
+          "onnet_t38_passthrough_enabled": {
+            "default": false,
+            "description": "Enable on-net T38 if you prefer that the sender and receiver negotiate T38 directly when both are on the Telnyx network. If this is disabled, Telnyx will be able to use T38 on just one leg of the call according to each leg's settings.",
+            "type": "boolean"
+          },
+          "outbound": {
+            "$ref": "#/components/schemas/OutboundFqdn"
+          },
+          "rtcp_settings": {
+            "$ref": "#/components/schemas/ConnectionRtcpSettings"
+          },
+          "tags": {
+            "description": "Tags associated with the connection.",
+            "example": [
+              "tag1",
+              "tag2"
+            ],
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "transport_protocol": {
+            "$ref": "#/components/schemas/FqdnConnectionTransportProtocol"
+          },
+          "webhook_api_version": {
+            "$ref": "#/components/schemas/WebhookApiVersion"
+          },
+          "webhook_event_failover_url": {
+            "$ref": "#/components/schemas/WebhookEventFailoverUrl"
+          },
+          "webhook_event_url": {
+            "$ref": "#/components/schemas/WebhookEventUrl"
+          },
+          "webhook_timeout_secs": {
+            "$ref": "#/components/schemas/WebhookTimeoutSecs"
+          }
+        },
+        "title": "Update FQDN Connection Request",
+        "type": "object"
+      },
+      "UpdatedAt": {
+        "description": "ISO 8601 formatted date indicating when the resource was updated.",
+        "example": "2020-02-03T22:25:27.521Z",
+        "title": "Updated At",
+        "type": "string"
+      },
+      "WebhookApiVersion": {
+        "default": "1",
+        "description": "Determines which webhook format will be used, Telnyx API v1 or v2.",
+        "enum": [
+          "1",
+          "2"
+        ],
+        "example": "1",
+        "title": "Webhook API Version",
+        "type": "string"
+      },
+      "WebhookEventFailoverUrl": {
+        "default": "",
+        "description": "The failover URL where webhooks related to this connection will be sent if sending to the primary URL fails. Must include a scheme, such as 'https'.",
+        "example": "https://failover.example.com",
+        "format": "uri",
+        "title": "Webhook Event Failover URL",
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "WebhookEventUrl": {
+        "description": "The URL where webhooks related to this connection will be sent. Must include a scheme, such as 'https'.",
+        "example": "https://example.com",
+        "format": "uri",
+        "title": "Webhook Event URL",
+        "type": "string"
+      },
+      "WebhookTimeoutSecs": {
+        "default": null,
+        "description": "Specifies how many seconds to wait before timing out a webhook.",
+        "example": 25,
+        "maximum": 30,
+        "minimum": 0,
+        "title": "Webhook Timeout Secs",
+        "type": [
+          "integer",
+          "null"
+        ]
+      },
+      "call-scripting_ErrorResponse": {
+        "properties": {
+          "errors": {
+            "items": {
+              "properties": {
+                "code": {
+                  "type": "string"
+                },
+                "detail": {
+                  "type": "string"
+                },
+                "meta": {
+                  "properties": {
+                    "url": {
+                      "format": "uri",
+                      "type": "string"
+                    }
+                  },
+                  "type": "object"
+                },
+                "source": {
+                  "properties": {
+                    "pointer": {
+                      "type": "string"
+                    }
+                  },
+                  "type": "object"
+                },
+                "title": {
+                  "type": "string"
+                }
+              },
+              "type": "object"
+            },
+            "type": "array"
+          }
+        },
+        "type": "object"
+      },
+      "connections_ErrorResponse": {
+        "properties": {
+          "errors": {
+            "items": {
+              "properties": {
+                "code": {
+                  "type": "string"
+                },
+                "detail": {
+                  "type": "string"
+                },
+                "meta": {
+                  "properties": {
+                    "url": {
+                      "format": "uri",
+                      "type": "string"
+                    }
+                  },
+                  "type": "object"
+                },
+                "source": {
+                  "properties": {
+                    "pointer": {
+                      "type": "string"
+                    }
+                  },
+                  "type": "object"
+                },
+                "title": {
+                  "type": "string"
+                }
+              },
+              "type": "object"
+            },
+            "type": "array"
+          }
+        },
+        "type": "object"
+      },
+      "connections_OutboundVoiceProfileId": {
+        "description": "Identifies the associated outbound voice profile.",
+        "example": "1293384261075731499",
+        "title": "Outbound Voice Profile ID",
+        "type": "string",
+        "x-format": "int64"
+      },
+      "connections_PaginationMeta": {
+        "properties": {
+          "page_number": {
+            "example": 2,
+            "type": "integer"
+          },
+          "page_size": {
+            "example": 25,
+            "type": "integer"
+          },
+          "total_pages": {
+            "example": 3,
+            "type": "integer"
+          },
+          "total_results": {
+            "example": 55,
+            "type": "integer"
+          }
+        },
+        "title": "Pagination Meta",
+        "type": "object"
+      }
+    },
+    "securitySchemes": {
+      "BearerAuth": {
+        "bearerFormat": "API key",
+        "description": "Telnyx API key supplied as `Authorization: Bearer \u003ctoken\u003e`. In production, auth may be validated by the API gateway and forwarded via Telnyx auth headers.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "Payment": {
+        "description": "Machine Payment Protocol credential used on paid retries, sent as `Authorization: Payment ...`. Obtained by paying a challenge returned in the `WWW-Authenticate` header of a 402 response. This is not a Telnyx API key; initial challenge requests use standard bearer authentication instead.",
+        "in": "header",
+        "name": "Authorization",
+        "type": "apiKey"
+      },
+      "agent-memory_bearerAuth": {
+        "description": "Telnyx API key",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "bearerAuth": {
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "branded-calling_bearerAuth": {
+        "description": "Telnyx API key. Generate one at https://portal.telnyx.com/#/app/api-keys.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "collections_bearerAuth": {
+        "description": "Telnyx API key. Collections and results are automatically scoped to the authenticated user's organization.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "number-reputation_bearerAuth": {
+        "description": "Telnyx API key. Generate one at https://portal.telnyx.com/#/app/api-keys.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "oauthClientAuth": {
+        "description": "OAuth 2.0 authentication for Telnyx API and MCP integrations",
+        "flows": {
+          "authorizationCode": {
+            "authorizationUrl": "https://api.telnyx.com/v2/oauth/authorize",
+            "refreshUrl": "https://api.telnyx.com/v2/oauth/token",
+            "scopes": {
+              "admin": "Administrative access to Telnyx resources"
+            },
+            "tokenUrl": "https://api.telnyx.com/v2/oauth/token"
+          },
+          "clientCredentials": {
+            "scopes": {
+              "admin": "Administrative access to Telnyx resources"
+            },
+            "tokenUrl": "https://api.telnyx.com/v2/oauth/token"
+          }
+        },
+        "type": "oauth2"
+      },
+      "outbound-voice-profiles_bearerAuth": {
+        "bearerFormat": "JWT",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "pay-connectors_bearerAuth": {
+        "description": "Telnyx API key, not the processor bearer token.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "pronunciation-dicts_bearerAuth": {
+        "description": "Telnyx API v2 key. Obtain from https://portal.telnyx.com",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "rcs-registration_bearerAuth": {
+        "bearerFormat": "API key",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "stored-payment-transactions_bearerAuth": {
+        "bearerFormat": "JWT",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "telnyxApiKey": {
+        "description": "Management-only Telnyx account credential.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "transcriptions-search_bearerAuth": {
+        "description": "Telnyx API key. Results are automatically scoped to the authenticated user's organization.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "web-search_bearerAuth": {
+        "description": "Telnyx API key",
+        "scheme": "bearer",
+        "type": "http"
+      }
+    }
+  },
+  "info": {
+    "contact": {
+      "email": "support@telnyx.com"
+    },
+    "description": "SIP trunking, SMS, MMS, Call Control and Telephony Data Services.",
+    "title": "Telnyx API",
+    "version": "2.0.0",
+    "x-endpoint-cost": "light",
+    "x-latency-category": "responsive"
+  },
+  "openapi": "3.1.0",
+  "paths": {
+    "/fqdn_connections": {
+      "get": {
+        "description": "Returns a list of your FQDN connections.",
+        "operationId": "ListFqdnConnections",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/connections_FilterConsolidated"
+          },
+          {
+            "$ref": "#/components/parameters/connections_PageConsolidated"
+          },
+          {
+            "$ref": "#/components/parameters/connections_SortConnection"
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "items": {
+                        "$ref": "#/components/schemas/FqdnConnection"
+                      },
+                      "type": "array"
+                    },
+                    "meta": {
+                      "$ref": "#/components/schemas/connections_PaginationMeta"
+                    }
+                  },
+                  "title": "List FQDN Connections Response",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful response with a list of FQDN connections."
+          },
+          "400": {
+            "$ref": "#/components/responses/connections_BadRequestResponse"
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthenticatedResponse"
+          },
+          "403": {
+            "$ref": "#/components/responses/connections_UnauthorizedResponse"
+          },
+          "404": {
+            "$ref": "#/components/responses/connections_NotFoundResponse"
+          }
+        },
+        "summary": "List FQDN connections",
+        "tags": [
+          "FQDN Connections"
+        ],
+        "x-endpoint-cost": "medium",
+        "x-group-parameters": "true"
+      },
+      "post": {
+        "description": "Creates a new FQDN-based SIP connection. FQDN connections authenticate by your registered domain names rather than static IP addresses.",
+        "operationId": "CreateFqdnConnection",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateFqdnConnectionRequest"
+              }
+            }
+          },
+          "description": "Parameters that can be defined during FQDN connection creation",
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/FqdnConnection"
+                    }
+                  },
+                  "title": "FQDN Connection Response",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful response with details about an FQDN connection."
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthenticatedResponse"
+          },
+          "403": {
+            "$ref": "#/components/responses/connections_UnauthorizedResponse"
+          },
+          "404": {
+            "$ref": "#/components/responses/connections_NotFoundResponse"
+          },
+          "422": {
+            "$ref": "#/components/responses/connections_UnprocessableEntityResponse"
+          }
+        },
+        "summary": "Create an FQDN connection",
+        "tags": [
+          "FQDN Connections"
+        ],
+        "x-endpoint-cost": "medium"
+      }
+    },
+    "/fqdn_connections/{fqdn_connection_id}/fqdn_authentication": {
+      "get": {
+        "description": "Retrieves the details of an existing FQDN authentication strategy for a specific FQDN connection.",
+        "operationId": "RetrieveFqdnAuthentication",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/FqdnConnectionId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/FqdnAuthentication"
+                    }
+                  },
+                  "title": "FQDN Authentication Response",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful response with details about the FQDN authentication."
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthenticatedResponse"
+          },
+          "403": {
+            "$ref": "#/components/responses/connections_UnauthorizedResponse"
+          },
+          "404": {
+            "$ref": "#/components/responses/connections_NotFoundResponse"
+          }
+        },
+        "summary": "Retrieve an FQDN authentication",
+        "tags": [
+          "FQDN Connections"
+        ]
+      },
+      "patch": {
+        "description": "Updates the FQDN authentication strategy for a specific FQDN connection.",
+        "operationId": "UpdateFqdnAuthentication",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/FqdnConnectionId"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateFqdnAuthenticationRequest"
+              }
+            }
+          },
+          "description": "Parameters that can be updated in an FQDN authentication",
+          "required": false
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/FqdnAuthentication"
+                    }
+                  },
+                  "title": "FQDN Authentication Response",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful response with the updated FQDN authentication."
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthenticatedResponse"
+          },
+          "403": {
+            "$ref": "#/components/responses/connections_UnauthorizedResponse"
+          },
+          "404": {
+            "$ref": "#/components/responses/connections_NotFoundResponse"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "errors": [
+                    {
+                      "detail": "A previous update to this connection is still in progress. Please try again later."
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/connections_ErrorResponse"
+                }
+              }
+            },
+            "description": "Conflict. Another update to this connection is still in progress. Wait and retry the request later."
+          },
+          "422": {
+            "$ref": "#/components/responses/connections_UnprocessableEntityResponse"
+          }
+        },
+        "summary": "Update an FQDN authentication",
+        "tags": [
+          "FQDN Connections"
+        ]
+      }
+    },
+    "/fqdn_connections/{id}": {
+      "delete": {
+        "description": "Permanently deletes the specified FQDN connection from your account.",
+        "operationId": "DeleteFqdnConnection",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/connections_id"
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/FqdnConnection"
+                    }
+                  },
+                  "title": "FQDN Connection Response",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful response with details about an FQDN connection."
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthenticatedResponse"
+          },
+          "403": {
+            "$ref": "#/components/responses/connections_UnauthorizedResponse"
+          },
+          "404": {
+            "$ref": "#/components/responses/connections_NotFoundResponse"
+          },
+          "422": {
+            "$ref": "#/components/responses/connections_UnprocessableEntityResponse"
+          }
+        },
+        "summary": "Delete an FQDN connection",
+        "tags": [
+          "FQDN Connections"
+        ]
+      },
+      "get": {
+        "description": "Retrieves the details of an existing FQDN connection.",
+        "operationId": "RetrieveFqdnConnection",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/connections_id"
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/FqdnConnection"
+                    }
+                  },
+                  "title": "FQDN Connection Response",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful response with details about an FQDN connection."
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthenticatedResponse"
+          },
+          "403": {
+            "$ref": "#/components/responses/connections_UnauthorizedResponse"
+          },
+          "404": {
+            "$ref": "#/components/responses/connections_NotFoundResponse"
+          },
+          "422": {
+            "$ref": "#/components/responses/connections_UnprocessableEntityResponse"
+          }
+        },
+        "summary": "Retrieve an FQDN connection",
+        "tags": [
+          "FQDN Connections"
+        ]
+      },
+      "patch": {
+        "description": "Updates settings of an existing FQDN connection.",
+        "operationId": "UpdateFqdnConnection",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/connections_id"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateFqdnConnectionRequest"
+              }
+            }
+          },
+          "description": "Parameters that can be updated in a FQDN connection",
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/FqdnConnection"
+                    }
+                  },
+                  "title": "FQDN Connection Response",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful response with details about an FQDN connection."
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthenticatedResponse"
+          },
+          "403": {
+            "$ref": "#/components/responses/connections_UnauthorizedResponse"
+          },
+          "404": {
+            "$ref": "#/components/responses/connections_NotFoundResponse"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "errors": [
+                    {
+                      "detail": "A previous update to this connection is still in progress. Please try again later."
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/connections_ErrorResponse"
+                }
+              }
+            },
+            "description": "Conflict. Another update to this connection is still in progress. Wait and retry the request later."
+          },
+          "422": {
+            "$ref": "#/components/responses/connections_UnprocessableEntityResponse"
+          }
+        },
+        "summary": "Update an FQDN connection",
+        "tags": [
+          "FQDN Connections"
+        ]
+      }
+    }
+  },
+  "security": [
+    {
+      "bearerAuth": []
+    }
+  ],
+  "servers": [
+    {
+      "description": "Version 2.0.0 of the Telnyx API",
+      "url": "https://api.telnyx.com/v2"
+    }
+  ]
+}

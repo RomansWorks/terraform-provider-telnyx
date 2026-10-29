@@ -1,0 +1,55 @@
+# Acceptance tests create real objects in the Telnyx test account, so they run
+# nightly and on demand rather than on every pull request, and never for forks.
+name: Acceptance tests
+
+on:
+  schedule:
+    - cron: '30 3 * * *'
+  workflow_dispatch:
+    inputs:
+      run:
+        description: 'Go test -run pattern (default: all)'
+        required: false
+        default: ''
+
+permissions:
+  contents: read
+
+concurrency:
+  group: acceptance
+  cancel-in-progress: false
+
+jobs:
+  acceptance:
+    name: 'Terraform ${{ matrix.terraform }}'
+    if: github.repository == 'RomansWorks/terraform-provider-telnyx'
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    strategy:
+      fail-fast: false
+      max-parallel: 1
+      matrix:
+        terraform:
+          - '1.13.*'
+          - '1.14.*'
+    env:
+      TELNYX_API_KEY: ${{ secrets.TELNYX_API_KEY }}
+    steps:
+      - name: Require test account key
+        if: env.TELNYX_API_KEY == ''
+        run: |
+          echo "::error::Set the TELNYX_API_KEY repository secret to a key for the dedicated Telnyx test account."
+          exit 1
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
+        with:
+          go-version-file: 'go.mod'
+          cache: true
+      - uses: hashicorp/setup-terraform@dfe3c3f87815947d99a8997f908cb6525fc44e9e # v4.0.1
+        with:
+          terraform_version: ${{ matrix.terraform }}
+          terraform_wrapper: false
+      - env:
+          TF_ACC: '1'
+          RUN: ${{ inputs.run }}
+        run: go test -v -cover -timeout 110m -run "${RUN:-.}" ./internal/...

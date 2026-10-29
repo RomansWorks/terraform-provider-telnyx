@@ -1,0 +1,988 @@
+{
+  "components": {
+    "parameters": {
+      "FilterName": {
+        "description": "Case-insensitive substring filter on the name field.",
+        "in": "query",
+        "name": "filter[name]",
+        "required": false,
+        "schema": {
+          "type": "string"
+        }
+      },
+      "voice-designs_PageNumber": {
+        "description": "Page number for pagination (1-based).",
+        "in": "query",
+        "name": "page[number]",
+        "required": false,
+        "schema": {
+          "default": 1,
+          "minimum": 1,
+          "type": "integer"
+        }
+      },
+      "voice-designs_PageSize": {
+        "description": "Number of results per page.",
+        "in": "query",
+        "name": "page[size]",
+        "required": false,
+        "schema": {
+          "default": 20,
+          "maximum": 250,
+          "minimum": 1,
+          "type": "integer"
+        }
+      },
+      "voice-designs_Sort": {
+        "description": "Sort order. Prefix with `-` for descending. Defaults to `-created_at`.",
+        "in": "query",
+        "name": "sort",
+        "required": false,
+        "schema": {
+          "default": "-created_at",
+          "enum": [
+            "name",
+            "-name",
+            "created_at",
+            "-created_at"
+          ],
+          "type": "string"
+        }
+      }
+    },
+    "schemas": {
+      "VoiceDesignData": {
+        "description": "A voice design object with full version detail.",
+        "properties": {
+          "created_at": {
+            "description": "Timestamp when the voice design was first created.",
+            "format": "date-time",
+            "type": "string"
+          },
+          "id": {
+            "description": "Unique identifier for the voice design.",
+            "format": "uuid",
+            "type": "string"
+          },
+          "name": {
+            "description": "Name of the voice design.",
+            "type": "string"
+          },
+          "prompt": {
+            "description": "Natural language prompt used to define the voice style for this version.",
+            "type": "string"
+          },
+          "provider": {
+            "description": "Voice synthesis provider used for this design.",
+            "enum": [
+              "telnyx",
+              "minimax",
+              "Telnyx",
+              "Minimax",
+              null
+            ],
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "provider_supported_models": {
+            "description": "List of TTS model identifiers supported by this design's provider (e.g. `Qwen3TTS`, `speech-02-turbo`).",
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "provider_voice_id": {
+            "description": "Provider-specific voice identifier. For Telnyx designs this is the design version ID; for Minimax it is the Minimax-assigned voice ID.",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "record_type": {
+            "description": "Identifies the resource type.",
+            "enum": [
+              "voice_design"
+            ],
+            "type": "string"
+          },
+          "text": {
+            "description": "Sample text used to synthesize this version.",
+            "type": "string"
+          },
+          "updated_at": {
+            "description": "Timestamp when the voice design was last updated.",
+            "format": "date-time",
+            "type": "string"
+          },
+          "version": {
+            "description": "Version number of this voice design.",
+            "type": "integer"
+          },
+          "version_created_at": {
+            "description": "Timestamp when this specific version was created.",
+            "format": "date-time",
+            "type": "string"
+          },
+          "voice_sample_size": {
+            "description": "Size of the voice sample audio in bytes.",
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "VoiceDesignListResponse": {
+        "description": "Paginated list of voice designs.",
+        "properties": {
+          "data": {
+            "description": "Array of voice design summary objects.",
+            "items": {
+              "$ref": "#/components/schemas/VoiceDesignSummaryData"
+            },
+            "type": "array"
+          },
+          "meta": {
+            "$ref": "#/components/schemas/voice-designs_PaginationMeta"
+          }
+        },
+        "type": "object"
+      },
+      "VoiceDesignRequest": {
+        "description": "Request body for creating a new voice design or adding a version to an existing one. Omit `voice_design_id` to create a new design; include it to add a new version.",
+        "example": {
+          "language": "Auto",
+          "name": "friendly-narrator",
+          "prompt": "Speak in a warm, friendly tone",
+          "provider": "telnyx",
+          "text": "Hello, welcome to our service."
+        },
+        "properties": {
+          "language": {
+            "default": "Auto",
+            "description": "Language for synthesis. Supported values: Auto, Chinese, English, Japanese, Korean, German, French, Russian, Portuguese, Spanish, Italian. Defaults to Auto.",
+            "type": "string"
+          },
+          "max_new_tokens": {
+            "description": "Maximum number of tokens to generate. Default: 2048.",
+            "maximum": 4096,
+            "minimum": 100,
+            "type": "integer"
+          },
+          "name": {
+            "description": "Name for the voice design. Required when creating a new design (`voice_design_id` is not provided); ignored when adding a version. Cannot be a UUID.",
+            "maxLength": 255,
+            "minLength": 1,
+            "type": "string"
+          },
+          "prompt": {
+            "description": "Natural language description of the voice style, e.g. 'Speak in a warm, friendly tone with a slight British accent'.",
+            "type": "string"
+          },
+          "provider": {
+            "default": "telnyx",
+            "description": "Voice synthesis provider. `telnyx` uses the Qwen3TTS model; `minimax` uses the Minimax speech models. Case-insensitive. Defaults to `telnyx`.",
+            "enum": [
+              "telnyx",
+              "minimax",
+              "Telnyx",
+              "Minimax"
+            ],
+            "type": "string"
+          },
+          "repetition_penalty": {
+            "description": "Repetition penalty to reduce repeated patterns in generated audio. Default: 1.05.",
+            "format": "float",
+            "maximum": 2,
+            "minimum": 1,
+            "type": "number"
+          },
+          "temperature": {
+            "description": "Sampling temperature controlling randomness. Higher values produce more varied output. Default: 0.9.",
+            "format": "float",
+            "maximum": 2,
+            "minimum": 0,
+            "type": "number"
+          },
+          "text": {
+            "description": "Sample text to synthesize for this voice design.",
+            "type": "string"
+          },
+          "top_k": {
+            "description": "Top-k sampling parameter — limits the token vocabulary considered at each step. Default: 50.",
+            "maximum": 1000,
+            "minimum": 1,
+            "type": "integer"
+          },
+          "top_p": {
+            "description": "Top-p (nucleus) sampling parameter — cumulative probability cutoff for token selection. Default: 1.0.",
+            "format": "float",
+            "maximum": 1,
+            "minimum": 0,
+            "type": "number"
+          },
+          "voice_design_id": {
+            "description": "ID of an existing voice design to add a new version to. When provided, a new version is created instead of a new design.",
+            "format": "uuid",
+            "type": "string"
+          }
+        },
+        "required": [
+          "text",
+          "prompt"
+        ],
+        "type": "object"
+      },
+      "VoiceDesignResponse": {
+        "description": "Response envelope for a single voice design with full version detail.",
+        "example": {
+          "data": {
+            "created_at": "2024-01-01T00:00:00Z",
+            "id": "550e8400-e29b-41d4-a716-446655440000",
+            "name": "friendly-narrator",
+            "prompt": "Speak in a warm tone",
+            "provider": "Telnyx",
+            "provider_supported_models": [
+              "Qwen3TTS"
+            ],
+            "provider_voice_id": "550e8400-e29b-41d4-a716-446655440000",
+            "record_type": "voice_design",
+            "text": "Hello, welcome.",
+            "updated_at": "2024-01-01T00:00:00Z",
+            "version": 1,
+            "version_created_at": "2024-01-01T00:00:00Z",
+            "voice_sample_size": 48000
+          }
+        },
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/VoiceDesignData"
+          }
+        },
+        "type": "object"
+      },
+      "VoiceDesignSummaryData": {
+        "description": "A summarized voice design object (without version-specific fields).",
+        "properties": {
+          "created_at": {
+            "description": "Timestamp when the voice design was first created.",
+            "format": "date-time",
+            "type": "string"
+          },
+          "id": {
+            "description": "Unique identifier for the voice design.",
+            "format": "uuid",
+            "type": "string"
+          },
+          "name": {
+            "description": "Name of the voice design.",
+            "type": "string"
+          },
+          "provider": {
+            "description": "Voice synthesis provider used for this design.",
+            "enum": [
+              "telnyx",
+              "minimax",
+              "Telnyx",
+              "Minimax",
+              null
+            ],
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "provider_supported_models": {
+            "description": "List of TTS model identifiers supported by this design's provider.",
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "record_type": {
+            "description": "Identifies the resource type.",
+            "enum": [
+              "voice_design"
+            ],
+            "type": "string"
+          },
+          "updated_at": {
+            "description": "Timestamp when the voice design was last updated.",
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "VoiceDesignUpdateRequest": {
+        "description": "Request body for renaming a voice design.",
+        "example": {
+          "name": "updated-narrator"
+        },
+        "properties": {
+          "name": {
+            "description": "New name for the voice design.",
+            "maxLength": 255,
+            "minLength": 1,
+            "type": "string"
+          }
+        },
+        "required": [
+          "name"
+        ],
+        "type": "object"
+      },
+      "VoiceDesignUpdatedResponse": {
+        "description": "Response envelope for a voice design after a rename operation (no version-specific fields).",
+        "example": {
+          "data": {
+            "created_at": "2024-01-01T00:00:00Z",
+            "id": "550e8400-e29b-41d4-a716-446655440000",
+            "name": "updated-narrator",
+            "record_type": "voice_design",
+            "updated_at": "2024-01-02T00:00:00Z"
+          }
+        },
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/VoiceDesignSummaryData"
+          }
+        },
+        "type": "object"
+      },
+      "voice-designs_ErrorObject": {
+        "description": "A single error object.",
+        "properties": {
+          "code": {
+            "description": "Telnyx-specific error code.",
+            "type": "string"
+          },
+          "detail": {
+            "description": "Detailed, human-readable explanation of the error.",
+            "type": "string"
+          },
+          "source": {
+            "description": "Reference to the source of the error.",
+            "properties": {
+              "pointer": {
+                "description": "A JSON Pointer (RFC 6901) to the field that caused the error.",
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
+          "title": {
+            "description": "Short, human-readable summary of the error.",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "voice-designs_ErrorResponse": {
+        "description": "Standard error response envelope.",
+        "example": {
+          "errors": [
+            {
+              "code": "10005",
+              "detail": "Voice design not found",
+              "title": "Resource not found"
+            }
+          ]
+        },
+        "properties": {
+          "errors": {
+            "items": {
+              "$ref": "#/components/schemas/voice-designs_ErrorObject"
+            },
+            "type": "array"
+          }
+        },
+        "type": "object"
+      },
+      "voice-designs_PaginationMeta": {
+        "description": "Pagination metadata returned with list responses.",
+        "example": {
+          "page_number": 1,
+          "page_size": 20,
+          "total_pages": 3,
+          "total_results": 42
+        },
+        "properties": {
+          "page_number": {
+            "description": "Current page number (1-based).",
+            "type": "integer"
+          },
+          "page_size": {
+            "description": "Number of results per page.",
+            "type": "integer"
+          },
+          "total_pages": {
+            "description": "Total number of pages.",
+            "type": "integer"
+          },
+          "total_results": {
+            "description": "Total number of results across all pages.",
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      }
+    },
+    "securitySchemes": {
+      "BearerAuth": {
+        "bearerFormat": "API key",
+        "description": "Telnyx API key supplied as `Authorization: Bearer \u003ctoken\u003e`. In production, auth may be validated by the API gateway and forwarded via Telnyx auth headers.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "Payment": {
+        "description": "Machine Payment Protocol credential used on paid retries, sent as `Authorization: Payment ...`. Obtained by paying a challenge returned in the `WWW-Authenticate` header of a 402 response. This is not a Telnyx API key; initial challenge requests use standard bearer authentication instead.",
+        "in": "header",
+        "name": "Authorization",
+        "type": "apiKey"
+      },
+      "agent-memory_bearerAuth": {
+        "description": "Telnyx API key",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "bearerAuth": {
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "branded-calling_bearerAuth": {
+        "description": "Telnyx API key. Generate one at https://portal.telnyx.com/#/app/api-keys.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "collections_bearerAuth": {
+        "description": "Telnyx API key. Collections and results are automatically scoped to the authenticated user's organization.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "number-reputation_bearerAuth": {
+        "description": "Telnyx API key. Generate one at https://portal.telnyx.com/#/app/api-keys.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "oauthClientAuth": {
+        "description": "OAuth 2.0 authentication for Telnyx API and MCP integrations",
+        "flows": {
+          "authorizationCode": {
+            "authorizationUrl": "https://api.telnyx.com/v2/oauth/authorize",
+            "refreshUrl": "https://api.telnyx.com/v2/oauth/token",
+            "scopes": {
+              "admin": "Administrative access to Telnyx resources"
+            },
+            "tokenUrl": "https://api.telnyx.com/v2/oauth/token"
+          },
+          "clientCredentials": {
+            "scopes": {
+              "admin": "Administrative access to Telnyx resources"
+            },
+            "tokenUrl": "https://api.telnyx.com/v2/oauth/token"
+          }
+        },
+        "type": "oauth2"
+      },
+      "outbound-voice-profiles_bearerAuth": {
+        "bearerFormat": "JWT",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "pay-connectors_bearerAuth": {
+        "description": "Telnyx API key, not the processor bearer token.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "pronunciation-dicts_bearerAuth": {
+        "description": "Telnyx API v2 key. Obtain from https://portal.telnyx.com",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "rcs-registration_bearerAuth": {
+        "bearerFormat": "API key",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "stored-payment-transactions_bearerAuth": {
+        "bearerFormat": "JWT",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "telnyxApiKey": {
+        "description": "Management-only Telnyx account credential.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "transcriptions-search_bearerAuth": {
+        "description": "Telnyx API key. Results are automatically scoped to the authenticated user's organization.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "web-search_bearerAuth": {
+        "description": "Telnyx API key",
+        "scheme": "bearer",
+        "type": "http"
+      }
+    }
+  },
+  "info": {
+    "contact": {
+      "email": "support@telnyx.com"
+    },
+    "description": "SIP trunking, SMS, MMS, Call Control and Telephony Data Services.",
+    "title": "Telnyx API",
+    "version": "2.0.0",
+    "x-endpoint-cost": "light",
+    "x-latency-category": "responsive"
+  },
+  "openapi": "3.1.0",
+  "paths": {
+    "/voice_designs": {
+      "get": {
+        "description": "Returns a paginated list of voice designs belonging to the authenticated account.",
+        "operationId": "listVoiceDesigns",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/voice-designs_PageNumber"
+          },
+          {
+            "$ref": "#/components/parameters/voice-designs_PageSize"
+          },
+          {
+            "$ref": "#/components/parameters/FilterName"
+          },
+          {
+            "$ref": "#/components/parameters/voice-designs_Sort"
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/VoiceDesignListResponse"
+                }
+              }
+            },
+            "description": "A paginated list of voice designs."
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/voice-designs_ErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized — missing or invalid bearer token."
+          }
+        },
+        "summary": "List voice designs",
+        "tags": [
+          "Voice Designs"
+        ]
+      },
+      "post": {
+        "description": "Creates a new voice design (version 1) when `voice_design_id` is omitted. When `voice_design_id` is provided, adds a new version to the existing design instead. A design can have at most 50 versions.",
+        "operationId": "createVoiceDesign",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/VoiceDesignRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/VoiceDesignResponse"
+                }
+              }
+            },
+            "description": "Voice design created or new version added successfully."
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/voice-designs_ErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized — missing or invalid bearer token."
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/voice-designs_ErrorResponse"
+                }
+              }
+            },
+            "description": "Voice design not found — the specified `voice_design_id` does not exist."
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/voice-designs_ErrorResponse"
+                }
+              }
+            },
+            "description": "Conflict — the voice design has reached the maximum of 50 versions."
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/voice-designs_ErrorResponse"
+                }
+              }
+            },
+            "description": "Unprocessable entity — validation error in the request body."
+          },
+          "502": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/voice-designs_ErrorResponse"
+                }
+              }
+            },
+            "description": "Bad gateway — upstream voice synthesis service is unavailable."
+          }
+        },
+        "summary": "Create or add a version to a voice design",
+        "tags": [
+          "Voice Designs"
+        ]
+      }
+    },
+    "/voice_designs/{id}": {
+      "delete": {
+        "description": "Permanently deletes a voice design and all of its versions. This action cannot be undone.",
+        "operationId": "deleteVoiceDesign",
+        "parameters": [
+          {
+            "description": "The voice design UUID or name.",
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Voice design deleted successfully."
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/voice-designs_ErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized — missing or invalid bearer token."
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/voice-designs_ErrorResponse"
+                }
+              }
+            },
+            "description": "Voice design not found."
+          }
+        },
+        "summary": "Delete a voice design",
+        "tags": [
+          "Voice Designs"
+        ]
+      },
+      "get": {
+        "description": "Returns the latest version of a voice design, or a specific version when `?version=N` is provided. The `id` parameter accepts either a UUID or the design name.",
+        "operationId": "getVoiceDesign",
+        "parameters": [
+          {
+            "description": "The voice design UUID or name.",
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Specific version number to retrieve. Defaults to the latest version.",
+            "in": "query",
+            "name": "version",
+            "required": false,
+            "schema": {
+              "minimum": 1,
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/VoiceDesignResponse"
+                }
+              }
+            },
+            "description": "The requested voice design."
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/voice-designs_ErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized — missing or invalid bearer token."
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/voice-designs_ErrorResponse"
+                }
+              }
+            },
+            "description": "Voice design not found."
+          }
+        },
+        "summary": "Get a voice design",
+        "tags": [
+          "Voice Designs"
+        ]
+      },
+      "patch": {
+        "description": "Updates the name of a voice design. All versions retain their other properties.",
+        "operationId": "updateVoiceDesign",
+        "parameters": [
+          {
+            "description": "The voice design UUID or name.",
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/VoiceDesignUpdateRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/VoiceDesignUpdatedResponse"
+                }
+              }
+            },
+            "description": "Voice design renamed successfully."
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/voice-designs_ErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized — missing or invalid bearer token."
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/voice-designs_ErrorResponse"
+                }
+              }
+            },
+            "description": "Voice design not found."
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/voice-designs_ErrorResponse"
+                }
+              }
+            },
+            "description": "Unprocessable entity — validation error in the request body."
+          }
+        },
+        "summary": "Rename a voice design",
+        "tags": [
+          "Voice Designs"
+        ]
+      }
+    },
+    "/voice_designs/{id}/sample": {
+      "get": {
+        "description": "Downloads the WAV audio sample for the voice design. Returns the latest version's sample by default, or a specific version when `?version=N` is provided. The `id` parameter accepts either a UUID or the design name.",
+        "operationId": "getVoiceDesignSample",
+        "parameters": [
+          {
+            "description": "The voice design UUID or name.",
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Specific version number to download the sample for. Defaults to the latest version.",
+            "in": "query",
+            "name": "version",
+            "required": false,
+            "schema": {
+              "minimum": 1,
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "audio/wav": {
+                "schema": {
+                  "format": "binary",
+                  "type": "string"
+                }
+              }
+            },
+            "description": "WAV audio sample binary."
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/voice-designs_ErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized — missing or invalid bearer token."
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/voice-designs_ErrorResponse"
+                }
+              }
+            },
+            "description": "Voice design or version not found."
+          }
+        },
+        "summary": "Download voice design audio sample",
+        "tags": [
+          "Voice Designs"
+        ]
+      }
+    },
+    "/voice_designs/{id}/versions/{version}": {
+      "delete": {
+        "description": "Permanently deletes a specific version of a voice design. The version number must be a positive integer.",
+        "operationId": "deleteVoiceDesignVersion",
+        "parameters": [
+          {
+            "description": "The voice design UUID or name.",
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "The version number to delete.",
+            "in": "path",
+            "name": "version",
+            "required": true,
+            "schema": {
+              "minimum": 1,
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Voice design version deleted successfully."
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/voice-designs_ErrorResponse"
+                }
+              }
+            },
+            "description": "Bad request — invalid version number."
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/voice-designs_ErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized — missing or invalid bearer token."
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/voice-designs_ErrorResponse"
+                }
+              }
+            },
+            "description": "Voice design or version not found."
+          }
+        },
+        "summary": "Delete a specific version of a voice design",
+        "tags": [
+          "Voice Designs"
+        ]
+      }
+    }
+  },
+  "security": [
+    {
+      "bearerAuth": []
+    }
+  ],
+  "servers": [
+    {
+      "description": "Version 2.0.0 of the Telnyx API",
+      "url": "https://api.telnyx.com/v2"
+    }
+  ]
+}

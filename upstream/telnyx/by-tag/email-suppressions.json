@@ -1,0 +1,1093 @@
+{
+  "components": {
+    "parameters": {
+      "BlocksPageAfter": {
+        "description": "Opaque cursor (`Base.url_encode64` of `{\"created_at\",\"id\"}`). Cursor mode; mutually exclusive with `page[number]` and `page[before]`.",
+        "in": "query",
+        "name": "page[after]",
+        "schema": {
+          "type": "string"
+        }
+      },
+      "BlocksPageBefore": {
+        "description": "Opaque cursor (see `page[after]`). Mutually exclusive with `page[after]` and `page[number]`.",
+        "in": "query",
+        "name": "page[before]",
+        "schema": {
+          "type": "string"
+        }
+      },
+      "BlocksPageNumber": {
+        "description": "Offset page number (≥1, default 1).",
+        "in": "query",
+        "name": "page[number]",
+        "schema": {
+          "default": 1,
+          "minimum": 1,
+          "type": "integer"
+        }
+      },
+      "BlocksPageSize": {
+        "description": "Page size (1–100, default 25).",
+        "in": "query",
+        "name": "page[size]",
+        "schema": {
+          "default": 25,
+          "maximum": 100,
+          "minimum": 1,
+          "type": "integer"
+        }
+      },
+      "FilterCreatedAfter": {
+        "description": "`created_at \u003e value` (ISO 8601).",
+        "in": "query",
+        "name": "filter[created_after]",
+        "schema": {
+          "format": "date-time",
+          "type": "string"
+        }
+      },
+      "FilterCreatedBefore": {
+        "description": "`created_at \u003c value` (ISO 8601).",
+        "in": "query",
+        "name": "filter[created_before]",
+        "schema": {
+          "format": "date-time",
+          "type": "string"
+        }
+      },
+      "FilterDomainId": {
+        "description": "Exact-match filter on domain_id (UUID).",
+        "in": "query",
+        "name": "filter[domain_id]",
+        "schema": {
+          "format": "uuid",
+          "type": "string"
+        }
+      },
+      "FilterReason": {
+        "description": "Exact-match filter on reason.",
+        "in": "query",
+        "name": "filter[reason]",
+        "schema": {
+          "$ref": "#/components/schemas/Reason"
+        }
+      },
+      "PathId": {
+        "description": "Resource UUID. Malformed UUIDs are treated as not-found (not 400).",
+        "in": "path",
+        "name": "id",
+        "required": true,
+        "schema": {
+          "format": "uuid",
+          "type": "string"
+        }
+      },
+      "SortEmailBlocks": {
+        "description": "Sort field. Leading `-` = desc; only `created_at` is sortable. Default `-created_at`. `--` is an error.",
+        "in": "query",
+        "name": "sort",
+        "schema": {
+          "default": "-created_at",
+          "enum": [
+            "created_at",
+            "-created_at"
+          ],
+          "type": "string"
+        }
+      }
+    },
+    "responses": {
+      "BlocksNotFound": {
+        "content": {
+          "application/json": {
+            "example": {
+              "errors": [
+                {
+                  "code": "10001",
+                  "detail": "The requested email block was not found",
+                  "title": "Not Found"
+                }
+              ]
+            },
+            "schema": {
+              "$ref": "#/components/schemas/ErrorList"
+            }
+          }
+        },
+        "description": "Resource not found (cross-account lookups and malformed UUIDs also return 404 — no leak)."
+      },
+      "ChangesetError": {
+        "content": {
+          "application/json": {
+            "example": {
+              "errors": [
+                {
+                  "code": "10015",
+                  "detail": "can't be blank",
+                  "source": {
+                    "pointer": "/data/attributes/to"
+                  },
+                  "title": "Validation Failed"
+                }
+              ]
+            },
+            "schema": {
+              "$ref": "#/components/schemas/ErrorList"
+            }
+          }
+        },
+        "description": "Validation error (changeset or internal `Params`). One error object per field, `source.pointer /data/attributes/\u003cfield\u003e`."
+      },
+      "FrameworkError": {
+        "content": {
+          "application/json": {
+            "example": {
+              "errors": [
+                {
+                  "code": "406",
+                  "detail": "Not Acceptable",
+                  "title": "Not Acceptable"
+                }
+              ]
+            },
+            "schema": {
+              "$ref": "#/components/schemas/ErrorList"
+            }
+          }
+        },
+        "description": "Framework-rendered error (e.g. 406 Not Acceptable, 405 Method Not\nAllowed, 415 Unsupported Media Type). HTTP status matches the error\nand the body `code` carries that same status (e.g. `\"406\"`, not a\nhardcoded `\"500\"`). The explicit `500.json` clause still emits\n`code: \"500\"` for genuine 500s.\n"
+      },
+      "ValidationErrorQuery": {
+        "content": {
+          "application/json": {
+            "example": {
+              "errors": [
+                {
+                  "code": "10015",
+                  "detail": "is invalid",
+                  "source": {
+                    "pointer": "/filter[reason]"
+                  },
+                  "title": "Validation Failed"
+                }
+              ]
+            },
+            "schema": {
+              "$ref": "#/components/schemas/ErrorList"
+            }
+          }
+        },
+        "description": "Query-param validation error (`source.pointer /\u003cfield\u003e`)."
+      },
+      "email_Unauthorized": {
+        "content": {
+          "application/json": {
+            "example": {
+              "errors": [
+                {
+                  "code": "10007",
+                  "detail": "Missing authentication",
+                  "title": "Unauthorized"
+                }
+              ]
+            },
+            "schema": {
+              "$ref": "#/components/schemas/ErrorList"
+            }
+          }
+        },
+        "description": "Missing or invalid gateway auth."
+      }
+    },
+    "schemas": {
+      "BlocksErrorObject": {
+        "properties": {
+          "code": {
+            "description": "Error codes: `10001` (Not Found), `10007` (Unauthorized),\n`10015` (Validation Failed), `10019` (Internal — import create\nfallback), `40901` (Conflict), `500` (framework/catch-all).\n",
+            "type": "string"
+          },
+          "detail": {
+            "type": "string"
+          },
+          "source": {
+            "description": "`/data/attributes/\u003cfield\u003e` for changeset/Params; `/\u003cfield\u003e` for query-param errors.",
+            "properties": {
+              "pointer": {
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
+          "title": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "title",
+          "detail"
+        ],
+        "type": "object"
+      },
+      "CreateEmailBlockRequest": {
+        "description": "`reason`/`source` are forced to `manual_block`/`manual` (ignored if\nsupplied). `scope` is derived. `bounce_category`/`dsn_code`/`meta`/\n`group_id` are not accepted on the public surface.\n",
+        "properties": {
+          "domain_id": {
+            "description": "`null` ⇒ account scope.",
+            "format": "uuid",
+            "nullable": true,
+            "type": "string"
+          },
+          "expires_at": {
+            "format": "date-time",
+            "nullable": true,
+            "type": "string"
+          },
+          "from": {
+            "description": "Sender address (normalized). `null` ⇒ account/domain scope.",
+            "nullable": true,
+            "type": "string"
+          },
+          "to": {
+            "description": "Recipient address (normalized: trim + lower-case).",
+            "type": "string"
+          }
+        },
+        "required": [
+          "to"
+        ],
+        "type": "object"
+      },
+      "CursorMeta": {
+        "properties": {
+          "has_next": {
+            "type": "boolean"
+          },
+          "has_previous": {
+            "type": "boolean"
+          },
+          "next_cursor": {
+            "description": "Omitted when `has_next` is false.",
+            "type": "string"
+          },
+          "page_size": {
+            "type": "integer"
+          },
+          "previous_cursor": {
+            "description": "Omitted when `has_previous` is false.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "page_size",
+          "has_next",
+          "has_previous"
+        ],
+        "type": "object"
+      },
+      "EmailBlock": {
+        "description": "Suppression record. Schema fields hidden by the view:\n`account_id`, `bounce_category`, `dsn_code`, `meta`.\n",
+        "properties": {
+          "created_at": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "domain_id": {
+            "description": "`null` ⇒ account scope. Stored on the row; exposed here.",
+            "format": "uuid",
+            "nullable": true,
+            "type": "string"
+          },
+          "expires_at": {
+            "description": "Optional expiration time. An active row stops matching\nsend-time suppression checks as soon as `expires_at \u003c= now()`.\nA maintenance worker later transitions the row to `status: expired`\nand appends an `expired` audit event (normally within 15 minutes).\n",
+            "format": "date-time",
+            "nullable": true,
+            "type": "string"
+          },
+          "from": {
+            "description": "`null` ⇒ not address-scope. (schema: from_address)",
+            "nullable": true,
+            "type": "string"
+          },
+          "group_id": {
+            "description": "`null` ⇒ global; set ⇒ group-scoped opt-out.",
+            "format": "uuid",
+            "nullable": true,
+            "type": "string"
+          },
+          "id": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "reason": {
+            "$ref": "#/components/schemas/Reason"
+          },
+          "record_type": {
+            "description": "View-only discriminator.",
+            "enum": [
+              "email_block"
+            ],
+            "type": "string"
+          },
+          "scope": {
+            "$ref": "#/components/schemas/Scope"
+          },
+          "source": {
+            "$ref": "#/components/schemas/email_Source"
+          },
+          "status": {
+            "$ref": "#/components/schemas/Status"
+          },
+          "to": {
+            "description": "Normalized recipient. (schema: to_address)",
+            "type": "string"
+          },
+          "updated_at": {
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "record_type",
+          "to",
+          "reason",
+          "source",
+          "scope",
+          "status",
+          "created_at",
+          "updated_at"
+        ],
+        "type": "object"
+      },
+      "EmailBlockEvent": {
+        "properties": {
+          "actor": {
+            "description": "Free-text (`user_id`/`org_id`/`api_key`/`dev_bypass`/`system`/`manual`).",
+            "type": "string"
+          },
+          "event_type": {
+            "enum": [
+              "created",
+              "removed",
+              "expired",
+              "override_used"
+            ],
+            "type": "string"
+          },
+          "id": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "meta": {
+            "additionalProperties": true,
+            "description": "`null` when the schema field is nil (the context usually sets it to `{}`).",
+            "nullable": true,
+            "type": "object"
+          },
+          "occurred_at": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "reason": {
+            "description": "Free-text snapshot of the block's reason at event time.",
+            "type": "string"
+          },
+          "record_type": {
+            "description": "View-only.",
+            "enum": [
+              "email_block_event"
+            ],
+            "type": "string"
+          },
+          "source": {
+            "description": "Free-text snapshot of the block's source at event time.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "record_type",
+          "event_type",
+          "reason",
+          "source",
+          "actor",
+          "occurred_at"
+        ],
+        "type": "object"
+      },
+      "EmailBlockEventListResponse": {
+        "properties": {
+          "data": {
+            "items": {
+              "$ref": "#/components/schemas/EmailBlockEvent"
+            },
+            "type": "array"
+          },
+          "meta": {
+            "$ref": "#/components/schemas/OffsetMeta"
+          }
+        },
+        "required": [
+          "data",
+          "meta"
+        ],
+        "type": "object"
+      },
+      "EmailBlockListCursorResponse": {
+        "properties": {
+          "data": {
+            "items": {
+              "$ref": "#/components/schemas/EmailBlock"
+            },
+            "type": "array"
+          },
+          "meta": {
+            "$ref": "#/components/schemas/CursorMeta"
+          }
+        },
+        "required": [
+          "data",
+          "meta"
+        ],
+        "type": "object"
+      },
+      "EmailBlockListOffsetResponse": {
+        "properties": {
+          "data": {
+            "items": {
+              "$ref": "#/components/schemas/EmailBlock"
+            },
+            "type": "array"
+          },
+          "meta": {
+            "$ref": "#/components/schemas/OffsetMeta"
+          }
+        },
+        "required": [
+          "data",
+          "meta"
+        ],
+        "type": "object"
+      },
+      "EmailBlockResponse": {
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/EmailBlock"
+          }
+        },
+        "required": [
+          "data"
+        ],
+        "type": "object"
+      },
+      "ErrorList": {
+        "properties": {
+          "errors": {
+            "items": {
+              "$ref": "#/components/schemas/BlocksErrorObject"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "errors"
+        ],
+        "type": "object"
+      },
+      "OffsetMeta": {
+        "properties": {
+          "page_number": {
+            "type": "integer"
+          },
+          "page_size": {
+            "type": "integer"
+          },
+          "total_pages": {
+            "type": "integer"
+          },
+          "total_results": {
+            "type": "integer"
+          }
+        },
+        "required": [
+          "page_number",
+          "page_size",
+          "total_pages",
+          "total_results"
+        ],
+        "type": "object"
+      },
+      "Reason": {
+        "enum": [
+          "hard_bounce",
+          "spam_complaint",
+          "unsubscribe",
+          "invalid",
+          "manual_block"
+        ],
+        "type": "string"
+      },
+      "Scope": {
+        "description": "Derived server-side from `domain_id`/`from`; never trusted from the caller.",
+        "enum": [
+          "account",
+          "domain",
+          "address"
+        ],
+        "type": "string"
+      },
+      "Status": {
+        "enum": [
+          "active",
+          "expired",
+          "removed"
+        ],
+        "type": "string"
+      },
+      "email_Source": {
+        "enum": [
+          "feedback",
+          "manual",
+          "import",
+          "system"
+        ],
+        "type": "string"
+      }
+    },
+    "securitySchemes": {
+      "BearerAuth": {
+        "bearerFormat": "API key",
+        "description": "Telnyx API key supplied as `Authorization: Bearer \u003ctoken\u003e`. In production, auth may be validated by the API gateway and forwarded via Telnyx auth headers.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "Payment": {
+        "description": "Machine Payment Protocol credential used on paid retries, sent as `Authorization: Payment ...`. Obtained by paying a challenge returned in the `WWW-Authenticate` header of a 402 response. This is not a Telnyx API key; initial challenge requests use standard bearer authentication instead.",
+        "in": "header",
+        "name": "Authorization",
+        "type": "apiKey"
+      },
+      "agent-memory_bearerAuth": {
+        "description": "Telnyx API key",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "bearerAuth": {
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "branded-calling_bearerAuth": {
+        "description": "Telnyx API key. Generate one at https://portal.telnyx.com/#/app/api-keys.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "collections_bearerAuth": {
+        "description": "Telnyx API key. Collections and results are automatically scoped to the authenticated user's organization.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "number-reputation_bearerAuth": {
+        "description": "Telnyx API key. Generate one at https://portal.telnyx.com/#/app/api-keys.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "oauthClientAuth": {
+        "description": "OAuth 2.0 authentication for Telnyx API and MCP integrations",
+        "flows": {
+          "authorizationCode": {
+            "authorizationUrl": "https://api.telnyx.com/v2/oauth/authorize",
+            "refreshUrl": "https://api.telnyx.com/v2/oauth/token",
+            "scopes": {
+              "admin": "Administrative access to Telnyx resources"
+            },
+            "tokenUrl": "https://api.telnyx.com/v2/oauth/token"
+          },
+          "clientCredentials": {
+            "scopes": {
+              "admin": "Administrative access to Telnyx resources"
+            },
+            "tokenUrl": "https://api.telnyx.com/v2/oauth/token"
+          }
+        },
+        "type": "oauth2"
+      },
+      "outbound-voice-profiles_bearerAuth": {
+        "bearerFormat": "JWT",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "pay-connectors_bearerAuth": {
+        "description": "Telnyx API key, not the processor bearer token.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "pronunciation-dicts_bearerAuth": {
+        "description": "Telnyx API v2 key. Obtain from https://portal.telnyx.com",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "rcs-registration_bearerAuth": {
+        "bearerFormat": "API key",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "stored-payment-transactions_bearerAuth": {
+        "bearerFormat": "JWT",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "telnyxApiKey": {
+        "description": "Management-only Telnyx account credential.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "transcriptions-search_bearerAuth": {
+        "description": "Telnyx API key. Results are automatically scoped to the authenticated user's organization.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "web-search_bearerAuth": {
+        "description": "Telnyx API key",
+        "scheme": "bearer",
+        "type": "http"
+      }
+    }
+  },
+  "info": {
+    "contact": {
+      "email": "support@telnyx.com"
+    },
+    "description": "SIP trunking, SMS, MMS, Call Control and Telephony Data Services.",
+    "title": "Telnyx API",
+    "version": "2.0.0",
+    "x-endpoint-cost": "light",
+    "x-latency-category": "responsive"
+  },
+  "openapi": "3.1.0",
+  "paths": {
+    "/email_blocks": {
+      "get": {
+        "description": "Account-scoped list. Two mutually exclusive pagination modes:\n\n  - **Offset**: `page[number]` (default 1) + `page[size]`\n    (default 25, max 100). `meta` contains `total_pages`.\n  - **Cursor**: `page[after]` and/or `page[before]` (opaque\n    `Base.url_encode64` of `{\"created_at\",\"id\"}`). Cannot combine\n    with `page[number]`; `after`+`before` together is an error.\n    `meta` contains `next_cursor` / `previous_cursor` (omitted when\n    their flag is false).\n\nSort defaults to `-created_at` (desc); only `created_at` is sortable.\nA `--` prefix is an error. `nil`/empty filter values are silently dropped.\n",
+        "operationId": "listEmailBlocks",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/BlocksPageNumber"
+          },
+          {
+            "$ref": "#/components/parameters/BlocksPageSize"
+          },
+          {
+            "$ref": "#/components/parameters/BlocksPageAfter"
+          },
+          {
+            "$ref": "#/components/parameters/BlocksPageBefore"
+          },
+          {
+            "$ref": "#/components/parameters/SortEmailBlocks"
+          },
+          {
+            "$ref": "#/components/parameters/FilterReason"
+          },
+          {
+            "$ref": "#/components/parameters/FilterDomainId"
+          },
+          {
+            "$ref": "#/components/parameters/FilterCreatedAfter"
+          },
+          {
+            "$ref": "#/components/parameters/FilterCreatedBefore"
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "data": [
+                    {
+                      "created_at": "2024-01-23T18:10:02.574Z",
+                      "domain_id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+                      "expires_at": "2024-01-23T18:10:02.574Z",
+                      "from": "string",
+                      "group_id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+                      "id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+                      "reason": "hard_bounce",
+                      "record_type": "email_block",
+                      "scope": "account",
+                      "source": "feedback",
+                      "status": "active",
+                      "to": "string",
+                      "updated_at": "2024-01-23T18:10:02.574Z"
+                    }
+                  ],
+                  "meta": {
+                    "page_number": 0,
+                    "page_size": 0,
+                    "total_pages": 0,
+                    "total_results": 0
+                  }
+                },
+                "schema": {
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/EmailBlockListOffsetResponse"
+                    },
+                    {
+                      "$ref": "#/components/schemas/EmailBlockListCursorResponse"
+                    }
+                  ]
+                }
+              }
+            },
+            "description": "List of suppressions."
+          },
+          "400": {
+            "$ref": "#/components/responses/ValidationErrorQuery"
+          },
+          "401": {
+            "$ref": "#/components/responses/email_Unauthorized"
+          },
+          "406": {
+            "$ref": "#/components/responses/FrameworkError"
+          }
+        },
+        "summary": "List suppressions",
+        "tags": [
+          "Email Suppressions"
+        ]
+      },
+      "post": {
+        "description": "Creates a suppression with `reason: manual_block` and `source: manual`.\nCaller-supplied `reason` / `source` are **ignored**; `scope` is\n**derived** server-side from `domain_id` / `from` and is never\ntrusted. Idempotent: if a matching row already exists (NULL-safe\ndedupe key: account_id, scope, to, reason, domain_id, from),\nreturns the existing record with `200` (no new audit event).\n\n`bounce_category`, `dsn_code`, `meta`, and `group_id` are **not\naccepted** on the public surface. Use the unsubscribe-group\nsuppression endpoint or the internal create surface for those.\n",
+        "operationId": "createEmailBlock",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "example": {
+                "expires_at": "2026-12-31T23:59:59Z",
+                "to": "spammer@bad.tld"
+              },
+              "schema": {
+                "$ref": "#/components/schemas/CreateEmailBlockRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "data": {
+                    "created_at": "2024-01-23T18:10:02.574Z",
+                    "domain_id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+                    "expires_at": "2024-01-23T18:10:02.574Z",
+                    "from": "string",
+                    "group_id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+                    "id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+                    "reason": "hard_bounce",
+                    "record_type": "email_block",
+                    "scope": "account",
+                    "source": "feedback",
+                    "status": "active",
+                    "to": "string",
+                    "updated_at": "2024-01-23T18:10:02.574Z"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/EmailBlockResponse"
+                }
+              }
+            },
+            "description": "Idempotent — matching suppression already existed."
+          },
+          "201": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "data": {
+                    "created_at": "2024-01-23T18:10:02.574Z",
+                    "domain_id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+                    "expires_at": "2024-01-23T18:10:02.574Z",
+                    "from": "string",
+                    "group_id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+                    "id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+                    "reason": "hard_bounce",
+                    "record_type": "email_block",
+                    "scope": "account",
+                    "source": "feedback",
+                    "status": "active",
+                    "to": "string",
+                    "updated_at": "2024-01-23T18:10:02.574Z"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/EmailBlockResponse"
+                }
+              }
+            },
+            "description": "Created."
+          },
+          "401": {
+            "$ref": "#/components/responses/email_Unauthorized"
+          },
+          "406": {
+            "$ref": "#/components/responses/FrameworkError"
+          },
+          "422": {
+            "$ref": "#/components/responses/ChangesetError"
+          }
+        },
+        "summary": "Create a manual suppression",
+        "tags": [
+          "Email Suppressions"
+        ]
+      }
+    },
+    "/email_blocks/export": {
+      "get": {
+        "description": "Streams the account's suppressions as a chunked CSV (server-side\ncursor; never materialized). Content-type `text/csv`, header\n`Content-Disposition: attachment; filename=\"email_blocks_export.csv\"`.\n\nFilters (`filter[reason]`, `filter[domain_id]`,\n`filter[created_after]`, `filter[created_before]`) are the only\nparams that affect output. `sort` and `page[*]` are **parsed**\n(bad values still produce `400`) but **ignored** — rows stream\n`ORDER BY created_at ASC, id ASC` with no pagination.\n\nCSV columns: `id,to,from,reason,source,scope,status,domain_id,\ncreated_at,updated_at,expires_at,group_id,bounce_category,dsn_code,\nmeta` (15 columns). The first 12 columns are the stable native\nsignature; `bounce_category`, `dsn_code`, and `meta` are optional\nbackup fields (empty when unset). The CSV carries the `group_id`\ncolumn so group-scoped suppressions' group link survives the\nexport (empty for account-scope rows).\n",
+        "operationId": "exportEmailBlocks",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/SortEmailBlocks"
+          },
+          {
+            "$ref": "#/components/parameters/BlocksPageNumber"
+          },
+          {
+            "$ref": "#/components/parameters/BlocksPageSize"
+          },
+          {
+            "$ref": "#/components/parameters/FilterReason"
+          },
+          {
+            "$ref": "#/components/parameters/FilterDomainId"
+          },
+          {
+            "$ref": "#/components/parameters/FilterCreatedAfter"
+          },
+          {
+            "$ref": "#/components/parameters/FilterCreatedBefore"
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "text/csv": {
+                "example": "string",
+                "schema": {
+                  "description": "CSV with header row `id,to,from,reason,source,scope,status,domain_id,created_at,updated_at,expires_at,group_id,bounce_category,dsn_code,meta`.",
+                  "type": "string"
+                }
+              }
+            },
+            "description": "CSV stream."
+          },
+          "400": {
+            "$ref": "#/components/responses/ValidationErrorQuery"
+          },
+          "401": {
+            "$ref": "#/components/responses/email_Unauthorized"
+          },
+          "406": {
+            "$ref": "#/components/responses/FrameworkError"
+          }
+        },
+        "summary": "Export suppressions as CSV",
+        "tags": [
+          "Email Suppressions"
+        ]
+      }
+    },
+    "/email_blocks/{id}": {
+      "delete": {
+        "description": "Soft-deletes (status → `removed`; tombstone retained). A `removed`\naudit event is appended unless the block was already `removed`\n(idempotent — returns the existing row with `200` and no new event).\nMutates `updated_at`.\n",
+        "operationId": "deleteEmailBlock",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "data": {
+                    "created_at": "2024-01-23T18:10:02.574Z",
+                    "domain_id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+                    "expires_at": "2024-01-23T18:10:02.574Z",
+                    "from": "string",
+                    "group_id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+                    "id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+                    "reason": "hard_bounce",
+                    "record_type": "email_block",
+                    "scope": "account",
+                    "source": "feedback",
+                    "status": "active",
+                    "to": "string",
+                    "updated_at": "2024-01-23T18:10:02.574Z"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/EmailBlockResponse"
+                }
+              }
+            },
+            "description": "The post-deletion record (status `removed`)."
+          },
+          "401": {
+            "$ref": "#/components/responses/email_Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/BlocksNotFound"
+          },
+          "406": {
+            "$ref": "#/components/responses/FrameworkError"
+          },
+          "422": {
+            "$ref": "#/components/responses/ChangesetError"
+          }
+        },
+        "summary": "Soft-delete a suppression",
+        "tags": [
+          "Email Suppressions"
+        ]
+      },
+      "get": {
+        "description": "Returns the account-owned suppression identified by ID. Cross-account lookups and malformed IDs return `404` without exposing another account’s data.",
+        "operationId": "showEmailBlock",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "data": {
+                    "created_at": "2024-01-23T18:10:02.574Z",
+                    "domain_id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+                    "expires_at": "2024-01-23T18:10:02.574Z",
+                    "from": "string",
+                    "group_id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+                    "id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+                    "reason": "hard_bounce",
+                    "record_type": "email_block",
+                    "scope": "account",
+                    "source": "feedback",
+                    "status": "active",
+                    "to": "string",
+                    "updated_at": "2024-01-23T18:10:02.574Z"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/EmailBlockResponse"
+                }
+              }
+            },
+            "description": "The suppression."
+          },
+          "401": {
+            "$ref": "#/components/responses/email_Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/BlocksNotFound"
+          },
+          "406": {
+            "$ref": "#/components/responses/FrameworkError"
+          }
+        },
+        "summary": "Retrieve a suppression",
+        "tags": [
+          "Email Suppressions"
+        ]
+      },
+      "parameters": [
+        {
+          "$ref": "#/components/parameters/PathId"
+        }
+      ]
+    },
+    "/email_blocks/{id}/events": {
+      "get": {
+        "description": "Offset pagination only (`page[number]` default 1, `page[size]`\ndefault **50**, max 100). No `sort`, no `filter`, no cursor —\nordering is fixed `desc occurred_at, desc id`. Verifies the block\nbelongs to the account first (cross-account → 404).\n",
+        "operationId": "listEmailBlockEvents",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/BlocksPageNumber"
+          },
+          {
+            "description": "Page size (default 50, max 100).",
+            "in": "query",
+            "name": "page[size]",
+            "schema": {
+              "default": 50,
+              "maximum": 100,
+              "minimum": 1,
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "data": [
+                    {
+                      "actor": "string",
+                      "event_type": "created",
+                      "id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+                      "occurred_at": "2024-01-23T18:10:02.574Z",
+                      "reason": "string",
+                      "record_type": "email_block_event",
+                      "source": "string"
+                    }
+                  ],
+                  "meta": {
+                    "page_number": 0,
+                    "page_size": 0,
+                    "total_pages": 0,
+                    "total_results": 0
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/EmailBlockEventListResponse"
+                }
+              }
+            },
+            "description": "Audit events (newest-first)."
+          },
+          "400": {
+            "$ref": "#/components/responses/ValidationErrorQuery"
+          },
+          "401": {
+            "$ref": "#/components/responses/email_Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/BlocksNotFound"
+          },
+          "406": {
+            "$ref": "#/components/responses/FrameworkError"
+          }
+        },
+        "summary": "List audit events for a suppression",
+        "tags": [
+          "Email Suppressions"
+        ]
+      },
+      "parameters": [
+        {
+          "$ref": "#/components/parameters/PathId"
+        }
+      ]
+    }
+  },
+  "security": [
+    {
+      "bearerAuth": []
+    }
+  ],
+  "servers": [
+    {
+      "description": "Version 2.0.0 of the Telnyx API",
+      "url": "https://api.telnyx.com/v2"
+    }
+  ]
+}

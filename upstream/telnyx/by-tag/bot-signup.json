@@ -1,0 +1,850 @@
+{
+  "components": {
+    "schemas": {
+      "BotChallengeRequest": {
+        "description": "Optional self-reported metadata about the LLM solving the challenge. Analytics only; values are truncated to 50 characters.",
+        "properties": {
+          "llm_model_name": {
+            "description": "Name of the LLM the client is using.",
+            "example": "claude-opus-4",
+            "type": "string"
+          },
+          "llm_parameter_count": {
+            "description": "Parameter count of the client LLM.",
+            "example": "175B",
+            "type": "string"
+          },
+          "llm_quantization": {
+            "description": "Quantization of the client LLM.",
+            "example": "int8",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "BotChallengeResponse": {
+        "properties": {
+          "data": {
+            "properties": {
+              "challenge_type": {
+                "description": "Type of challenge.",
+                "enum": [
+                  "math",
+                  "string",
+                  "binary"
+                ],
+                "example": "math",
+                "type": "string"
+              },
+              "nonce": {
+                "description": "Single-use challenge identifier. Submit it as `bot_challenge_nonce` on the signup request.",
+                "example": "c6feda4e-6501-4db9-a21f-665e5b4ce2ba",
+                "format": "uuid",
+                "type": "string"
+              },
+              "precision": {
+                "description": "Decimal places expected in the answer. Present only for math challenges.",
+                "example": 0,
+                "type": "integer"
+              },
+              "privacy_policy_url": {
+                "description": "Current privacy-policy URL. Echo this back on the signup request.",
+                "example": "https://telnyx.com/privacy-policy",
+                "type": "string"
+              },
+              "problem": {
+                "description": "Problem text to solve. Math problems are obfuscated and end with an unobfuscated rounding instruction; string and binary problems are returned as-is.",
+                "example": "W#hAt iS f!Ve tImEs sEvEn? Round to 0 decimal places. Omit units.",
+                "type": "string"
+              },
+              "terms_and_conditions_url": {
+                "description": "Current terms-and-conditions URL. Echo this back on the signup request.",
+                "example": "https://telnyx.com/terms-and-conditions-of-service",
+                "type": "string"
+              }
+            },
+            "required": [
+              "nonce",
+              "problem",
+              "challenge_type",
+              "terms_and_conditions_url",
+              "privacy_policy_url"
+            ],
+            "type": "object"
+          }
+        },
+        "required": [
+          "data"
+        ],
+        "type": "object"
+      },
+      "BotSessionResponse": {
+        "properties": {
+          "data": {
+            "properties": {
+              "api_v2_token": {
+                "description": "API v2 session token for the signed-in user. Use it as a bearer token on authenticated endpoints.",
+                "example": "KEY0189A1B2C3D4E5F6071829AB3C4D5E_5FhZonmFvcw8Yq0dME27Bg",
+                "type": "string"
+              }
+            },
+            "required": [
+              "api_v2_token"
+            ],
+            "type": "object"
+          }
+        },
+        "required": [
+          "data"
+        ],
+        "type": "object"
+      },
+      "BotSignupRequest": {
+        "properties": {
+          "bot_challenge_answer": {
+            "description": "Answer to the issued bot challenge.",
+            "example": "35",
+            "type": "string"
+          },
+          "bot_challenge_nonce": {
+            "description": "Nonce from a previously issued bot challenge.",
+            "example": "c6feda4e-6501-4db9-a21f-665e5b4ce2ba",
+            "format": "uuid",
+            "type": "string"
+          },
+          "email": {
+            "description": "Email address for the new account. The magic link is sent here. May only be omitted when placeholder-email registration is enabled server-side.",
+            "example": "agent-owner@example.com",
+            "format": "email",
+            "type": "string"
+          },
+          "privacy_policy_url": {
+            "description": "Must exactly match the privacy-policy URL returned by the challenge endpoint.",
+            "example": "https://telnyx.com/privacy-policy",
+            "type": "string"
+          },
+          "terms_and_conditions_eu_url": {
+            "description": "EU terms-and-conditions URL. Required when EU consent enforcement is enabled.",
+            "example": "https://telnyx.com/terms-and-conditions-of-service-eu",
+            "type": "string"
+          },
+          "terms_and_conditions_url": {
+            "description": "Must exactly match the terms-and-conditions URL returned by the challenge endpoint.",
+            "example": "https://telnyx.com/terms-and-conditions-of-service",
+            "type": "string"
+          },
+          "terms_of_service": {
+            "description": "Must be true to accept the terms of service.",
+            "enum": [
+              true
+            ],
+            "example": true,
+            "type": "boolean"
+          },
+          "terms_of_service_eu": {
+            "description": "EU terms-of-service acceptance. Required when EU consent enforcement is enabled.",
+            "enum": [
+              true
+            ],
+            "example": true,
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "terms_of_service",
+          "terms_and_conditions_url",
+          "privacy_policy_url",
+          "bot_challenge_nonce",
+          "bot_challenge_answer"
+        ],
+        "type": "object"
+      },
+      "ResendMagicLinkRequest": {
+        "properties": {
+          "email": {
+            "description": "Email address of the bot signup account to resend the magic link to.",
+            "example": "agent-owner@example.com",
+            "format": "email",
+            "type": "string"
+          }
+        },
+        "required": [
+          "email"
+        ],
+        "type": "object"
+      },
+      "SuccessResponse": {
+        "description": "Status envelope used by the signup and magic-link flows.",
+        "properties": {
+          "message": {
+            "description": "Human-readable status message.",
+            "example": "A one-time sign-in link has been sent to your email address.",
+            "type": "string"
+          },
+          "success": {
+            "description": "Whether the request was accepted.",
+            "example": true,
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "success",
+          "message"
+        ],
+        "type": "object"
+      },
+      "bot-signup_Error": {
+        "description": "API error. General errors carry only `detail`; structured errors also include `code`, `title`, `source`, and `meta`.",
+        "properties": {
+          "code": {
+            "description": "Machine-readable Telnyx error code.",
+            "example": "10005",
+            "type": "string"
+          },
+          "detail": {
+            "description": "Human-readable explanation of the error.",
+            "example": "The requested resource or URL could not be found.",
+            "type": "string"
+          },
+          "meta": {
+            "properties": {
+              "url": {
+                "description": "Link to the error documentation.",
+                "example": "https://developers.telnyx.com/docs/overview/errors/10005",
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
+          "source": {
+            "properties": {
+              "pointer": {
+                "description": "JSON pointer to the offending attribute.",
+                "example": "/",
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
+          "title": {
+            "description": "Short human-readable summary.",
+            "example": "Resource not found",
+            "type": "string"
+          }
+        },
+        "required": [
+          "detail"
+        ],
+        "type": "object"
+      },
+      "bot-signup_ErrorResponse": {
+        "properties": {
+          "errors": {
+            "items": {
+              "$ref": "#/components/schemas/bot-signup_Error"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "errors"
+        ],
+        "type": "object"
+      }
+    },
+    "securitySchemes": {
+      "BearerAuth": {
+        "bearerFormat": "API key",
+        "description": "Telnyx API key supplied as `Authorization: Bearer \u003ctoken\u003e`. In production, auth may be validated by the API gateway and forwarded via Telnyx auth headers.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "Payment": {
+        "description": "Machine Payment Protocol credential used on paid retries, sent as `Authorization: Payment ...`. Obtained by paying a challenge returned in the `WWW-Authenticate` header of a 402 response. This is not a Telnyx API key; initial challenge requests use standard bearer authentication instead.",
+        "in": "header",
+        "name": "Authorization",
+        "type": "apiKey"
+      },
+      "agent-memory_bearerAuth": {
+        "description": "Telnyx API key",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "bearerAuth": {
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "branded-calling_bearerAuth": {
+        "description": "Telnyx API key. Generate one at https://portal.telnyx.com/#/app/api-keys.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "collections_bearerAuth": {
+        "description": "Telnyx API key. Collections and results are automatically scoped to the authenticated user's organization.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "number-reputation_bearerAuth": {
+        "description": "Telnyx API key. Generate one at https://portal.telnyx.com/#/app/api-keys.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "oauthClientAuth": {
+        "description": "OAuth 2.0 authentication for Telnyx API and MCP integrations",
+        "flows": {
+          "authorizationCode": {
+            "authorizationUrl": "https://api.telnyx.com/v2/oauth/authorize",
+            "refreshUrl": "https://api.telnyx.com/v2/oauth/token",
+            "scopes": {
+              "admin": "Administrative access to Telnyx resources"
+            },
+            "tokenUrl": "https://api.telnyx.com/v2/oauth/token"
+          },
+          "clientCredentials": {
+            "scopes": {
+              "admin": "Administrative access to Telnyx resources"
+            },
+            "tokenUrl": "https://api.telnyx.com/v2/oauth/token"
+          }
+        },
+        "type": "oauth2"
+      },
+      "outbound-voice-profiles_bearerAuth": {
+        "bearerFormat": "JWT",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "pay-connectors_bearerAuth": {
+        "description": "Telnyx API key, not the processor bearer token.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "pronunciation-dicts_bearerAuth": {
+        "description": "Telnyx API v2 key. Obtain from https://portal.telnyx.com",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "rcs-registration_bearerAuth": {
+        "bearerFormat": "API key",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "stored-payment-transactions_bearerAuth": {
+        "bearerFormat": "JWT",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "telnyxApiKey": {
+        "description": "Management-only Telnyx account credential.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "transcriptions-search_bearerAuth": {
+        "description": "Telnyx API key. Results are automatically scoped to the authenticated user's organization.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "web-search_bearerAuth": {
+        "description": "Telnyx API key",
+        "scheme": "bearer",
+        "type": "http"
+      }
+    }
+  },
+  "info": {
+    "contact": {
+      "email": "support@telnyx.com"
+    },
+    "description": "SIP trunking, SMS, MMS, Call Control and Telephony Data Services.",
+    "title": "Telnyx API",
+    "version": "2.0.0",
+    "x-endpoint-cost": "light",
+    "x-latency-category": "responsive"
+  },
+  "openapi": "3.1.0",
+  "paths": {
+    "/bot_challenge": {
+      "post": {
+        "description": "Generates a reverse-CAPTCHA challenge used to gate the bot signup flow. A random active problem is selected from the pool; math problems are returned obfuscated (case randomization, symbol injection, spacing noise) with an unobfuscated rounding instruction appended, while string and binary problems are returned as-is. The response contains a single-use nonce, the problem text, and the current terms-and-conditions and privacy-policy URLs, which must be echoed back on the signup request. Challenges expire after a short window (10 minutes by default) and can only be answered once. This endpoint is public and unauthenticated.",
+        "operationId": "createBotChallenge",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "example": {
+                "llm_model_name": "claude-opus-4",
+                "llm_parameter_count": "175B",
+                "llm_quantization": "int8"
+              },
+              "schema": {
+                "$ref": "#/components/schemas/BotChallengeRequest"
+              }
+            }
+          },
+          "description": "Optional self-reported metadata about the LLM solving the challenge. Used for analytics only; it does not influence which problem is served.",
+          "required": false
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "data": {
+                    "challenge_type": "math",
+                    "nonce": "c6feda4e-6501-4db9-a21f-665e5b4ce2ba",
+                    "precision": 0,
+                    "privacy_policy_url": "https://telnyx.com/privacy-policy",
+                    "problem": "W#hAt iS f!Ve tImEs sEvEn? Round to 0 decimal places. Omit units.",
+                    "terms_and_conditions_url": "https://telnyx.com/terms-and-conditions-of-service"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/BotChallengeResponse"
+                }
+              }
+            },
+            "description": "Challenge issued."
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "errors": [
+                    {
+                      "detail": "There was a problem in the JSON you submitted. Please check your formatting and try again."
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/bot-signup_ErrorResponse"
+                }
+              }
+            },
+            "description": "The JSON request body could not be parsed."
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "errors": [
+                    {
+                      "detail": "No bot challenge problems available"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/bot-signup_ErrorResponse"
+                }
+              }
+            },
+            "description": "No bot challenge problems are currently available."
+          }
+        },
+        "security": [],
+        "summary": "Issue a bot challenge",
+        "tags": [
+          "Bot Signup"
+        ],
+        "x-endpoint-cost": "light",
+        "x-latency-category": "responsive"
+      }
+    },
+    "/bot_sessions": {
+      "get": {
+        "description": "Consumes the one-time portal redirect (magic link) token emailed during bot signup and returns an API session. The token is a UUIDv7 that encodes its creation time; it expires after a configurable validity window (15 minutes by default) and is cleared on first use. Although the action creates a session, the route uses the GET verb because it is opened from an email link. On first use the account is also initialized. For bot signup (freemium) accounts the response is a minimal envelope containing only the `api_v2_token`; accounts that are permitted to use magic links but are not freemium accounts may instead receive an extended session payload when additional steps (such as two-factor authentication or identity verification) are required. This endpoint is public; the magic link token in the query string is the credential.",
+        "operationId": "createBotSession",
+        "parameters": [
+          {
+            "description": "Email address associated with the magic link token.",
+            "in": "query",
+            "name": "email",
+            "required": true,
+            "schema": {
+              "example": "agent-owner@example.com",
+              "format": "email",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Single-use portal redirect (magic link) token, a UUIDv7 sent to the account owner's email.",
+            "in": "query",
+            "name": "portal_redirect_token",
+            "required": true,
+            "schema": {
+              "example": "01890a7e-e2f7-7c3d-8dbb-9a2c5f3d1e0b",
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "data": {
+                    "api_v2_token": "KEY0189A1B2C3D4E5F6071829AB3C4D5E_5FhZonmFvcw8Yq0dME27Bg"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/BotSessionResponse"
+                }
+              }
+            },
+            "description": "Session created. Bot signup accounts receive a minimal token envelope."
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "errors": [
+                    {
+                      "detail": "Account could not be initialized"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/bot-signup_ErrorResponse"
+                }
+              }
+            },
+            "description": "The account could not be initialized."
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "errors": [
+                    {
+                      "detail": "Your sign-in link has expired. Please request a new one-time sign-in link."
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/bot-signup_ErrorResponse"
+                }
+              }
+            },
+            "description": "Missing or invalid email or token, expired token, or the account is not eligible to sign in (inactive, suspended, not permitted to use magic links, or must use SSO)."
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "errors": [
+                    {
+                      "detail": "Your registration cannot be accepted as it does not comply with our security standards. You may contact support for assistance."
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/bot-signup_ErrorResponse"
+                }
+              }
+            },
+            "description": "Request blocked by security policy (for example, the caller's country is not accepted)."
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "errors": [
+                    {
+                      "code": "10005",
+                      "detail": "The requested resource or URL could not be found.",
+                      "meta": {
+                        "url": "https://developers.telnyx.com/docs/overview/errors/10005"
+                      },
+                      "source": {
+                        "pointer": "/"
+                      },
+                      "title": "Resource not found"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/bot-signup_ErrorResponse"
+                }
+              }
+            },
+            "description": "Bot signup is not available (freemium master switch disabled or the caller's country is not enabled)."
+          }
+        },
+        "security": [],
+        "summary": "Exchange a magic link token for a session",
+        "tags": [
+          "Bot Signup"
+        ],
+        "x-endpoint-cost": "medium",
+        "x-latency-category": "responsive"
+      }
+    },
+    "/bot_signup": {
+      "post": {
+        "description": "Creates a freemium Telnyx account through the agentic signup flow. The request must carry a valid answer to a previously issued bot challenge (`bot_challenge_nonce` and `bot_challenge_answer`), accept the terms of service, and echo the exact terms-and-conditions and privacy-policy URLs returned by the challenge endpoint. When EU consent enforcement is enabled, `terms_of_service_eu` and `terms_and_conditions_eu_url` are also required. On success a one-time sign-in (magic) link is emailed to the address provided; if the email address belongs to an existing account, a sign-in link is sent instead of creating a duplicate account. `email` may only be omitted when placeholder-email registration is enabled server-side. This endpoint is public and unauthenticated, gated by the freemium feature flags and per-country availability, and subject to per-IP and per-domain registration limits.",
+        "operationId": "createBotSignup",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "example": {
+                "bot_challenge_answer": "35",
+                "bot_challenge_nonce": "c6feda4e-6501-4db9-a21f-665e5b4ce2ba",
+                "email": "agent-owner@example.com",
+                "privacy_policy_url": "https://telnyx.com/privacy-policy",
+                "terms_and_conditions_url": "https://telnyx.com/terms-and-conditions-of-service",
+                "terms_of_service": true
+              },
+              "schema": {
+                "$ref": "#/components/schemas/BotSignupRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "message": "A one-time sign-in link has been sent to your email address.",
+                  "success": true
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/SuccessResponse"
+                }
+              }
+            },
+            "description": "Registration accepted and a magic link emailed."
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "errors": [
+                    {
+                      "detail": "Bot challenge parameters are required"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/bot-signup_ErrorResponse"
+                }
+              }
+            },
+            "description": "Bot challenge parameters missing or verification failed, terms of service not accepted, or terms/privacy URLs missing or not matching the expected values."
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "errors": [
+                    {
+                      "detail": "Your registration cannot be accepted as it does not comply with our security standards. You may contact support for assistance."
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/bot-signup_ErrorResponse"
+                }
+              }
+            },
+            "description": "Registration blocked by security policy (for example, registration from the caller's country is not accepted)."
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "errors": [
+                    {
+                      "code": "10005",
+                      "detail": "The requested resource or URL could not be found.",
+                      "meta": {
+                        "url": "https://developers.telnyx.com/docs/overview/errors/10005"
+                      },
+                      "source": {
+                        "pointer": "/"
+                      },
+                      "title": "Resource not found"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/bot-signup_ErrorResponse"
+                }
+              }
+            },
+            "description": "Bot signup is not available (freemium master switch disabled or the caller's country is not enabled)."
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "errors": [
+                    {
+                      "code": "10027",
+                      "detail": "Email is invalid",
+                      "meta": {
+                        "url": "https://developers.telnyx.com/docs/overview/errors/10027"
+                      },
+                      "source": {
+                        "pointer": "/email"
+                      },
+                      "title": "Unprocessable Entity"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/bot-signup_ErrorResponse"
+                }
+              }
+            },
+            "description": "Validation failed (for example an invalid email address), or the IP address has reached its bot signup limit."
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "errors": [
+                    {
+                      "code": "10011",
+                      "detail": "You have exceeded the maximum number of allowed requests.",
+                      "meta": {
+                        "url": "https://developers.telnyx.com/docs/overview/errors/10011"
+                      },
+                      "source": {
+                        "pointer": "/"
+                      },
+                      "title": "Too many requests"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/bot-signup_ErrorResponse"
+                }
+              }
+            },
+            "description": "Too many registrations from this email domain."
+          }
+        },
+        "security": [],
+        "summary": "Register via bot signup",
+        "tags": [
+          "Bot Signup"
+        ],
+        "x-endpoint-cost": "medium",
+        "x-latency-category": "responsive"
+      }
+    },
+    "/bot_signup/resend_magic_link": {
+      "post": {
+        "description": "Resends the one-time sign-in (magic) link for an eligible bot signup account. Eligibility (account exists, was registered through bot signup, is active, and has not exceeded the resend limit or rate window) is evaluated server-side; the response is intentionally uniform and does not reveal whether the account exists or whether a link was actually sent. This endpoint is public and unauthenticated, gated by the freemium feature flags and per-country availability.",
+        "operationId": "resendBotSignupMagicLink",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "example": {
+                "email": "agent-owner@example.com"
+              },
+              "schema": {
+                "$ref": "#/components/schemas/ResendMagicLinkRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "message": "A one-time sign-in link has been sent to your email address.",
+                  "success": true
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/SuccessResponse"
+                }
+              }
+            },
+            "description": "Uniform acknowledgement, returned whether or not a link was sent."
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "errors": [
+                    {
+                      "detail": "There was a problem in the JSON you submitted. Please check your formatting and try again."
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/bot-signup_ErrorResponse"
+                }
+              }
+            },
+            "description": "The JSON request body could not be parsed."
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "errors": [
+                    {
+                      "detail": "Your registration cannot be accepted as it does not comply with our security standards. You may contact support for assistance."
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/bot-signup_ErrorResponse"
+                }
+              }
+            },
+            "description": "Request blocked by security policy (for example, the caller's country is not accepted)."
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "errors": [
+                    {
+                      "code": "10005",
+                      "detail": "The requested resource or URL could not be found.",
+                      "meta": {
+                        "url": "https://developers.telnyx.com/docs/overview/errors/10005"
+                      },
+                      "source": {
+                        "pointer": "/"
+                      },
+                      "title": "Resource not found"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/bot-signup_ErrorResponse"
+                }
+              }
+            },
+            "description": "Bot signup is not available (freemium master switch disabled or the caller's country is not enabled)."
+          }
+        },
+        "security": [],
+        "summary": "Resend a bot signup magic link",
+        "tags": [
+          "Bot Signup"
+        ],
+        "x-endpoint-cost": "light",
+        "x-latency-category": "responsive"
+      }
+    }
+  },
+  "security": [
+    {
+      "bearerAuth": []
+    }
+  ],
+  "servers": [
+    {
+      "description": "Version 2.0.0 of the Telnyx API",
+      "url": "https://api.telnyx.com/v2"
+    }
+  ]
+}

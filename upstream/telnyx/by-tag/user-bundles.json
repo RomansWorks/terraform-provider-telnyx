@@ -1,0 +1,1010 @@
+{
+  "components": {
+    "parameters": {
+      "AuthorizationBearer": {
+        "description": "Format: Bearer \u003cTOKEN\u003e",
+        "in": "header",
+        "name": "authorization_bearer",
+        "schema": {
+          "description": "Authenticates the request with your Telnyx API V2 KEY",
+          "type": "string"
+        }
+      },
+      "UserBundleId": {
+        "description": "Unique identifier of the user bundle.",
+        "in": "path",
+        "name": "user_bundle_id",
+        "required": true,
+        "schema": {
+          "description": "User bundle's ID, this is used to identify the user bundle in the API.",
+          "example": "ca1d2263-d1f1-43ac-ba53-248e7a4bb26a",
+          "format": "uuid",
+          "title": "User Bundle Id",
+          "type": "string"
+        }
+      },
+      "bundle-pricing_FilterConsolidated": {
+        "description": "Consolidated filter parameter (deepObject style). Supports filtering by country_iso and resource. Examples: filter[country_iso]=US or filter[resource]=+15617819942",
+        "explode": true,
+        "in": "query",
+        "name": "filter",
+        "schema": {
+          "properties": {
+            "country_iso": {
+              "description": "Filter by country code.",
+              "items": {
+                "example": "US",
+                "type": "string"
+              },
+              "title": "Filter[Country Iso]",
+              "type": "array"
+            },
+            "resource": {
+              "description": "Filter by resource.",
+              "items": {
+                "description": "Filter by resource.",
+                "example": "+15617819942",
+                "type": "string"
+              },
+              "title": "Filter[Resource]",
+              "type": "array"
+            }
+          },
+          "type": "object"
+        },
+        "style": "deepObject"
+      },
+      "bundle-pricing_PageConsolidated": {
+        "description": "Consolidated page parameter (deepObject style). Originally: page[size], page[number]",
+        "explode": true,
+        "in": "query",
+        "name": "page",
+        "schema": {
+          "properties": {
+            "number": {
+              "default": 1,
+              "description": "The page number to load.",
+              "minimum": 1,
+              "type": "integer"
+            },
+            "size": {
+              "default": 20,
+              "description": "The size of the page.",
+              "maximum": 250,
+              "minimum": 1,
+              "type": "integer"
+            }
+          },
+          "type": "object"
+        },
+        "style": "deepObject"
+      }
+    },
+    "responses": {
+      "UnauthorizedErrorResponse": {
+        "content": {
+          "application/json": {
+            "example": {
+              "errors": [
+                {
+                  "code": "10009",
+                  "detail": "The required authentication headers were either invalid or not included in the request.",
+                  "title": "Authentication failed"
+                }
+              ]
+            },
+            "schema": {
+              "properties": {
+                "errors": {
+                  "items": {
+                    "properties": {
+                      "code": {
+                        "type": "string"
+                      },
+                      "detail": {
+                        "type": "string"
+                      },
+                      "title": {
+                        "type": "string"
+                      }
+                    },
+                    "type": "object"
+                  },
+                  "type": "array"
+                }
+              },
+              "type": "object"
+            }
+          }
+        },
+        "description": "Authentication required or invalid credentials"
+      },
+      "bundle-pricing_BadRequestErrorResponse": {
+        "content": {
+          "application/json": {
+            "example": {
+              "errors": [
+                {
+                  "code": "10015",
+                  "detail": "The request failed because it was not well-formed.",
+                  "title": "Bad Request"
+                }
+              ]
+            },
+            "schema": {
+              "properties": {
+                "errors": {
+                  "items": {
+                    "properties": {
+                      "code": {
+                        "type": "string"
+                      },
+                      "detail": {
+                        "type": "string"
+                      },
+                      "title": {
+                        "type": "string"
+                      }
+                    },
+                    "type": "object"
+                  },
+                  "type": "array"
+                }
+              },
+              "type": "object"
+            }
+          }
+        },
+        "description": "Invalid request parameters"
+      },
+      "bundle-pricing_GenericErrorResponse": {
+        "content": {
+          "application/json": {
+            "example": {
+              "errors": [
+                {
+                  "code": "10007",
+                  "detail": "An unexpected error occured.",
+                  "title": "Unexpected error"
+                }
+              ]
+            },
+            "schema": {
+              "properties": {
+                "errors": {
+                  "items": {
+                    "properties": {
+                      "code": {
+                        "type": "string"
+                      },
+                      "detail": {
+                        "type": "string"
+                      },
+                      "title": {
+                        "type": "string"
+                      }
+                    },
+                    "type": "object"
+                  },
+                  "type": "array"
+                }
+              },
+              "type": "object"
+            }
+          }
+        },
+        "description": "Unexpected error"
+      },
+      "bundle-pricing_NotFoundErrorResponse": {
+        "content": {
+          "application/json": {
+            "example": {
+              "errors": [
+                {
+                  "code": "10005",
+                  "detail": "The requested resource or URL could not be found.",
+                  "title": "Resource not found"
+                }
+              ]
+            },
+            "schema": {
+              "properties": {
+                "errors": {
+                  "items": {
+                    "properties": {
+                      "code": {
+                        "type": "string"
+                      },
+                      "detail": {
+                        "type": "string"
+                      },
+                      "title": {
+                        "type": "string"
+                      }
+                    },
+                    "type": "object"
+                  },
+                  "type": "array"
+                }
+              },
+              "type": "object"
+            }
+          }
+        },
+        "description": "Resource not found"
+      },
+      "bundle-pricing_UnprocessableEntityErrorResponse": {
+        "content": {
+          "application/json": {
+            "example": {
+              "errors": [
+                {
+                  "code": "10027",
+                  "detail": "The server understood the syntax of the request but was unable to process the instructions.",
+                  "title": "Unprocessable Entity"
+                }
+              ]
+            },
+            "schema": {
+              "properties": {
+                "errors": {
+                  "items": {
+                    "properties": {
+                      "code": {
+                        "type": "string"
+                      },
+                      "detail": {
+                        "type": "string"
+                      },
+                      "title": {
+                        "type": "string"
+                      }
+                    },
+                    "type": "object"
+                  },
+                  "type": "array"
+                }
+              },
+              "type": "object"
+            }
+          }
+        },
+        "description": "Request cannot be processed"
+      }
+    },
+    "schemas": {
+      "BillingBundleSummary": {
+        "properties": {
+          "cost_code": {
+            "description": "Bundle's cost code, this is used to identify the bundle in the billing system.",
+            "example": "BUNDLE-PRICING-BASIC-MRC",
+            "title": "Cost Code",
+            "type": "string"
+          },
+          "created_at": {
+            "description": "Date the bundle was created.",
+            "format": "date",
+            "title": "Created At",
+            "type": "string"
+          },
+          "currency": {
+            "description": "Bundle's currency code.",
+            "example": "USD",
+            "title": "Currency",
+            "type": "string"
+          },
+          "id": {
+            "description": "Bundle's ID, this is used to identify the bundle in the API.",
+            "example": "7ecd040e-6bac-4139-9160-3c0427d98fea",
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "is_public": {
+            "description": "Available to all customers or only to specific customers.",
+            "title": "Is Public",
+            "type": "boolean"
+          },
+          "mrc_price": {
+            "description": "Monthly recurring charge price.",
+            "example": 2,
+            "format": "float",
+            "title": "Mrc Price",
+            "type": "number"
+          },
+          "name": {
+            "description": "Bundle's name, this is used to identify the bundle in the UI.",
+            "example": "Australia Basic",
+            "title": "Name",
+            "type": "string"
+          },
+          "slug": {
+            "description": "Slugified version of the bundle's name.",
+            "example": "basic-au-e4f8",
+            "title": "Slug",
+            "type": "string"
+          },
+          "specs": {
+            "example": [
+              "1 AU Number",
+              "Emergency Calling",
+              "All inbound and outbound calling billed pay-as-you-go"
+            ],
+            "items": {
+              "type": "string"
+            },
+            "title": "Specs",
+            "type": "array"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "cost_code",
+          "is_public",
+          "created_at"
+        ],
+        "title": "BillingBundleSummary",
+        "type": "object"
+      },
+      "CreateUserBundlesBulkRequest": {
+        "properties": {
+          "idempotency_key": {
+            "description": "Idempotency key for the request. Can be any UUID, but should always be unique for each request.",
+            "example": "12ade33a-21c0-473b-b055-b3c836e1c292",
+            "format": "uuid",
+            "type": "string"
+          },
+          "items": {
+            "items": {
+              "properties": {
+                "billing_bundle_id": {
+                  "description": "Quantity of user bundles to order.",
+                  "example": "12ade33a-21c0-473b-b055-b3c836e1c292",
+                  "format": "uuid",
+                  "type": "string"
+                },
+                "quantity": {
+                  "description": "Quantity of user bundles to order.",
+                  "type": "integer"
+                }
+              },
+              "required": [
+                "billing_bundle_id",
+                "quantity"
+              ],
+              "type": "object"
+            },
+            "type": "array",
+            "writeOnly": true
+          }
+        },
+        "type": "object"
+      },
+      "CreatedUserBundlesResponse": {
+        "properties": {
+          "data": {
+            "items": {
+              "$ref": "#/components/schemas/UserBundle"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "data"
+        ],
+        "title": "CreatedUserBundlesResponse",
+        "type": "object"
+      },
+      "PaginatedUserBundlesResponse": {
+        "properties": {
+          "data": {
+            "items": {
+              "$ref": "#/components/schemas/UserBundle"
+            },
+            "title": "Data",
+            "type": "array"
+          },
+          "meta": {
+            "$ref": "#/components/schemas/PaginationResponse"
+          }
+        },
+        "required": [
+          "meta",
+          "data"
+        ],
+        "title": "PaginatedUserBundlesResponse",
+        "type": "object"
+      },
+      "PaginationResponse": {
+        "properties": {
+          "page_number": {
+            "description": "The current page number.",
+            "example": 2,
+            "title": "Page Number",
+            "type": "integer"
+          },
+          "page_size": {
+            "description": "The number of results per page.",
+            "example": 25,
+            "title": "Page Size",
+            "type": "integer"
+          },
+          "total_pages": {
+            "description": "Total number of pages from the results.",
+            "example": 3,
+            "title": "Total Pages",
+            "type": "integer"
+          },
+          "total_results": {
+            "description": "Total number of results returned.",
+            "example": 55,
+            "title": "Total Results",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "total_results",
+          "total_pages",
+          "page_number",
+          "page_size"
+        ],
+        "title": "PaginationResponse",
+        "type": "object"
+      },
+      "UnusedUserBundlesResponse": {
+        "properties": {
+          "data": {
+            "items": {
+              "$ref": "#/components/schemas/UnusedUserBundlesSchema"
+            },
+            "title": "Data",
+            "type": "array"
+          }
+        },
+        "required": [
+          "data"
+        ],
+        "title": "UnusedUserBundlesResponse",
+        "type": "object"
+      },
+      "UnusedUserBundlesSchema": {
+        "properties": {
+          "billing_bundle": {
+            "$ref": "#/components/schemas/BillingBundleSummary"
+          },
+          "user_bundle_ids": {
+            "description": "List of user bundle IDs for given bundle.",
+            "example": [
+              "1e650b96-4c6a-4d6f-b8ed-87c3fcacf595",
+              "53beb701-1231-4548-8abf-c802f38b14aa"
+            ],
+            "items": {
+              "format": "uuid",
+              "type": "string"
+            },
+            "title": "User Bundle Ids",
+            "type": "array"
+          }
+        },
+        "required": [
+          "billing_bundle",
+          "user_bundle_ids"
+        ],
+        "title": "UnusedUserBundlesSchema",
+        "type": "object"
+      },
+      "UserBundle": {
+        "properties": {
+          "active": {
+            "description": "Status of the user bundle.",
+            "example": true,
+            "type": "boolean"
+          },
+          "billing_bundle": {
+            "$ref": "#/components/schemas/BillingBundleSummary"
+          },
+          "created_at": {
+            "description": "Date the user bundle was created.",
+            "example": "2025-01-20",
+            "format": "date",
+            "type": "string"
+          },
+          "id": {
+            "description": "User bundle's ID, this is used to identify the user bundle in the API.",
+            "example": "ca1d2263-d1f1-43ac-ba53-248e7a4bb26a",
+            "format": "uuid",
+            "type": "string"
+          },
+          "resources": {
+            "example": [],
+            "items": {
+              "$ref": "#/components/schemas/UserBundleResourceSchema"
+            },
+            "type": "array"
+          },
+          "updated_at": {
+            "description": "Date the user bundle was last updated.",
+            "example": "2025-01-20",
+            "format": "date",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "user_id": {
+            "description": "The customer's ID that owns this user bundle.",
+            "example": "16856d8c-cd59-4b08-9ac2-1ebb01d419e1",
+            "format": "uuid",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "active",
+          "user_id",
+          "created_at",
+          "billing_bundle",
+          "resources"
+        ],
+        "type": "object"
+      },
+      "UserBundleCreateResponse": {
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/UserBundle"
+          }
+        },
+        "required": [
+          "data"
+        ],
+        "title": "UserBundleCreateResponse",
+        "type": "object"
+      },
+      "UserBundleResourceSchema": {
+        "properties": {
+          "created_at": {
+            "description": "Date the resource was created.",
+            "example": "2025-01-20",
+            "format": "date",
+            "type": "string"
+          },
+          "id": {
+            "description": "Resource's ID.",
+            "example": "ca1d2263-d1f1-43ac-ba53-248e7a4bb26a",
+            "format": "uuid",
+            "type": "string"
+          },
+          "resource": {
+            "description": "The resource itself (usually a phone number).",
+            "example": "+15617819942",
+            "type": "string"
+          },
+          "resource_type": {
+            "description": "The type of the resource (usually 'number').",
+            "example": "number",
+            "type": "string"
+          },
+          "updated_at": {
+            "description": "Date the resource was last updated.",
+            "example": "2025-01-20",
+            "format": "date",
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "resource",
+          "resource_type",
+          "created_at"
+        ],
+        "title": "UserBundleResourceSchema",
+        "type": "object"
+      },
+      "UserBundleResourcesResponse": {
+        "properties": {
+          "data": {
+            "items": {
+              "$ref": "#/components/schemas/UserBundleResourceSchema"
+            },
+            "title": "Data",
+            "type": "array"
+          }
+        },
+        "required": [
+          "data"
+        ],
+        "title": "UserBundleResourcesResponse",
+        "type": "object"
+      },
+      "UserBundleResponse": {
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/UserBundle"
+          }
+        },
+        "required": [
+          "data"
+        ],
+        "title": "UserBundleResponse",
+        "type": "object"
+      }
+    },
+    "securitySchemes": {
+      "BearerAuth": {
+        "bearerFormat": "API key",
+        "description": "Telnyx API key supplied as `Authorization: Bearer \u003ctoken\u003e`. In production, auth may be validated by the API gateway and forwarded via Telnyx auth headers.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "Payment": {
+        "description": "Machine Payment Protocol credential used on paid retries, sent as `Authorization: Payment ...`. Obtained by paying a challenge returned in the `WWW-Authenticate` header of a 402 response. This is not a Telnyx API key; initial challenge requests use standard bearer authentication instead.",
+        "in": "header",
+        "name": "Authorization",
+        "type": "apiKey"
+      },
+      "agent-memory_bearerAuth": {
+        "description": "Telnyx API key",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "bearerAuth": {
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "branded-calling_bearerAuth": {
+        "description": "Telnyx API key. Generate one at https://portal.telnyx.com/#/app/api-keys.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "collections_bearerAuth": {
+        "description": "Telnyx API key. Collections and results are automatically scoped to the authenticated user's organization.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "number-reputation_bearerAuth": {
+        "description": "Telnyx API key. Generate one at https://portal.telnyx.com/#/app/api-keys.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "oauthClientAuth": {
+        "description": "OAuth 2.0 authentication for Telnyx API and MCP integrations",
+        "flows": {
+          "authorizationCode": {
+            "authorizationUrl": "https://api.telnyx.com/v2/oauth/authorize",
+            "refreshUrl": "https://api.telnyx.com/v2/oauth/token",
+            "scopes": {
+              "admin": "Administrative access to Telnyx resources"
+            },
+            "tokenUrl": "https://api.telnyx.com/v2/oauth/token"
+          },
+          "clientCredentials": {
+            "scopes": {
+              "admin": "Administrative access to Telnyx resources"
+            },
+            "tokenUrl": "https://api.telnyx.com/v2/oauth/token"
+          }
+        },
+        "type": "oauth2"
+      },
+      "outbound-voice-profiles_bearerAuth": {
+        "bearerFormat": "JWT",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "pay-connectors_bearerAuth": {
+        "description": "Telnyx API key, not the processor bearer token.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "pronunciation-dicts_bearerAuth": {
+        "description": "Telnyx API v2 key. Obtain from https://portal.telnyx.com",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "rcs-registration_bearerAuth": {
+        "bearerFormat": "API key",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "stored-payment-transactions_bearerAuth": {
+        "bearerFormat": "JWT",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "telnyxApiKey": {
+        "description": "Management-only Telnyx account credential.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "transcriptions-search_bearerAuth": {
+        "description": "Telnyx API key. Results are automatically scoped to the authenticated user's organization.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "web-search_bearerAuth": {
+        "description": "Telnyx API key",
+        "scheme": "bearer",
+        "type": "http"
+      }
+    }
+  },
+  "info": {
+    "contact": {
+      "email": "support@telnyx.com"
+    },
+    "description": "SIP trunking, SMS, MMS, Call Control and Telephony Data Services.",
+    "title": "Telnyx API",
+    "version": "2.0.0",
+    "x-endpoint-cost": "light",
+    "x-latency-category": "responsive"
+  },
+  "openapi": "3.1.0",
+  "paths": {
+    "/bundle_pricing/user_bundles": {
+      "get": {
+        "description": "Returns a paginated list of the bundles active on your account, with support for filtering.",
+        "operationId": "GetUserBundles",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/bundle-pricing_FilterConsolidated"
+          },
+          {
+            "$ref": "#/components/parameters/bundle-pricing_PageConsolidated"
+          },
+          {
+            "$ref": "#/components/parameters/AuthorizationBearer"
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PaginatedUserBundlesResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "400": {
+            "$ref": "#/components/responses/bundle-pricing_BadRequestErrorResponse"
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedErrorResponse"
+          },
+          "default": {
+            "$ref": "#/components/responses/bundle-pricing_GenericErrorResponse"
+          }
+        },
+        "summary": "Get User Bundles",
+        "tags": [
+          "User Bundles"
+        ]
+      }
+    },
+    "/bundle_pricing/user_bundles/bulk": {
+      "post": {
+        "description": "Creates multiple user bundles for the user.",
+        "operationId": "CreateUserBundlesBulk",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/AuthorizationBearer"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateUserBundlesBulkRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CreatedUserBundlesResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "400": {
+            "$ref": "#/components/responses/bundle-pricing_BadRequestErrorResponse"
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedErrorResponse"
+          },
+          "404": {
+            "$ref": "#/components/responses/bundle-pricing_NotFoundErrorResponse"
+          },
+          "422": {
+            "$ref": "#/components/responses/bundle-pricing_UnprocessableEntityErrorResponse"
+          },
+          "default": {
+            "$ref": "#/components/responses/bundle-pricing_GenericErrorResponse"
+          }
+        },
+        "summary": "Create User Bundles",
+        "tags": [
+          "User Bundles"
+        ]
+      }
+    },
+    "/bundle_pricing/user_bundles/unused": {
+      "get": {
+        "description": "Returns all user bundles that aren't in use.",
+        "operationId": "GetUnusedUserBundles",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/bundle-pricing_FilterConsolidated"
+          },
+          {
+            "$ref": "#/components/parameters/AuthorizationBearer"
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UnusedUserBundlesResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "400": {
+            "$ref": "#/components/responses/bundle-pricing_BadRequestErrorResponse"
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedErrorResponse"
+          },
+          "default": {
+            "$ref": "#/components/responses/bundle-pricing_GenericErrorResponse"
+          }
+        },
+        "summary": "Get Unused User Bundles",
+        "tags": [
+          "User Bundles"
+        ]
+      }
+    },
+    "/bundle_pricing/user_bundles/{user_bundle_id}": {
+      "delete": {
+        "description": "Deactivates the specified user bundle on your account and returns the deactivated bundle.",
+        "operationId": "DeactivateUserBundle",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/UserBundleId"
+          },
+          {
+            "$ref": "#/components/parameters/AuthorizationBearer"
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserBundleCreateResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedErrorResponse"
+          },
+          "404": {
+            "$ref": "#/components/responses/bundle-pricing_NotFoundErrorResponse"
+          },
+          "422": {
+            "$ref": "#/components/responses/bundle-pricing_UnprocessableEntityErrorResponse"
+          },
+          "default": {
+            "$ref": "#/components/responses/bundle-pricing_GenericErrorResponse"
+          }
+        },
+        "summary": "Deactivate User Bundle",
+        "tags": [
+          "User Bundles"
+        ]
+      },
+      "get": {
+        "description": "Returns the details of a single user bundle on your account by its ID.",
+        "operationId": "GetUserBundleById",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/UserBundleId"
+          },
+          {
+            "$ref": "#/components/parameters/AuthorizationBearer"
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserBundleResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedErrorResponse"
+          },
+          "404": {
+            "$ref": "#/components/responses/bundle-pricing_NotFoundErrorResponse"
+          },
+          "default": {
+            "$ref": "#/components/responses/bundle-pricing_GenericErrorResponse"
+          }
+        },
+        "summary": "Get User Bundle by Id",
+        "tags": [
+          "User Bundles"
+        ]
+      }
+    },
+    "/bundle_pricing/user_bundles/{user_bundle_id}/resources": {
+      "get": {
+        "description": "Retrieves the resources of a user bundle by its ID.",
+        "operationId": "GetUserBundleResources",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/UserBundleId"
+          },
+          {
+            "$ref": "#/components/parameters/AuthorizationBearer"
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserBundleResourcesResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedErrorResponse"
+          },
+          "404": {
+            "$ref": "#/components/responses/bundle-pricing_NotFoundErrorResponse"
+          },
+          "default": {
+            "$ref": "#/components/responses/bundle-pricing_GenericErrorResponse"
+          }
+        },
+        "summary": "Get User Bundle Resources",
+        "tags": [
+          "User Bundles"
+        ]
+      }
+    }
+  },
+  "security": [
+    {
+      "bearerAuth": []
+    }
+  ],
+  "servers": [
+    {
+      "description": "Version 2.0.0 of the Telnyx API",
+      "url": "https://api.telnyx.com/v2"
+    }
+  ]
+}

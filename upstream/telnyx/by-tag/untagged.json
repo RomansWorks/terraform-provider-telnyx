@@ -1,0 +1,1151 @@
+{
+  "components": {
+    "responses": {
+      "charges_BadRequestErrorResponse": {
+        "content": {
+          "application/json": {
+            "example": {
+              "errors": [
+                {
+                  "code": "10015",
+                  "detail": "The request failed because it was not well-formed.",
+                  "title": "Bad Request"
+                }
+              ]
+            },
+            "schema": {
+              "$ref": "#/components/schemas/charges_Errors"
+            }
+          }
+        },
+        "description": "Invalid request parameters or date range"
+      },
+      "charges_GenericErrorResponse": {
+        "content": {
+          "application/json": {
+            "example": {
+              "errors": [
+                {
+                  "code": "10007",
+                  "detail": "An unexpected error occured.",
+                  "title": "Unexpected error"
+                }
+              ]
+            },
+            "schema": {
+              "$ref": "#/components/schemas/charges_Errors"
+            }
+          }
+        },
+        "description": "Unexpected error"
+      },
+      "charges_UnprocessableEntityErrorResponse": {
+        "content": {
+          "application/json": {
+            "example": {
+              "errors": [
+                {
+                  "code": "10027",
+                  "detail": "The server understood the syntax of the request but was unable to process the instructions.",
+                  "title": "Unprocessable Entity"
+                }
+              ]
+            },
+            "schema": {
+              "$ref": "#/components/schemas/charges_Errors"
+            }
+          }
+        },
+        "description": "User account not found"
+      },
+      "invoice_BadRequestErrorResponse": {
+        "content": {
+          "application/json": {
+            "example": {
+              "errors": [
+                {
+                  "code": "10015",
+                  "detail": "The request failed because it was not well-formed.",
+                  "title": "Bad Request"
+                }
+              ]
+            },
+            "schema": {
+              "$ref": "#/components/schemas/Errors"
+            }
+          }
+        },
+        "description": "Invalid request parameters"
+      },
+      "invoice_ForbiddenErrorResponse": {
+        "content": {
+          "application/json": {
+            "example": {
+              "errors": [
+                {
+                  "code": "10010",
+                  "detail": "You do not have permission to perform the requested action on the specified resource or resources.",
+                  "title": "Authorization failed"
+                }
+              ]
+            },
+            "schema": {
+              "$ref": "#/components/schemas/Errors"
+            }
+          }
+        },
+        "description": "Insufficient permissions to access invoices"
+      },
+      "invoice_GenericErrorResponse": {
+        "content": {
+          "application/json": {
+            "example": {
+              "errors": [
+                {
+                  "code": "10007",
+                  "detail": "An unexpected error occured.",
+                  "title": "Unexpected error"
+                }
+              ]
+            },
+            "schema": {
+              "$ref": "#/components/schemas/Errors"
+            }
+          }
+        },
+        "description": "Unexpected error"
+      },
+      "invoice_NotFoundErrorResponse": {
+        "content": {
+          "application/json": {
+            "example": {
+              "errors": [
+                {
+                  "code": "10005",
+                  "detail": "The requested resource or URL could not be found.",
+                  "title": "Resource not found"
+                }
+              ]
+            },
+            "schema": {
+              "$ref": "#/components/schemas/Errors"
+            }
+          }
+        },
+        "description": "Invoice not found"
+      }
+    },
+    "schemas": {
+      "AdjustmentLine": {
+        "properties": {
+          "amount": {
+            "description": "Adjustment amount as decimal string",
+            "example": "-10.00",
+            "type": "string"
+          },
+          "description": {
+            "description": "Description of the adjustment",
+            "example": "Credit for service outage",
+            "type": "string"
+          },
+          "event_date": {
+            "description": "Date when the adjustment occurred",
+            "example": "2025-05-15",
+            "format": "date",
+            "type": "string"
+          }
+        },
+        "required": [
+          "amount",
+          "description",
+          "event_date"
+        ],
+        "type": "object"
+      },
+      "BreakdownData": {
+        "properties": {
+          "currency": {
+            "description": "Currency code",
+            "example": "USD",
+            "type": "string"
+          },
+          "end_date": {
+            "description": "End date of the breakdown period",
+            "example": "2025-06-01",
+            "format": "date",
+            "type": "string"
+          },
+          "results": {
+            "description": "List of phone number charge breakdowns",
+            "items": {
+              "$ref": "#/components/schemas/NumberBreakdownResult"
+            },
+            "type": "array"
+          },
+          "start_date": {
+            "description": "Start date of the breakdown period",
+            "example": "2025-05-01",
+            "format": "date",
+            "type": "string"
+          },
+          "user_email": {
+            "description": "User email address",
+            "example": "user@example.com",
+            "format": "email",
+            "type": "string"
+          },
+          "user_id": {
+            "description": "User identifier",
+            "example": "0db0b4aa-a83d-4d4f-ad9b-3ba7c1ac2ce8",
+            "type": "string"
+          }
+        },
+        "required": [
+          "user_id",
+          "start_date",
+          "end_date",
+          "user_email",
+          "currency",
+          "results"
+        ],
+        "type": "object"
+      },
+      "ComparativeLine": {
+        "properties": {
+          "alias": {
+            "description": "Service alias",
+            "example": "local",
+            "type": "string"
+          },
+          "existing_this_month": {
+            "$ref": "#/components/schemas/MonthDetail"
+          },
+          "name": {
+            "description": "Service name",
+            "example": "Local DIDs",
+            "type": "string"
+          },
+          "new_this_month": {
+            "$ref": "#/components/schemas/MonthDetail"
+          },
+          "type": {
+            "enum": [
+              "comparative"
+            ],
+            "example": "comparative",
+            "type": "string"
+          }
+        },
+        "required": [
+          "type",
+          "name",
+          "alias",
+          "new_this_month",
+          "existing_this_month"
+        ],
+        "type": "object"
+      },
+      "Error": {
+        "example": {
+          "code": "20207",
+          "description": "The street address provided is invalid.",
+          "source": {
+            "pointer": "/street_address"
+          },
+          "title": "Invalid street address"
+        },
+        "properties": {
+          "code": {
+            "type": "string",
+            "x-format": "int64"
+          },
+          "description": {
+            "type": "string"
+          },
+          "detail": {
+            "description": "A human-readable explanation of the error.",
+            "type": "string"
+          },
+          "meta": {
+            "additionalProperties": true,
+            "type": "object"
+          },
+          "source": {
+            "properties": {
+              "parameter": {
+                "description": "Indicates which query parameter caused the error.",
+                "type": "string"
+              },
+              "pointer": {
+                "description": "JSON pointer (RFC6901) to the offending entity.",
+                "format": "json-pointer",
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
+          "title": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "title"
+        ],
+        "type": "object"
+      },
+      "Errors": {
+        "properties": {
+          "errors": {
+            "items": {
+              "$ref": "#/components/schemas/Error"
+            },
+            "type": "array"
+          }
+        },
+        "type": "object"
+      },
+      "Invoice": {
+        "properties": {
+          "file_id": {
+            "example": "454ea3b0-9eaa-4fa9-992e-6d9f31c0a37e",
+            "format": "uuid",
+            "type": "string"
+          },
+          "invoice_id": {
+            "example": "48eff763-ea80-4345-b688-78249eb165a8",
+            "format": "uuid",
+            "type": "string"
+          },
+          "paid": {
+            "example": true,
+            "type": "boolean"
+          },
+          "period_end": {
+            "example": "2023-11-30",
+            "format": "date",
+            "type": "string"
+          },
+          "period_start": {
+            "example": "2023-11-01",
+            "format": "date",
+            "type": "string"
+          },
+          "url": {
+            "example": "https://api.telnyx.com:443/v2/invoices/48eff763-ea80-4345-b688-78249eb165a8",
+            "format": "uri",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "InvoiceDetail": {
+        "properties": {
+          "download_url": {
+            "description": "Present only if the query parameter `action=link` is set.",
+            "example": "https://us-east-1.telnyxstorage.com/porting-documents/telnyx/...",
+            "format": "uri",
+            "type": "string"
+          },
+          "file_id": {
+            "example": "454ea3b0-9eaa-4fa9-992e-6d9f31c0a37e",
+            "format": "uuid",
+            "type": "string"
+          },
+          "invoice_id": {
+            "example": "48eff763-ea80-4345-b688-78249eb165a8",
+            "format": "uuid",
+            "type": "string"
+          },
+          "paid": {
+            "example": true,
+            "type": "boolean"
+          },
+          "period_end": {
+            "example": "2023-11-30",
+            "format": "date",
+            "type": "string"
+          },
+          "period_start": {
+            "example": "2023-11-01",
+            "format": "date",
+            "type": "string"
+          },
+          "url": {
+            "example": "https://api.telnyx.com:443/v2/invoices/48eff763-ea80-4345-b688-78249eb165a8",
+            "format": "uri",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "MonthDetail": {
+        "properties": {
+          "mrc": {
+            "description": "Monthly recurring charge amount as decimal string",
+            "example": "25.50",
+            "type": "string"
+          },
+          "otc": {
+            "description": "One-time charge amount as decimal string",
+            "example": "5.00",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "quantity": {
+            "description": "Number of items",
+            "example": 10,
+            "type": "integer"
+          }
+        },
+        "required": [
+          "quantity",
+          "mrc"
+        ],
+        "type": "object"
+      },
+      "MonthlyChargesBreakdownResponse": {
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/BreakdownData"
+          }
+        },
+        "required": [
+          "data"
+        ],
+        "type": "object"
+      },
+      "MonthlyChargesSummaryResponse": {
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/SummaryAndTotal"
+          }
+        },
+        "required": [
+          "data"
+        ],
+        "type": "object"
+      },
+      "NumberBreakdownResult": {
+        "properties": {
+          "charge_type": {
+            "description": "Type of charge for the number",
+            "example": "local",
+            "type": "string"
+          },
+          "service_owner_email": {
+            "description": "Email address of the service owner",
+            "example": "user@example.com",
+            "format": "email",
+            "type": "string"
+          },
+          "service_owner_user_id": {
+            "description": "User ID of the service owner",
+            "example": "0db0b4aa-a83d-4d4f-ad9b-3ba7c1ac2ce8",
+            "type": "string"
+          },
+          "services": {
+            "description": "List of services associated with this number",
+            "items": {
+              "$ref": "#/components/schemas/ServiceDetail"
+            },
+            "type": "array"
+          },
+          "tn": {
+            "description": "Phone number",
+            "example": "+15551234567",
+            "type": "string"
+          }
+        },
+        "required": [
+          "tn",
+          "charge_type",
+          "service_owner_user_id",
+          "service_owner_email",
+          "services"
+        ],
+        "type": "object"
+      },
+      "ServiceDetail": {
+        "properties": {
+          "cost": {
+            "description": "Cost per unit as decimal string",
+            "example": "1.50",
+            "type": "string"
+          },
+          "cost_type": {
+            "description": "Type of cost (MRC or OTC)",
+            "example": "MRC",
+            "type": "string"
+          },
+          "name": {
+            "description": "Service name",
+            "example": "Local DIDs",
+            "type": "string"
+          }
+        },
+        "required": [
+          "cost_type",
+          "name",
+          "cost"
+        ],
+        "type": "object"
+      },
+      "SimpleLine": {
+        "properties": {
+          "alias": {
+            "description": "Service alias",
+            "example": "port_out",
+            "type": "string"
+          },
+          "amount": {
+            "description": "Total amount as decimal string",
+            "example": "15.75",
+            "type": "string"
+          },
+          "name": {
+            "description": "Service name",
+            "example": "Port Out",
+            "type": "string"
+          },
+          "quantity": {
+            "description": "Number of items",
+            "example": 100,
+            "type": "integer"
+          },
+          "type": {
+            "enum": [
+              "simple"
+            ],
+            "example": "simple",
+            "type": "string"
+          }
+        },
+        "required": [
+          "type",
+          "name",
+          "alias",
+          "quantity",
+          "amount"
+        ],
+        "type": "object"
+      },
+      "Summary": {
+        "example": {
+          "adjustments": [
+            {
+              "amount": "-10.00",
+              "description": "Credit for service outage",
+              "event_date": "2025-05-15"
+            }
+          ],
+          "lines": [
+            {
+              "alias": "local",
+              "existing_this_month": {
+                "mrc": "20.00",
+                "quantity": 8
+              },
+              "name": "Local DIDs",
+              "new_this_month": {
+                "mrc": "25.50",
+                "otc": "5.00",
+                "quantity": 10
+              },
+              "type": "comparative"
+            },
+            {
+              "alias": "port_out",
+              "amount": "15.75",
+              "name": "Port Out",
+              "quantity": 100,
+              "type": "simple"
+            }
+          ]
+        },
+        "properties": {
+          "adjustments": {
+            "description": "List of billing adjustments",
+            "items": {
+              "$ref": "#/components/schemas/AdjustmentLine"
+            },
+            "type": "array"
+          },
+          "lines": {
+            "description": "List of charge summary lines",
+            "items": {
+              "$ref": "#/components/schemas/SummaryLine"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "lines",
+          "adjustments"
+        ],
+        "type": "object"
+      },
+      "SummaryAndTotal": {
+        "properties": {
+          "currency": {
+            "description": "Currency code",
+            "example": "USD",
+            "type": "string"
+          },
+          "end_date": {
+            "description": "End date of the summary period",
+            "example": "2025-06-01",
+            "format": "date",
+            "type": "string"
+          },
+          "start_date": {
+            "description": "Start date of the summary period",
+            "example": "2025-05-01",
+            "format": "date",
+            "type": "string"
+          },
+          "summary": {
+            "$ref": "#/components/schemas/Summary"
+          },
+          "total": {
+            "$ref": "#/components/schemas/TotalSummary"
+          },
+          "user_email": {
+            "description": "User email address",
+            "example": "user@example.com",
+            "format": "email",
+            "type": "string"
+          },
+          "user_id": {
+            "description": "User identifier",
+            "example": "0db0b4aa-a83d-4d4f-ad9b-3ba7c1ac2ce8",
+            "type": "string"
+          }
+        },
+        "required": [
+          "user_id",
+          "start_date",
+          "end_date",
+          "user_email",
+          "currency",
+          "summary",
+          "total"
+        ],
+        "type": "object"
+      },
+      "SummaryLine": {
+        "discriminator": {
+          "propertyName": "type"
+        },
+        "oneOf": [
+          {
+            "$ref": "#/components/schemas/ComparativeLine"
+          },
+          {
+            "$ref": "#/components/schemas/SimpleLine"
+          }
+        ]
+      },
+      "TotalSummary": {
+        "properties": {
+          "credits": {
+            "description": "Total credits as decimal string",
+            "example": "-5.00",
+            "type": "string"
+          },
+          "existing_mrc": {
+            "description": "Total existing monthly recurring charges as decimal string",
+            "example": "100.00",
+            "type": "string"
+          },
+          "grand_total": {
+            "description": "Grand total of all charges as decimal string",
+            "example": "180.00",
+            "type": "string"
+          },
+          "ledger_adjustments": {
+            "description": "Ledger adjustments as decimal string",
+            "example": "0.00",
+            "type": "string"
+          },
+          "new_mrc": {
+            "description": "Total new monthly recurring charges as decimal string",
+            "example": "50.00",
+            "type": "string"
+          },
+          "new_otc": {
+            "description": "Total new one-time charges as decimal string",
+            "example": "25.00",
+            "type": "string"
+          },
+          "other": {
+            "description": "Other charges as decimal string",
+            "example": "10.00",
+            "type": "string"
+          }
+        },
+        "required": [
+          "new_mrc",
+          "new_otc",
+          "existing_mrc",
+          "other",
+          "credits",
+          "ledger_adjustments",
+          "grand_total"
+        ],
+        "type": "object"
+      },
+      "charges_Error": {
+        "properties": {
+          "code": {
+            "format": "integer",
+            "type": "string"
+          },
+          "detail": {
+            "type": "string"
+          },
+          "meta": {
+            "type": "object"
+          },
+          "source": {
+            "properties": {
+              "parameter": {
+                "description": "Indicates which query parameter caused the error.",
+                "type": "string"
+              },
+              "pointer": {
+                "description": "JSON pointer (RFC6901) to the offending entity.",
+                "format": "json-pointer",
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
+          "title": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "title"
+        ]
+      },
+      "charges_Errors": {
+        "properties": {
+          "errors": {
+            "items": {
+              "$ref": "#/components/schemas/charges_Error"
+            },
+            "type": "array"
+          }
+        }
+      }
+    },
+    "securitySchemes": {
+      "BearerAuth": {
+        "bearerFormat": "API key",
+        "description": "Telnyx API key supplied as `Authorization: Bearer \u003ctoken\u003e`. In production, auth may be validated by the API gateway and forwarded via Telnyx auth headers.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "Payment": {
+        "description": "Machine Payment Protocol credential used on paid retries, sent as `Authorization: Payment ...`. Obtained by paying a challenge returned in the `WWW-Authenticate` header of a 402 response. This is not a Telnyx API key; initial challenge requests use standard bearer authentication instead.",
+        "in": "header",
+        "name": "Authorization",
+        "type": "apiKey"
+      },
+      "agent-memory_bearerAuth": {
+        "description": "Telnyx API key",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "bearerAuth": {
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "branded-calling_bearerAuth": {
+        "description": "Telnyx API key. Generate one at https://portal.telnyx.com/#/app/api-keys.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "collections_bearerAuth": {
+        "description": "Telnyx API key. Collections and results are automatically scoped to the authenticated user's organization.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "number-reputation_bearerAuth": {
+        "description": "Telnyx API key. Generate one at https://portal.telnyx.com/#/app/api-keys.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "oauthClientAuth": {
+        "description": "OAuth 2.0 authentication for Telnyx API and MCP integrations",
+        "flows": {
+          "authorizationCode": {
+            "authorizationUrl": "https://api.telnyx.com/v2/oauth/authorize",
+            "refreshUrl": "https://api.telnyx.com/v2/oauth/token",
+            "scopes": {
+              "admin": "Administrative access to Telnyx resources"
+            },
+            "tokenUrl": "https://api.telnyx.com/v2/oauth/token"
+          },
+          "clientCredentials": {
+            "scopes": {
+              "admin": "Administrative access to Telnyx resources"
+            },
+            "tokenUrl": "https://api.telnyx.com/v2/oauth/token"
+          }
+        },
+        "type": "oauth2"
+      },
+      "outbound-voice-profiles_bearerAuth": {
+        "bearerFormat": "JWT",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "pay-connectors_bearerAuth": {
+        "description": "Telnyx API key, not the processor bearer token.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "pronunciation-dicts_bearerAuth": {
+        "description": "Telnyx API v2 key. Obtain from https://portal.telnyx.com",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "rcs-registration_bearerAuth": {
+        "bearerFormat": "API key",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "stored-payment-transactions_bearerAuth": {
+        "bearerFormat": "JWT",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "telnyxApiKey": {
+        "description": "Management-only Telnyx account credential.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "transcriptions-search_bearerAuth": {
+        "description": "Telnyx API key. Results are automatically scoped to the authenticated user's organization.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "web-search_bearerAuth": {
+        "description": "Telnyx API key",
+        "scheme": "bearer",
+        "type": "http"
+      }
+    }
+  },
+  "info": {
+    "contact": {
+      "email": "support@telnyx.com"
+    },
+    "description": "SIP trunking, SMS, MMS, Call Control and Telephony Data Services.",
+    "title": "Telnyx API",
+    "version": "2.0.0",
+    "x-endpoint-cost": "light",
+    "x-latency-category": "responsive"
+  },
+  "openapi": "3.1.0",
+  "paths": {
+    "/charges_breakdown": {
+      "get": {
+        "description": "Retrieve a detailed breakdown of monthly charges for phone numbers in a specified date range. The date range cannot exceed 31 days.",
+        "operationId": "GetMonthlyChargesBreakdown",
+        "parameters": [
+          {
+            "description": "Start date for the charges breakdown in ISO date format (YYYY-MM-DD)",
+            "in": "query",
+            "name": "start_date",
+            "required": true,
+            "schema": {
+              "example": "2025-05-01",
+              "format": "date",
+              "type": "string"
+            }
+          },
+          {
+            "description": "End date for the charges breakdown in ISO date format (YYYY-MM-DD). If not provided, defaults to start_date + 1 month. The date is exclusive, data for the end_date itself is not included in the report. The interval between start_date and end_date cannot exceed 31 days.",
+            "in": "query",
+            "name": "end_date",
+            "required": false,
+            "schema": {
+              "example": "2025-06-01",
+              "format": "date",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Response format",
+            "in": "query",
+            "name": "format",
+            "required": false,
+            "schema": {
+              "default": "json",
+              "enum": [
+                "json",
+                "csv"
+              ],
+              "example": "json",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MonthlyChargesBreakdownResponse"
+                }
+              },
+              "text/csv": {
+                "schema": {
+                  "description": "CSV format of the charges breakdown",
+                  "type": "string"
+                }
+              }
+            },
+            "description": "Monthly charges breakdown"
+          },
+          "400": {
+            "$ref": "#/components/responses/charges_BadRequestErrorResponse"
+          },
+          "422": {
+            "$ref": "#/components/responses/charges_UnprocessableEntityErrorResponse"
+          },
+          "default": {
+            "$ref": "#/components/responses/charges_GenericErrorResponse"
+          }
+        },
+        "summary": "Get monthly charges breakdown"
+      }
+    },
+    "/charges_summary": {
+      "get": {
+        "description": "Retrieve a summary of monthly charges for a specified date range. The date range cannot exceed 31 days.",
+        "operationId": "GetMonthlyChargesSummary",
+        "parameters": [
+          {
+            "description": "Start date for the charges summary in ISO date format (YYYY-MM-DD)",
+            "in": "query",
+            "name": "start_date",
+            "required": true,
+            "schema": {
+              "example": "2025-05-01",
+              "format": "date",
+              "type": "string"
+            }
+          },
+          {
+            "description": "End date for the charges summary in ISO date format (YYYY-MM-DD). The date is exclusive, data for the end_date itself is not included in the report. The interval between start_date and end_date cannot exceed 31 days.",
+            "in": "query",
+            "name": "end_date",
+            "required": true,
+            "schema": {
+              "example": "2025-06-01",
+              "format": "date",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MonthlyChargesSummaryResponse"
+                }
+              }
+            },
+            "description": "Monthly charges summary"
+          },
+          "400": {
+            "$ref": "#/components/responses/charges_BadRequestErrorResponse"
+          },
+          "422": {
+            "$ref": "#/components/responses/charges_UnprocessableEntityErrorResponse"
+          },
+          "default": {
+            "$ref": "#/components/responses/charges_GenericErrorResponse"
+          }
+        },
+        "summary": "Get monthly charges summary"
+      }
+    },
+    "/invoices": {
+      "get": {
+        "description": "Returns a paginated list of your invoices, with support for sorting.",
+        "operationId": "ListInvoices",
+        "parameters": [
+          {
+            "description": "Specifies the sort order for results.",
+            "in": "query",
+            "name": "sort",
+            "required": false,
+            "schema": {
+              "enum": [
+                "period_start",
+                "-period_start"
+              ],
+              "example": "period_start",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Consolidated page parameter (deepObject style). Originally: page[number], page[size]",
+            "explode": true,
+            "in": "query",
+            "name": "page",
+            "schema": {
+              "properties": {
+                "number": {
+                  "default": 1,
+                  "description": "The page number to load",
+                  "minimum": 1,
+                  "type": "integer"
+                },
+                "size": {
+                  "default": 20,
+                  "description": "The size of the page",
+                  "maximum": 250,
+                  "minimum": 1,
+                  "type": "integer"
+                }
+              },
+              "type": "object"
+            },
+            "style": "deepObject"
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "items": {
+                        "$ref": "#/components/schemas/Invoice"
+                      },
+                      "type": "array"
+                    },
+                    "meta": {
+                      "properties": {
+                        "page_number": {
+                          "example": 1,
+                          "type": "integer"
+                        },
+                        "page_size": {
+                          "example": 20,
+                          "type": "integer"
+                        },
+                        "total_pages": {
+                          "example": 1,
+                          "type": "integer"
+                        },
+                        "total_results": {
+                          "example": 20,
+                          "type": "integer"
+                        }
+                      },
+                      "type": "object"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "List of invoices"
+          },
+          "403": {
+            "$ref": "#/components/responses/invoice_ForbiddenErrorResponse"
+          },
+          "default": {
+            "$ref": "#/components/responses/invoice_GenericErrorResponse"
+          }
+        },
+        "summary": "List invoices"
+      }
+    },
+    "/invoices/{id}": {
+      "get": {
+        "description": "Retrieve a single invoice by its unique identifier.",
+        "operationId": "GetInvoiceById",
+        "parameters": [
+          {
+            "description": "Invoice UUID",
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Invoice action",
+            "in": "query",
+            "name": "action",
+            "required": false,
+            "schema": {
+              "enum": [
+                "json",
+                "link"
+              ],
+              "example": "json",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/InvoiceDetail"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Get invoice details"
+          },
+          "400": {
+            "$ref": "#/components/responses/invoice_BadRequestErrorResponse"
+          },
+          "403": {
+            "$ref": "#/components/responses/invoice_ForbiddenErrorResponse"
+          },
+          "404": {
+            "$ref": "#/components/responses/invoice_NotFoundErrorResponse"
+          },
+          "default": {
+            "$ref": "#/components/responses/invoice_GenericErrorResponse"
+          }
+        },
+        "summary": "Get invoice by ID"
+      }
+    }
+  },
+  "security": [
+    {
+      "bearerAuth": []
+    }
+  ],
+  "servers": [
+    {
+      "description": "Version 2.0.0 of the Telnyx API",
+      "url": "https://api.telnyx.com/v2"
+    }
+  ]
+}

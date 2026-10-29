@@ -1,0 +1,566 @@
+{
+  "components": {
+    "parameters": {
+      "PathId": {
+        "description": "Resource UUID. Malformed UUIDs are treated as not-found (not 400).",
+        "in": "path",
+        "name": "id",
+        "required": true,
+        "schema": {
+          "format": "uuid",
+          "type": "string"
+        }
+      }
+    },
+    "responses": {
+      "BlocksNotFound": {
+        "content": {
+          "application/json": {
+            "example": {
+              "errors": [
+                {
+                  "code": "10001",
+                  "detail": "The requested email block was not found",
+                  "title": "Not Found"
+                }
+              ]
+            },
+            "schema": {
+              "$ref": "#/components/schemas/ErrorList"
+            }
+          }
+        },
+        "description": "Resource not found (cross-account lookups and malformed UUIDs also return 404 — no leak)."
+      },
+      "ChangesetError": {
+        "content": {
+          "application/json": {
+            "example": {
+              "errors": [
+                {
+                  "code": "10015",
+                  "detail": "can't be blank",
+                  "source": {
+                    "pointer": "/data/attributes/to"
+                  },
+                  "title": "Validation Failed"
+                }
+              ]
+            },
+            "schema": {
+              "$ref": "#/components/schemas/ErrorList"
+            }
+          }
+        },
+        "description": "Validation error (changeset or internal `Params`). One error object per field, `source.pointer /data/attributes/\u003cfield\u003e`."
+      },
+      "FrameworkError": {
+        "content": {
+          "application/json": {
+            "example": {
+              "errors": [
+                {
+                  "code": "406",
+                  "detail": "Not Acceptable",
+                  "title": "Not Acceptable"
+                }
+              ]
+            },
+            "schema": {
+              "$ref": "#/components/schemas/ErrorList"
+            }
+          }
+        },
+        "description": "Framework-rendered error (e.g. 406 Not Acceptable, 405 Method Not\nAllowed, 415 Unsupported Media Type). HTTP status matches the error\nand the body `code` carries that same status (e.g. `\"406\"`, not a\nhardcoded `\"500\"`). The explicit `500.json` clause still emits\n`code: \"500\"` for genuine 500s.\n"
+      },
+      "ValidationErrorQuery": {
+        "content": {
+          "application/json": {
+            "example": {
+              "errors": [
+                {
+                  "code": "10015",
+                  "detail": "is invalid",
+                  "source": {
+                    "pointer": "/filter[reason]"
+                  },
+                  "title": "Validation Failed"
+                }
+              ]
+            },
+            "schema": {
+              "$ref": "#/components/schemas/ErrorList"
+            }
+          }
+        },
+        "description": "Query-param validation error (`source.pointer /\u003cfield\u003e`)."
+      },
+      "email_Unauthorized": {
+        "content": {
+          "application/json": {
+            "example": {
+              "errors": [
+                {
+                  "code": "10007",
+                  "detail": "Missing authentication",
+                  "title": "Unauthorized"
+                }
+              ]
+            },
+            "schema": {
+              "$ref": "#/components/schemas/ErrorList"
+            }
+          }
+        },
+        "description": "Missing or invalid gateway auth."
+      }
+    },
+    "schemas": {
+      "BlocksErrorObject": {
+        "properties": {
+          "code": {
+            "description": "Error codes: `10001` (Not Found), `10007` (Unauthorized),\n`10015` (Validation Failed), `10019` (Internal — import create\nfallback), `40901` (Conflict), `500` (framework/catch-all).\n",
+            "type": "string"
+          },
+          "detail": {
+            "type": "string"
+          },
+          "source": {
+            "description": "`/data/attributes/\u003cfield\u003e` for changeset/Params; `/\u003cfield\u003e` for query-param errors.",
+            "properties": {
+              "pointer": {
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
+          "title": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "title",
+          "detail"
+        ],
+        "type": "object"
+      },
+      "CreateImportRequest": {
+        "properties": {
+          "block_ttl_days": {
+            "default": 30,
+            "description": "TTL for imported `manual_block` rows; other reasons get `expires_at: null`. Invalid/missing → falls back to 30.",
+            "minimum": 1,
+            "type": "integer"
+          },
+          "file": {
+            "description": "The CSV file (Plug.Upload). Missing/non-upload → 400.",
+            "format": "binary",
+            "type": "string"
+          }
+        },
+        "required": [
+          "file"
+        ],
+        "type": "object"
+      },
+      "EmailBlockImport": {
+        "description": "Import job. Schema fields hidden: `account_id`, `csv_content`,\n`block_ttl_days`. Nullable fields use the omit-nullable pattern.\n",
+        "properties": {
+          "completed_at": {
+            "description": "Omitted until terminal success.",
+            "format": "date-time",
+            "type": "string"
+          },
+          "created_at": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "created_count": {
+            "description": "Only when `status == completed`.",
+            "type": "integer"
+          },
+          "error_count": {
+            "description": "Rows that passed CSV parsing but failed suppression creation.\nThis is the creation-failure subset of `skipped_count`;\nparser-rejected rows equal `skipped_count - error_count`.\nOnly when `status == completed`.\n",
+            "type": "integer"
+          },
+          "errors": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "description": "`{row_number: reason}`; only rendered when non-empty.",
+            "type": "object"
+          },
+          "existing_count": {
+            "description": "Only when `status == completed`.",
+            "type": "integer"
+          },
+          "failure_reason": {
+            "description": "Only on terminal failure.",
+            "type": "string"
+          },
+          "id": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "processed_rows": {
+            "description": "Only when `status == completed`.",
+            "type": "integer"
+          },
+          "provider": {
+            "description": "Omitted when nil.",
+            "enum": [
+              "sendgrid",
+              "mailgun",
+              "ses",
+              "generic"
+            ],
+            "type": "string"
+          },
+          "record_type": {
+            "description": "View-only.",
+            "enum": [
+              "email_block_import"
+            ],
+            "type": "string"
+          },
+          "skipped_count": {
+            "description": "Only when `status == completed`.",
+            "type": "integer"
+          },
+          "status": {
+            "enum": [
+              "pending",
+              "processing",
+              "completed",
+              "failed"
+            ],
+            "type": "string"
+          },
+          "total": {
+            "description": "Data-row count at upload.",
+            "type": "integer"
+          },
+          "updated_at": {
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "record_type",
+          "status",
+          "total",
+          "created_at",
+          "updated_at"
+        ],
+        "type": "object"
+      },
+      "EmailBlockImportResponse": {
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/EmailBlockImport"
+          }
+        },
+        "required": [
+          "data"
+        ],
+        "type": "object"
+      },
+      "ErrorList": {
+        "properties": {
+          "errors": {
+            "items": {
+              "$ref": "#/components/schemas/BlocksErrorObject"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "errors"
+        ],
+        "type": "object"
+      }
+    },
+    "securitySchemes": {
+      "BearerAuth": {
+        "bearerFormat": "API key",
+        "description": "Telnyx API key supplied as `Authorization: Bearer \u003ctoken\u003e`. In production, auth may be validated by the API gateway and forwarded via Telnyx auth headers.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "Payment": {
+        "description": "Machine Payment Protocol credential used on paid retries, sent as `Authorization: Payment ...`. Obtained by paying a challenge returned in the `WWW-Authenticate` header of a 402 response. This is not a Telnyx API key; initial challenge requests use standard bearer authentication instead.",
+        "in": "header",
+        "name": "Authorization",
+        "type": "apiKey"
+      },
+      "agent-memory_bearerAuth": {
+        "description": "Telnyx API key",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "bearerAuth": {
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "branded-calling_bearerAuth": {
+        "description": "Telnyx API key. Generate one at https://portal.telnyx.com/#/app/api-keys.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "collections_bearerAuth": {
+        "description": "Telnyx API key. Collections and results are automatically scoped to the authenticated user's organization.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "number-reputation_bearerAuth": {
+        "description": "Telnyx API key. Generate one at https://portal.telnyx.com/#/app/api-keys.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "oauthClientAuth": {
+        "description": "OAuth 2.0 authentication for Telnyx API and MCP integrations",
+        "flows": {
+          "authorizationCode": {
+            "authorizationUrl": "https://api.telnyx.com/v2/oauth/authorize",
+            "refreshUrl": "https://api.telnyx.com/v2/oauth/token",
+            "scopes": {
+              "admin": "Administrative access to Telnyx resources"
+            },
+            "tokenUrl": "https://api.telnyx.com/v2/oauth/token"
+          },
+          "clientCredentials": {
+            "scopes": {
+              "admin": "Administrative access to Telnyx resources"
+            },
+            "tokenUrl": "https://api.telnyx.com/v2/oauth/token"
+          }
+        },
+        "type": "oauth2"
+      },
+      "outbound-voice-profiles_bearerAuth": {
+        "bearerFormat": "JWT",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "pay-connectors_bearerAuth": {
+        "description": "Telnyx API key, not the processor bearer token.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "pronunciation-dicts_bearerAuth": {
+        "description": "Telnyx API v2 key. Obtain from https://portal.telnyx.com",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "rcs-registration_bearerAuth": {
+        "bearerFormat": "API key",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "stored-payment-transactions_bearerAuth": {
+        "bearerFormat": "JWT",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "telnyxApiKey": {
+        "description": "Management-only Telnyx account credential.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "transcriptions-search_bearerAuth": {
+        "description": "Telnyx API key. Results are automatically scoped to the authenticated user's organization.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "web-search_bearerAuth": {
+        "description": "Telnyx API key",
+        "scheme": "bearer",
+        "type": "http"
+      }
+    }
+  },
+  "info": {
+    "contact": {
+      "email": "support@telnyx.com"
+    },
+    "description": "SIP trunking, SMS, MMS, Call Control and Telephony Data Services.",
+    "title": "Telnyx API",
+    "version": "2.0.0",
+    "x-endpoint-cost": "light",
+    "x-latency-category": "responsive"
+  },
+  "openapi": "3.1.0",
+  "paths": {
+    "/email_blocks/import": {
+      "post": {
+        "description": "Accepts `multipart/form-data` with a `file` field (the CSV) and an\noptional `block_ttl_days` (integer \u003e0, default 30). Validates:\n  - content ≤ 25 MiB, else `413`\n  - row count ≤ 250 000, else `413`\n  - header-only / all-blank / undetectable provider → `400`\nReturns `202` with the import record (status `pending`); an Oban\nworker (`EmailBlockImportWorker`, max_attempts 3) transitions\n`pending → processing → completed | failed`.\n\nNative Telnyx exports are detected by the stable first-12-column\nheader signature (`id` … `group_id`) and are restored with their\noriginal `from`, `domain_id`, `group_id`, `source`, `status`,\n`expires_at`, plus `bounce_category`, `dsn_code`, and `meta` when\npresent (`scope` is re-derived from `domain_id`/`from`; the\nexported `scope` cell must be a valid enum value). Lifecycle\nchanges reconcile through the same create path as the API: a row\nalready in the requested state restores its mutable backup fields\nwithout a new audit event, and a real transition (e.g. tombstone\n→ active) appends the matching lifecycle event. `block_ttl_days`\nis not applied to native rows — their exported `expires_at` is\npreserved verbatim.\n\nCompetitor and generic imports (SendGrid / Mailgun / SES /\ngeneric) remain account-scoped (`from`, `domain_id`, `group_id`,\n`scope` are not read) and `block_ttl_days` applies only to\nimported `manual_block` rows; other reasons get `expires_at: nil`.\nProvider is auto-detected from the CSV header\n(`sendgrid` / `mailgun` / `ses` / `generic`).\n",
+        "operationId": "createEmailBlockImport",
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "example": {
+                "block_ttl_days": 30,
+                "file": "blocks.csv"
+              },
+              "schema": {
+                "$ref": "#/components/schemas/CreateImportRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "202": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "data": {
+                    "completed_at": "2024-01-23T18:10:02.574Z",
+                    "created_at": "2024-01-23T18:10:02.574Z",
+                    "created_count": 0,
+                    "error_count": 0,
+                    "existing_count": 0,
+                    "failure_reason": "string",
+                    "id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+                    "processed_rows": 0,
+                    "provider": "sendgrid",
+                    "record_type": "email_block_import",
+                    "skipped_count": 0,
+                    "status": "pending",
+                    "total": 0,
+                    "updated_at": "2024-01-23T18:10:02.574Z"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/EmailBlockImportResponse"
+                }
+              }
+            },
+            "description": "Import job accepted (status `pending`)."
+          },
+          "400": {
+            "$ref": "#/components/responses/ValidationErrorQuery"
+          },
+          "401": {
+            "$ref": "#/components/responses/email_Unauthorized"
+          },
+          "406": {
+            "$ref": "#/components/responses/FrameworkError"
+          },
+          "413": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "errors": [
+                    {
+                      "code": "10007",
+                      "detail": "An unexpected error occured.",
+                      "title": "Unexpected error"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorList"
+                }
+              }
+            },
+            "description": "Two distinct 413 paths. Content-level cap (decoded CSV \u003e 25 MiB\nor \u003e 250 000 rows) returns `10015` with `source.pointer /file`.\nThe multipart parser raises `RequestTooLargeError` when the\nencoded body exceeds 26 MiB — that's a framework error rendered\nwith body `code: \"413\"` (matches the HTTP status).\n"
+          },
+          "422": {
+            "$ref": "#/components/responses/ChangesetError"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "errors": [
+                    {
+                      "code": "10007",
+                      "detail": "An unexpected error occured.",
+                      "title": "Unexpected error"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorList"
+                }
+              }
+            },
+            "description": "Import-create fallback (`code 10019`, \"Failed to create import\")."
+          }
+        },
+        "summary": "Create an async CSV import job",
+        "tags": [
+          "Email Suppression Imports"
+        ]
+      }
+    },
+    "/email_blocks/import/{id}": {
+      "get": {
+        "description": "Account-scoped fetch (cross-account → 404; malformed UUID → 404).\nNullable fields are omitted until terminal: `provider`/`completed_at`\nwhen nil; `processed_rows`/`created_count`/`existing_count`/\n`skipped_count`/`error_count` only when `status == completed`;\n`errors` only when non-empty; `failure_reason` only on terminal\nfailure.\n",
+        "operationId": "showEmailBlockImport",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "data": {
+                    "completed_at": "2024-01-23T18:10:02.574Z",
+                    "created_at": "2024-01-23T18:10:02.574Z",
+                    "created_count": 0,
+                    "error_count": 0,
+                    "existing_count": 0,
+                    "failure_reason": "string",
+                    "id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+                    "processed_rows": 0,
+                    "provider": "sendgrid",
+                    "record_type": "email_block_import",
+                    "skipped_count": 0,
+                    "status": "pending",
+                    "total": 0,
+                    "updated_at": "2024-01-23T18:10:02.574Z"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/EmailBlockImportResponse"
+                }
+              }
+            },
+            "description": "The import record."
+          },
+          "401": {
+            "$ref": "#/components/responses/email_Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/BlocksNotFound"
+          },
+          "406": {
+            "$ref": "#/components/responses/FrameworkError"
+          }
+        },
+        "summary": "Poll an import job",
+        "tags": [
+          "Email Suppression Imports"
+        ]
+      },
+      "parameters": [
+        {
+          "$ref": "#/components/parameters/PathId"
+        }
+      ]
+    }
+  },
+  "security": [
+    {
+      "bearerAuth": []
+    }
+  ],
+  "servers": [
+    {
+      "description": "Version 2.0.0 of the Telnyx API",
+      "url": "https://api.telnyx.com/v2"
+    }
+  ]
+}

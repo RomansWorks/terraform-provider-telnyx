@@ -1,0 +1,1108 @@
+{
+  "components": {
+    "parameters": {
+      "BcPageNumber": {
+        "description": "1-based page number. Out-of-range values return an empty page with correct meta.",
+        "in": "query",
+        "name": "page[number]",
+        "required": false,
+        "schema": {
+          "default": 1,
+          "example": 1,
+          "minimum": 1,
+          "type": "integer"
+        }
+      },
+      "BcPageSize": {
+        "description": "Items per page. Maximum 250; values above are clamped to 250.",
+        "in": "query",
+        "name": "page[size]",
+        "required": false,
+        "schema": {
+          "default": 20,
+          "example": 20,
+          "maximum": 250,
+          "minimum": 1,
+          "type": "integer"
+        }
+      },
+      "DirId": {
+        "description": "The DIR id. Lowercase UUID.",
+        "in": "path",
+        "name": "dir_id",
+        "required": true,
+        "schema": {
+          "example": "16635d38-75a6-4481-82e8-69af60e05011",
+          "format": "uuid",
+          "type": "string"
+        }
+      }
+    },
+    "responses": {
+      "branded-calling_GenericErrorResponse": {
+        "content": {
+          "application/json": {
+            "examples": {
+              "bad_request": {
+                "description": "Returned when the request itself is well-formed but the resource is in a state that disallows this action (e.g. updating a DIR while it is being vetted, or deleting an enterprise that still has DIRs in vetting).",
+                "summary": "400 - request rejected by a state guard",
+                "value": {
+                  "errors": [
+                    {
+                      "code": "10015",
+                      "detail": "Cannot update DIR in 'verified' status",
+                      "meta": {
+                        "url": "https://developers.telnyx.com/docs/overview/errors/10015"
+                      },
+                      "title": "Bad Request"
+                    }
+                  ]
+                }
+              },
+              "conflict": {
+                "summary": "409 - request conflicts with current resource state",
+                "value": {
+                  "errors": [
+                    {
+                      "code": "10021",
+                      "detail": "DIR has 1 active infringement claim(s). Resolve the claim before making this change.",
+                      "meta": {
+                        "url": "https://developers.telnyx.com/docs/overview/errors/10021"
+                      },
+                      "title": "Resource in use"
+                    }
+                  ]
+                }
+              },
+              "not_found": {
+                "summary": "404 - resource does not exist or is not yours",
+                "value": {
+                  "errors": [
+                    {
+                      "code": "10009",
+                      "detail": "Enterprise not found.",
+                      "meta": {
+                        "url": "https://developers.telnyx.com/docs/overview/errors/10009"
+                      },
+                      "title": "Resource not found"
+                    }
+                  ]
+                }
+              },
+              "validation_error": {
+                "summary": "422 - request body failed validation",
+                "value": {
+                  "errors": [
+                    {
+                      "code": "10005",
+                      "detail": "field required",
+                      "meta": {
+                        "url": "https://developers.telnyx.com/docs/overview/errors/10005"
+                      },
+                      "source": {
+                        "pointer": "/body/legal_name"
+                      },
+                      "title": "Invalid parameters"
+                    }
+                  ]
+                }
+              }
+            },
+            "schema": {
+              "$ref": "#/components/schemas/branded-calling_Errors"
+            }
+          }
+        },
+        "description": "An error occurred. The response carries the standard Telnyx error envelope."
+      }
+    },
+    "schemas": {
+      "CallReason": {
+        "properties": {
+          "created_at": {
+            "example": "2026-04-26T18:06:51.940749Z",
+            "format": "date-time",
+            "readOnly": true,
+            "type": "string"
+          },
+          "reason": {
+            "example": "Appointment reminders",
+            "maxLength": 64,
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "ContestSubmission": {
+        "description": "One round of customer contest evidence on an infringement claim. The aggregated documents across rounds live on the parent claim's `contest_documents`; this submission record carries only the per-round notes and document count.",
+        "properties": {
+          "document_count": {
+            "example": 1,
+            "minimum": 0,
+            "readOnly": true,
+            "type": "integer"
+          },
+          "notes": {
+            "example": "We own the trademark outright; our registration precedes the claimant by three years.",
+            "type": "string"
+          },
+          "submitted_at": {
+            "example": "2026-04-22T02:13:06.629473Z",
+            "format": "date-time",
+            "readOnly": true,
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "Dir": {
+        "properties": {
+          "authorizer_email": {
+            "example": "sam@acmeplumbing.example.com",
+            "format": "email",
+            "nullable": true,
+            "type": "string"
+          },
+          "authorizer_name": {
+            "example": "Sam Owner",
+            "nullable": true,
+            "type": "string"
+          },
+          "call_reasons": {
+            "items": {
+              "$ref": "#/components/schemas/CallReason"
+            },
+            "type": "array"
+          },
+          "certify_brand_is_accurate": {
+            "example": true,
+            "type": "boolean"
+          },
+          "certify_ip_ownership": {
+            "example": true,
+            "type": "boolean"
+          },
+          "certify_no_shaft_content": {
+            "example": true,
+            "type": "boolean"
+          },
+          "created_at": {
+            "example": "2026-04-26T18:06:51.940749Z",
+            "format": "date-time",
+            "readOnly": true,
+            "type": "string"
+          },
+          "delete_requested_at": {
+            "description": "When deletion was requested. Set once the DIR enters `delete_requested`; `null` otherwise.",
+            "example": "2026-04-27T09:12:44.201820Z",
+            "format": "date-time",
+            "nullable": true,
+            "readOnly": true,
+            "type": "string"
+          },
+          "display_name": {
+            "example": "Acme Plumbing",
+            "type": "string"
+          },
+          "documents": {
+            "items": {
+              "$ref": "#/components/schemas/Document"
+            },
+            "nullable": true,
+            "type": "array"
+          },
+          "enterprise_id": {
+            "example": "4a6192a4-573d-446d-b3ce-aff9117272a6",
+            "format": "uuid",
+            "type": "string"
+          },
+          "expiring_at": {
+            "example": "2027-04-26T18:07:29.537981Z",
+            "format": "date-time",
+            "nullable": true,
+            "readOnly": true,
+            "type": "string"
+          },
+          "id": {
+            "example": "16635d38-75a6-4481-82e8-69af60e05011",
+            "format": "uuid",
+            "readOnly": true,
+            "type": "string"
+          },
+          "logo_url": {
+            "example": "https://acmeplumbing.example.com/logo-256.bmp",
+            "format": "uri",
+            "nullable": true,
+            "type": "string"
+          },
+          "rejected_at": {
+            "format": "date-time",
+            "nullable": true,
+            "readOnly": true,
+            "type": "string"
+          },
+          "rejection_reasons": {
+            "description": "Populated when `status` is `rejected`; cleared on `/submit` or successful approval.",
+            "items": {
+              "$ref": "#/components/schemas/RejectionReason"
+            },
+            "nullable": true,
+            "type": "array"
+          },
+          "reselling": {
+            "example": false,
+            "type": "boolean"
+          },
+          "status": {
+            "$ref": "#/components/schemas/DirStatus"
+          },
+          "submitted_at": {
+            "example": "2026-04-26T18:07:03.716411Z",
+            "format": "date-time",
+            "nullable": true,
+            "readOnly": true,
+            "type": "string"
+          },
+          "updated_at": {
+            "example": "2026-04-26T18:09:24.785211Z",
+            "format": "date-time",
+            "readOnly": true,
+            "type": "string"
+          },
+          "verified_at": {
+            "example": "2026-04-26T18:07:29.537926Z",
+            "format": "date-time",
+            "nullable": true,
+            "readOnly": true,
+            "type": "string"
+          },
+          "webhook_url": {
+            "description": "`https://` URL that receives webhook notifications for this DIR's compliance-review outcomes. `null` when not subscribed.",
+            "example": "https://acmehealthcare.example.com/webhooks/branded-calling",
+            "format": "uri",
+            "nullable": true,
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "DirInfringementUpdateRequest": {
+        "properties": {
+          "call_reasons": {
+            "items": {
+              "type": "string"
+            },
+            "maxItems": 10,
+            "minItems": 1,
+            "nullable": true,
+            "type": "array"
+          },
+          "certify_brand_is_accurate": {
+            "description": "Must be `true`.",
+            "enum": [
+              true
+            ],
+            "type": "boolean"
+          },
+          "certify_ip_ownership": {
+            "description": "Must be `true`.",
+            "enum": [
+              true
+            ],
+            "type": "boolean"
+          },
+          "certify_no_infringement": {
+            "description": "Check to certify that the brand no longer infringes anyone else's trademark or intellectual property.",
+            "enum": [
+              true
+            ],
+            "type": "boolean"
+          },
+          "certify_no_shaft_content": {
+            "description": "Must be `true`.",
+            "enum": [
+              true
+            ],
+            "type": "boolean"
+          },
+          "display_name": {
+            "description": "The business name shown to call recipients, 1 to 35 characters, no emoji, not blank.",
+            "maxLength": 35,
+            "minLength": 1,
+            "nullable": true,
+            "type": "string"
+          },
+          "documents": {
+            "description": "Append-only supporting documents to attach while resolving the claim (e.g. authorization or licensing proof).",
+            "items": {
+              "$ref": "#/components/schemas/Document"
+            },
+            "maxItems": 20,
+            "nullable": true,
+            "type": "array"
+          },
+          "infringement_resolution_notes": {
+            "description": "Explanation of how the infringement concern was addressed.",
+            "maxLength": 500,
+            "minLength": 10,
+            "type": "string"
+          },
+          "logo_url": {
+            "description": "Publicly accessible HTTPS URL (max 128 chars) to a 256x256 BMP logo (max 1 MB).",
+            "maxLength": 128,
+            "nullable": true,
+            "type": "string"
+          }
+        },
+        "required": [
+          "certify_no_infringement",
+          "certify_brand_is_accurate",
+          "certify_no_shaft_content",
+          "certify_ip_ownership",
+          "infringement_resolution_notes"
+        ],
+        "type": "object"
+      },
+      "DirStatus": {
+        "description": "DIR lifecycle status.\n- `draft` - newly created; editable; not yet submitted.\n- `submitted` / `in_review` - Telnyx is reviewing.\n- `verified` - approved; phone numbers may be attached.\n- `rejected` - Telnyx rejected this submission; `rejection_reasons` is populated; customer can edit and resubmit.\n- `unsuccessful` - system-side error during processing; customer can edit and resubmit.\n- `suspended` - temporarily disabled (e.g. by an active infringement claim).\n- `expired` - verification expired; customer must resubmit.\n- `infringement_claimed` - a trademark/impersonation claim is open against this DIR.\n- `permanently_rejected` - terminal; cannot be resubmitted.\n- `delete_requested` - you have requested deletion; the DIR still exists and Telnyx is completing the removal (de-registration and cleanup). A verified DIR keeps serving its branded identity, and keeps billing, until the removal finishes.",
+        "enum": [
+          "draft",
+          "submitted",
+          "in_review",
+          "verified",
+          "rejected",
+          "unsuccessful",
+          "suspended",
+          "expired",
+          "infringement_claimed",
+          "permanently_rejected",
+          "delete_requested"
+        ],
+        "type": "string"
+      },
+      "DirWrapped": {
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/Dir"
+          }
+        },
+        "required": [
+          "data"
+        ],
+        "type": "object"
+      },
+      "Document": {
+        "properties": {
+          "description": {
+            "description": "An optional note describing this document, for example what it proves.",
+            "example": "Certificate of incorporation.",
+            "maxLength": 255,
+            "type": "string"
+          },
+          "document_id": {
+            "description": "Id returned by the Telnyx Documents API after you upload the file (upload via `POST /v2/documents`; see https://developers.telnyx.com/api/documents).",
+            "example": "2a7e8337-e803-4057-a4ae-26c40eb0bc6c",
+            "format": "uuid",
+            "type": "string"
+          },
+          "document_type": {
+            "description": "Type of supporting document. Pick the closest match to what the file actually contains; `other` triggers manual vetting and may slow approval. The matching short_name reference list is at `GET /v2/dir/document_types`.",
+            "enum": [
+              "letter_of_authorization",
+              "business_registration",
+              "articles_of_incorporation",
+              "certificate_of_good_standing",
+              "tax_document",
+              "ein_letter",
+              "trademark_registration",
+              "website_ownership",
+              "business_license",
+              "professional_license",
+              "government_id",
+              "utility_bill",
+              "bank_statement",
+              "business_credit_report",
+              "bank_reference_letter",
+              "other"
+            ],
+            "example": "business_registration",
+            "type": "string"
+          }
+        },
+        "required": [
+          "document_id",
+          "document_type"
+        ],
+        "type": "object"
+      },
+      "InfringementClaim": {
+        "properties": {
+          "claim_date": {
+            "description": "When the claim was filed (set by the claimant's representative at file time).",
+            "example": "2026-04-22T02:12:54Z",
+            "format": "date-time",
+            "readOnly": true,
+            "type": "string"
+          },
+          "claim_description": {
+            "example": "Alleged infringement on trademark XYZ.",
+            "maxLength": 2000,
+            "minLength": 10,
+            "type": "string"
+          },
+          "claim_type": {
+            "$ref": "#/components/schemas/InfringementClaimType"
+          },
+          "claimant_contact": {
+            "example": "legal@testclaimant.example.com",
+            "maxLength": 255,
+            "minLength": 1,
+            "type": "string"
+          },
+          "claimant_name": {
+            "example": "Test Claimant LLC",
+            "maxLength": 255,
+            "minLength": 1,
+            "type": "string"
+          },
+          "contest_documents": {
+            "description": "Aggregated across all customer contest submissions on this claim.",
+            "items": {
+              "$ref": "#/components/schemas/Document"
+            },
+            "type": "array"
+          },
+          "contest_history": {
+            "description": "Per-round submission audit trail. Each entry records one `POST /infringement_claims/{id}/contest` call (notes, timestamp, document count). Aggregated documents live on `contest_documents`.",
+            "items": {
+              "$ref": "#/components/schemas/ContestSubmission"
+            },
+            "readOnly": true,
+            "type": "array"
+          },
+          "created_at": {
+            "example": "2026-04-22T02:12:55.908411Z",
+            "format": "date-time",
+            "readOnly": true,
+            "type": "string"
+          },
+          "dir": {
+            "$ref": "#/components/schemas/InfringementClaimDirRef"
+          },
+          "dir_id": {
+            "example": "42a3f554-7ce3-44c2-bfe9-6e1afe0d7991",
+            "format": "uuid",
+            "type": "string"
+          },
+          "enterprise_id": {
+            "example": "7eca8226-8081-4e11-abdc-437b5f53a81f",
+            "format": "uuid",
+            "type": "string"
+          },
+          "id": {
+            "example": "e379fbc8-cd83-4bef-a280-a0ac9d00dcf8",
+            "format": "uuid",
+            "readOnly": true,
+            "type": "string"
+          },
+          "resolution": {
+            "description": "Set only when `status` is `resolved`.",
+            "enum": [
+              "upheld",
+              "rejected",
+              "modified"
+            ],
+            "nullable": true,
+            "type": "string"
+          },
+          "resolution_date": {
+            "format": "date-time",
+            "nullable": true,
+            "readOnly": true,
+            "type": "string"
+          },
+          "resolution_notes": {
+            "maxLength": 2000,
+            "nullable": true,
+            "readOnly": true,
+            "type": "string"
+          },
+          "status": {
+            "$ref": "#/components/schemas/InfringementClaimStatus"
+          },
+          "updated_at": {
+            "example": "2026-04-22T02:12:55.908417Z",
+            "format": "date-time",
+            "readOnly": true,
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "InfringementClaimContest": {
+        "additionalProperties": false,
+        "properties": {
+          "contest_notes": {
+            "description": "Customer's response to the claim. 10–2000 characters.",
+            "example": "We own the trademark outright; our registration precedes the claimant by three years.",
+            "maxLength": 2000,
+            "minLength": 10,
+            "type": "string"
+          },
+          "documents": {
+            "description": "Up to 20 supporting documents per submission. `document_id` must be unique within this submission. Documents are aggregated into the claim's `contest_documents` across all submissions.",
+            "items": {
+              "$ref": "#/components/schemas/Document"
+            },
+            "maxItems": 20,
+            "type": "array"
+          }
+        },
+        "required": [
+          "contest_notes"
+        ],
+        "type": "object"
+      },
+      "InfringementClaimDirRef": {
+        "description": "Snapshot of the DIR the claim is filed against, embedded for convenience.",
+        "properties": {
+          "display_name": {
+            "example": "Acme Plumbing",
+            "type": "string"
+          },
+          "enterprise_id": {
+            "example": "7eca8226-8081-4e11-abdc-437b5f53a81f",
+            "format": "uuid",
+            "type": "string"
+          },
+          "id": {
+            "example": "42a3f554-7ce3-44c2-bfe9-6e1afe0d7991",
+            "format": "uuid",
+            "readOnly": true,
+            "type": "string"
+          },
+          "status": {
+            "$ref": "#/components/schemas/DirStatus"
+          }
+        },
+        "type": "object"
+      },
+      "InfringementClaimList": {
+        "properties": {
+          "data": {
+            "items": {
+              "$ref": "#/components/schemas/InfringementClaim"
+            },
+            "type": "array"
+          },
+          "meta": {
+            "$ref": "#/components/schemas/branded-calling_PaginationMeta"
+          }
+        },
+        "required": [
+          "data",
+          "meta"
+        ],
+        "type": "object"
+      },
+      "InfringementClaimStatus": {
+        "description": "Lifecycle status. `pending` - newly filed; the DIR is auto-suspended. `contested` - you have submitted contest evidence; awaiting Telnyx review. `resolved` - final.",
+        "enum": [
+          "pending",
+          "contested",
+          "resolved"
+        ],
+        "type": "string"
+      },
+      "InfringementClaimType": {
+        "description": "Category of infringement being claimed.",
+        "enum": [
+          "trademark",
+          "copyright"
+        ],
+        "type": "string"
+      },
+      "InfringementClaimWrapped": {
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/InfringementClaim"
+          }
+        },
+        "required": [
+          "data"
+        ],
+        "type": "object"
+      },
+      "RejectionReason": {
+        "properties": {
+          "code": {
+            "example": "documentation_incomplete",
+            "type": "string"
+          },
+          "detail": {
+            "example": "Provided documents do not establish business identity.",
+            "type": "string"
+          },
+          "message": {
+            "description": "Customer-visible free-text comment from the Telnyx vetting team. Only the first entry of `rejection_reasons` carries this; the rest are `null`.",
+            "example": "Please re-upload a clearer scan of the certificate.",
+            "nullable": true,
+            "type": "string"
+          },
+          "title": {
+            "example": "Documentation incomplete",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "branded-calling_Error": {
+        "description": "A single entry in the canonical Telnyx error envelope. `code` is the stable Telnyx error catalog id; the human-readable explanation lives at `meta.url`. `detail` is a context-specific message; `source.pointer` (when present) names the offending field of the request.",
+        "properties": {
+          "code": {
+            "description": "Stable numeric Telnyx error catalog id. See `meta.url` for the full catalog entry.",
+            "example": "10005",
+            "type": "string"
+          },
+          "detail": {
+            "description": "Context-specific message describing what went wrong on this particular request. May embed offending values; do not rely on it for programmatic matching - branch on `code`.",
+            "example": "field required",
+            "type": "string"
+          },
+          "meta": {
+            "description": "Carries `url` linking to the Telnyx error catalog entry for this `code`. Useful for forwarding the user to documentation.",
+            "properties": {
+              "pending_check_codes": {
+                "description": "Codes of the pending vetting checks (e.g. `loa_signature_valid`).",
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              "pending_check_ids": {
+                "description": "Set on `422 vetting_checks_incomplete` responses from `/admin/dir/{id}/approve` and `/admin/phone-number-batches/approve`. Lists the still-pending vetting check ids.",
+                "items": {
+                  "format": "uuid",
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              "pending_check_labels": {
+                "description": "Human-readable labels of the pending vetting checks.",
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              "url": {
+                "example": "https://developers.telnyx.com/docs/overview/errors/10005",
+                "format": "uri",
+                "type": "string"
+              }
+            },
+            "required": [
+              "url"
+            ],
+            "type": "object"
+          },
+          "source": {
+            "description": "Optional pointer at the offending field of the request.",
+            "properties": {
+              "parameter": {
+                "example": "page[size]",
+                "type": "string"
+              },
+              "pointer": {
+                "example": "/body/legal_name",
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
+          "title": {
+            "description": "Short human-readable category, e.g. `Bad Request`, `Duplicate resource`, `Not Found`, `Forbidden`. Treat as advisory only - the stable identifier is `code`.",
+            "example": "Invalid parameters",
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "title",
+          "detail",
+          "meta"
+        ],
+        "type": "object"
+      },
+      "branded-calling_Errors": {
+        "description": "Canonical Telnyx error envelope. Returned on every 4xx and 5xx response from this service. `errors` is non-empty; multiple entries indicate multiple distinct problems with the same request (e.g. one entry per invalid phone number on a bulk operation).",
+        "properties": {
+          "errors": {
+            "description": "List of one or more error entries. Order is not significant.",
+            "items": {
+              "$ref": "#/components/schemas/branded-calling_Error"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "errors"
+        ],
+        "type": "object"
+      },
+      "branded-calling_PaginationMeta": {
+        "description": "JSON:API pagination metadata returned with every paginated list response. Page numbering is 1-based. `page_size` reports the number of items actually returned in `data` for this page; the requested size is taken from the `page[size]` query parameter.",
+        "properties": {
+          "page_number": {
+            "description": "1-based index of this page. Echoes the `page[number]` query parameter (default `1`).",
+            "example": 1,
+            "type": "integer"
+          },
+          "page_size": {
+            "description": "Number of items returned in this page's `data` array. Capped at 250.",
+            "example": 20,
+            "type": "integer"
+          },
+          "total_pages": {
+            "description": "Total number of pages available given the current `page_size`.",
+            "example": 3,
+            "type": "integer"
+          },
+          "total_results": {
+            "description": "Total number of items across all pages (excludes soft-deleted rows).",
+            "example": 42,
+            "type": "integer"
+          }
+        },
+        "required": [
+          "total_pages",
+          "total_results",
+          "page_number",
+          "page_size"
+        ],
+        "type": "object"
+      }
+    },
+    "securitySchemes": {
+      "BearerAuth": {
+        "bearerFormat": "API key",
+        "description": "Telnyx API key supplied as `Authorization: Bearer \u003ctoken\u003e`. In production, auth may be validated by the API gateway and forwarded via Telnyx auth headers.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "Payment": {
+        "description": "Machine Payment Protocol credential used on paid retries, sent as `Authorization: Payment ...`. Obtained by paying a challenge returned in the `WWW-Authenticate` header of a 402 response. This is not a Telnyx API key; initial challenge requests use standard bearer authentication instead.",
+        "in": "header",
+        "name": "Authorization",
+        "type": "apiKey"
+      },
+      "agent-memory_bearerAuth": {
+        "description": "Telnyx API key",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "bearerAuth": {
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "branded-calling_bearerAuth": {
+        "description": "Telnyx API key. Generate one at https://portal.telnyx.com/#/app/api-keys.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "collections_bearerAuth": {
+        "description": "Telnyx API key. Collections and results are automatically scoped to the authenticated user's organization.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "number-reputation_bearerAuth": {
+        "description": "Telnyx API key. Generate one at https://portal.telnyx.com/#/app/api-keys.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "oauthClientAuth": {
+        "description": "OAuth 2.0 authentication for Telnyx API and MCP integrations",
+        "flows": {
+          "authorizationCode": {
+            "authorizationUrl": "https://api.telnyx.com/v2/oauth/authorize",
+            "refreshUrl": "https://api.telnyx.com/v2/oauth/token",
+            "scopes": {
+              "admin": "Administrative access to Telnyx resources"
+            },
+            "tokenUrl": "https://api.telnyx.com/v2/oauth/token"
+          },
+          "clientCredentials": {
+            "scopes": {
+              "admin": "Administrative access to Telnyx resources"
+            },
+            "tokenUrl": "https://api.telnyx.com/v2/oauth/token"
+          }
+        },
+        "type": "oauth2"
+      },
+      "outbound-voice-profiles_bearerAuth": {
+        "bearerFormat": "JWT",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "pay-connectors_bearerAuth": {
+        "description": "Telnyx API key, not the processor bearer token.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "pronunciation-dicts_bearerAuth": {
+        "description": "Telnyx API v2 key. Obtain from https://portal.telnyx.com",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "rcs-registration_bearerAuth": {
+        "bearerFormat": "API key",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "stored-payment-transactions_bearerAuth": {
+        "bearerFormat": "JWT",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "telnyxApiKey": {
+        "description": "Management-only Telnyx account credential.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "transcriptions-search_bearerAuth": {
+        "description": "Telnyx API key. Results are automatically scoped to the authenticated user's organization.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "web-search_bearerAuth": {
+        "description": "Telnyx API key",
+        "scheme": "bearer",
+        "type": "http"
+      }
+    }
+  },
+  "info": {
+    "contact": {
+      "email": "support@telnyx.com"
+    },
+    "description": "SIP trunking, SMS, MMS, Call Control and Telephony Data Services.",
+    "title": "Telnyx API",
+    "version": "2.0.0",
+    "x-endpoint-cost": "light",
+    "x-latency-category": "responsive"
+  },
+  "openapi": "3.1.0",
+  "paths": {
+    "/dir/{dir_id}/infringement_claims": {
+      "get": {
+        "description": "Return the trademark or copyright claims filed against this DIR. Each claim's `status` is `pending` (newly filed; DIR auto-suspended), `contested` (you have submitted contest evidence; awaiting resolution), or `resolved` (final). Resolution outcomes: `upheld` (claim accepted; DIR stays suspended/permanently_rejected), `rejected` (claim dismissed; DIR restored to `verified`), `modified` (partial outcome).",
+        "operationId": "listInfringementClaimsForDir",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/DirId"
+          },
+          {
+            "$ref": "#/components/parameters/BcPageNumber"
+          },
+          {
+            "$ref": "#/components/parameters/BcPageSize"
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InfringementClaimList"
+                }
+              }
+            },
+            "description": "Paginated list of claims for this DIR."
+          },
+          "4XX": {
+            "$ref": "#/components/responses/branded-calling_GenericErrorResponse"
+          },
+          "default": {
+            "$ref": "#/components/responses/branded-calling_GenericErrorResponse"
+          }
+        },
+        "summary": "List infringement claims for a DIR",
+        "tags": [
+          "Infringement Claims"
+        ]
+      }
+    },
+    "/dir/{dir_id}/infringement_update": {
+      "put": {
+        "description": "Push a fix for a DIR that is `suspended` with an open infringement claim back into vetting. `POST /dir/{dir_id}/submit` is blocked while a claim is open, so this is the customer-callable path to update the DIR's content and re-certify before Telnyx adjudicates the claim. All four certification booleans must be `true`. Optional content fields (`display_name`, `logo_url`, `call_reasons`, `documents`) update the DIR; documents are append-only.",
+        "operationId": "updateDirInfringement",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/DirId"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "example": {
+                "certify_brand_is_accurate": true,
+                "certify_ip_ownership": true,
+                "certify_no_infringement": true,
+                "certify_no_shaft_content": true,
+                "infringement_resolution_notes": "Updated the display name to remove the disputed mark and re-uploaded the authorization."
+              },
+              "schema": {
+                "$ref": "#/components/schemas/DirInfringementUpdateRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DirWrapped"
+                }
+              }
+            },
+            "description": "DIR updated and re-submitted for vetting."
+          },
+          "400": {
+            "$ref": "#/components/responses/branded-calling_GenericErrorResponse"
+          },
+          "401": {
+            "$ref": "#/components/responses/branded-calling_GenericErrorResponse"
+          },
+          "404": {
+            "$ref": "#/components/responses/branded-calling_GenericErrorResponse"
+          },
+          "409": {
+            "$ref": "#/components/responses/branded-calling_GenericErrorResponse"
+          },
+          "422": {
+            "$ref": "#/components/responses/branded-calling_GenericErrorResponse"
+          }
+        },
+        "summary": "Update a DIR to resolve an infringement concern",
+        "tags": [
+          "Infringement Claims"
+        ]
+      }
+    },
+    "/infringement_claims/{claim_id}": {
+      "get": {
+        "description": "Retrieve a single claim by id. Returns `404` if the claim does not exist or is not against a DIR you own.",
+        "operationId": "getInfringementClaim",
+        "parameters": [
+          {
+            "description": "Claim id (lowercase UUID).",
+            "in": "path",
+            "name": "claim_id",
+            "required": true,
+            "schema": {
+              "example": "e379fbc8-cd83-4bef-a280-a0ac9d00dcf8",
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InfringementClaimWrapped"
+                }
+              }
+            },
+            "description": "Claim."
+          },
+          "4XX": {
+            "$ref": "#/components/responses/branded-calling_GenericErrorResponse"
+          },
+          "default": {
+            "$ref": "#/components/responses/branded-calling_GenericErrorResponse"
+          }
+        },
+        "summary": "Get an infringement claim",
+        "tags": [
+          "Infringement Claims"
+        ]
+      }
+    },
+    "/infringement_claims/{claim_id}/contest": {
+      "post": {
+        "description": "Submit a written response and supporting documents disputing the claim. The first call moves the claim from `pending` to `contested`; subsequent calls append supplementary evidence without changing status. The `documents[]` you attach are aggregated across rounds in the claim's `contest_documents` field.\n\nOnly `pending` and `contested` claims accept new evidence. A `resolved` claim returns `400`.\n\nFailure modes:\n- `400` - the claim is `resolved` (terminal); cannot be contested further.\n- `404` - the claim does not exist or is not against a DIR you own.\n- `422` - `contest_notes` is too short (\u003c 10 chars), too long (\u003e 2000 chars), `documents` is \u003e 20 entries, or a `document_id` is duplicated within the same submission.",
+        "operationId": "contestInfringementClaim",
+        "parameters": [
+          {
+            "description": "Unique identifier of the claim.",
+            "in": "path",
+            "name": "claim_id",
+            "required": true,
+            "schema": {
+              "example": "e379fbc8-cd83-4bef-a280-a0ac9d00dcf8",
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "example": {
+                "contest_notes": "We own the trademark outright; our registration precedes the claimant by three years. See attached certificate.",
+                "documents": [
+                  {
+                    "description": "USPTO trademark certificate.",
+                    "document_id": "2a7e8337-e803-4057-a4ae-26c40eb0bc6c",
+                    "document_type": "trademark_registration"
+                  }
+                ]
+              },
+              "schema": {
+                "$ref": "#/components/schemas/InfringementClaimContest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InfringementClaimWrapped"
+                }
+              }
+            },
+            "description": "Updated claim, status `contested`."
+          },
+          "4XX": {
+            "$ref": "#/components/responses/branded-calling_GenericErrorResponse"
+          },
+          "default": {
+            "$ref": "#/components/responses/branded-calling_GenericErrorResponse"
+          }
+        },
+        "summary": "Contest an infringement claim",
+        "tags": [
+          "Infringement Claims"
+        ]
+      }
+    }
+  },
+  "security": [
+    {
+      "bearerAuth": []
+    }
+  ],
+  "servers": [
+    {
+      "description": "Version 2.0.0 of the Telnyx API",
+      "url": "https://api.telnyx.com/v2"
+    }
+  ]
+}

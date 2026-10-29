@@ -1,0 +1,684 @@
+{
+  "components": {
+    "parameters": {
+      "MeetingSessionId": {
+        "description": "Unique identifier for the meeting session.",
+        "in": "path",
+        "name": "id",
+        "required": true,
+        "schema": {
+          "examples": [
+            "mtgsess_a1b2c3d4-e5f6-7890-abcd-ef1234567890"
+          ],
+          "type": "string"
+        }
+      }
+    },
+    "responses": {
+      "Forbidden": {
+        "content": {
+          "application/json": {
+            "example": {
+              "error": {
+                "code": "forbidden",
+                "message": "credential is not permitted"
+              }
+            },
+            "schema": {
+              "$ref": "#/components/schemas/meeting-sessions_ErrorResponse"
+            }
+          }
+        },
+        "description": "The authenticated credential is not permitted to perform this operation."
+      },
+      "MeetingSendChatProviderError": {
+        "content": {
+          "application/json": {
+            "example": {
+              "error": {
+                "code": "provider_error",
+                "message": "meeting provider rejected chat message"
+              }
+            },
+            "schema": {
+              "$ref": "#/components/schemas/meeting-sessions_ErrorResponse"
+            }
+          }
+        },
+        "description": "The meeting provider rejected native chat delivery."
+      },
+      "MeetingSpeakUpstreamError": {
+        "content": {
+          "application/json": {
+            "example": {
+              "error": {
+                "code": "tts_error",
+                "message": "tts synthesis failed"
+              }
+            },
+            "schema": {
+              "$ref": "#/components/schemas/meeting-sessions_ErrorResponse"
+            }
+          }
+        },
+        "description": "Text-to-speech generation or meeting audio delivery failed."
+      },
+      "MeetingStopSpeakingProviderError": {
+        "content": {
+          "application/json": {
+            "example": {
+              "error": {
+                "code": "provider_error",
+                "message": "meeting provider rejected stop audio"
+              }
+            },
+            "schema": {
+              "$ref": "#/components/schemas/meeting-sessions_ErrorResponse"
+            }
+          }
+        },
+        "description": "The meeting provider rejected stopping audio playback."
+      },
+      "PayloadTooLarge": {
+        "content": {
+          "application/json": {
+            "example": {
+              "error": {
+                "code": "invalid_request",
+                "message": "request body too large"
+              }
+            },
+            "schema": {
+              "$ref": "#/components/schemas/meeting-sessions_ErrorResponse"
+            }
+          }
+        },
+        "description": "Payload Too Large"
+      },
+      "ServiceUnavailable": {
+        "content": {
+          "application/json": {
+            "example": {
+              "error": {
+                "code": "not_configured",
+                "message": "required feature is not configured"
+              }
+            },
+            "schema": {
+              "$ref": "#/components/schemas/meeting-sessions_ErrorResponse"
+            }
+          }
+        },
+        "description": "A required feature or dependency is not configured, authentication is unavailable, or (`assistant_lookup_unavailable`) the assistant could not be read to check its avatar."
+      },
+      "TooManyRequests": {
+        "content": {
+          "application/json": {
+            "example": {
+              "error": {
+                "code": "auth_overloaded",
+                "message": "authentication temporarily overloaded"
+              }
+            },
+            "schema": {
+              "$ref": "#/components/schemas/meeting-sessions_ErrorResponse"
+            }
+          }
+        },
+        "description": "Authentication is temporarily overloaded. Retry after the number of seconds in `Retry-After`.",
+        "headers": {
+          "Retry-After": {
+            "description": "Seconds to wait before retrying.",
+            "required": true,
+            "schema": {
+              "maximum": 5,
+              "minimum": 1,
+              "type": "integer"
+            }
+          }
+        }
+      },
+      "meeting-sessions_BadRequest": {
+        "content": {
+          "application/json": {
+            "example": {
+              "error": {
+                "code": "invalid_request",
+                "message": "request is invalid"
+              }
+            },
+            "schema": {
+              "$ref": "#/components/schemas/meeting-sessions_ErrorResponse"
+            }
+          }
+        },
+        "description": "Bad Request"
+      },
+      "meeting-sessions_Conflict": {
+        "content": {
+          "application/json": {
+            "example": {
+              "error": {
+                "code": "invalid_state",
+                "message": "only scheduled sessions can be updated"
+              }
+            },
+            "schema": {
+              "$ref": "#/components/schemas/meeting-sessions_ErrorResponse"
+            }
+          }
+        },
+        "description": "Conflict"
+      },
+      "meeting-sessions_InternalServerError": {
+        "content": {
+          "application/json": {
+            "example": {
+              "error": {
+                "code": "internal_error",
+                "message": "internal server error"
+              }
+            },
+            "schema": {
+              "$ref": "#/components/schemas/meeting-sessions_ErrorResponse"
+            }
+          }
+        },
+        "description": "Internal Server Error"
+      },
+      "meeting-sessions_NotFound": {
+        "content": {
+          "application/json": {
+            "example": {
+              "error": {
+                "code": "not_found",
+                "message": "meeting session not found"
+              }
+            },
+            "schema": {
+              "$ref": "#/components/schemas/meeting-sessions_ErrorResponse"
+            }
+          }
+        },
+        "description": "Not Found"
+      },
+      "meeting-sessions_Unauthorized": {
+        "content": {
+          "application/json": {
+            "example": {
+              "error": {
+                "code": "unauthorized",
+                "message": "invalid or missing credentials"
+              }
+            },
+            "schema": {
+              "$ref": "#/components/schemas/meeting-sessions_ErrorResponse"
+            }
+          }
+        },
+        "description": "Unauthorized. On api.telnyx.com, authentication is enforced by the API gateway before the request reaches the Meeting service, so a missing or invalid API key returns the standard Telnyx error envelope (`{\"errors\": [{\"code\": \"10009\", ...}]}`) rather than the single-`error` shape below."
+      },
+      "meeting-sessions_UnprocessableEntity": {
+        "content": {
+          "application/json": {
+            "example": {
+              "error": {
+                "code": "unsupported_capability",
+                "message": "avatar video is not supported on platform 'unknown'"
+              }
+            },
+            "schema": {
+              "$ref": "#/components/schemas/meeting-sessions_ErrorResponse"
+            }
+          }
+        },
+        "description": "Unprocessable Entity, including an unsupported capability"
+      }
+    },
+    "schemas": {
+      "ActionAcceptedResponse": {
+        "additionalProperties": false,
+        "example": {
+          "data": {
+            "accepted": true
+          }
+        },
+        "properties": {
+          "data": {
+            "additionalProperties": false,
+            "properties": {
+              "accepted": {
+                "const": true,
+                "type": "boolean"
+              }
+            },
+            "required": [
+              "accepted"
+            ],
+            "type": "object"
+          }
+        },
+        "required": [
+          "data"
+        ],
+        "type": "object"
+      },
+      "SendChatMeetingSessionRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "text": {
+            "description": "Chat message text to send in the meeting.",
+            "maxLength": 4000,
+            "minLength": 1,
+            "type": "string"
+          }
+        },
+        "required": [
+          "text"
+        ],
+        "title": "SendChatMeetingSessionRequest",
+        "type": "object"
+      },
+      "SpeakMeetingSessionRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "interrupt": {
+            "description": "If true, interrupt any currently playing audio to speak this text immediately.",
+            "type": "boolean"
+          },
+          "text": {
+            "description": "Text for the bot to speak.",
+            "maxLength": 4000,
+            "minLength": 1,
+            "type": "string"
+          },
+          "voice": {
+            "description": "Voice identifier to use for this utterance. When supplied, it overrides the session-default voice configured at creation; otherwise the speak action uses that session default.",
+            "maxLength": 100,
+            "minLength": 1,
+            "type": "string"
+          }
+        },
+        "required": [
+          "text"
+        ],
+        "title": "SpeakMeetingSessionRequest",
+        "type": "object"
+      },
+      "meeting-sessions_ErrorResponse": {
+        "additionalProperties": false,
+        "examples": [
+          {
+            "error": {
+              "code": "invalid_request",
+              "message": "webhook_url is disabled"
+            }
+          },
+          {
+            "error": {
+              "code": "not_found",
+              "message": "meeting session not found"
+            }
+          },
+          {
+            "error": {
+              "code": "unsupported_capability",
+              "message": "avatar video is not supported on platform 'unknown'"
+            }
+          },
+          {
+            "error": {
+              "code": "internal_error",
+              "message": "internal server error"
+            }
+          }
+        ],
+        "properties": {
+          "error": {
+            "additionalProperties": false,
+            "properties": {
+              "code": {
+                "type": "string"
+              },
+              "message": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "code",
+              "message"
+            ],
+            "type": "object"
+          }
+        },
+        "required": [
+          "error"
+        ],
+        "type": "object"
+      }
+    },
+    "securitySchemes": {
+      "BearerAuth": {
+        "bearerFormat": "API key",
+        "description": "Telnyx API key supplied as `Authorization: Bearer \u003ctoken\u003e`. In production, auth may be validated by the API gateway and forwarded via Telnyx auth headers.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "Payment": {
+        "description": "Machine Payment Protocol credential used on paid retries, sent as `Authorization: Payment ...`. Obtained by paying a challenge returned in the `WWW-Authenticate` header of a 402 response. This is not a Telnyx API key; initial challenge requests use standard bearer authentication instead.",
+        "in": "header",
+        "name": "Authorization",
+        "type": "apiKey"
+      },
+      "agent-memory_bearerAuth": {
+        "description": "Telnyx API key",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "bearerAuth": {
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "branded-calling_bearerAuth": {
+        "description": "Telnyx API key. Generate one at https://portal.telnyx.com/#/app/api-keys.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "collections_bearerAuth": {
+        "description": "Telnyx API key. Collections and results are automatically scoped to the authenticated user's organization.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "number-reputation_bearerAuth": {
+        "description": "Telnyx API key. Generate one at https://portal.telnyx.com/#/app/api-keys.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "oauthClientAuth": {
+        "description": "OAuth 2.0 authentication for Telnyx API and MCP integrations",
+        "flows": {
+          "authorizationCode": {
+            "authorizationUrl": "https://api.telnyx.com/v2/oauth/authorize",
+            "refreshUrl": "https://api.telnyx.com/v2/oauth/token",
+            "scopes": {
+              "admin": "Administrative access to Telnyx resources"
+            },
+            "tokenUrl": "https://api.telnyx.com/v2/oauth/token"
+          },
+          "clientCredentials": {
+            "scopes": {
+              "admin": "Administrative access to Telnyx resources"
+            },
+            "tokenUrl": "https://api.telnyx.com/v2/oauth/token"
+          }
+        },
+        "type": "oauth2"
+      },
+      "outbound-voice-profiles_bearerAuth": {
+        "bearerFormat": "JWT",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "pay-connectors_bearerAuth": {
+        "description": "Telnyx API key, not the processor bearer token.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "pronunciation-dicts_bearerAuth": {
+        "description": "Telnyx API v2 key. Obtain from https://portal.telnyx.com",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "rcs-registration_bearerAuth": {
+        "bearerFormat": "API key",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "stored-payment-transactions_bearerAuth": {
+        "bearerFormat": "JWT",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "telnyxApiKey": {
+        "description": "Management-only Telnyx account credential.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "transcriptions-search_bearerAuth": {
+        "description": "Telnyx API key. Results are automatically scoped to the authenticated user's organization.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "web-search_bearerAuth": {
+        "description": "Telnyx API key",
+        "scheme": "bearer",
+        "type": "http"
+      }
+    }
+  },
+  "info": {
+    "contact": {
+      "email": "support@telnyx.com"
+    },
+    "description": "SIP trunking, SMS, MMS, Call Control and Telephony Data Services.",
+    "title": "Telnyx API",
+    "version": "2.0.0",
+    "x-endpoint-cost": "light",
+    "x-latency-category": "responsive"
+  },
+  "openapi": "3.1.0",
+  "paths": {
+    "/meeting_sessions/{id}/actions/send_chat": {
+      "post": {
+        "description": "Sends a chat message into a meeting session.",
+        "operationId": "sendChatMeetingSession",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/MeetingSessionId"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "example": {
+                "text": "I will send the summary after this call."
+              },
+              "schema": {
+                "$ref": "#/components/schemas/SendChatMeetingSessionRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "202": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ActionAcceptedResponse"
+                }
+              }
+            },
+            "description": "The chat message was accepted and is being delivered."
+          },
+          "400": {
+            "$ref": "#/components/responses/meeting-sessions_BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/meeting-sessions_Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/meeting-sessions_NotFound"
+          },
+          "409": {
+            "$ref": "#/components/responses/meeting-sessions_Conflict"
+          },
+          "413": {
+            "$ref": "#/components/responses/PayloadTooLarge"
+          },
+          "422": {
+            "$ref": "#/components/responses/meeting-sessions_UnprocessableEntity"
+          },
+          "429": {
+            "$ref": "#/components/responses/TooManyRequests"
+          },
+          "500": {
+            "$ref": "#/components/responses/meeting-sessions_InternalServerError"
+          },
+          "502": {
+            "$ref": "#/components/responses/MeetingSendChatProviderError"
+          },
+          "503": {
+            "$ref": "#/components/responses/ServiceUnavailable"
+          }
+        },
+        "summary": "Send chat in a meeting session",
+        "tags": [
+          "Meeting Session Actions"
+        ]
+      }
+    },
+    "/meeting_sessions/{id}/actions/speak": {
+      "post": {
+        "description": "Sends audio / text-to-speech into a meeting session. With a Telnyx AI Assistant attached, the bot is a webpage-output bot: the speak audio routes through the assistant's output page rather than the bot mic and plays once the assistant is connected -- it is not refused. If that page cannot be reached, delivery fails with the 502 below, which may arrive without an error envelope, so branch on the status code before parsing a body. The assistant is designed to own the conversation, so prefer letting it speak or use `send_chat`. With a digital avatar (`assistant.avatar: true`), speak is refused with 409 `invalid_state` (message prefix `avatar_requires_assistant_speech:`): the avatar renders only the assistant's own speech.",
+        "operationId": "speakMeetingSession",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/MeetingSessionId"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "example": {
+                "interrupt": false,
+                "text": "Here are the three decisions from this call."
+              },
+              "schema": {
+                "$ref": "#/components/schemas/SpeakMeetingSessionRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "202": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ActionAcceptedResponse"
+                }
+              }
+            },
+            "description": "The speak action was accepted and is being processed."
+          },
+          "400": {
+            "$ref": "#/components/responses/meeting-sessions_BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/meeting-sessions_Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/meeting-sessions_NotFound"
+          },
+          "409": {
+            "$ref": "#/components/responses/meeting-sessions_Conflict"
+          },
+          "413": {
+            "$ref": "#/components/responses/PayloadTooLarge"
+          },
+          "422": {
+            "$ref": "#/components/responses/meeting-sessions_UnprocessableEntity"
+          },
+          "429": {
+            "$ref": "#/components/responses/TooManyRequests"
+          },
+          "500": {
+            "$ref": "#/components/responses/meeting-sessions_InternalServerError"
+          },
+          "502": {
+            "$ref": "#/components/responses/MeetingSpeakUpstreamError"
+          },
+          "503": {
+            "$ref": "#/components/responses/ServiceUnavailable"
+          }
+        },
+        "summary": "Speak in a meeting session",
+        "tags": [
+          "Meeting Session Actions"
+        ]
+      }
+    },
+    "/meeting_sessions/{id}/actions/stop_speaking": {
+      "post": {
+        "description": "Stops any active text-to-speech playback in a meeting session. Sessions with a digital avatar (`assistant.avatar: true`) return 409 `invalid_state` (message prefix `avatar_requires_assistant_speech:`): the avatar renders only the assistant's own speech.",
+        "operationId": "stopSpeakingMeetingSession",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/MeetingSessionId"
+          }
+        ],
+        "responses": {
+          "202": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ActionAcceptedResponse"
+                }
+              }
+            },
+            "description": "The stop-speaking action was accepted."
+          },
+          "401": {
+            "$ref": "#/components/responses/meeting-sessions_Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/meeting-sessions_NotFound"
+          },
+          "409": {
+            "$ref": "#/components/responses/meeting-sessions_Conflict"
+          },
+          "422": {
+            "$ref": "#/components/responses/meeting-sessions_UnprocessableEntity"
+          },
+          "429": {
+            "$ref": "#/components/responses/TooManyRequests"
+          },
+          "500": {
+            "$ref": "#/components/responses/meeting-sessions_InternalServerError"
+          },
+          "502": {
+            "$ref": "#/components/responses/MeetingStopSpeakingProviderError"
+          },
+          "503": {
+            "$ref": "#/components/responses/ServiceUnavailable"
+          }
+        },
+        "summary": "Stop speaking in a meeting session",
+        "tags": [
+          "Meeting Session Actions"
+        ]
+      }
+    }
+  },
+  "security": [
+    {
+      "bearerAuth": []
+    }
+  ],
+  "servers": [
+    {
+      "description": "Version 2.0.0 of the Telnyx API",
+      "url": "https://api.telnyx.com/v2"
+    }
+  ]
+}

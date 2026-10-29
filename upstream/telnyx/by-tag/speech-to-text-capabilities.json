@@ -1,0 +1,391 @@
+{
+  "components": {
+    "responses": {
+      "speech-to-text_UnprocessableEntityResponse": {
+        "content": {
+          "application/json": {
+            "examples": {
+              "missing_required_parameter": {
+                "summary": "Missing required parameter",
+                "value": {
+                  "errors": [
+                    {
+                      "code": "10004",
+                      "detail": "The 'transcription_engine' parameter is required and cannot be blank.",
+                      "source": {
+                        "pointer": "/transcription_engine"
+                      },
+                      "title": "Missing required parameter"
+                    }
+                  ]
+                }
+              }
+            },
+            "schema": {
+              "$ref": "#/components/schemas/speech-to-text_Errors"
+            }
+          }
+        },
+        "description": "Unprocessable entity. The request was well-formed but could not be processed due to semantic errors. This includes validation errors, invalid parameter values and business logic violations."
+      }
+    },
+    "schemas": {
+      "STTProvider": {
+        "description": "A (provider, model) tuple along with the service surfaces it supports. Each entry in `service_types` describes one surface and the languages accepted on it.",
+        "properties": {
+          "hosted": {
+            "description": "Whether this model runs on Telnyx-hosted infrastructure (`true`) or is provided by a third-party vendor (`false`).",
+            "type": "boolean"
+          },
+          "model": {
+            "description": "Provider-scoped model name.",
+            "example": "deepgram/nova-3",
+            "type": "string"
+          },
+          "provider": {
+            "description": "STT provider name.",
+            "example": "deepgram",
+            "type": "string"
+          },
+          "service_types": {
+            "description": "Service surfaces this (provider, model) supports. When the request filters by `service_type`, only the matching nested entry is returned for each matching model.",
+            "items": {
+              "$ref": "#/components/schemas/STTProviderServiceType"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "provider",
+          "model",
+          "hosted",
+          "service_types"
+        ],
+        "type": "object"
+      },
+      "STTProviderServiceType": {
+        "description": "A supported service surface for a given (provider, model), along with the language codes accepted on that surface. Language support can differ per surface — for example, a model may accept a narrower language set for streaming than for file transcription.",
+        "properties": {
+          "languages": {
+            "description": "Languages accepted on this service surface, in the provider's native code format. `auto` indicates the provider performs language detection.",
+            "example": [
+              "en",
+              "es",
+              "fr"
+            ],
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "type": {
+            "$ref": "#/components/schemas/STTServiceType"
+          }
+        },
+        "required": [
+          "type",
+          "languages"
+        ],
+        "type": "object"
+      },
+      "STTProvidersMeta": {
+        "properties": {
+          "total": {
+            "description": "Total number of entries returned.",
+            "example": 12,
+            "type": "integer"
+          }
+        },
+        "required": [
+          "total"
+        ],
+        "type": "object"
+      },
+      "STTProvidersResponse": {
+        "description": "List of supported STT providers and models.",
+        "properties": {
+          "data": {
+            "items": {
+              "$ref": "#/components/schemas/STTProvider"
+            },
+            "type": "array"
+          },
+          "meta": {
+            "$ref": "#/components/schemas/STTProvidersMeta"
+          }
+        },
+        "required": [
+          "data",
+          "meta"
+        ],
+        "type": "object"
+      },
+      "STTServiceType": {
+        "description": "Service surface a model is available on. `ai_assistant` is the STT surface configured via Call Control voice-assistant transcription; it covers both live-streaming and non-streaming/batch models (matching the `TranscriptionConfig.model` enum on `call-control` voice assistants).",
+        "enum": [
+          "streaming",
+          "file_based",
+          "in_call",
+          "ai_assistant"
+        ],
+        "type": "string"
+      },
+      "speech-to-text_Error": {
+        "properties": {
+          "code": {
+            "format": "integer",
+            "type": "string"
+          },
+          "detail": {
+            "type": "string"
+          },
+          "meta": {
+            "type": "object"
+          },
+          "source": {
+            "properties": {
+              "parameter": {
+                "description": "Indicates which query parameter caused the error.",
+                "type": "string"
+              },
+              "pointer": {
+                "description": "JSON pointer (RFC6901) to the offending entity.",
+                "format": "json-pointer",
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
+          "title": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "title"
+        ]
+      },
+      "speech-to-text_Errors": {
+        "properties": {
+          "errors": {
+            "items": {
+              "$ref": "#/components/schemas/speech-to-text_Error"
+            },
+            "type": "array"
+          }
+        }
+      }
+    },
+    "securitySchemes": {
+      "BearerAuth": {
+        "bearerFormat": "API key",
+        "description": "Telnyx API key supplied as `Authorization: Bearer \u003ctoken\u003e`. In production, auth may be validated by the API gateway and forwarded via Telnyx auth headers.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "Payment": {
+        "description": "Machine Payment Protocol credential used on paid retries, sent as `Authorization: Payment ...`. Obtained by paying a challenge returned in the `WWW-Authenticate` header of a 402 response. This is not a Telnyx API key; initial challenge requests use standard bearer authentication instead.",
+        "in": "header",
+        "name": "Authorization",
+        "type": "apiKey"
+      },
+      "agent-memory_bearerAuth": {
+        "description": "Telnyx API key",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "bearerAuth": {
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "branded-calling_bearerAuth": {
+        "description": "Telnyx API key. Generate one at https://portal.telnyx.com/#/app/api-keys.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "collections_bearerAuth": {
+        "description": "Telnyx API key. Collections and results are automatically scoped to the authenticated user's organization.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "number-reputation_bearerAuth": {
+        "description": "Telnyx API key. Generate one at https://portal.telnyx.com/#/app/api-keys.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "oauthClientAuth": {
+        "description": "OAuth 2.0 authentication for Telnyx API and MCP integrations",
+        "flows": {
+          "authorizationCode": {
+            "authorizationUrl": "https://api.telnyx.com/v2/oauth/authorize",
+            "refreshUrl": "https://api.telnyx.com/v2/oauth/token",
+            "scopes": {
+              "admin": "Administrative access to Telnyx resources"
+            },
+            "tokenUrl": "https://api.telnyx.com/v2/oauth/token"
+          },
+          "clientCredentials": {
+            "scopes": {
+              "admin": "Administrative access to Telnyx resources"
+            },
+            "tokenUrl": "https://api.telnyx.com/v2/oauth/token"
+          }
+        },
+        "type": "oauth2"
+      },
+      "outbound-voice-profiles_bearerAuth": {
+        "bearerFormat": "JWT",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "pay-connectors_bearerAuth": {
+        "description": "Telnyx API key, not the processor bearer token.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "pronunciation-dicts_bearerAuth": {
+        "description": "Telnyx API v2 key. Obtain from https://portal.telnyx.com",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "rcs-registration_bearerAuth": {
+        "bearerFormat": "API key",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "stored-payment-transactions_bearerAuth": {
+        "bearerFormat": "JWT",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "telnyxApiKey": {
+        "description": "Management-only Telnyx account credential.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "transcriptions-search_bearerAuth": {
+        "description": "Telnyx API key. Results are automatically scoped to the authenticated user's organization.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "web-search_bearerAuth": {
+        "description": "Telnyx API key",
+        "scheme": "bearer",
+        "type": "http"
+      }
+    }
+  },
+  "info": {
+    "contact": {
+      "email": "support@telnyx.com"
+    },
+    "description": "SIP trunking, SMS, MMS, Call Control and Telephony Data Services.",
+    "title": "Telnyx API",
+    "version": "2.0.0",
+    "x-endpoint-cost": "light",
+    "x-latency-category": "responsive"
+  },
+  "openapi": "3.1.0",
+  "paths": {
+    "/speech-to-text/providers": {
+      "get": {
+        "description": "Retrieve the canonical list of supported speech-to-text providers, models, accepted language codes, and the service types each model supports.\n\nService types:\n  * `streaming` — standalone WebSocket transcription via `/speech-to-text/transcription`.\n  * `file_based` — file-based transcription via `/ai/audio/transcriptions`.\n  * `in_call` — live call transcription via Call Control `transcription_start`.\n  * `ai_assistant` — STT configured on a Call Control AI Assistant via voice-assistant `TranscriptionConfig` (covers both live-streaming and non-streaming/batch models).\n\nUse this endpoint to discover which (provider, model) combinations are available for the surface you need, and which language codes each accepts. `auto` in a `languages` array indicates the provider performs language detection.",
+        "operationId": "listSttProviders",
+        "parameters": [
+          {
+            "description": "Filter to entries that support the given service type. For backward compatibility with the values that briefly shipped before the product-aligned rename, the legacy aliases `file_transcription`, `in_call_transcription`, and `ai_assistant_transcription` are silently accepted and normalized to `file_based`, `in_call`, and `ai_assistant` respectively. The response always emits the canonical (post-rename) values.",
+            "in": "query",
+            "name": "service_type",
+            "required": false,
+            "schema": {
+              "$ref": "#/components/schemas/STTServiceType"
+            }
+          },
+          {
+            "description": "Filter to entries for a specific STT provider. The enum mirrors the providers advertised across the speech-to-text spec (including `google` and `telnyx`, which are accepted as WebSocket transcription engines). A provider that has no models currently registered for any service type will return an empty `data` array rather than an error.",
+            "in": "query",
+            "name": "provider",
+            "required": false,
+            "schema": {
+              "enum": [
+                "deepgram",
+                "speechmatics",
+                "assemblyai",
+                "xai",
+                "soniox",
+                "parakeet",
+                "humain",
+                "reson8",
+                "cohere",
+                "azure",
+                "openai",
+                "google",
+                "telnyx"
+              ],
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/STTProvidersResponse"
+                }
+              }
+            },
+            "description": "List of supported STT providers and models."
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "errors": [
+                    {
+                      "code": "10015",
+                      "detail": "The request failed because it was not well-formed.",
+                      "title": "Bad Request"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/speech-to-text_Errors"
+                }
+              }
+            },
+            "description": "Bad request — invalid filter value."
+          },
+          "401": {
+            "description": "Authentication failed — missing or invalid API key."
+          },
+          "422": {
+            "$ref": "#/components/responses/speech-to-text_UnprocessableEntityResponse"
+          }
+        },
+        "servers": [
+          {
+            "description": "Telnyx API v2",
+            "url": "https://api.telnyx.com/v2"
+          }
+        ],
+        "summary": "List supported STT providers",
+        "tags": [
+          "Speech To Text Capabilities"
+        ],
+        "x-latency-category": "responsive"
+      }
+    }
+  },
+  "security": [
+    {
+      "bearerAuth": []
+    }
+  ],
+  "servers": [
+    {
+      "description": "Version 2.0.0 of the Telnyx API",
+      "url": "https://api.telnyx.com/v2"
+    }
+  ]
+}

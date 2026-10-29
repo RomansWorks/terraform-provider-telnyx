@@ -1,0 +1,1235 @@
+{
+  "components": {
+    "parameters": {
+      "PageConsolidated": {
+        "description": "Consolidated page parameter (deepObject style). Originally: page[number], page[size]",
+        "explode": true,
+        "in": "query",
+        "name": "page",
+        "schema": {
+          "properties": {
+            "number": {
+              "default": 1,
+              "description": "The page number to load",
+              "minimum": 1,
+              "type": "integer"
+            },
+            "size": {
+              "default": 20,
+              "description": "The size of the page",
+              "maximum": 250,
+              "minimum": 1,
+              "type": "integer"
+            }
+          },
+          "type": "object"
+        },
+        "style": "deepObject"
+      },
+      "ResourceId": {
+        "description": "Identifies the resource.",
+        "in": "path",
+        "name": "id",
+        "required": true,
+        "schema": {
+          "example": "6a09cdc3-8948-47f0-aa62-74ac943d6c58",
+          "format": "uuid",
+          "type": "string"
+        }
+      }
+    },
+    "responses": {
+      "GenericErrorResponse": {
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Errors"
+            }
+          }
+        },
+        "description": "Unexpected error"
+      },
+      "netapps_GenericErrorResponse": {
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/netapps_Errors"
+            }
+          }
+        },
+        "description": "Unexpected error"
+      },
+      "netapps_UnprocessableEntity_17904fcfbc": {
+        "content": {
+          "application/json": {
+            "example": {
+              "errors": [
+                {
+                  "code": "10027",
+                  "detail": "The server understood the syntax of the request but was unable to process the instructions.",
+                  "title": "Unprocessable Entity"
+                }
+              ]
+            },
+            "schema": {
+              "$ref": "#/components/schemas/Errors"
+            }
+          }
+        },
+        "description": "Unprocessable entity. Check the 'detail' field in response for details."
+      }
+    },
+    "schemas": {
+      "Error": {
+        "example": {
+          "code": "20207",
+          "description": "The street address provided is invalid.",
+          "source": {
+            "pointer": "/street_address"
+          },
+          "title": "Invalid street address"
+        },
+        "properties": {
+          "code": {
+            "type": "string",
+            "x-format": "int64"
+          },
+          "description": {
+            "type": "string"
+          },
+          "detail": {
+            "description": "A human-readable explanation of the error.",
+            "type": "string"
+          },
+          "meta": {
+            "additionalProperties": true,
+            "type": "object"
+          },
+          "source": {
+            "properties": {
+              "parameter": {
+                "description": "Indicates which query parameter caused the error.",
+                "type": "string"
+              },
+              "pointer": {
+                "description": "JSON pointer (RFC6901) to the offending entity.",
+                "format": "json-pointer",
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
+          "title": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "title"
+        ],
+        "type": "object"
+      },
+      "Errors": {
+        "properties": {
+          "errors": {
+            "items": {
+              "$ref": "#/components/schemas/Error"
+            },
+            "type": "array"
+          }
+        },
+        "type": "object"
+      },
+      "Interface": {
+        "properties": {
+          "name": {
+            "description": "A user specified name for the interface.",
+            "example": "test interface",
+            "type": "string"
+          },
+          "network_id": {
+            "description": "The id of the network associated with the interface.",
+            "example": "6a09cdc3-8948-47f0-aa62-74ac943d6c58",
+            "format": "uuid",
+            "type": "string"
+          },
+          "status": {
+            "$ref": "#/components/schemas/InterfaceStatus"
+          }
+        },
+        "type": "object"
+      },
+      "InterfaceStatus": {
+        "description": "The current status of the interface deployment.",
+        "enum": [
+          "created",
+          "provisioning",
+          "provisioned",
+          "deleting"
+        ],
+        "example": "provisioned",
+        "readOnly": true,
+        "type": "string"
+      },
+      "PaginationMeta": {
+        "properties": {
+          "page_number": {
+            "example": 2,
+            "type": "integer"
+          },
+          "page_size": {
+            "example": 25,
+            "type": "integer"
+          },
+          "total_pages": {
+            "example": 3,
+            "type": "integer"
+          },
+          "total_results": {
+            "example": 55,
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "Record": {
+        "properties": {
+          "created_at": {
+            "description": "ISO 8601 formatted date-time indicating when the resource was created.",
+            "example": "2018-02-02T22:25:27.521Z",
+            "readOnly": true,
+            "type": "string"
+          },
+          "id": {
+            "description": "Identifies the resource.",
+            "example": "6a09cdc3-8948-47f0-aa62-74ac943d6c58",
+            "format": "uuid",
+            "readOnly": true,
+            "type": "string"
+          },
+          "record_type": {
+            "description": "Identifies the type of the resource.",
+            "example": "sample_record_type",
+            "readOnly": true,
+            "type": "string"
+          },
+          "updated_at": {
+            "description": "ISO 8601 formatted date-time indicating when the resource was updated.",
+            "example": "2018-02-02T22:25:27.521Z",
+            "readOnly": true,
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "RegionIn": {
+        "properties": {
+          "region_code": {
+            "description": "The region the interface should be deployed to.",
+            "example": "ashburn-va",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "RegionOut": {
+        "properties": {
+          "region": {
+            "properties": {
+              "code": {
+                "description": "Region code of the interface.",
+                "example": "ashburn-va",
+                "type": "string"
+              },
+              "name": {
+                "description": "Region name of the interface.",
+                "example": "Ashburn",
+                "type": "string"
+              },
+              "record_type": {
+                "description": "Identifies the type of the resource.",
+                "example": "region",
+                "readOnly": true,
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
+          "region_code": {
+            "description": "The region interface is deployed to.",
+            "example": "ashburn-va",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "VirtualCrossConnect": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/Record"
+          },
+          {
+            "$ref": "#/components/schemas/Interface"
+          },
+          {
+            "properties": {
+              "bandwidth_mbps": {
+                "description": "The desired throughput in Megabits per Second (Mbps) for your Virtual Cross Connect.\u003cbr /\u003e\u003cbr /\u003eThe available bandwidths can be found using the /virtual_cross_connect_regions endpoint.",
+                "example": 50,
+                "type": "number"
+              },
+              "bgp_asn": {
+                "description": "The Border Gateway Protocol (BGP) Autonomous System Number (ASN). If null, value will be assigned by Telnyx.",
+                "example": 1234,
+                "type": "number"
+              },
+              "cloud_provider": {
+                "description": "The Virtual Private Cloud with which you would like to establish a cross connect.",
+                "enum": [
+                  "aws",
+                  "azure",
+                  "gce"
+                ],
+                "example": "aws",
+                "type": "string"
+              },
+              "cloud_provider_region": {
+                "description": "The region where your Virtual Private Cloud hosts are located.\u003cbr /\u003e\u003cbr /\u003eThe available regions can be found using the /virtual_cross_connect_regions endpoint.",
+                "example": "us-east-1",
+                "type": "string"
+              },
+              "primary_bgp_key": {
+                "description": "The authentication key for BGP peer configuration.",
+                "example": "yFV4wEPtPVPfDUGLWiyQzwga",
+                "type": "string"
+              },
+              "primary_cloud_account_id": {
+                "description": "The identifier for your Virtual Private Cloud. The number will be different based upon your Cloud provider.",
+                "example": "123456789012",
+                "type": "string"
+              },
+              "primary_cloud_ip": {
+                "description": "The IP address assigned for your side of the Virtual Cross Connect.\u003cbr /\u003e\u003cbr /\u003eIf none is provided, one will be generated for you.\u003cbr /\u003e\u003cbr /\u003eThis value should be null for GCE as Google will only inform you of your assigned IP once the connection has been accepted.",
+                "example": "169.254.0.2",
+                "type": "string"
+              },
+              "primary_enabled": {
+                "description": "Indicates whether the primary circuit is enabled. Setting this to `false` will disable the circuit.",
+                "example": true,
+                "readOnly": true,
+                "type": "boolean"
+              },
+              "primary_telnyx_ip": {
+                "description": "The IP address assigned to the Telnyx side of the Virtual Cross Connect.\u003cbr /\u003e\u003cbr /\u003eIf none is provided, one will be generated for you.\u003cbr /\u003e\u003cbr /\u003eThis value should be null for GCE as Google will only inform you of your assigned IP once the connection has been accepted.",
+                "example": "169.254.0.1",
+                "type": "string"
+              },
+              "record_type": {
+                "description": "Identifies the type of the resource.",
+                "example": "virtual_cross_connect",
+                "readOnly": true,
+                "type": "string"
+              },
+              "secondary_bgp_key": {
+                "description": "The authentication key for BGP peer configuration.",
+                "example": "ge1lONeK9RcA83uuWaw9DvZy",
+                "type": "string"
+              },
+              "secondary_cloud_account_id": {
+                "description": "The identifier for your Virtual Private Cloud. The number will be different based upon your Cloud provider.\u003cbr /\u003e\u003cbr /\u003eThis attribute is only necessary for GCE.",
+                "example": "",
+                "type": "string"
+              },
+              "secondary_cloud_ip": {
+                "description": "The IP address assigned for your side of the Virtual Cross Connect.\u003cbr /\u003e\u003cbr /\u003eIf none is provided, one will be generated for you.\u003cbr /\u003e\u003cbr /\u003eThis value should be null for GCE as Google will only inform you of your assigned IP once the connection has been accepted.",
+                "example": "169.254.0.4",
+                "type": "string"
+              },
+              "secondary_enabled": {
+                "description": "Indicates whether the secondary circuit is enabled. Setting this to `false` will disable the circuit.",
+                "example": true,
+                "readOnly": true,
+                "type": "boolean"
+              },
+              "secondary_telnyx_ip": {
+                "description": "The IP address assigned to the Telnyx side of the Virtual Cross Connect.\u003cbr /\u003e\u003cbr /\u003eIf none is provided, one will be generated for you.\u003cbr /\u003e\u003cbr /\u003eThis value should be null for GCE as Google will only inform you of your assigned IP once the connection has been accepted.",
+                "example": "169.254.0.3",
+                "type": "string"
+              }
+            },
+            "title": "VirtualCrossConnect",
+            "type": "object"
+          }
+        ]
+      },
+      "VirtualCrossConnectCombined": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/VirtualCrossConnectCreate"
+          },
+          {
+            "$ref": "#/components/schemas/VirtualCrossConnectPatch"
+          },
+          {
+            "$ref": "#/components/schemas/RegionOut"
+          }
+        ]
+      },
+      "VirtualCrossConnectCoverage": {
+        "allOf": [
+          {
+            "properties": {
+              "available_bandwidth": {
+                "description": "The available throughput in Megabits per Second (Mbps) for your Virtual Cross Connect.",
+                "example": [
+                  50,
+                  100,
+                  200,
+                  500
+                ],
+                "items": {
+                  "type": "number"
+                },
+                "type": "array"
+              },
+              "cloud_provider": {
+                "description": "The Virtual Private Cloud with which you would like to establish a cross connect.",
+                "enum": [
+                  "aws",
+                  "azure",
+                  "gce"
+                ],
+                "example": "aws",
+                "type": "string"
+              },
+              "cloud_provider_region": {
+                "description": "The region where your Virtual Private Cloud hosts are located. Should be identical to how the cloud provider names region, i.e. us-east-1 for AWS but Frankfurt for Azure",
+                "example": "us-east-1",
+                "type": "string"
+              },
+              "location": {
+                "$ref": "#/components/schemas/netapps_Location"
+              },
+              "record_type": {
+                "description": "Identifies the type of the resource.",
+                "example": "virtual_cross_connects_coverage",
+                "readOnly": true,
+                "type": "string"
+              }
+            },
+            "title": "VirtualCrossConnectCoverage",
+            "type": "object"
+          }
+        ]
+      },
+      "VirtualCrossConnectCreate": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/VirtualCrossConnect"
+          },
+          {
+            "$ref": "#/components/schemas/RegionIn"
+          },
+          {
+            "required": [
+              "network_id",
+              "region_code",
+              "cloud_provider",
+              "cloud_provider_region",
+              "bgp_asn",
+              "primary_cloud_account_id"
+            ],
+            "title": "VirtualCrossConnectCreate",
+            "type": "object"
+          }
+        ]
+      },
+      "VirtualCrossConnectPatch": {
+        "allOf": [
+          {
+            "properties": {
+              "primary_cloud_ip": {
+                "description": "The IP address assigned for your side of the Virtual Cross Connect.\u003cbr /\u003e\u003cbr /\u003eIf none is provided, one will be generated for you.\u003cbr /\u003e\u003cbr /\u003eThis value can not be patched once the VXC has bene provisioned.",
+                "example": "169.254.0.2",
+                "type": "string"
+              },
+              "primary_enabled": {
+                "description": "Indicates whether the primary circuit is enabled. Setting this to `false` will disable the circuit.",
+                "example": true,
+                "type": "boolean"
+              },
+              "primary_routing_announcement": {
+                "description": "Whether the primary BGP route is being announced.",
+                "example": false,
+                "type": "boolean"
+              },
+              "secondary_cloud_ip": {
+                "description": "The IP address assigned for your side of the Virtual Cross Connect.\u003cbr /\u003e\u003cbr /\u003eIf none is provided, one will be generated for you.\u003cbr /\u003e\u003cbr /\u003eThis value can not be patched once the VXC has bene provisioned.",
+                "example": "169.254.0.4",
+                "type": "string"
+              },
+              "secondary_enabled": {
+                "description": "Indicates whether the secondary circuit is enabled. Setting this to `false` will disable the circuit.",
+                "example": true,
+                "type": "boolean"
+              },
+              "secondary_routing_announcement": {
+                "description": "Whether the secondary BGP route is being announced.",
+                "example": false,
+                "type": "boolean"
+              }
+            },
+            "title": "VirtualCrossConnectPatch",
+            "type": "object"
+          }
+        ]
+      },
+      "netapps_Error": {
+        "properties": {
+          "code": {
+            "type": "string"
+          },
+          "detail": {
+            "type": "string"
+          },
+          "meta": {
+            "additionalProperties": true,
+            "type": "object"
+          },
+          "source": {
+            "properties": {
+              "parameter": {
+                "description": "Indicates which query parameter caused the error.",
+                "type": "string"
+              },
+              "pointer": {
+                "description": "JSON pointer (RFC6901) to the offending entity.",
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
+          "title": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "title"
+        ],
+        "type": "object"
+      },
+      "netapps_Errors": {
+        "properties": {
+          "errors": {
+            "items": {
+              "$ref": "#/components/schemas/netapps_Error"
+            },
+            "type": "array"
+          }
+        },
+        "type": "object"
+      },
+      "netapps_Location": {
+        "properties": {
+          "code": {
+            "description": "Location code.",
+            "example": "chicago-il",
+            "type": "string"
+          },
+          "name": {
+            "description": "Human readable name of location.",
+            "example": "Chicago IL, US",
+            "type": "string"
+          },
+          "pop": {
+            "description": "Point of presence of location.",
+            "example": "CH1",
+            "type": "string"
+          },
+          "region": {
+            "description": "Identifies the geographical region of location.",
+            "example": "AMER",
+            "type": "string"
+          },
+          "site": {
+            "description": "Site of location.",
+            "example": "ORD",
+            "type": "string"
+          }
+        },
+        "title": "Location",
+        "type": "object"
+      },
+      "netapps_Location_17904fcfbc": {
+        "properties": {
+          "code": {
+            "description": "Location code.",
+            "example": "chicago-il",
+            "type": "string"
+          },
+          "name": {
+            "description": "Human readable name of location.",
+            "example": "Chicago IL, US",
+            "type": "string"
+          },
+          "pop": {
+            "description": "Point of presence of location.",
+            "example": "CH1",
+            "type": "string"
+          },
+          "region": {
+            "description": "Identifies the geographical region of location.",
+            "example": "AMER",
+            "type": "string"
+          },
+          "site": {
+            "description": "Site of location.",
+            "example": "ORD",
+            "type": "string"
+          }
+        },
+        "title": "Location",
+        "type": "object"
+      },
+      "netapps_VirtualCrossConnectCoverage": {
+        "allOf": [
+          {
+            "properties": {
+              "available_bandwidth": {
+                "description": "The available throughput in Megabits per Second (Mbps) for your Virtual Cross Connect.",
+                "example": [
+                  50,
+                  100,
+                  200,
+                  500
+                ],
+                "items": {
+                  "type": "number"
+                },
+                "type": "array"
+              },
+              "cloud_provider": {
+                "description": "The Virtual Private Cloud with which you would like to establish a cross connect.",
+                "enum": [
+                  "aws",
+                  "azure",
+                  "gce"
+                ],
+                "example": "aws",
+                "type": "string"
+              },
+              "cloud_provider_region": {
+                "description": "The region where your Virtual Private Cloud hosts are located. Should be identical to how the cloud provider names region, i.e. us-east-1 for AWS but Frankfurt for Azure",
+                "example": "us-east-1",
+                "type": "string"
+              },
+              "location": {
+                "$ref": "#/components/schemas/netapps_Location_17904fcfbc"
+              },
+              "record_type": {
+                "description": "Identifies the type of the resource.",
+                "example": "virtual_cross_connects_coverage",
+                "readOnly": true,
+                "type": "string"
+              }
+            },
+            "title": "VirtualCrossConnectCoverage",
+            "type": "object"
+          }
+        ]
+      }
+    },
+    "securitySchemes": {
+      "BearerAuth": {
+        "bearerFormat": "API key",
+        "description": "Telnyx API key supplied as `Authorization: Bearer \u003ctoken\u003e`. In production, auth may be validated by the API gateway and forwarded via Telnyx auth headers.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "Payment": {
+        "description": "Machine Payment Protocol credential used on paid retries, sent as `Authorization: Payment ...`. Obtained by paying a challenge returned in the `WWW-Authenticate` header of a 402 response. This is not a Telnyx API key; initial challenge requests use standard bearer authentication instead.",
+        "in": "header",
+        "name": "Authorization",
+        "type": "apiKey"
+      },
+      "agent-memory_bearerAuth": {
+        "description": "Telnyx API key",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "bearerAuth": {
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "branded-calling_bearerAuth": {
+        "description": "Telnyx API key. Generate one at https://portal.telnyx.com/#/app/api-keys.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "collections_bearerAuth": {
+        "description": "Telnyx API key. Collections and results are automatically scoped to the authenticated user's organization.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "number-reputation_bearerAuth": {
+        "description": "Telnyx API key. Generate one at https://portal.telnyx.com/#/app/api-keys.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "oauthClientAuth": {
+        "description": "OAuth 2.0 authentication for Telnyx API and MCP integrations",
+        "flows": {
+          "authorizationCode": {
+            "authorizationUrl": "https://api.telnyx.com/v2/oauth/authorize",
+            "refreshUrl": "https://api.telnyx.com/v2/oauth/token",
+            "scopes": {
+              "admin": "Administrative access to Telnyx resources"
+            },
+            "tokenUrl": "https://api.telnyx.com/v2/oauth/token"
+          },
+          "clientCredentials": {
+            "scopes": {
+              "admin": "Administrative access to Telnyx resources"
+            },
+            "tokenUrl": "https://api.telnyx.com/v2/oauth/token"
+          }
+        },
+        "type": "oauth2"
+      },
+      "outbound-voice-profiles_bearerAuth": {
+        "bearerFormat": "JWT",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "pay-connectors_bearerAuth": {
+        "description": "Telnyx API key, not the processor bearer token.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "pronunciation-dicts_bearerAuth": {
+        "description": "Telnyx API v2 key. Obtain from https://portal.telnyx.com",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "rcs-registration_bearerAuth": {
+        "bearerFormat": "API key",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "stored-payment-transactions_bearerAuth": {
+        "bearerFormat": "JWT",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "telnyxApiKey": {
+        "description": "Management-only Telnyx account credential.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "transcriptions-search_bearerAuth": {
+        "description": "Telnyx API key. Results are automatically scoped to the authenticated user's organization.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "web-search_bearerAuth": {
+        "description": "Telnyx API key",
+        "scheme": "bearer",
+        "type": "http"
+      }
+    }
+  },
+  "info": {
+    "contact": {
+      "email": "support@telnyx.com"
+    },
+    "description": "SIP trunking, SMS, MMS, Call Control and Telephony Data Services.",
+    "title": "Telnyx API",
+    "version": "2.0.0",
+    "x-endpoint-cost": "light",
+    "x-latency-category": "responsive"
+  },
+  "openapi": "3.1.0",
+  "paths": {
+    "/virtual_cross_connects": {
+      "get": {
+        "description": "Returns a paginated list of the virtual cross connects on your account, with support for filtering.",
+        "operationId": "ListVirtualCrossConnects",
+        "parameters": [
+          {
+            "description": "Consolidated filter parameter (deepObject style). Originally: filter[network_id]",
+            "explode": true,
+            "in": "query",
+            "name": "filter",
+            "schema": {
+              "properties": {
+                "network_id": {
+                  "description": "The associated network id to filter on.",
+                  "example": "6a09cdc3-8948-47f0-aa62-74ac943d6c58",
+                  "type": "string"
+                }
+              },
+              "type": "object"
+            },
+            "style": "deepObject"
+          },
+          {
+            "$ref": "#/components/parameters/PageConsolidated"
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "items": {
+                        "$ref": "#/components/schemas/VirtualCrossConnectCombined"
+                      },
+                      "type": "array"
+                    },
+                    "meta": {
+                      "$ref": "#/components/schemas/PaginationMeta"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful response"
+          },
+          "422": {
+            "$ref": "#/components/responses/GenericErrorResponse"
+          },
+          "default": {
+            "$ref": "#/components/responses/GenericErrorResponse"
+          }
+        },
+        "summary": "List all Virtual Cross Connects",
+        "tags": [
+          "Virtual Cross Connects"
+        ]
+      },
+      "post": {
+        "description": "Create a new Virtual Cross Connect.\u003cbr /\u003e\u003cbr /\u003eFor AWS and GCE, you have the option of creating the primary connection first and the secondary connection later. You also have the option of disabling the primary and/or secondary connections at any time and later re-enabling them. With Azure, you do not have this option. Azure requires both the primary and secondary connections to be created at the same time and they can not be independantly disabled.",
+        "operationId": "CreateVirtualCrossConnect",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/VirtualCrossConnectCreate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/VirtualCrossConnectCombined"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful response"
+          },
+          "422": {
+            "$ref": "#/components/responses/netapps_UnprocessableEntity_17904fcfbc"
+          },
+          "default": {
+            "$ref": "#/components/responses/GenericErrorResponse"
+          }
+        },
+        "summary": "Create a Virtual Cross Connect",
+        "tags": [
+          "Virtual Cross Connects"
+        ]
+      }
+    },
+    "/virtual_cross_connects/coverage": {
+      "get": {
+        "description": "List Virtual Cross Connects Cloud Coverage.\u003cbr /\u003e\u003cbr /\u003eThis endpoint shows which cloud regions are available for the `location_code` your Virtual Cross Connect will be provisioned in.",
+        "operationId": "ListVirtualCrossConnectCoverage",
+        "parameters": [
+          {
+            "description": "Consolidated filters parameter (deepObject style). Originally: filters[available_bandwidth][contains]",
+            "explode": true,
+            "in": "query",
+            "name": "filters",
+            "schema": {
+              "additionalProperties": false,
+              "properties": {
+                "available_bandwidth": {
+                  "oneOf": [
+                    {
+                      "description": "Filter by exact available bandwidth match",
+                      "type": "integer"
+                    },
+                    {
+                      "additionalProperties": false,
+                      "description": "Available bandwidth filtering operations",
+                      "properties": {
+                        "contains": {
+                          "description": "Filter by available bandwidth containing the specified value",
+                          "type": "integer"
+                        }
+                      },
+                      "type": "object"
+                    }
+                  ]
+                }
+              },
+              "type": "object"
+            },
+            "style": "deepObject"
+          },
+          {
+            "description": "Consolidated filter parameter (deepObject style). Originally: filter[cloud_provider], filter[cloud_provider_region], filter[location.region], filter[location.site], filter[location.pop], filter[location.code]",
+            "explode": true,
+            "in": "query",
+            "name": "filter",
+            "schema": {
+              "properties": {
+                "cloud_provider": {
+                  "description": "The Virtual Private Cloud provider.",
+                  "enum": [
+                    "aws",
+                    "azure",
+                    "gce"
+                  ],
+                  "example": "aws",
+                  "type": "string"
+                },
+                "cloud_provider_region": {
+                  "description": "The region of specific cloud provider.",
+                  "example": "us-east-1",
+                  "type": "string"
+                },
+                "location.code": {
+                  "description": "The code of associated location to filter on.",
+                  "example": "silicon_valley-ca",
+                  "type": "string"
+                },
+                "location.pop": {
+                  "description": "The POP of associated location to filter on.",
+                  "example": "SV1",
+                  "type": "string"
+                },
+                "location.region": {
+                  "description": "The region of associated location to filter on.",
+                  "example": "AMER",
+                  "type": "string"
+                },
+                "location.site": {
+                  "description": "The site of associated location to filter on.",
+                  "example": "SJC",
+                  "type": "string"
+                }
+              },
+              "type": "object"
+            },
+            "style": "deepObject"
+          },
+          {
+            "$ref": "#/components/parameters/PageConsolidated"
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "items": {
+                        "$ref": "#/components/schemas/VirtualCrossConnectCoverage"
+                      },
+                      "type": "array"
+                    },
+                    "meta": {
+                      "$ref": "#/components/schemas/PaginationMeta"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful response"
+          },
+          "422": {
+            "$ref": "#/components/responses/netapps_GenericErrorResponse"
+          },
+          "default": {
+            "$ref": "#/components/responses/netapps_GenericErrorResponse"
+          }
+        },
+        "summary": "List Virtual Cross Connect Cloud Coverage",
+        "tags": [
+          "Virtual Cross Connects"
+        ],
+        "x-latency-category": "responsive"
+      }
+    },
+    "/virtual_cross_connects/{id}": {
+      "delete": {
+        "description": "Deletes the specified virtual cross connect from your account.",
+        "operationId": "DeleteVirtualCrossConnect",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/ResourceId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/VirtualCrossConnectCombined"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful response"
+          },
+          "422": {
+            "$ref": "#/components/responses/GenericErrorResponse"
+          },
+          "default": {
+            "$ref": "#/components/responses/GenericErrorResponse"
+          }
+        },
+        "summary": "Delete a Virtual Cross Connect",
+        "tags": [
+          "Virtual Cross Connects"
+        ]
+      },
+      "get": {
+        "description": "Returns the details of a single virtual cross connect by its identifier.",
+        "operationId": "GetVirtualCrossConnect",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/ResourceId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/VirtualCrossConnectCombined"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful response"
+          },
+          "422": {
+            "$ref": "#/components/responses/GenericErrorResponse"
+          },
+          "default": {
+            "$ref": "#/components/responses/GenericErrorResponse"
+          }
+        },
+        "summary": "Retrieve a Virtual Cross Connect",
+        "tags": [
+          "Virtual Cross Connects"
+        ]
+      },
+      "patch": {
+        "description": "Update the Virtual Cross Connect.\u003cbr /\u003e\u003cbr /\u003eCloud IPs can only be patched during the `created` state, as GCE will only inform you of your generated IP once the pending connection requested has been accepted. Once the Virtual Cross Connect has moved to `provisioning`, the IPs can no longer be patched.\u003cbr /\u003e\u003cbr /\u003eOnce the Virtual Cross Connect has moved to `provisioned` and you are ready to enable routing, you can toggle the routing announcements to `true`.",
+        "operationId": "UpdateVirtualCrossConnect",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/ResourceId"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/VirtualCrossConnectPatch"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/VirtualCrossConnectCombined"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful response"
+          },
+          "422": {
+            "$ref": "#/components/responses/netapps_UnprocessableEntity_17904fcfbc"
+          },
+          "default": {
+            "$ref": "#/components/responses/GenericErrorResponse"
+          }
+        },
+        "summary": "Update the Virtual Cross Connect",
+        "tags": [
+          "Virtual Cross Connects"
+        ]
+      }
+    },
+    "/virtual_cross_connects_coverage": {
+      "get": {
+        "description": "List Virtual Cross Connects Cloud Coverage.\u003cbr /\u003e\u003cbr /\u003eThis endpoint shows which cloud regions are available for the `location_code` your Virtual Cross Connect will be provisioned in.",
+        "operationId": "ListVirtualCrossConnectCoverage",
+        "parameters": [
+          {
+            "description": "Consolidated filters parameter (deepObject style). Originally: filters[available_bandwidth][contains]",
+            "explode": true,
+            "in": "query",
+            "name": "filters",
+            "schema": {
+              "additionalProperties": false,
+              "properties": {
+                "available_bandwidth": {
+                  "oneOf": [
+                    {
+                      "description": "Filter by exact available bandwidth match",
+                      "type": "integer"
+                    },
+                    {
+                      "additionalProperties": false,
+                      "description": "Available bandwidth filtering operations",
+                      "properties": {
+                        "contains": {
+                          "description": "Filter by available bandwidth containing the specified value",
+                          "type": "integer"
+                        }
+                      },
+                      "type": "object"
+                    }
+                  ]
+                }
+              },
+              "type": "object"
+            },
+            "style": "deepObject"
+          },
+          {
+            "description": "Consolidated filter parameter (deepObject style). Originally: filter[cloud_provider], filter[cloud_provider_region], filter[location.region], filter[location.site], filter[location.pop], filter[location.code]",
+            "explode": true,
+            "in": "query",
+            "name": "filter",
+            "schema": {
+              "properties": {
+                "cloud_provider": {
+                  "description": "The Virtual Private Cloud provider.",
+                  "enum": [
+                    "aws",
+                    "azure",
+                    "gce"
+                  ],
+                  "example": "aws",
+                  "type": "string"
+                },
+                "cloud_provider_region": {
+                  "description": "The region of specific cloud provider.",
+                  "example": "us-east-1",
+                  "type": "string"
+                },
+                "location.code": {
+                  "description": "The code of associated location to filter on.",
+                  "example": "silicon_valley-ca",
+                  "type": "string"
+                },
+                "location.pop": {
+                  "description": "The POP of associated location to filter on.",
+                  "example": "SV1",
+                  "type": "string"
+                },
+                "location.region": {
+                  "description": "The region of associated location to filter on.",
+                  "example": "AMER",
+                  "type": "string"
+                },
+                "location.site": {
+                  "description": "The site of associated location to filter on.",
+                  "example": "SJC",
+                  "type": "string"
+                }
+              },
+              "type": "object"
+            },
+            "style": "deepObject"
+          },
+          {
+            "$ref": "#/components/parameters/PageConsolidated"
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "items": {
+                        "$ref": "#/components/schemas/netapps_VirtualCrossConnectCoverage"
+                      },
+                      "type": "array"
+                    },
+                    "meta": {
+                      "$ref": "#/components/schemas/PaginationMeta"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful response"
+          },
+          "422": {
+            "$ref": "#/components/responses/GenericErrorResponse"
+          },
+          "default": {
+            "$ref": "#/components/responses/GenericErrorResponse"
+          }
+        },
+        "summary": "List Virtual Cross Connect Cloud Coverage",
+        "tags": [
+          "Virtual Cross Connects"
+        ]
+      }
+    }
+  },
+  "security": [
+    {
+      "bearerAuth": []
+    }
+  ],
+  "servers": [
+    {
+      "description": "Version 2.0.0 of the Telnyx API",
+      "url": "https://api.telnyx.com/v2"
+    }
+  ]
+}

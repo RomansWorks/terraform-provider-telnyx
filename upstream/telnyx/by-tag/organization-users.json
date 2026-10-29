@@ -1,0 +1,839 @@
+{
+  "components": {
+    "parameters": {
+      "FilterOrganizationUserEmail": {
+        "description": "Filter by email address (partial match)",
+        "in": "query",
+        "name": "filter[email]",
+        "schema": {
+          "type": "string"
+        }
+      },
+      "FilterOrganizationUserStatus": {
+        "description": "Filter by user status",
+        "in": "query",
+        "name": "filter[user_status]",
+        "schema": {
+          "enum": [
+            "enabled",
+            "disabled",
+            "blocked"
+          ],
+          "type": "string"
+        }
+      },
+      "IncludeGroups": {
+        "description": "When set to true, includes the groups array for each user in the response. The groups array contains objects with id and name for each group the user belongs to.",
+        "in": "query",
+        "name": "include_groups",
+        "schema": {
+          "default": false,
+          "type": "boolean"
+        }
+      },
+      "users_PageNumber": {
+        "description": "The page number to load",
+        "in": "query",
+        "name": "page[number]",
+        "schema": {
+          "default": 1,
+          "minimum": 1,
+          "type": "integer"
+        }
+      },
+      "users_PageSize": {
+        "description": "The size of the page",
+        "in": "query",
+        "name": "page[size]",
+        "schema": {
+          "default": 250,
+          "maximum": 250,
+          "minimum": 1,
+          "type": "integer"
+        }
+      }
+    },
+    "responses": {
+      "UnauthenticatedResponse": {
+        "content": {
+          "application/json": {
+            "examples": {
+              "Authentication Failed": {
+                "value": {
+                  "errors": [
+                    {
+                      "code": "10009",
+                      "detail": "Could not understand the provided credentials.",
+                      "meta": {
+                        "url": "https://developers.telnyx.com/docs/overview/errors/10009"
+                      },
+                      "title": "Authentication failed"
+                    }
+                  ]
+                }
+              }
+            },
+            "schema": {
+              "$ref": "#/components/schemas/call-scripting_ErrorResponse"
+            }
+          }
+        },
+        "description": "Unauthorized"
+      },
+      "users_BadRequestResponse": {
+        "content": {
+          "application/json": {
+            "examples": {
+              "missingParameter": {
+                "value": {
+                  "errors": [
+                    {
+                      "code": "10015",
+                      "detail": "The request failed because it was not well-formed.",
+                      "meta": {
+                        "url": "https://developers.telnyx.com/docs/overview/errors/10015"
+                      },
+                      "source": {
+                        "pointer": "/"
+                      },
+                      "title": "Bad Request"
+                    }
+                  ]
+                }
+              }
+            },
+            "schema": {
+              "$ref": "#/components/schemas/users_ErrorResponse"
+            }
+          }
+        },
+        "description": "Bad request, the request was unacceptable, often due to missing a required parameter."
+      },
+      "users_NotFoundResponse": {
+        "content": {
+          "application/json": {
+            "examples": {
+              "notFound": {
+                "value": {
+                  "errors": [
+                    {
+                      "code": "10005",
+                      "detail": "The requested resource or URL could not be found.",
+                      "meta": {
+                        "url": "https://developers.telnyx.com/docs/overview/errors/10005"
+                      },
+                      "source": {
+                        "pointer": "/"
+                      },
+                      "title": "Resource not found"
+                    }
+                  ]
+                }
+              }
+            },
+            "schema": {
+              "$ref": "#/components/schemas/users_ErrorResponse"
+            }
+          }
+        },
+        "description": "The requested resource doesn't exist."
+      },
+      "users_UnauthorizedResponse": {
+        "content": {
+          "application/json": {
+            "examples": {
+              "notAuthorized": {
+                "value": {
+                  "errors": [
+                    {
+                      "code": "10010",
+                      "detail": "You are not authorized to access the requested resource.",
+                      "meta": {
+                        "url": "https://developers.telnyx.com/docs/overview/errors/10010"
+                      },
+                      "source": {
+                        "pointer": "/"
+                      },
+                      "title": "Not authorized"
+                    }
+                  ]
+                }
+              }
+            },
+            "schema": {
+              "$ref": "#/components/schemas/users_ErrorResponse"
+            }
+          }
+        },
+        "description": "The user doesn't have the required permissions to perform the requested action."
+      }
+    },
+    "schemas": {
+      "OrganizationUser": {
+        "example": {
+          "created_at": "2018-02-02T22:25:27.521Z",
+          "email": "user@example.com",
+          "id": "6a09cdc3-8948-47f0-aa62-74ac943d6c58",
+          "last_sign_in_at": "2018-02-02T22:25:27.521Z",
+          "organization_user_bypasses_sso": false,
+          "record_type": "organization_sub_user",
+          "user_status": "enabled"
+        },
+        "properties": {
+          "created_at": {
+            "description": "ISO 8601 formatted date indicating when the resource was created.",
+            "example": "2018-02-02T22:25:27.521Z",
+            "type": "string"
+          },
+          "email": {
+            "description": "The email address of the user.",
+            "example": "user@example.com",
+            "format": "email",
+            "type": "string"
+          },
+          "groups": {
+            "description": "The groups the user belongs to. Only included when include_groups parameter is true.",
+            "items": {
+              "$ref": "#/components/schemas/UserGroupReference"
+            },
+            "type": "array"
+          },
+          "id": {
+            "description": "Identifies the specific resource.",
+            "example": "6a09cdc3-8948-47f0-aa62-74ac943d6c58",
+            "type": "string"
+          },
+          "last_sign_in_at": {
+            "description": "ISO 8601 formatted date indicating when the resource last signed into the portal. Null if the user has never signed in.",
+            "example": "2018-02-02T22:25:27.521Z",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "organization_user_bypasses_sso": {
+            "description": "Indicates whether this user is allowed to bypass SSO and use password authentication.",
+            "example": false,
+            "type": "boolean"
+          },
+          "record_type": {
+            "description": "Identifies the type of the resource. Can be 'organization_owner' or 'organization_sub_user'.",
+            "example": "organization_sub_user",
+            "type": "string"
+          },
+          "user_status": {
+            "default": "enabled",
+            "description": "The status of the account.",
+            "enum": [
+              "enabled",
+              "disabled",
+              "blocked"
+            ],
+            "example": "enabled",
+            "type": "string"
+          }
+        },
+        "title": "OrganizationUser",
+        "type": "object"
+      },
+      "OrganizationUserWithGroups": {
+        "description": "An organization user with their group memberships always included.",
+        "example": {
+          "created_at": "2018-02-02T22:25:27.521Z",
+          "email": "user@example.com",
+          "groups": [
+            {
+              "id": "7b09cdc3-8948-47f0-aa62-74ac943d6c59",
+              "name": "Engineering"
+            }
+          ],
+          "id": "6a09cdc3-8948-47f0-aa62-74ac943d6c58",
+          "last_sign_in_at": "2018-02-02T22:25:27.521Z",
+          "organization_user_bypasses_sso": false,
+          "record_type": "organization_sub_user",
+          "user_status": "enabled"
+        },
+        "properties": {
+          "created_at": {
+            "description": "ISO 8601 formatted date indicating when the resource was created.",
+            "example": "2018-02-02T22:25:27.521Z",
+            "type": "string"
+          },
+          "email": {
+            "description": "The email address of the user.",
+            "example": "user@example.com",
+            "format": "email",
+            "type": "string"
+          },
+          "groups": {
+            "description": "The groups the user belongs to.",
+            "items": {
+              "$ref": "#/components/schemas/UserGroupReference"
+            },
+            "type": "array"
+          },
+          "id": {
+            "description": "Identifies the specific resource.",
+            "example": "6a09cdc3-8948-47f0-aa62-74ac943d6c58",
+            "type": "string"
+          },
+          "last_sign_in_at": {
+            "description": "ISO 8601 formatted date indicating when the resource last signed into the portal. Null if the user has never signed in.",
+            "example": "2018-02-02T22:25:27.521Z",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "organization_user_bypasses_sso": {
+            "description": "Indicates whether this user is allowed to bypass SSO and use password authentication.",
+            "example": false,
+            "type": "boolean"
+          },
+          "record_type": {
+            "description": "Identifies the type of the resource. Can be 'organization_owner' or 'organization_sub_user'.",
+            "example": "organization_sub_user",
+            "type": "string"
+          },
+          "user_status": {
+            "default": "enabled",
+            "description": "The status of the account.",
+            "enum": [
+              "enabled",
+              "disabled",
+              "blocked"
+            ],
+            "example": "enabled",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "record_type",
+          "email",
+          "user_status",
+          "created_at",
+          "groups"
+        ],
+        "title": "OrganizationUserWithGroups",
+        "type": "object"
+      },
+      "UserGroupReference": {
+        "description": "A reference to a group that a user belongs to.",
+        "example": {
+          "id": "7b09cdc3-8948-47f0-aa62-74ac943d6c59",
+          "name": "Engineering"
+        },
+        "properties": {
+          "id": {
+            "description": "The unique identifier of the group.",
+            "example": "7b09cdc3-8948-47f0-aa62-74ac943d6c59",
+            "type": "string"
+          },
+          "name": {
+            "description": "The name of the group.",
+            "example": "Engineering",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "name"
+        ],
+        "title": "UserGroupReference",
+        "type": "object"
+      },
+      "call-scripting_ErrorResponse": {
+        "properties": {
+          "errors": {
+            "items": {
+              "properties": {
+                "code": {
+                  "type": "string"
+                },
+                "detail": {
+                  "type": "string"
+                },
+                "meta": {
+                  "properties": {
+                    "url": {
+                      "format": "uri",
+                      "type": "string"
+                    }
+                  },
+                  "type": "object"
+                },
+                "source": {
+                  "properties": {
+                    "pointer": {
+                      "type": "string"
+                    }
+                  },
+                  "type": "object"
+                },
+                "title": {
+                  "type": "string"
+                }
+              },
+              "type": "object"
+            },
+            "type": "array"
+          }
+        },
+        "type": "object"
+      },
+      "users_ErrorResponse": {
+        "properties": {
+          "errors": {
+            "items": {
+              "properties": {
+                "code": {
+                  "type": "string"
+                },
+                "detail": {
+                  "type": "string"
+                },
+                "meta": {
+                  "properties": {
+                    "url": {
+                      "format": "uri",
+                      "type": "string"
+                    }
+                  },
+                  "type": "object"
+                },
+                "source": {
+                  "properties": {
+                    "pointer": {
+                      "type": "string"
+                    }
+                  },
+                  "type": "object"
+                },
+                "title": {
+                  "type": "string"
+                }
+              },
+              "type": "object"
+            },
+            "type": "array"
+          }
+        },
+        "type": "object"
+      },
+      "users_PaginationMeta": {
+        "properties": {
+          "page_number": {
+            "example": 2,
+            "type": "integer"
+          },
+          "page_size": {
+            "example": 25,
+            "type": "integer"
+          },
+          "total_pages": {
+            "example": 3,
+            "type": "integer"
+          },
+          "total_results": {
+            "example": 55,
+            "type": "integer"
+          }
+        },
+        "title": "Pagination Meta",
+        "type": "object"
+      }
+    },
+    "securitySchemes": {
+      "BearerAuth": {
+        "bearerFormat": "API key",
+        "description": "Telnyx API key supplied as `Authorization: Bearer \u003ctoken\u003e`. In production, auth may be validated by the API gateway and forwarded via Telnyx auth headers.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "Payment": {
+        "description": "Machine Payment Protocol credential used on paid retries, sent as `Authorization: Payment ...`. Obtained by paying a challenge returned in the `WWW-Authenticate` header of a 402 response. This is not a Telnyx API key; initial challenge requests use standard bearer authentication instead.",
+        "in": "header",
+        "name": "Authorization",
+        "type": "apiKey"
+      },
+      "agent-memory_bearerAuth": {
+        "description": "Telnyx API key",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "bearerAuth": {
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "branded-calling_bearerAuth": {
+        "description": "Telnyx API key. Generate one at https://portal.telnyx.com/#/app/api-keys.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "collections_bearerAuth": {
+        "description": "Telnyx API key. Collections and results are automatically scoped to the authenticated user's organization.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "number-reputation_bearerAuth": {
+        "description": "Telnyx API key. Generate one at https://portal.telnyx.com/#/app/api-keys.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "oauthClientAuth": {
+        "description": "OAuth 2.0 authentication for Telnyx API and MCP integrations",
+        "flows": {
+          "authorizationCode": {
+            "authorizationUrl": "https://api.telnyx.com/v2/oauth/authorize",
+            "refreshUrl": "https://api.telnyx.com/v2/oauth/token",
+            "scopes": {
+              "admin": "Administrative access to Telnyx resources"
+            },
+            "tokenUrl": "https://api.telnyx.com/v2/oauth/token"
+          },
+          "clientCredentials": {
+            "scopes": {
+              "admin": "Administrative access to Telnyx resources"
+            },
+            "tokenUrl": "https://api.telnyx.com/v2/oauth/token"
+          }
+        },
+        "type": "oauth2"
+      },
+      "outbound-voice-profiles_bearerAuth": {
+        "bearerFormat": "JWT",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "pay-connectors_bearerAuth": {
+        "description": "Telnyx API key, not the processor bearer token.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "pronunciation-dicts_bearerAuth": {
+        "description": "Telnyx API v2 key. Obtain from https://portal.telnyx.com",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "rcs-registration_bearerAuth": {
+        "bearerFormat": "API key",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "stored-payment-transactions_bearerAuth": {
+        "bearerFormat": "JWT",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "telnyxApiKey": {
+        "description": "Management-only Telnyx account credential.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "transcriptions-search_bearerAuth": {
+        "description": "Telnyx API key. Results are automatically scoped to the authenticated user's organization.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "web-search_bearerAuth": {
+        "description": "Telnyx API key",
+        "scheme": "bearer",
+        "type": "http"
+      }
+    }
+  },
+  "info": {
+    "contact": {
+      "email": "support@telnyx.com"
+    },
+    "description": "SIP trunking, SMS, MMS, Call Control and Telephony Data Services.",
+    "title": "Telnyx API",
+    "version": "2.0.0",
+    "x-endpoint-cost": "light",
+    "x-latency-category": "responsive"
+  },
+  "openapi": "3.1.0",
+  "paths": {
+    "/organizations/users": {
+      "get": {
+        "description": "Returns a list of the users in your organization.",
+        "operationId": "ListOrganizationUsers",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/users_PageNumber"
+          },
+          {
+            "$ref": "#/components/parameters/users_PageSize"
+          },
+          {
+            "$ref": "#/components/parameters/FilterOrganizationUserStatus"
+          },
+          {
+            "$ref": "#/components/parameters/FilterOrganizationUserEmail"
+          },
+          {
+            "$ref": "#/components/parameters/IncludeGroups"
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "items": {
+                        "$ref": "#/components/schemas/OrganizationUser"
+                      },
+                      "type": "array"
+                    },
+                    "meta": {
+                      "$ref": "#/components/schemas/users_PaginationMeta"
+                    }
+                  },
+                  "title": "List Organization Users Response",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful response with a list of organization users."
+          },
+          "400": {
+            "$ref": "#/components/responses/users_BadRequestResponse"
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthenticatedResponse"
+          },
+          "403": {
+            "$ref": "#/components/responses/users_UnauthorizedResponse"
+          }
+        },
+        "summary": "List organization users",
+        "tags": [
+          "Organization Users"
+        ],
+        "x-endpoint-cost": "medium",
+        "x-group-parameters": "true"
+      }
+    },
+    "/organizations/users/users_groups_report": {
+      "get": {
+        "description": "Returns a report of all users in your organization with their group memberships. This endpoint returns all users without pagination and always includes group information. The report can be retrieved in JSON or CSV format by sending specific content-type headers.",
+        "operationId": "GetOrganizationUsersGroupsReport",
+        "parameters": [
+          {
+            "description": "Specify the response format. Use 'application/json' for JSON format or 'text/csv' for CSV format.",
+            "in": "header",
+            "name": "Accept",
+            "required": false,
+            "schema": {
+              "default": "application/json",
+              "enum": [
+                "application/json",
+                "text/csv"
+              ],
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "data": [
+                    {
+                      "created_at": "2018-02-02T22:25:27.521Z",
+                      "email": "user@example.com",
+                      "groups": [
+                        {
+                          "id": "7b09cdc3-8948-47f0-aa62-74ac943d6c59",
+                          "name": "Engineering"
+                        },
+                        {
+                          "id": "8c09cdc3-8948-47f0-aa62-74ac943d6c60",
+                          "name": "Sales"
+                        }
+                      ],
+                      "id": "6a09cdc3-8948-47f0-aa62-74ac943d6c58",
+                      "last_sign_in_at": "2018-02-02T22:25:27.521Z",
+                      "organization_user_bypasses_sso": false,
+                      "record_type": "organization_sub_user",
+                      "user_status": "enabled"
+                    },
+                    {
+                      "created_at": "2018-01-01T00:00:00.000Z",
+                      "email": "owner@example.com",
+                      "groups": [],
+                      "id": "9d09cdc3-8948-47f0-aa62-74ac943d6c61",
+                      "last_sign_in_at": "2018-02-02T22:25:27.521Z",
+                      "organization_user_bypasses_sso": false,
+                      "record_type": "organization_owner",
+                      "user_status": "enabled"
+                    }
+                  ]
+                },
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "items": {
+                        "$ref": "#/components/schemas/OrganizationUserWithGroups"
+                      },
+                      "type": "array"
+                    }
+                  },
+                  "title": "Users Groups Report Response",
+                  "type": "object"
+                }
+              },
+              "text/csv": {
+                "example": "id,email,user_status,created_at,last_sign_in_at,groups\n6a09cdc3-8948-47f0-aa62-74ac943d6c58,user@example.com,enabled,2018-02-02T22:25:27.521Z,2018-02-02T22:25:27.521Z,\"Engineering, Sales\"",
+                "schema": {
+                  "description": "CSV formatted report of users and their groups. Columns: id, email, user_status, created_at, last_sign_in_at, groups (comma-separated list of group names).",
+                  "type": "string"
+                }
+              }
+            },
+            "description": "Successful response with a list of organization users and their group memberships."
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthenticatedResponse"
+          },
+          "403": {
+            "$ref": "#/components/responses/users_UnauthorizedResponse"
+          },
+          "404": {
+            "$ref": "#/components/responses/users_NotFoundResponse"
+          }
+        },
+        "summary": "Get organization users groups report",
+        "tags": [
+          "Organization Users"
+        ],
+        "x-endpoint-cost": "medium",
+        "x-group-parameters": "true"
+      }
+    },
+    "/organizations/users/{id}": {
+      "get": {
+        "description": "Returns the details of a user in your organization, optionally including the groups the user belongs to.",
+        "operationId": "GetOrganizationUser",
+        "parameters": [
+          {
+            "description": "Organization User ID",
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "$ref": "#/components/parameters/IncludeGroups"
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/OrganizationUser"
+                    }
+                  },
+                  "title": "Organization User Response",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful response with details about an Organization User."
+          },
+          "400": {
+            "$ref": "#/components/responses/users_BadRequestResponse"
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthenticatedResponse"
+          },
+          "403": {
+            "$ref": "#/components/responses/users_UnauthorizedResponse"
+          },
+          "404": {
+            "$ref": "#/components/responses/users_NotFoundResponse"
+          }
+        },
+        "summary": "Get organization user",
+        "tags": [
+          "Organization Users"
+        ],
+        "x-endpoint-cost": "medium",
+        "x-group-parameters": "true"
+      }
+    },
+    "/organizations/users/{id}/actions/remove": {
+      "post": {
+        "description": "Removes the specified user from your organization and returns the result of the removal.",
+        "operationId": "DeleteOrganizationUser",
+        "parameters": [
+          {
+            "description": "Organization User ID",
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/OrganizationUser"
+                    }
+                  },
+                  "title": "Organization User Response",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful response with details about an Organization User."
+          },
+          "400": {
+            "$ref": "#/components/responses/users_BadRequestResponse"
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthenticatedResponse"
+          },
+          "403": {
+            "$ref": "#/components/responses/users_UnauthorizedResponse"
+          },
+          "404": {
+            "$ref": "#/components/responses/users_NotFoundResponse"
+          }
+        },
+        "summary": "Delete organization user",
+        "tags": [
+          "Organization Users"
+        ],
+        "x-endpoint-cost": "medium",
+        "x-group-parameters": "true"
+      }
+    }
+  },
+  "security": [
+    {
+      "bearerAuth": []
+    }
+  ],
+  "servers": [
+    {
+      "description": "Version 2.0.0 of the Telnyx API",
+      "url": "https://api.telnyx.com/v2"
+    }
+  ]
+}

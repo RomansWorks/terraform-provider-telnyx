@@ -1,0 +1,800 @@
+{
+  "components": {
+    "schemas": {
+      "AuthenticationProvider": {
+        "properties": {
+          "activated_at": {
+            "description": "ISO 8601 formatted date indicating when the authentication provider was activated.",
+            "example": "2018-02-02T22:25:27.521Z",
+            "format": "date-time",
+            "type": "string"
+          },
+          "active": {
+            "$ref": "#/components/schemas/active"
+          },
+          "created_at": {
+            "description": "ISO 8601 formatted date indicating when the resource was created.",
+            "example": "2018-02-02T22:25:27.521Z",
+            "format": "date-time",
+            "type": "string"
+          },
+          "id": {
+            "description": "Uniquely identifies the authentication provider.",
+            "example": "35146afd-df93-4963-b1e9-1a085e2ae874",
+            "format": "uuid",
+            "type": "string"
+          },
+          "name": {
+            "$ref": "#/components/schemas/name"
+          },
+          "organization_id": {
+            "$ref": "#/components/schemas/organization_id"
+          },
+          "record_type": {
+            "description": "Identifies the type of the resource.",
+            "example": "authentication_provider",
+            "type": "string"
+          },
+          "settings": {
+            "description": "The settings associated with the authentication provider.",
+            "properties": {
+              "assertion_consumer_service_url": {
+                "description": "The Assertion Consumer Service URL for the service provider (Telnyx).",
+                "example": "https://api.telnyx.com/sso/saml/auth/myorg",
+                "format": "uri",
+                "type": "string"
+              },
+              "idp_attribute_names": {
+                "description": "Mapping of SAML attribute names used by the identity provider (IdP).",
+                "example": {
+                  "email": "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress"
+                },
+                "type": "object"
+              },
+              "idp_cert_fingerprint": {
+                "description": "The certificate fingerprint for the identity provider (IdP)",
+                "example": "13:38:C7:BB:C9:FF:4A:70:38:3A:E3:D9:5C:CD:DB:2E:50:1E:80:A7",
+                "type": "string"
+              },
+              "idp_cert_fingerprint_algorithm": {
+                "default": "sha1",
+                "description": "The algorithm used to generate the identity provider's (IdP) certificate fingerprint",
+                "enum": [
+                  "sha1",
+                  "sha256",
+                  "sha384",
+                  "sha512"
+                ],
+                "example": "sha256",
+                "type": "string"
+              },
+              "idp_certificate": {
+                "description": "The full X.509 certificate for the identity provider (IdP).",
+                "example": "-----BEGIN CERTIFICATE-----\nMIIC...\n-----END CERTIFICATE-----",
+                "type": "string"
+              },
+              "idp_entity_id": {
+                "description": "The Entity ID for the identity provider (IdP).",
+                "example": "https://myorg.myidp.com/saml/metadata",
+                "format": "uri",
+                "type": "string"
+              },
+              "idp_slo_target_url": {
+                "description": "The Single Logout (SLO) target URL for the identity provider (IdP).",
+                "example": "https://myorg.myidp.com/trust/saml2/http-redirect/slo",
+                "format": "uri",
+                "type": "string"
+              },
+              "idp_sso_target_url": {
+                "description": "The SSO target url for the identity provider (IdP).",
+                "example": "https://myorg.myidp.com/trust/saml2/http-post/sso",
+                "format": "uri",
+                "type": "string"
+              },
+              "name_identifier_format": {
+                "description": "The name identifier format associated with the authentication provider. This must be the same for both the Identity Provider (IdP) and the service provider (Telnyx).",
+                "example": "urn:oasis:names:tc:SAML:1.1:nameid-format",
+                "type": "string"
+              },
+              "provision_groups": {
+                "description": "Whether group provisioning is enabled for this authentication provider.",
+                "example": false,
+                "type": "boolean"
+              },
+              "service_provider_entity_id": {
+                "description": "The Entity ID for the service provider (Telnyx).",
+                "example": "https://api.telnyx.com/sso/saml/metadata/myorg",
+                "format": "uri",
+                "type": "string"
+              },
+              "service_provider_login_url": {
+                "description": "The login URL for the service provider (Telnyx). Users navigate to this URL to initiate SSO login.",
+                "example": "https://api.telnyx.com/sso/myorg",
+                "format": "uri",
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
+          "short_name": {
+            "$ref": "#/components/schemas/short_name"
+          },
+          "updated_at": {
+            "description": "ISO 8601 formatted date indicating when the resource was updated.",
+            "example": "2018-02-02T22:25:27.521Z",
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "title": "AuthenticationProvider",
+        "type": "object"
+      },
+      "AuthenticationProviderCreate": {
+        "properties": {
+          "active": {
+            "$ref": "#/components/schemas/active"
+          },
+          "name": {
+            "$ref": "#/components/schemas/name"
+          },
+          "settings": {
+            "$ref": "#/components/schemas/settings"
+          },
+          "settings_url": {
+            "$ref": "#/components/schemas/settings_url"
+          },
+          "short_name": {
+            "$ref": "#/components/schemas/short_name"
+          }
+        },
+        "required": [
+          "name",
+          "short_name",
+          "settings"
+        ],
+        "type": "object"
+      },
+      "PaginationMeta": {
+        "properties": {
+          "page_number": {
+            "example": 2,
+            "type": "integer"
+          },
+          "page_size": {
+            "example": 25,
+            "type": "integer"
+          },
+          "total_pages": {
+            "example": 3,
+            "type": "integer"
+          },
+          "total_results": {
+            "example": 55,
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "UpdateAuthenticationProviderRequest": {
+        "example": {
+          "active": true,
+          "name": "Okta",
+          "settings": {
+            "idp_cert_fingerprint": "13:38:C7:BB:C9:FF:4A:70:38:3A:E3:D9:5C:CD:DB:2E:50:1E:80:A7",
+            "idp_cert_fingerprint_algorithm": "sha1",
+            "idp_entity_id": "https://myorg.myidp.com/saml/metadata",
+            "idp_sso_target_url": "https://myorg.myidp.com/trust/saml2/http-post/sso"
+          },
+          "short_name": "myorg"
+        },
+        "properties": {
+          "active": {
+            "$ref": "#/components/schemas/active"
+          },
+          "name": {
+            "$ref": "#/components/schemas/name"
+          },
+          "settings": {
+            "$ref": "#/components/schemas/settings"
+          },
+          "settings_url": {
+            "$ref": "#/components/schemas/settings_url"
+          },
+          "short_name": {
+            "$ref": "#/components/schemas/short_name"
+          }
+        },
+        "title": "Update Authentication Provider Request",
+        "type": "object"
+      },
+      "active": {
+        "default": true,
+        "description": "The active status of the authentication provider",
+        "example": true,
+        "type": "boolean"
+      },
+      "name": {
+        "description": "The name associated with the authentication provider.",
+        "example": "Okta",
+        "type": "string"
+      },
+      "organization_id": {
+        "description": "The id from the Organization the authentication provider belongs to.",
+        "example": "24b4a4bb-c4df-46ad-bbcb-23fc741c5ad7",
+        "format": "uuid",
+        "type": "string"
+      },
+      "settings": {
+        "description": "The settings associated with the authentication provider.",
+        "properties": {
+          "idp_cert_fingerprint": {
+            "description": "The certificate fingerprint for the identity provider (IdP)",
+            "example": "13:38:C7:BB:C9:FF:4A:70:38:3A:E3:D9:5C:CD:DB:2E:50:1E:80:A7",
+            "type": "string"
+          },
+          "idp_cert_fingerprint_algorithm": {
+            "default": "sha1",
+            "description": "The algorithm used to generate the identity provider's (IdP) certificate fingerprint",
+            "enum": [
+              "sha1",
+              "sha256",
+              "sha384",
+              "sha512"
+            ],
+            "example": "sha256",
+            "type": "string"
+          },
+          "idp_entity_id": {
+            "description": "The Entity ID for the identity provider (IdP).",
+            "example": "https://myorg.myidp.com/saml/metadata",
+            "format": "uri",
+            "type": "string"
+          },
+          "idp_sso_target_url": {
+            "description": "The SSO target url for the identity provider (IdP).",
+            "example": "https://myorg.myidp.com/trust/saml2/http-post/sso",
+            "format": "uri",
+            "type": "string"
+          }
+        },
+        "required": [
+          "idp_entity_id",
+          "idp_sso_target_url",
+          "idp_cert_fingerprint"
+        ],
+        "type": "object"
+      },
+      "settings_url": {
+        "description": "The URL for the identity provider metadata file to populate the settings automatically. If the settings attribute is provided, that will be used instead.",
+        "example": "https://myorg.myidp.com/saml/metadata",
+        "format": "uri",
+        "type": "string"
+      },
+      "short_name": {
+        "description": "The short name associated with the authentication provider. This must be unique and URL-friendly, as it's going to be part of the login URL.",
+        "example": "myorg",
+        "type": "string"
+      }
+    },
+    "securitySchemes": {
+      "BearerAuth": {
+        "bearerFormat": "API key",
+        "description": "Telnyx API key supplied as `Authorization: Bearer \u003ctoken\u003e`. In production, auth may be validated by the API gateway and forwarded via Telnyx auth headers.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "Payment": {
+        "description": "Machine Payment Protocol credential used on paid retries, sent as `Authorization: Payment ...`. Obtained by paying a challenge returned in the `WWW-Authenticate` header of a 402 response. This is not a Telnyx API key; initial challenge requests use standard bearer authentication instead.",
+        "in": "header",
+        "name": "Authorization",
+        "type": "apiKey"
+      },
+      "agent-memory_bearerAuth": {
+        "description": "Telnyx API key",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "bearerAuth": {
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "branded-calling_bearerAuth": {
+        "description": "Telnyx API key. Generate one at https://portal.telnyx.com/#/app/api-keys.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "collections_bearerAuth": {
+        "description": "Telnyx API key. Collections and results are automatically scoped to the authenticated user's organization.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "number-reputation_bearerAuth": {
+        "description": "Telnyx API key. Generate one at https://portal.telnyx.com/#/app/api-keys.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "oauthClientAuth": {
+        "description": "OAuth 2.0 authentication for Telnyx API and MCP integrations",
+        "flows": {
+          "authorizationCode": {
+            "authorizationUrl": "https://api.telnyx.com/v2/oauth/authorize",
+            "refreshUrl": "https://api.telnyx.com/v2/oauth/token",
+            "scopes": {
+              "admin": "Administrative access to Telnyx resources"
+            },
+            "tokenUrl": "https://api.telnyx.com/v2/oauth/token"
+          },
+          "clientCredentials": {
+            "scopes": {
+              "admin": "Administrative access to Telnyx resources"
+            },
+            "tokenUrl": "https://api.telnyx.com/v2/oauth/token"
+          }
+        },
+        "type": "oauth2"
+      },
+      "outbound-voice-profiles_bearerAuth": {
+        "bearerFormat": "JWT",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "pay-connectors_bearerAuth": {
+        "description": "Telnyx API key, not the processor bearer token.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "pronunciation-dicts_bearerAuth": {
+        "description": "Telnyx API v2 key. Obtain from https://portal.telnyx.com",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "rcs-registration_bearerAuth": {
+        "bearerFormat": "API key",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "stored-payment-transactions_bearerAuth": {
+        "bearerFormat": "JWT",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "telnyxApiKey": {
+        "description": "Management-only Telnyx account credential.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "transcriptions-search_bearerAuth": {
+        "description": "Telnyx API key. Results are automatically scoped to the authenticated user's organization.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "web-search_bearerAuth": {
+        "description": "Telnyx API key",
+        "scheme": "bearer",
+        "type": "http"
+      }
+    }
+  },
+  "info": {
+    "contact": {
+      "email": "support@telnyx.com"
+    },
+    "description": "SIP trunking, SMS, MMS, Call Control and Telephony Data Services.",
+    "title": "Telnyx API",
+    "version": "2.0.0",
+    "x-endpoint-cost": "light",
+    "x-latency-category": "responsive"
+  },
+  "openapi": "3.1.0",
+  "paths": {
+    "/authentication_providers": {
+      "get": {
+        "deprecated": false,
+        "description": "Returns a list of your SSO authentication providers.",
+        "operationId": "FindAuthenticationProviders",
+        "parameters": [
+          {
+            "description": "Specifies the sort order for results. By default sorting direction is ascending. To have the results sorted in descending order add the \u003ccode\u003e-\u003c/code\u003e prefix.\u003cbr/\u003e\u003cbr/\u003e\nThat is: \u003cul\u003e\n  \u003cli\u003e\n    \u003ccode\u003ename\u003c/code\u003e: sorts the result by the\n    \u003ccode\u003ename\u003c/code\u003e field in ascending order.\n  \u003c/li\u003e\n  \u003cli\u003e\n    \u003ccode\u003e-name\u003c/code\u003e: sorts the result by the\n    \u003ccode\u003ename\u003c/code\u003e field in descending order.\n  \u003c/li\u003e\n\u003c/ul\u003e\u003cbr/\u003eIf not given, results are sorted by \u003ccode\u003ecreated_at\u003c/code\u003e in descending order.",
+            "in": "query",
+            "name": "sort",
+            "required": false,
+            "schema": {
+              "default": "-created_at",
+              "enum": [
+                "name",
+                "-name",
+                "short_name",
+                "-short_name",
+                "active",
+                "-active",
+                "created_at",
+                "-created_at",
+                "updated_at",
+                "-updated_at"
+              ],
+              "example": "name",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Consolidated page parameter (deepObject style). Originally: page[number], page[size]",
+            "explode": true,
+            "in": "query",
+            "name": "page",
+            "schema": {
+              "properties": {
+                "number": {
+                  "default": 1,
+                  "description": "The page number to load",
+                  "minimum": 1,
+                  "type": "integer"
+                },
+                "size": {
+                  "default": 20,
+                  "description": "The size of the page",
+                  "maximum": 250,
+                  "minimum": 1,
+                  "type": "integer"
+                }
+              },
+              "type": "object"
+            },
+            "style": "deepObject"
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "items": {
+                        "$ref": "#/components/schemas/AuthenticationProvider"
+                      },
+                      "type": "array"
+                    },
+                    "meta": {
+                      "$ref": "#/components/schemas/PaginationMeta"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful response"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {},
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Bad request"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {},
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {},
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Resource not found"
+          }
+        },
+        "summary": "List all SSO authentication providers",
+        "tags": [
+          "Authentication Providers"
+        ]
+      },
+      "post": {
+        "deprecated": false,
+        "description": "Creates a new authentication provider for single sign-on, configured from the provided identity provider details, and returns the created resource.",
+        "operationId": "CreateAuthenticationProvider",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AuthenticationProviderCreate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/AuthenticationProvider"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {},
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Bad request"
+          }
+        },
+        "summary": "Creates an authentication provider",
+        "tags": [
+          "Authentication Providers"
+        ]
+      }
+    },
+    "/authentication_providers/{id}": {
+      "delete": {
+        "deprecated": false,
+        "description": "Deletes an existing authentication provider.",
+        "operationId": "DeleteAuthenticationProvider",
+        "parameters": [
+          {
+            "description": "authentication provider ID",
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/AuthenticationProvider"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {},
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {},
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Resource not found"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {},
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Bad request"
+          }
+        },
+        "summary": "Deletes an authentication provider",
+        "tags": [
+          "Authentication Providers"
+        ]
+      },
+      "get": {
+        "deprecated": false,
+        "description": "Retrieves the details of an existing authentication provider.",
+        "operationId": "GetAuthenticationProvider",
+        "parameters": [
+          {
+            "description": "authentication provider ID",
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/AuthenticationProvider"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {},
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {},
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Resource not found"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {},
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Bad request"
+          }
+        },
+        "summary": "Retrieve an authentication provider",
+        "tags": [
+          "Authentication Providers"
+        ]
+      },
+      "patch": {
+        "deprecated": false,
+        "description": "Updates settings of an existing authentication provider.",
+        "operationId": "UpdateAuthenticationProvider",
+        "parameters": [
+          {
+            "description": "Identifies the resource.",
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "example": {
+                "active": true,
+                "name": "Okta",
+                "settings": {
+                  "idp_cert_fingerprint": "13:38:C7:BB:C9:FF:4A:70:38:3A:E3:D9:5C:CD:DB:2E:50:1E:80:A7",
+                  "idp_cert_fingerprint_algorithm": "sha1",
+                  "idp_entity_id": "https://myorg.myidp.com/saml/metadata",
+                  "idp_sso_target_url": "https://myorg.myidp.com/trust/saml2/http-post/sso"
+                },
+                "short_name": "myorg"
+              },
+              "schema": {
+                "$ref": "#/components/schemas/UpdateAuthenticationProviderRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/AuthenticationProvider"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {},
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {},
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Resource not found"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {},
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Bad request"
+          }
+        },
+        "summary": "Update an authentication provider",
+        "tags": [
+          "Authentication Providers"
+        ]
+      }
+    }
+  },
+  "security": [
+    {
+      "bearerAuth": []
+    }
+  ],
+  "servers": [
+    {
+      "description": "Version 2.0.0 of the Telnyx API",
+      "url": "https://api.telnyx.com/v2"
+    }
+  ]
+}

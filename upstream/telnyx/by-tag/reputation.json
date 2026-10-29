@@ -1,0 +1,2555 @@
+{
+  "components": {
+    "parameters": {
+      "BcPageNumber": {
+        "description": "1-based page number. Out-of-range values return an empty page with correct meta.",
+        "in": "query",
+        "name": "page[number]",
+        "required": false,
+        "schema": {
+          "default": 1,
+          "example": 1,
+          "minimum": 1,
+          "type": "integer"
+        }
+      },
+      "BcPageSize": {
+        "description": "Items per page. Maximum 250; values above are clamped to 250.",
+        "in": "query",
+        "name": "page[size]",
+        "required": false,
+        "schema": {
+          "default": 20,
+          "example": 20,
+          "maximum": 250,
+          "minimum": 1,
+          "type": "integer"
+        }
+      },
+      "EnterpriseId": {
+        "description": "The enterprise id. Lowercase UUID.",
+        "in": "path",
+        "name": "enterprise_id",
+        "required": true,
+        "schema": {
+          "example": "4a6192a4-573d-446d-b3ce-aff9117272a6",
+          "format": "uuid",
+          "type": "string"
+        }
+      },
+      "PhoneNumberPath": {
+        "description": "Phone number in E.164 format (`+1NPANXXXXXX` for US/CA). The leading `+` MUST be URL-encoded as `%2B` (e.g. `%2B19493253498`).",
+        "in": "path",
+        "name": "phone_number",
+        "required": true,
+        "schema": {
+          "example": "+19493253498",
+          "type": "string"
+        }
+      }
+    },
+    "responses": {
+      "number-reputation_GenericErrorResponse": {
+        "content": {
+          "application/json": {
+            "examples": {
+              "bad_request": {
+                "description": "Returned when the request itself is well-formed but the resource is in a state that disallows this action (e.g. updating a DIR while it is being vetted, or deleting an enterprise that still has DIRs in vetting).",
+                "summary": "400 - request rejected by a state guard",
+                "value": {
+                  "errors": [
+                    {
+                      "code": "10015",
+                      "detail": "Cannot update DIR in 'verified' status",
+                      "meta": {
+                        "url": "https://developers.telnyx.com/docs/overview/errors/10015"
+                      },
+                      "title": "Bad Request"
+                    }
+                  ]
+                }
+              },
+              "conflict": {
+                "summary": "409 - request conflicts with current resource state",
+                "value": {
+                  "errors": [
+                    {
+                      "code": "10021",
+                      "detail": "DIR has 1 active infringement claim(s). Resolve the claim before making this change.",
+                      "meta": {
+                        "url": "https://developers.telnyx.com/docs/overview/errors/10021"
+                      },
+                      "title": "Resource in use"
+                    }
+                  ]
+                }
+              },
+              "not_found": {
+                "summary": "404 - resource does not exist or is not yours",
+                "value": {
+                  "errors": [
+                    {
+                      "code": "10009",
+                      "detail": "Enterprise not found.",
+                      "meta": {
+                        "url": "https://developers.telnyx.com/docs/overview/errors/10009"
+                      },
+                      "title": "Resource not found"
+                    }
+                  ]
+                }
+              },
+              "validation_error": {
+                "summary": "422 - request body failed validation",
+                "value": {
+                  "errors": [
+                    {
+                      "code": "10005",
+                      "detail": "field required",
+                      "meta": {
+                        "url": "https://developers.telnyx.com/docs/overview/errors/10005"
+                      },
+                      "source": {
+                        "pointer": "/body/legal_name"
+                      },
+                      "title": "Invalid parameters"
+                    }
+                  ]
+                }
+              }
+            },
+            "schema": {
+              "$ref": "#/components/schemas/number-reputation_Errors"
+            }
+          }
+        },
+        "description": "An error occurred. The response carries the standard Telnyx error envelope."
+      }
+    },
+    "schemas": {
+      "EnterpriseReputationCreate": {
+        "additionalProperties": false,
+        "properties": {
+          "check_frequency": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ReputationCheckFrequency"
+              }
+            ],
+            "default": "business_daily",
+            "description": "Refresh cadence. Defaults to `business_daily` if omitted."
+          },
+          "loa_document_id": {
+            "description": "Id of the signed Letter of Authorization document, returned by the Telnyx Documents API after upload (upload via `POST /v2/documents`; see https://developers.telnyx.com/api/documents).",
+            "example": "2a7e8337-e803-4057-a4ae-26c40eb0bc6c",
+            "maxLength": 255,
+            "minLength": 1,
+            "type": "string"
+          }
+        },
+        "required": [
+          "loa_document_id"
+        ],
+        "type": "object"
+      },
+      "EnterpriseReputationLoaRender": {
+        "description": "All fields optional. The enterprise identity, address, and authorized-representative contact are read from the enterprise record keyed by the path parameter.",
+        "properties": {
+          "agent": {
+            "$ref": "#/components/schemas/number-reputation_AgentInput"
+          },
+          "signature": {
+            "$ref": "#/components/schemas/LoaSignaturePayload"
+          }
+        },
+        "type": "object"
+      },
+      "EnterpriseReputationLoaUpdate": {
+        "properties": {
+          "loa_document_id": {
+            "description": "Id of the new signed LOA document (from the Telnyx Documents API). Changing it resets LOA approval; the new document must be approved before more numbers can be added.",
+            "example": "2a7e8337-e803-4057-a4ae-26c40eb0bc6c",
+            "maxLength": 255,
+            "minLength": 1,
+            "type": "string"
+          }
+        },
+        "required": [
+          "loa_document_id"
+        ],
+        "type": "object"
+      },
+      "EnterpriseReputationPublic": {
+        "properties": {
+          "check_frequency": {
+            "$ref": "#/components/schemas/ReputationCheckFrequency"
+          },
+          "created_at": {
+            "example": "2026-04-26T18:06:51.940749Z",
+            "format": "date-time",
+            "readOnly": true,
+            "type": "string"
+          },
+          "enterprise_id": {
+            "example": "4a6192a4-573d-446d-b3ce-aff9117272a6",
+            "format": "uuid",
+            "type": "string"
+          },
+          "external_verification_status": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ExternalVerificationStatus"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Review state of the enterprise's ownership proof for numbers hosted with another provider. `null` when no proof was submitted."
+          },
+          "loa_document_id": {
+            "description": "Id of the signed LOA document.",
+            "example": "2a7e8337-e803-4057-a4ae-26c40eb0bc6c",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "loa_status": {
+            "$ref": "#/components/schemas/ReputationLoaStatusPublic"
+          },
+          "rejection_reasons": {
+            "description": "Populated when `status` is `rejected`.",
+            "items": {
+              "type": "string"
+            },
+            "type": [
+              "array",
+              "null"
+            ]
+          },
+          "status": {
+            "$ref": "#/components/schemas/ReputationStatus"
+          },
+          "updated_at": {
+            "example": "2026-04-26T18:09:24.785211Z",
+            "format": "date-time",
+            "readOnly": true,
+            "type": "string"
+          },
+          "webhook_url": {
+            "description": "HTTPS URL that receives number-ownership webhook events for this enterprise.",
+            "example": "https://example.com/webhooks/telnyx",
+            "format": "uri",
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "type": "object"
+      },
+      "EnterpriseReputationPublicWrapped": {
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/EnterpriseReputationPublic"
+          }
+        },
+        "required": [
+          "data"
+        ],
+        "type": "object"
+      },
+      "EnterpriseReputationUpdateFrequency": {
+        "additionalProperties": false,
+        "properties": {
+          "check_frequency": {
+            "$ref": "#/components/schemas/ReputationCheckFrequency"
+          }
+        },
+        "required": [
+          "check_frequency"
+        ],
+        "type": "object"
+      },
+      "EnterpriseReputationWebhookUpdate": {
+        "properties": {
+          "webhook_url": {
+            "description": "HTTPS URL on a publicly routable host. Send `null` to stop receiving number-ownership events.",
+            "example": "https://example.com/webhooks/telnyx",
+            "format": "uri",
+            "maxLength": 2048,
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "webhook_url"
+        ],
+        "type": "object"
+      },
+      "ExternalVerification": {
+        "properties": {
+          "document_ids": {
+            "description": "The ownership-proof documents on file.",
+            "example": [
+              "2a7e8337-e803-4057-a4ae-26c40eb0bc6c"
+            ],
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "enterprise_id": {
+            "example": "4a6192a4-573d-446d-b3ce-aff9117272a6",
+            "format": "uuid",
+            "type": "string"
+          },
+          "phone_numbers": {
+            "description": "The phone numbers you listed with the documents.",
+            "example": [
+              "+13125550142"
+            ],
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "rejection_reason": {
+            "description": "Why the proof was rejected. Set only when `status` is `rejected`.",
+            "example": "The invoice does not show the phone numbers.",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "reviewed_at": {
+            "example": "2026-10-06T14:03:10Z",
+            "format": "date-time",
+            "readOnly": true,
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "status": {
+            "$ref": "#/components/schemas/ExternalVerificationStatus"
+          },
+          "submitted_at": {
+            "example": "2026-10-05T09:12:44Z",
+            "format": "date-time",
+            "readOnly": true,
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "type": "object"
+      },
+      "ExternalVerificationStatus": {
+        "description": "Review state of the ownership proof that allows adding phone numbers hosted with another provider.",
+        "enum": [
+          "pending",
+          "approved",
+          "rejected"
+        ],
+        "example": "pending",
+        "type": "string"
+      },
+      "ExternalVerificationSubmit": {
+        "properties": {
+          "document_ids": {
+            "description": "Ids of uploaded documents (Documents API) proving the enterprise owns its phone numbers hosted with another provider, for example a carrier invoice or account statement.",
+            "example": [
+              "2a7e8337-e803-4057-a4ae-26c40eb0bc6c"
+            ],
+            "items": {
+              "maxLength": 255,
+              "minLength": 1,
+              "type": "string"
+            },
+            "maxItems": 10,
+            "minItems": 1,
+            "type": "array"
+          },
+          "phone_numbers": {
+            "description": "Optional. The phone numbers hosted with another provider that the documents cover, in E.164 format. Shown to the reviewer to match the documents to your numbers; you can still add numbers that are not listed here, and each is checked on its own.",
+            "example": [
+              "+13125550142"
+            ],
+            "items": {
+              "type": "string"
+            },
+            "maxItems": 1000,
+            "type": "array"
+          }
+        },
+        "required": [
+          "document_ids"
+        ],
+        "type": "object"
+      },
+      "ExternalVerificationWrapped": {
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/ExternalVerification"
+          }
+        },
+        "required": [
+          "data"
+        ],
+        "type": "object"
+      },
+      "LoaSignaturePayload": {
+        "description": "Optional signature embedded in the rendered PDF. When omitted the PDF is returned unsigned for the customer to sign and upload.",
+        "properties": {
+          "image_base64": {
+            "description": "Base64-encoded signature image.",
+            "type": "string"
+          },
+          "signer_name": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "image_base64"
+        ],
+        "type": "object"
+      },
+      "OwnershipConfirmRequest": {
+        "properties": {
+          "evidence_document_id": {
+            "description": "Optional id of an uploaded document supporting the confirmation.",
+            "example": "2a7e8337-e803-4057-a4ae-26c40eb0bc6c",
+            "maxLength": 255,
+            "minLength": 1,
+            "type": "string"
+          },
+          "still_own": {
+            "description": "`true` confirms you still own the number. `false` reports that you no longer own it and removes it from Number Reputation.",
+            "example": true,
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "still_own"
+        ],
+        "type": "object"
+      },
+      "RefreshReputationRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "phone_numbers": {
+            "description": "Phone numbers to refresh reputation data for. 1–100 numbers per request, each in E.164 format. Reputation refreshes are subject to per-enterprise rate limits.",
+            "items": {
+              "example": "+19493253498",
+              "type": "string"
+            },
+            "maxItems": 100,
+            "minItems": 1,
+            "type": "array"
+          }
+        },
+        "required": [
+          "phone_numbers"
+        ],
+        "type": "object"
+      },
+      "RefreshReputationResponse": {
+        "properties": {
+          "data": {
+            "properties": {
+              "results": {
+                "description": "Per-number outcome of the refresh.",
+                "items": {
+                  "properties": {
+                    "error": {
+                      "description": "`null` when `success` is `true`; carries an error message otherwise.",
+                      "example": null,
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "phone_number": {
+                      "example": "+19493253498",
+                      "type": "string"
+                    },
+                    "success": {
+                      "example": true,
+                      "type": "boolean"
+                    }
+                  },
+                  "required": [
+                    "phone_number",
+                    "success"
+                  ],
+                  "type": "object"
+                },
+                "type": "array"
+              },
+              "total_failed": {
+                "example": 0,
+                "type": "integer"
+              },
+              "total_requested": {
+                "example": 1,
+                "type": "integer"
+              },
+              "total_successful": {
+                "example": 1,
+                "type": "integer"
+              }
+            },
+            "required": [
+              "results",
+              "total_requested",
+              "total_successful",
+              "total_failed"
+            ],
+            "type": "object"
+          }
+        },
+        "required": [
+          "data"
+        ],
+        "type": "object"
+      },
+      "RemediationPerNumberResults": {
+        "description": "Per-category buckets of phone numbers, populated once results are available. Empty lists are kept (not omitted) so consumers can iterate without null-checking each key.",
+        "properties": {
+          "ineligible": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "not_flagged": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "refused": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "remediated": {
+            "items": {
+              "example": "+19493253498",
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "requires_review": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          }
+        },
+        "type": "object"
+      },
+      "RemediationRequest": {
+        "description": "Full detail of a remediation request, returned on submit and GET by id.",
+        "properties": {
+          "call_purpose": {
+            "example": "Appointment reminders for our dental clinic.",
+            "type": "string"
+          },
+          "contact_email": {
+            "example": "ops@example.com",
+            "format": "email",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "created_at": {
+            "example": "2026-06-01T12:00:00Z",
+            "format": "date-time",
+            "type": "string"
+          },
+          "id": {
+            "example": "b7c1f1c0-7a9d-4f0a-9d3e-2f6a1c4b8e21",
+            "format": "uuid",
+            "type": "string"
+          },
+          "phone_numbers_count": {
+            "description": "Total phone numbers in this batch, including any later cancelled. May exceed the sum of the per-category result buckets, which omit cancelled numbers.",
+            "example": 2,
+            "type": "integer"
+          },
+          "phone_numbers_ineligible": {
+            "description": "Numbers rejected before submission (e.g. cooldown).",
+            "example": 0,
+            "type": "integer"
+          },
+          "phone_numbers_submitted": {
+            "description": "Numbers accepted for remediation, i.e. not rejected as ineligible. Counts numbers still queued (pending) as well as processed ones.",
+            "example": 2,
+            "type": "integer"
+          },
+          "results": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/RemediationPerNumberResults"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Per-category buckets. Populated once results are available. Null while the request is still pending."
+          },
+          "status": {
+            "$ref": "#/components/schemas/RemediationStatus"
+          },
+          "tier1_completed_at": {
+            "format": "date-time",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "tier2_completed_at": {
+            "format": "date-time",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "updated_at": {
+            "example": "2026-06-01T12:05:00Z",
+            "format": "date-time",
+            "type": "string"
+          },
+          "webhook_url": {
+            "example": "https://example.com/webhooks/remediation",
+            "format": "uri",
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "status",
+          "phone_numbers_count",
+          "phone_numbers_submitted",
+          "phone_numbers_ineligible",
+          "call_purpose",
+          "created_at",
+          "updated_at"
+        ],
+        "type": "object"
+      },
+      "RemediationRequestCreate": {
+        "additionalProperties": false,
+        "properties": {
+          "call_purpose": {
+            "description": "How the numbers are used (free text).",
+            "example": "Appointment reminders for our dental clinic.",
+            "maxLength": 2000,
+            "minLength": 1,
+            "type": "string"
+          },
+          "contact_email": {
+            "description": "Optional contact email for this remediation request.",
+            "example": "ops@example.com",
+            "format": "email",
+            "maxLength": 255,
+            "type": "string"
+          },
+          "phone_numbers": {
+            "description": "Phone numbers in E.164 format. Each must belong to this enterprise. Maximum 2,000 per request.",
+            "items": {
+              "example": "+19493253498",
+              "pattern": "^\\+[1-9][0-9]{9,14}$",
+              "type": "string"
+            },
+            "maxItems": 2000,
+            "minItems": 1,
+            "type": "array"
+          },
+          "webhook_url": {
+            "description": "Optional https:// URL for status notifications.",
+            "example": "https://example.com/webhooks/remediation",
+            "format": "uri",
+            "maxLength": 2048,
+            "type": "string"
+          }
+        },
+        "required": [
+          "phone_numbers",
+          "call_purpose"
+        ],
+        "type": "object"
+      },
+      "RemediationRequestList": {
+        "properties": {
+          "data": {
+            "items": {
+              "$ref": "#/components/schemas/RemediationRequestListItem"
+            },
+            "type": "array"
+          },
+          "meta": {
+            "$ref": "#/components/schemas/number-reputation_PaginationMeta"
+          }
+        },
+        "required": [
+          "data",
+          "meta"
+        ],
+        "type": "object"
+      },
+      "RemediationRequestListItem": {
+        "description": "Slim list-endpoint shape. Omits per-number results and webhook URLs to keep responses small.",
+        "properties": {
+          "call_purpose": {
+            "example": "Appointment reminders for our dental clinic.",
+            "type": "string"
+          },
+          "created_at": {
+            "example": "2026-06-01T12:00:00Z",
+            "format": "date-time",
+            "type": "string"
+          },
+          "id": {
+            "example": "b7c1f1c0-7a9d-4f0a-9d3e-2f6a1c4b8e21",
+            "format": "uuid",
+            "type": "string"
+          },
+          "phone_numbers_count": {
+            "example": 2,
+            "type": "integer"
+          },
+          "status": {
+            "$ref": "#/components/schemas/RemediationStatus"
+          },
+          "tier1_completed_at": {
+            "format": "date-time",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "tier2_completed_at": {
+            "format": "date-time",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "updated_at": {
+            "example": "2026-06-01T12:05:00Z",
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "status",
+          "phone_numbers_count",
+          "call_purpose",
+          "created_at",
+          "updated_at"
+        ],
+        "type": "object"
+      },
+      "RemediationRequestWrapped": {
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/RemediationRequest"
+          }
+        },
+        "required": [
+          "data"
+        ],
+        "type": "object"
+      },
+      "RemediationStatus": {
+        "description": "Customer-facing status of a remediation request.",
+        "enum": [
+          "pending",
+          "in_progress",
+          "completed",
+          "failed",
+          "cancelled"
+        ],
+        "example": "in_progress",
+        "type": "string"
+      },
+      "ReputationCheckFrequency": {
+        "description": "How often Telnyx refreshes the stored reputation data for this enterprise's registered numbers.",
+        "enum": [
+          "business_daily",
+          "daily",
+          "weekly",
+          "biweekly",
+          "monthly",
+          "never"
+        ],
+        "type": "string"
+      },
+      "ReputationData": {
+        "description": "Reputation snapshot for a phone number. Each metric is a 0–100 score; `spam_risk` is a coarse bucket. Field set may grow over time - read by key.",
+        "properties": {
+          "connection_score": {
+            "example": 80,
+            "maximum": 100,
+            "minimum": 0,
+            "type": [
+              "integer",
+              "null"
+            ]
+          },
+          "engagement_score": {
+            "example": 64,
+            "maximum": 100,
+            "minimum": 0,
+            "type": [
+              "integer",
+              "null"
+            ]
+          },
+          "last_refreshed_at": {
+            "example": "2026-04-26T18:09:24.785211Z",
+            "format": "date-time",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "maturity_score": {
+            "example": 72,
+            "maximum": 100,
+            "minimum": 0,
+            "type": [
+              "integer",
+              "null"
+            ]
+          },
+          "sentiment_score": {
+            "example": 75,
+            "maximum": 100,
+            "minimum": 0,
+            "type": [
+              "integer",
+              "null"
+            ]
+          },
+          "spam_category": {
+            "description": "Category label from the reputation feed when the number is flagged.",
+            "example": null,
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "spam_risk": {
+            "description": "Overall spam-risk classification.",
+            "enum": [
+              "low",
+              "medium",
+              "high",
+              null
+            ],
+            "example": "low",
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "type": "object"
+      },
+      "ReputationLoaStatusPublic": {
+        "description": "Customer-facing Letter-of-Authorization verification state. `approved` is required (alongside reputation status) before phone numbers can be added.",
+        "enum": [
+          "pending",
+          "approved",
+          "rejected"
+        ],
+        "example": "pending",
+        "type": "string"
+      },
+      "ReputationNumberOwnership": {
+        "properties": {
+          "baseline_carrier": {
+            "description": "Service provider ID (SPID) of the carrier that held the number when its ownership was last established.",
+            "example": "114J",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "baseline_recorded_at": {
+            "example": "2026-09-20T15:22:09Z",
+            "format": "date-time",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "confirm_by": {
+            "example": null,
+            "format": "date-time",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "flag_reason": {
+            "example": null,
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "history": {
+            "description": "Ownership events, most recent first.",
+            "items": {
+              "$ref": "#/components/schemas/ReputationNumberOwnershipEvent"
+            },
+            "type": "array"
+          },
+          "last_checked_at": {
+            "description": "When ownership of the number was last checked.",
+            "example": "2026-10-05T06:00:41Z",
+            "format": "date-time",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "ownership_status": {
+            "$ref": "#/components/schemas/ReputationOwnershipStatus"
+          },
+          "phone_number": {
+            "example": "+19493253498",
+            "type": "string"
+          },
+          "source": {
+            "$ref": "#/components/schemas/ReputationNumberSource"
+          }
+        },
+        "type": "object"
+      },
+      "ReputationNumberOwnershipEvent": {
+        "properties": {
+          "event_type": {
+            "description": "`added`, `check`, `flag`, `confirm` or `removed`.",
+            "example": "check",
+            "type": "string"
+          },
+          "occurred_at": {
+            "example": "2026-10-05T06:00:41Z",
+            "format": "date-time",
+            "type": "string"
+          },
+          "outcome": {
+            "description": "What the event found or did, for example `unchanged` or `carrier_changed`.",
+            "example": "unchanged",
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "type": "object"
+      },
+      "ReputationNumberOwnershipWrapped": {
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/ReputationNumberOwnership"
+          }
+        },
+        "required": [
+          "data"
+        ],
+        "type": "object"
+      },
+      "ReputationNumberSource": {
+        "description": "Where the phone number is hosted. `telnyx`: in your Telnyx inventory. `external`: a number you own that is hosted with another provider.",
+        "enum": [
+          "telnyx",
+          "external"
+        ],
+        "example": "external",
+        "type": "string"
+      },
+      "ReputationOwnershipStatus": {
+        "description": "Result of ongoing ownership checks. `verified`: the number is with the carrier on record. `pending_confirmation`: the number's carrier changed, or a periodic ownership re-verification is due; confirm you still own it before `confirm_by`. `flagged`: a periodic re-verification went unanswered; the number stays monitored and is not removed, but confirm ownership (`POST .../ownership_confirm`) to return it to `verified`. `removed`: the number is no longer monitored; returned by `POST .../ownership_confirm` with `still_own: false`, and when listing numbers with `filter[ownership_status]=removed`.",
+        "enum": [
+          "verified",
+          "flagged",
+          "pending_confirmation",
+          "removed"
+        ],
+        "example": "verified",
+        "type": "string"
+      },
+      "ReputationPhoneNumber": {
+        "properties": {
+          "confirm_by": {
+            "description": "Deadline to confirm you still own the number. Set only while `ownership_status` is `pending_confirmation`.",
+            "example": "2026-10-08T07:00:00Z",
+            "format": "date-time",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "created_at": {
+            "example": "2026-04-26T18:06:51.940749Z",
+            "format": "date-time",
+            "readOnly": true,
+            "type": "string"
+          },
+          "enterprise_id": {
+            "example": "4a6192a4-573d-446d-b3ce-aff9117272a6",
+            "format": "uuid",
+            "type": "string"
+          },
+          "flag_reason": {
+            "description": "Why the number's ownership was flagged. `carrier_changed` when an ownership check found the number with a different carrier.",
+            "example": "carrier_changed",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "id": {
+            "example": "8a4b1f5e-2f12-4c0c-9a98-9b3a7d8b8e62",
+            "format": "uuid",
+            "readOnly": true,
+            "type": "string"
+          },
+          "ownership_status": {
+            "$ref": "#/components/schemas/ReputationOwnershipStatus"
+          },
+          "phone_number": {
+            "description": "E.164 with leading `+`.",
+            "example": "+19493253498",
+            "type": "string"
+          },
+          "removal_reason": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ReputationRemovalReason"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Why the number was removed. Set only for removed numbers."
+          },
+          "removed_at": {
+            "description": "When the number was removed. Set only for removed numbers.",
+            "example": "2026-10-09T06:02:11Z",
+            "format": "date-time",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "reputation_data": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ReputationData"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "`null` until the first refresh has been collected for this number."
+          },
+          "source": {
+            "$ref": "#/components/schemas/ReputationNumberSource"
+          },
+          "updated_at": {
+            "example": "2026-04-26T18:09:24.785211Z",
+            "format": "date-time",
+            "readOnly": true,
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "ReputationPhoneNumberCreate": {
+        "additionalProperties": false,
+        "properties": {
+          "phone_numbers": {
+            "description": "1–100 phone numbers in E.164 format with a leading `+`.",
+            "items": {
+              "example": "+19493253498",
+              "type": "string"
+            },
+            "maxItems": 100,
+            "minItems": 1,
+            "type": "array"
+          }
+        },
+        "required": [
+          "phone_numbers"
+        ],
+        "type": "object"
+      },
+      "ReputationPhoneNumberList": {
+        "properties": {
+          "data": {
+            "items": {
+              "$ref": "#/components/schemas/ReputationPhoneNumber"
+            },
+            "type": "array"
+          },
+          "meta": {
+            "$ref": "#/components/schemas/number-reputation_PaginationMeta"
+          }
+        },
+        "required": [
+          "data",
+          "meta"
+        ],
+        "type": "object"
+      },
+      "ReputationPhoneNumberListWithReputation": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/ReputationPhoneNumberList"
+          }
+        ],
+        "description": "List of reputation-monitored phone numbers, each carrying its current reputation data."
+      },
+      "ReputationPhoneNumberWithReputation": {
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/ReputationPhoneNumber"
+          }
+        },
+        "required": [
+          "data"
+        ],
+        "type": "object"
+      },
+      "ReputationRemovalReason": {
+        "description": "Why a number was removed. `ported_away`: you confirmed the number left your control after a carrier change. `unconfirmed_ownership`: a carrier change was not confirmed before the deadline. `reassigned`: the number was reported as permanently disconnected. `customer_reported`: you reported that you no longer own the number. `customer_removed`: you removed the number.",
+        "enum": [
+          "ported_away",
+          "unconfirmed_ownership",
+          "reassigned",
+          "customer_reported",
+          "customer_removed"
+        ],
+        "example": "unconfirmed_ownership",
+        "type": "string"
+      },
+      "ReputationStatus": {
+        "description": "Lifecycle status of the enterprise's Phone Number Reputation activation.",
+        "enum": [
+          "pending",
+          "approved",
+          "deleted",
+          "rejected"
+        ],
+        "type": "string"
+      },
+      "number-reputation_AgentInput": {
+        "description": "Third-party reseller / partner managing the enterprise's phone numbers. Omit when the enterprise works directly with Telnyx.",
+        "properties": {
+          "administrative_area": {
+            "maxLength": 120,
+            "type": "string"
+          },
+          "city": {
+            "maxLength": 120,
+            "type": "string"
+          },
+          "contact_email": {
+            "format": "email",
+            "type": "string"
+          },
+          "contact_name": {
+            "maxLength": 200,
+            "type": "string"
+          },
+          "contact_phone": {
+            "example": "+13125550000",
+            "maxLength": 30,
+            "type": "string"
+          },
+          "contact_title": {
+            "maxLength": 200,
+            "type": "string"
+          },
+          "country": {
+            "example": "US",
+            "maxLength": 2,
+            "minLength": 2,
+            "type": "string"
+          },
+          "dba": {
+            "maxLength": 200,
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "extended_address": {
+            "maxLength": 255,
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "legal_name": {
+            "maxLength": 200,
+            "type": "string"
+          },
+          "postal_code": {
+            "maxLength": 30,
+            "type": "string"
+          },
+          "street_address": {
+            "maxLength": 255,
+            "type": "string"
+          }
+        },
+        "required": [
+          "legal_name",
+          "street_address",
+          "city",
+          "administrative_area",
+          "postal_code",
+          "country",
+          "contact_name",
+          "contact_title",
+          "contact_email",
+          "contact_phone"
+        ],
+        "type": "object"
+      },
+      "number-reputation_Error": {
+        "description": "A single entry in the canonical Telnyx error envelope. `code` is the stable Telnyx error catalog id; the human-readable explanation lives at `meta.url`. `detail` is a context-specific message; `source.pointer` (when present) names the offending field of the request.",
+        "properties": {
+          "code": {
+            "description": "Stable numeric Telnyx error catalog id. See `meta.url` for the full catalog entry.",
+            "example": "10005",
+            "type": "string"
+          },
+          "detail": {
+            "description": "Context-specific message describing what went wrong on this particular request. May embed offending values; do not rely on it for programmatic matching - branch on `code`.",
+            "example": "field required",
+            "type": "string"
+          },
+          "meta": {
+            "description": "Carries `url` linking to the Telnyx error catalog entry for this `code`. Useful for forwarding the user to documentation.",
+            "properties": {
+              "pending_check_codes": {
+                "description": "Codes of the pending vetting checks (e.g. `loa_signature_valid`).",
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              "pending_check_ids": {
+                "description": "Set on `422 vetting_checks_incomplete` responses from `/admin/dir/{id}/approve` and `/admin/phone-number-batches/approve`. Lists the still-pending vetting check ids.",
+                "items": {
+                  "format": "uuid",
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              "pending_check_labels": {
+                "description": "Human-readable labels of the pending vetting checks.",
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              "url": {
+                "example": "https://developers.telnyx.com/docs/overview/errors/10005",
+                "format": "uri",
+                "type": "string"
+              }
+            },
+            "required": [
+              "url"
+            ],
+            "type": "object"
+          },
+          "source": {
+            "description": "Optional pointer at the offending field of the request.",
+            "properties": {
+              "parameter": {
+                "example": "page[size]",
+                "type": "string"
+              },
+              "pointer": {
+                "example": "/body/legal_name",
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
+          "title": {
+            "description": "Short human-readable category, e.g. `Bad Request`, `Duplicate resource`, `Not Found`, `Forbidden`. Treat as advisory only - the stable identifier is `code`.",
+            "example": "Invalid parameters",
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "title",
+          "detail",
+          "meta"
+        ],
+        "type": "object"
+      },
+      "number-reputation_Errors": {
+        "description": "Canonical Telnyx error envelope. Returned on every 4xx and 5xx response from this service. `errors` is non-empty; multiple entries indicate multiple distinct problems with the same request (e.g. one entry per invalid phone number on a bulk operation).",
+        "properties": {
+          "errors": {
+            "description": "List of one or more error entries. Order is not significant.",
+            "items": {
+              "$ref": "#/components/schemas/number-reputation_Error"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "errors"
+        ],
+        "type": "object"
+      },
+      "number-reputation_PaginationMeta": {
+        "description": "JSON:API pagination metadata returned with every paginated list response. Page numbering is 1-based. `page_size` reports the number of items actually returned in `data` for this page; the requested size is taken from the `page[size]` query parameter.",
+        "properties": {
+          "page_number": {
+            "description": "1-based index of this page. Echoes the `page[number]` query parameter (default `1`).",
+            "example": 1,
+            "type": "integer"
+          },
+          "page_size": {
+            "description": "Number of items returned in this page's `data` array. Capped at 250.",
+            "example": 20,
+            "type": "integer"
+          },
+          "total_pages": {
+            "description": "Total number of pages available given the current `page_size`.",
+            "example": 3,
+            "type": "integer"
+          },
+          "total_results": {
+            "description": "Total number of items across all pages (excludes soft-deleted rows).",
+            "example": 42,
+            "type": "integer"
+          }
+        },
+        "required": [
+          "total_pages",
+          "total_results",
+          "page_number",
+          "page_size"
+        ],
+        "type": "object"
+      }
+    },
+    "securitySchemes": {
+      "BearerAuth": {
+        "bearerFormat": "API key",
+        "description": "Telnyx API key supplied as `Authorization: Bearer \u003ctoken\u003e`. In production, auth may be validated by the API gateway and forwarded via Telnyx auth headers.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "Payment": {
+        "description": "Machine Payment Protocol credential used on paid retries, sent as `Authorization: Payment ...`. Obtained by paying a challenge returned in the `WWW-Authenticate` header of a 402 response. This is not a Telnyx API key; initial challenge requests use standard bearer authentication instead.",
+        "in": "header",
+        "name": "Authorization",
+        "type": "apiKey"
+      },
+      "agent-memory_bearerAuth": {
+        "description": "Telnyx API key",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "bearerAuth": {
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "branded-calling_bearerAuth": {
+        "description": "Telnyx API key. Generate one at https://portal.telnyx.com/#/app/api-keys.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "collections_bearerAuth": {
+        "description": "Telnyx API key. Collections and results are automatically scoped to the authenticated user's organization.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "number-reputation_bearerAuth": {
+        "description": "Telnyx API key. Generate one at https://portal.telnyx.com/#/app/api-keys.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "oauthClientAuth": {
+        "description": "OAuth 2.0 authentication for Telnyx API and MCP integrations",
+        "flows": {
+          "authorizationCode": {
+            "authorizationUrl": "https://api.telnyx.com/v2/oauth/authorize",
+            "refreshUrl": "https://api.telnyx.com/v2/oauth/token",
+            "scopes": {
+              "admin": "Administrative access to Telnyx resources"
+            },
+            "tokenUrl": "https://api.telnyx.com/v2/oauth/token"
+          },
+          "clientCredentials": {
+            "scopes": {
+              "admin": "Administrative access to Telnyx resources"
+            },
+            "tokenUrl": "https://api.telnyx.com/v2/oauth/token"
+          }
+        },
+        "type": "oauth2"
+      },
+      "outbound-voice-profiles_bearerAuth": {
+        "bearerFormat": "JWT",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "pay-connectors_bearerAuth": {
+        "description": "Telnyx API key, not the processor bearer token.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "pronunciation-dicts_bearerAuth": {
+        "description": "Telnyx API v2 key. Obtain from https://portal.telnyx.com",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "rcs-registration_bearerAuth": {
+        "bearerFormat": "API key",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "stored-payment-transactions_bearerAuth": {
+        "bearerFormat": "JWT",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "telnyxApiKey": {
+        "description": "Management-only Telnyx account credential.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "transcriptions-search_bearerAuth": {
+        "description": "Telnyx API key. Results are automatically scoped to the authenticated user's organization.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "web-search_bearerAuth": {
+        "description": "Telnyx API key",
+        "scheme": "bearer",
+        "type": "http"
+      }
+    }
+  },
+  "info": {
+    "contact": {
+      "email": "support@telnyx.com"
+    },
+    "description": "SIP trunking, SMS, MMS, Call Control and Telephony Data Services.",
+    "title": "Telnyx API",
+    "version": "2.0.0",
+    "x-endpoint-cost": "light",
+    "x-latency-category": "responsive"
+  },
+  "openapi": "3.1.0",
+  "paths": {
+    "/enterprises/{enterprise_id}/reputation": {
+      "delete": {
+        "description": "Disable Phone Number Reputation. All registered numbers are de-registered as a cascade. The enterprise itself is unaffected. Returns `204` on success, `404` if reputation is not enabled for this enterprise.",
+        "operationId": "disableReputationSettings",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/EnterpriseId"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "204 (no body)"
+          },
+          "400": {
+            "$ref": "#/components/responses/number-reputation_GenericErrorResponse"
+          },
+          "401": {
+            "$ref": "#/components/responses/number-reputation_GenericErrorResponse"
+          },
+          "404": {
+            "$ref": "#/components/responses/number-reputation_GenericErrorResponse"
+          }
+        },
+        "summary": "Disable phone-number reputation for an enterprise",
+        "tags": [
+          "Reputation"
+        ]
+      },
+      "get": {
+        "description": "Phone Number Reputation tracks how your outbound caller-IDs are perceived (spam risk, engagement, etc.) across the call-screening ecosystem. This endpoint reads the enterprise-level settings: whether the product is enabled, the refresh cadence, and the stored Letter of Authorization document id.\n\nReturns `404` if reputation has never been enabled for this enterprise.",
+        "operationId": "getReputationSettings",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/EnterpriseId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EnterpriseReputationPublicWrapped"
+                }
+              }
+            },
+            "description": "Reputation settings."
+          },
+          "401": {
+            "$ref": "#/components/responses/number-reputation_GenericErrorResponse"
+          },
+          "404": {
+            "$ref": "#/components/responses/number-reputation_GenericErrorResponse"
+          }
+        },
+        "summary": "Get phone-number reputation settings for an enterprise",
+        "tags": [
+          "Reputation"
+        ]
+      },
+      "post": {
+        "description": "Activate Phone Number Reputation for the given enterprise. Requires an uploaded Letter of Authorization document (the `loa_document_id` references the Telnyx Documents API) and a refresh-frequency selection. After activation, individual phone numbers can be registered via `POST .../reputation/numbers`.\n\n**Prerequisite**: the calling user must have agreed to the Phone Number Reputation Terms of Service (`POST /terms_of_service/number_reputation/agree`).\n\nFailure modes:\n- `403` - Phone Number Reputation Terms of Service not accepted.\n- `404` - enterprise does not exist or does not belong to your account.\n- `400` - reputation already enabled for this enterprise.\n- `422` - `loa_document_id` missing or `check_frequency` invalid.\n\n**Pricing:** This is a billable action. See https://telnyx.com/pricing/numbers for current pricing.",
+        "operationId": "enableReputationSettings",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/EnterpriseId"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "example": {
+                "check_frequency": "business_daily",
+                "loa_document_id": "2a7e8337-e803-4057-a4ae-26c40eb0bc6c"
+              },
+              "schema": {
+                "$ref": "#/components/schemas/EnterpriseReputationCreate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EnterpriseReputationPublicWrapped"
+                }
+              }
+            },
+            "description": "Reputation enabled."
+          },
+          "400": {
+            "$ref": "#/components/responses/number-reputation_GenericErrorResponse"
+          },
+          "401": {
+            "$ref": "#/components/responses/number-reputation_GenericErrorResponse"
+          },
+          "404": {
+            "$ref": "#/components/responses/number-reputation_GenericErrorResponse"
+          }
+        },
+        "summary": "Enable phone-number reputation for an enterprise",
+        "tags": [
+          "Reputation"
+        ]
+      }
+    },
+    "/enterprises/{enterprise_id}/reputation/external_verification": {
+      "get": {
+        "description": "Get the review status of the enterprise's ownership proof for phone numbers hosted with another provider. Returns 404 when no proof has been submitted.",
+        "operationId": "getReputationExternalVerification",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/EnterpriseId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ExternalVerificationWrapped"
+                }
+              }
+            },
+            "description": "The ownership-proof review."
+          },
+          "401": {
+            "$ref": "#/components/responses/number-reputation_GenericErrorResponse"
+          },
+          "404": {
+            "$ref": "#/components/responses/number-reputation_GenericErrorResponse"
+          }
+        },
+        "summary": "Get the ownership-proof review status",
+        "tags": [
+          "Reputation"
+        ]
+      },
+      "post": {
+        "description": "Request permission to add phone numbers that the enterprise owns but that are hosted with another provider. Submit one or more uploaded documents proving ownership, such as a carrier invoice or account statement. The request is reviewed once per enterprise. While it is `pending` or `rejected` you can submit again to replace the documents; once `approved` it cannot be changed.",
+        "operationId": "submitReputationExternalVerification",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/EnterpriseId"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "example": {
+                "document_ids": [
+                  "2a7e8337-e803-4057-a4ae-26c40eb0bc6c"
+                ]
+              },
+              "schema": {
+                "$ref": "#/components/schemas/ExternalVerificationSubmit"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ExternalVerificationWrapped"
+                }
+              }
+            },
+            "description": "The ownership proof was submitted for review."
+          },
+          "400": {
+            "$ref": "#/components/responses/number-reputation_GenericErrorResponse"
+          },
+          "401": {
+            "$ref": "#/components/responses/number-reputation_GenericErrorResponse"
+          },
+          "404": {
+            "$ref": "#/components/responses/number-reputation_GenericErrorResponse"
+          },
+          "503": {
+            "$ref": "#/components/responses/number-reputation_GenericErrorResponse"
+          }
+        },
+        "summary": "Submit ownership proof for numbers hosted elsewhere",
+        "tags": [
+          "Reputation"
+        ]
+      }
+    },
+    "/enterprises/{enterprise_id}/reputation/frequency": {
+      "patch": {
+        "description": "Update how often Telnyx refreshes the reputation data for this enterprise's registered numbers. The new frequency takes effect on the next scheduled refresh.\n\nThe enterprise's reputation must be in `approved` status. A request made while the status is `pending` is rejected with `400 Bad Request`.",
+        "operationId": "updateReputationFrequency",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/EnterpriseId"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "example": {
+                "check_frequency": "weekly"
+              },
+              "schema": {
+                "$ref": "#/components/schemas/EnterpriseReputationUpdateFrequency"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EnterpriseReputationPublicWrapped"
+                }
+              }
+            },
+            "description": "Frequency updated."
+          },
+          "400": {
+            "$ref": "#/components/responses/number-reputation_GenericErrorResponse"
+          },
+          "401": {
+            "$ref": "#/components/responses/number-reputation_GenericErrorResponse"
+          },
+          "404": {
+            "$ref": "#/components/responses/number-reputation_GenericErrorResponse"
+          }
+        },
+        "summary": "Change the reputation refresh frequency",
+        "tags": [
+          "Reputation"
+        ]
+      }
+    },
+    "/enterprises/{enterprise_id}/reputation/loa": {
+      "patch": {
+        "description": "Point the enterprise's reputation settings at a new signed LOA document. This resets LOA approval to `pending`; the new document must be approved before additional phone numbers can be added.",
+        "operationId": "replaceReputationLoa",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/EnterpriseId"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "example": {
+                "loa_document_id": "2a7e8337-e803-4057-a4ae-26c40eb0bc6c"
+              },
+              "schema": {
+                "$ref": "#/components/schemas/EnterpriseReputationLoaUpdate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EnterpriseReputationPublicWrapped"
+                }
+              }
+            },
+            "description": "Updated reputation settings."
+          },
+          "400": {
+            "$ref": "#/components/responses/number-reputation_GenericErrorResponse"
+          },
+          "401": {
+            "$ref": "#/components/responses/number-reputation_GenericErrorResponse"
+          },
+          "404": {
+            "$ref": "#/components/responses/number-reputation_GenericErrorResponse"
+          }
+        },
+        "summary": "Replace the reputation Letter of Authorization document",
+        "tags": [
+          "Reputation"
+        ]
+      },
+      "post": {
+        "description": "Render the LOA for this enterprise as a PDF. The enterprise identity, address, and authorized-representative contact are taken from the enterprise record; the optional `agent` block is supplied only when a third-party partner manages the numbers. The response is the PDF itself (unsigned unless a `signature` is provided). Sign it and upload it to the Telnyx Documents API (`POST /v2/documents`, see https://developers.telnyx.com/api/documents) to obtain the `loa_document_id` required by `POST .../reputation`.",
+        "operationId": "generateReputationLoa",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/EnterpriseId"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "example": {},
+              "schema": {
+                "$ref": "#/components/schemas/EnterpriseReputationLoaRender"
+              }
+            }
+          },
+          "required": false
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/pdf": {
+                "schema": {
+                  "format": "binary",
+                  "type": "string"
+                }
+              }
+            },
+            "description": "Rendered LOA PDF."
+          },
+          "400": {
+            "$ref": "#/components/responses/number-reputation_GenericErrorResponse"
+          },
+          "401": {
+            "$ref": "#/components/responses/number-reputation_GenericErrorResponse"
+          },
+          "403": {
+            "$ref": "#/components/responses/number-reputation_GenericErrorResponse"
+          },
+          "404": {
+            "$ref": "#/components/responses/number-reputation_GenericErrorResponse"
+          }
+        },
+        "summary": "Render a phone-number reputation Letter of Authorization",
+        "tags": [
+          "Reputation"
+        ]
+      }
+    },
+    "/enterprises/{enterprise_id}/reputation/numbers": {
+      "get": {
+        "description": "Paginated list of phone numbers registered for reputation monitoring under this enterprise. The response includes the latest reputation snapshot per number where one has been collected.",
+        "operationId": "listReputationNumbers",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/EnterpriseId"
+          },
+          {
+            "$ref": "#/components/parameters/BcPageNumber"
+          },
+          {
+            "description": "Items per page. Default 10. Maximum 250; values above are clamped to 250.",
+            "in": "query",
+            "name": "page[size]",
+            "required": false,
+            "schema": {
+              "default": 10,
+              "example": 10,
+              "maximum": 250,
+              "minimum": 1,
+              "type": "integer"
+            }
+          },
+          {
+            "description": "Partial match on phone number. Must contain at least 5 digits.",
+            "in": "query",
+            "name": "filter[phone_number][contains]",
+            "required": false,
+            "schema": {
+              "example": "+16035551234",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Exact phone-number match (E.164).",
+            "in": "query",
+            "name": "filter[phone_number][eq]",
+            "required": false,
+            "schema": {
+              "example": "+16035551234",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Only numbers with this source.",
+            "in": "query",
+            "name": "filter[source]",
+            "required": false,
+            "schema": {
+              "$ref": "#/components/schemas/ReputationNumberSource"
+            }
+          },
+          {
+            "description": "Only numbers with this ownership status. `removed` lists the numbers that were removed, each with its `removal_reason` and `removed_at`; removed numbers are not returned otherwise.",
+            "in": "query",
+            "name": "filter[ownership_status]",
+            "required": false,
+            "schema": {
+              "$ref": "#/components/schemas/ReputationOwnershipStatus"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReputationPhoneNumberListWithReputation"
+                }
+              }
+            },
+            "description": "Paginated list of numbers with reputation data."
+          },
+          "401": {
+            "$ref": "#/components/responses/number-reputation_GenericErrorResponse"
+          },
+          "404": {
+            "$ref": "#/components/responses/number-reputation_GenericErrorResponse"
+          }
+        },
+        "summary": "List reputation-monitored phone numbers for an enterprise",
+        "tags": [
+          "Reputation"
+        ]
+      },
+      "post": {
+        "description": "Add up to 100 phone numbers to reputation monitoring on this enterprise. Each must be in E.164 format (`+1NPANXXXXXX` for US/CA). A number in your Telnyx phone-number inventory is accepted as `source: telnyx`; a number that is not is treated as hosted with another provider and must meet the requirements below.\n\n**Prerequisite**: reputation must already be enabled on this enterprise (see `POST .../reputation`).\n\n**Pricing:** This is a billable action. See https://telnyx.com/pricing/numbers for current pricing.\n\nA phone number that is not in your Telnyx inventory is treated as a number hosted with another provider (`source: external`). It must be a US local number, and the enterprise's ownership proof must be approved first (`POST /enterprises/{enterprise_id}/reputation/external_verification`); otherwise the request fails with a 400 whose `detail` contains `external_verification_required`. Ownership of such numbers is checked every day.",
+        "operationId": "associateReputationNumbers",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/EnterpriseId"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "example": {
+                "phone_numbers": [
+                  "+19493253498",
+                  "+12134445566"
+                ]
+              },
+              "schema": {
+                "$ref": "#/components/schemas/ReputationPhoneNumberCreate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReputationPhoneNumberList"
+                }
+              }
+            },
+            "description": "Numbers registered."
+          },
+          "400": {
+            "$ref": "#/components/responses/number-reputation_GenericErrorResponse"
+          },
+          "401": {
+            "$ref": "#/components/responses/number-reputation_GenericErrorResponse"
+          },
+          "404": {
+            "$ref": "#/components/responses/number-reputation_GenericErrorResponse"
+          },
+          "503": {
+            "$ref": "#/components/responses/number-reputation_GenericErrorResponse"
+          }
+        },
+        "summary": "Register phone numbers for reputation monitoring",
+        "tags": [
+          "Reputation"
+        ]
+      }
+    },
+    "/enterprises/{enterprise_id}/reputation/numbers/refresh": {
+      "post": {
+        "description": "Immediately refresh the stored reputation data for the listed numbers. This is in addition to the periodic refresh determined by `check_frequency`. Up to 100 numbers per call. The response carries the kicked-off jobs; the actual refresh runs asynchronously.\n\n**Pricing:** Forcing a refresh performs live reputation lookups, which are billable. See https://telnyx.com/pricing/numbers for current pricing.",
+        "operationId": "refreshReputationNumbers",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/EnterpriseId"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "example": {
+                "phone_numbers": [
+                  "+19493253498"
+                ]
+              },
+              "schema": {
+                "$ref": "#/components/schemas/RefreshReputationRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RefreshReputationResponse"
+                }
+              }
+            },
+            "description": "Refresh completed (the call is synchronous from the customer's POV - Telnyx fans out to the reputation feed before responding)."
+          },
+          "4XX": {
+            "$ref": "#/components/responses/number-reputation_GenericErrorResponse"
+          },
+          "default": {
+            "$ref": "#/components/responses/number-reputation_GenericErrorResponse"
+          }
+        },
+        "summary": "Force a reputation refresh",
+        "tags": [
+          "Reputation"
+        ]
+      }
+    },
+    "/enterprises/{enterprise_id}/reputation/numbers/{phone_number}": {
+      "delete": {
+        "description": "Stop tracking the reputation of this phone number. The number itself remains in your inventory; only the reputation registration is removed.",
+        "operationId": "disassociateReputationNumber",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/EnterpriseId"
+          },
+          {
+            "$ref": "#/components/parameters/PhoneNumberPath"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "204 (no body)"
+          },
+          "401": {
+            "$ref": "#/components/responses/number-reputation_GenericErrorResponse"
+          },
+          "404": {
+            "$ref": "#/components/responses/number-reputation_GenericErrorResponse"
+          }
+        },
+        "summary": "Remove a phone number from reputation monitoring",
+        "tags": [
+          "Reputation"
+        ]
+      },
+      "get": {
+        "description": "Retrieve one registered number with its latest reputation snapshot. The `phone_number` path parameter is in E.164 format and must be URL-encoded (e.g. `%2B19493253498`).",
+        "operationId": "getPhoneNumberReputation",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/EnterpriseId"
+          },
+          {
+            "$ref": "#/components/parameters/PhoneNumberPath"
+          },
+          {
+            "description": "When true, fetches fresh reputation data (incurs API cost). When false (default), returns cached data.",
+            "in": "query",
+            "name": "fresh",
+            "required": false,
+            "schema": {
+              "default": false,
+              "type": "boolean"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReputationPhoneNumberWithReputation"
+                }
+              }
+            },
+            "description": "Phone number with reputation data."
+          },
+          "401": {
+            "$ref": "#/components/responses/number-reputation_GenericErrorResponse"
+          },
+          "403": {
+            "$ref": "#/components/responses/number-reputation_GenericErrorResponse"
+          },
+          "404": {
+            "$ref": "#/components/responses/number-reputation_GenericErrorResponse"
+          }
+        },
+        "summary": "Get a single reputation-monitored phone number",
+        "tags": [
+          "Reputation"
+        ]
+      }
+    },
+    "/enterprises/{enterprise_id}/reputation/numbers/{phone_number}/ownership": {
+      "get": {
+        "description": "Get the ownership status of a phone number, when it was last checked, the carrier recorded as its baseline, and the history of ownership events.",
+        "operationId": "getReputationNumberOwnership",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/EnterpriseId"
+          },
+          {
+            "$ref": "#/components/parameters/PhoneNumberPath"
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReputationNumberOwnershipWrapped"
+                }
+              }
+            },
+            "description": "Ownership tracking detail."
+          },
+          "401": {
+            "$ref": "#/components/responses/number-reputation_GenericErrorResponse"
+          },
+          "404": {
+            "$ref": "#/components/responses/number-reputation_GenericErrorResponse"
+          }
+        },
+        "summary": "Get a phone number's ownership tracking detail",
+        "tags": [
+          "Reputation"
+        ]
+      }
+    },
+    "/enterprises/{enterprise_id}/reputation/numbers/{phone_number}/ownership_confirm": {
+      "post": {
+        "description": "Answer an ownership question about a phone number hosted with another provider.\n\nSend `still_own: true` to confirm you still own a number whose `ownership_status` is `pending_confirmation` or `flagged`; its status returns to `verified` and, after a carrier change, the new carrier becomes the one on record.\n\nSend `still_own: false` to report that you no longer own the number. It is removed from Number Reputation immediately, whatever its current status, and the response shows it with `ownership_status: removed`.",
+        "operationId": "confirmReputationNumberOwnership",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/EnterpriseId"
+          },
+          {
+            "$ref": "#/components/parameters/PhoneNumberPath"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "example": {
+                "still_own": true
+              },
+              "schema": {
+                "$ref": "#/components/schemas/OwnershipConfirmRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReputationPhoneNumberWithReputation"
+                }
+              }
+            },
+            "description": "The phone number after the confirmation, or the removed number."
+          },
+          "400": {
+            "$ref": "#/components/responses/number-reputation_GenericErrorResponse"
+          },
+          "401": {
+            "$ref": "#/components/responses/number-reputation_GenericErrorResponse"
+          },
+          "404": {
+            "$ref": "#/components/responses/number-reputation_GenericErrorResponse"
+          },
+          "503": {
+            "$ref": "#/components/responses/number-reputation_GenericErrorResponse"
+          }
+        },
+        "summary": "Confirm or give up ownership of a phone number",
+        "tags": [
+          "Reputation"
+        ]
+      }
+    },
+    "/enterprises/{enterprise_id}/reputation/remediation": {
+      "get": {
+        "description": "Paginated list of remediation requests for this enterprise. List items omit per-number results and webhook URLs to keep the response small; call GET by id for full detail. Supports JSON:API pagination and optional filters on status and created-at range.",
+        "operationId": "listReputationRemediations",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/EnterpriseId"
+          },
+          {
+            "$ref": "#/components/parameters/BcPageNumber"
+          },
+          {
+            "$ref": "#/components/parameters/BcPageSize"
+          },
+          {
+            "description": "Filter by customer-facing status.",
+            "in": "query",
+            "name": "filter[status]",
+            "required": false,
+            "schema": {
+              "$ref": "#/components/schemas/RemediationStatus"
+            }
+          },
+          {
+            "description": "Only requests created on or after this timestamp (ISO 8601).",
+            "in": "query",
+            "name": "filter[created_at][gte]",
+            "required": false,
+            "schema": {
+              "example": "2026-01-01T00:00:00Z",
+              "format": "date-time",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Only requests created on or before this timestamp (ISO 8601).",
+            "in": "query",
+            "name": "filter[created_at][lte]",
+            "required": false,
+            "schema": {
+              "example": "2026-12-31T23:59:59Z",
+              "format": "date-time",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RemediationRequestList"
+                }
+              }
+            },
+            "description": "Paginated list of remediation requests."
+          },
+          "401": {
+            "$ref": "#/components/responses/number-reputation_GenericErrorResponse"
+          },
+          "404": {
+            "$ref": "#/components/responses/number-reputation_GenericErrorResponse"
+          }
+        },
+        "summary": "List reputation remediation requests for an enterprise",
+        "tags": [
+          "Reputation"
+        ]
+      },
+      "post": {
+        "description": "Submit a batch of phone numbers belonging to this enterprise for reputation remediation. The request is accepted asynchronously: this endpoint returns `202` with the persisted request id, then the request transitions through processing states until completion. Use the GET endpoints to poll status and per-number results.\n\nEach phone number must be in E.164 format and belong to this enterprise. A number that already has an in-flight remediation request is rejected.",
+        "operationId": "submitReputationRemediation",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/EnterpriseId"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "example": {
+                "call_purpose": "Appointment reminders for our dental clinic.",
+                "contact_email": "ops@example.com",
+                "phone_numbers": [
+                  "+19493253498",
+                  "+12134445566"
+                ],
+                "webhook_url": "https://example.com/webhooks/remediation"
+              },
+              "schema": {
+                "$ref": "#/components/schemas/RemediationRequestCreate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "202": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RemediationRequestWrapped"
+                }
+              }
+            },
+            "description": "Remediation request accepted and persisted."
+          },
+          "400": {
+            "$ref": "#/components/responses/number-reputation_GenericErrorResponse"
+          },
+          "401": {
+            "$ref": "#/components/responses/number-reputation_GenericErrorResponse"
+          },
+          "404": {
+            "$ref": "#/components/responses/number-reputation_GenericErrorResponse"
+          },
+          "409": {
+            "$ref": "#/components/responses/number-reputation_GenericErrorResponse"
+          },
+          "422": {
+            "$ref": "#/components/responses/number-reputation_GenericErrorResponse"
+          }
+        },
+        "summary": "Submit phone numbers for reputation remediation",
+        "tags": [
+          "Reputation"
+        ]
+      }
+    },
+    "/enterprises/{enterprise_id}/reputation/remediation/{remediation_id}": {
+      "get": {
+        "description": "Retrieve the full detail of a remediation request, including current status, per-number results (once available), and submission metadata.",
+        "operationId": "getReputationRemediation",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/EnterpriseId"
+          },
+          {
+            "description": "The remediation request id. Lowercase UUID.",
+            "in": "path",
+            "name": "remediation_id",
+            "required": true,
+            "schema": {
+              "example": "b7c1f1c0-7a9d-4f0a-9d3e-2f6a1c4b8e21",
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RemediationRequestWrapped"
+                }
+              }
+            },
+            "description": "The remediation request."
+          },
+          "401": {
+            "$ref": "#/components/responses/number-reputation_GenericErrorResponse"
+          },
+          "404": {
+            "$ref": "#/components/responses/number-reputation_GenericErrorResponse"
+          }
+        },
+        "summary": "Get a reputation remediation request",
+        "tags": [
+          "Reputation"
+        ]
+      }
+    },
+    "/enterprises/{enterprise_id}/reputation/webhook": {
+      "patch": {
+        "description": "Set the HTTPS URL that receives number-ownership events for this enterprise: `number_reputation.number.flagged`, `number_reputation.number.removed` and `number_reputation.external_verification.status_changed`. Send `webhook_url: null` to stop receiving them.",
+        "operationId": "updateReputationWebhook",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/EnterpriseId"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "example": {
+                "webhook_url": "https://example.com/webhooks/telnyx"
+              },
+              "schema": {
+                "$ref": "#/components/schemas/EnterpriseReputationWebhookUpdate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EnterpriseReputationPublicWrapped"
+                }
+              }
+            },
+            "description": "Updated reputation settings."
+          },
+          "400": {
+            "$ref": "#/components/responses/number-reputation_GenericErrorResponse"
+          },
+          "401": {
+            "$ref": "#/components/responses/number-reputation_GenericErrorResponse"
+          },
+          "404": {
+            "$ref": "#/components/responses/number-reputation_GenericErrorResponse"
+          }
+        },
+        "summary": "Set the number-ownership webhook URL",
+        "tags": [
+          "Reputation"
+        ]
+      }
+    },
+    "/reputation/numbers": {
+      "get": {
+        "description": "Convenience alias for `GET /v2/enterprises/{enterprise_id}/reputation/numbers` that returns numbers across every enterprise you own. Useful when you don't want to look up the enterprise id first.",
+        "operationId": "listReputationNumbersSimplified",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/BcPageNumber"
+          },
+          {
+            "$ref": "#/components/parameters/BcPageSize"
+          },
+          {
+            "description": "Partial match on phone number. Must contain at least 5 digits.",
+            "in": "query",
+            "name": "filter[phone_number][contains]",
+            "required": false,
+            "schema": {
+              "example": "+16035551234",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Filter by enterprise ID.",
+            "in": "query",
+            "name": "filter[enterprise_id]",
+            "required": false,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Exact phone-number match (E.164).",
+            "in": "query",
+            "name": "filter[phone_number][eq]",
+            "required": false,
+            "schema": {
+              "example": "+16035551234",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Only numbers with this source.",
+            "in": "query",
+            "name": "filter[source]",
+            "required": false,
+            "schema": {
+              "$ref": "#/components/schemas/ReputationNumberSource"
+            }
+          },
+          {
+            "description": "Only numbers with this ownership status. `removed` lists the numbers that were removed, each with its `removal_reason` and `removed_at`; removed numbers are not returned otherwise.",
+            "in": "query",
+            "name": "filter[ownership_status]",
+            "required": false,
+            "schema": {
+              "$ref": "#/components/schemas/ReputationOwnershipStatus"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReputationPhoneNumberListWithReputation"
+                }
+              }
+            },
+            "description": "Paginated list."
+          },
+          "401": {
+            "$ref": "#/components/responses/number-reputation_GenericErrorResponse"
+          }
+        },
+        "summary": "List reputation-monitored phone numbers across all enterprises",
+        "tags": [
+          "Reputation"
+        ]
+      }
+    },
+    "/reputation/numbers/{phone_number}": {
+      "delete": {
+        "description": "Convenience alias for `DELETE /v2/enterprises/{enterprise_id}/reputation/numbers/{phone_number}`.",
+        "operationId": "disassociateReputationNumberSimplified",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/PhoneNumberPath"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "204 (no body)"
+          },
+          "401": {
+            "$ref": "#/components/responses/number-reputation_GenericErrorResponse"
+          },
+          "404": {
+            "$ref": "#/components/responses/number-reputation_GenericErrorResponse"
+          }
+        },
+        "summary": "Remove a phone number from reputation monitoring (no enterprise_id required)",
+        "tags": [
+          "Reputation"
+        ]
+      },
+      "get": {
+        "description": "Convenience alias for `GET /v2/enterprises/{enterprise_id}/reputation/numbers/{phone_number}`.",
+        "operationId": "getPhoneNumberReputationSimplified",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/PhoneNumberPath"
+          },
+          {
+            "description": "When true, fetches fresh reputation data (incurs API cost). When false (default), returns cached data.",
+            "in": "query",
+            "name": "fresh",
+            "required": false,
+            "schema": {
+              "default": false,
+              "type": "boolean"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReputationPhoneNumberWithReputation"
+                }
+              }
+            },
+            "description": "Phone number with reputation data."
+          },
+          "401": {
+            "$ref": "#/components/responses/number-reputation_GenericErrorResponse"
+          },
+          "404": {
+            "$ref": "#/components/responses/number-reputation_GenericErrorResponse"
+          }
+        },
+        "summary": "Get a reputation-monitored number (no enterprise_id required)",
+        "tags": [
+          "Reputation"
+        ]
+      }
+    }
+  },
+  "security": [
+    {
+      "bearerAuth": []
+    }
+  ],
+  "servers": [
+    {
+      "description": "Version 2.0.0 of the Telnyx API",
+      "url": "https://api.telnyx.com/v2"
+    }
+  ]
+}

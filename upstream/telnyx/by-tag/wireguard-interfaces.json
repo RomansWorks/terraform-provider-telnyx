@@ -1,0 +1,945 @@
+{
+  "components": {
+    "parameters": {
+      "PageConsolidated": {
+        "description": "Consolidated page parameter (deepObject style). Originally: page[number], page[size]",
+        "explode": true,
+        "in": "query",
+        "name": "page",
+        "schema": {
+          "properties": {
+            "number": {
+              "default": 1,
+              "description": "The page number to load",
+              "minimum": 1,
+              "type": "integer"
+            },
+            "size": {
+              "default": 20,
+              "description": "The size of the page",
+              "maximum": 250,
+              "minimum": 1,
+              "type": "integer"
+            }
+          },
+          "type": "object"
+        },
+        "style": "deepObject"
+      },
+      "ResourceId": {
+        "description": "Identifies the resource.",
+        "in": "path",
+        "name": "id",
+        "required": true,
+        "schema": {
+          "example": "6a09cdc3-8948-47f0-aa62-74ac943d6c58",
+          "format": "uuid",
+          "type": "string"
+        }
+      }
+    },
+    "responses": {
+      "GenericErrorResponse": {
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Errors"
+            }
+          }
+        },
+        "description": "Unexpected error"
+      },
+      "netapps_UnprocessableEntity_17904fcfbc": {
+        "content": {
+          "application/json": {
+            "example": {
+              "errors": [
+                {
+                  "code": "10027",
+                  "detail": "The server understood the syntax of the request but was unable to process the instructions.",
+                  "title": "Unprocessable Entity"
+                }
+              ]
+            },
+            "schema": {
+              "$ref": "#/components/schemas/Errors"
+            }
+          }
+        },
+        "description": "Unprocessable entity. Check the 'detail' field in response for details."
+      }
+    },
+    "schemas": {
+      "Error": {
+        "example": {
+          "code": "20207",
+          "description": "The street address provided is invalid.",
+          "source": {
+            "pointer": "/street_address"
+          },
+          "title": "Invalid street address"
+        },
+        "properties": {
+          "code": {
+            "type": "string",
+            "x-format": "int64"
+          },
+          "description": {
+            "type": "string"
+          },
+          "detail": {
+            "description": "A human-readable explanation of the error.",
+            "type": "string"
+          },
+          "meta": {
+            "additionalProperties": true,
+            "type": "object"
+          },
+          "source": {
+            "properties": {
+              "parameter": {
+                "description": "Indicates which query parameter caused the error.",
+                "type": "string"
+              },
+              "pointer": {
+                "description": "JSON pointer (RFC6901) to the offending entity.",
+                "format": "json-pointer",
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
+          "title": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "title"
+        ],
+        "type": "object"
+      },
+      "Errors": {
+        "properties": {
+          "errors": {
+            "items": {
+              "$ref": "#/components/schemas/Error"
+            },
+            "type": "array"
+          }
+        },
+        "type": "object"
+      },
+      "Interface": {
+        "properties": {
+          "name": {
+            "description": "A user specified name for the interface.",
+            "example": "test interface",
+            "type": "string"
+          },
+          "network_id": {
+            "description": "The id of the network associated with the interface.",
+            "example": "6a09cdc3-8948-47f0-aa62-74ac943d6c58",
+            "format": "uuid",
+            "type": "string"
+          },
+          "status": {
+            "$ref": "#/components/schemas/InterfaceStatus"
+          }
+        },
+        "type": "object"
+      },
+      "InterfaceStatus": {
+        "description": "The current status of the interface deployment.",
+        "enum": [
+          "created",
+          "provisioning",
+          "provisioned",
+          "deleting"
+        ],
+        "example": "provisioned",
+        "readOnly": true,
+        "type": "string"
+      },
+      "PaginationMeta": {
+        "properties": {
+          "page_number": {
+            "example": 2,
+            "type": "integer"
+          },
+          "page_size": {
+            "example": 25,
+            "type": "integer"
+          },
+          "total_pages": {
+            "example": 3,
+            "type": "integer"
+          },
+          "total_results": {
+            "example": 55,
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "Record": {
+        "properties": {
+          "created_at": {
+            "description": "ISO 8601 formatted date-time indicating when the resource was created.",
+            "example": "2018-02-02T22:25:27.521Z",
+            "readOnly": true,
+            "type": "string"
+          },
+          "id": {
+            "description": "Identifies the resource.",
+            "example": "6a09cdc3-8948-47f0-aa62-74ac943d6c58",
+            "format": "uuid",
+            "readOnly": true,
+            "type": "string"
+          },
+          "record_type": {
+            "description": "Identifies the type of the resource.",
+            "example": "sample_record_type",
+            "readOnly": true,
+            "type": "string"
+          },
+          "updated_at": {
+            "description": "ISO 8601 formatted date-time indicating when the resource was updated.",
+            "example": "2018-02-02T22:25:27.521Z",
+            "readOnly": true,
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "RegionIn": {
+        "properties": {
+          "region_code": {
+            "description": "The region the interface should be deployed to.",
+            "example": "ashburn-va",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "RegionOut": {
+        "properties": {
+          "region": {
+            "properties": {
+              "code": {
+                "description": "Region code of the interface.",
+                "example": "ashburn-va",
+                "type": "string"
+              },
+              "name": {
+                "description": "Region name of the interface.",
+                "example": "Ashburn",
+                "type": "string"
+              },
+              "record_type": {
+                "description": "Identifies the type of the resource.",
+                "example": "region",
+                "readOnly": true,
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
+          "region_code": {
+            "description": "The region interface is deployed to.",
+            "example": "ashburn-va",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "WireguardInterface": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/Record"
+          },
+          {
+            "$ref": "#/components/schemas/Interface"
+          },
+          {
+            "properties": {
+              "enable_sip_trunking": {
+                "description": "Enable SIP traffic forwarding over VPN interface.",
+                "example": false,
+                "type": "boolean"
+              },
+              "endpoint": {
+                "description": "The Telnyx WireGuard peers `Peer.endpoint` value.",
+                "example": "203.0.113.0:51871",
+                "readOnly": true,
+                "type": "string"
+              },
+              "public_key": {
+                "description": "The Telnyx WireGuard peers `Peer.PublicKey`.",
+                "example": "qF4EqlZq+5JL2IKYY8ij49daYyfKVhevJrcDxdqC8GU=",
+                "readOnly": true,
+                "type": "string"
+              },
+              "record_type": {
+                "description": "Identifies the type of the resource.",
+                "example": "wireguard_interface",
+                "readOnly": true,
+                "type": "string"
+              }
+            },
+            "title": "WireguardInterface",
+            "type": "object"
+          }
+        ]
+      },
+      "WireguardInterfaceCreate": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/WireguardInterface"
+          },
+          {
+            "$ref": "#/components/schemas/RegionIn"
+          },
+          {
+            "required": [
+              "network_id",
+              "region_code"
+            ],
+            "title": "WireguardInterfaceCreate",
+            "type": "object"
+          }
+        ]
+      },
+      "WireguardInterfaceRead": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/WireguardInterface"
+          },
+          {
+            "$ref": "#/components/schemas/RegionOut"
+          }
+        ]
+      },
+      "WireguardPeer": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/Record"
+          },
+          {
+            "$ref": "#/components/schemas/WireguardPeerPatch"
+          },
+          {
+            "properties": {
+              "last_seen": {
+                "description": "ISO 8601 formatted date-time indicating when peer sent traffic last time.",
+                "example": "2018-02-02T22:25:27.521Z",
+                "readOnly": true,
+                "type": "string"
+              },
+              "private_key": {
+                "description": "Your WireGuard `Interface.PrivateKey`.\u003cbr /\u003e\u003cbr /\u003eThis attribute is only ever utlised if, on POST, you do NOT provide your own `public_key`. In which case, a new Public and Private key pair will be generated for you. When your `private_key` is returned, you must save this immediately as we do not save it within Telnyx. If you lose your Private Key, it can not be recovered.",
+                "example": "qF4EqlZq+5JL2IKYY8ij49daYyfKVhevJrcDxdqC8GU=",
+                "readOnly": true,
+                "type": "string"
+              },
+              "record_type": {
+                "description": "Identifies the type of the resource.",
+                "example": "wireguard_peer",
+                "readOnly": true,
+                "type": "string"
+              },
+              "wireguard_interface_id": {
+                "description": "The id of the wireguard interface associated with the peer.",
+                "example": "6a09cdc3-8948-47f0-aa62-74ac943d6c58",
+                "format": "uuid",
+                "type": "string"
+              }
+            },
+            "title": "WireguardPeer",
+            "type": "object"
+          }
+        ]
+      },
+      "WireguardPeerCreate": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/WireguardPeer"
+          },
+          {
+            "required": [
+              "wireguard_interface_id"
+            ],
+            "title": "WireguardPeerCreate",
+            "type": "object"
+          }
+        ]
+      },
+      "WireguardPeerPatch": {
+        "properties": {
+          "public_key": {
+            "description": "The WireGuard `PublicKey`.\u003cbr /\u003e\u003cbr /\u003eIf you do not provide a Public Key, a new Public and Private key pair will be generated for you.",
+            "example": "qF4EqlZq+5JL2IKYY8ij49daYyfKVhevJrcDxdqC8GU=",
+            "type": "string"
+          }
+        },
+        "title": "WireguardPeerPatch",
+        "type": "object"
+      }
+    },
+    "securitySchemes": {
+      "BearerAuth": {
+        "bearerFormat": "API key",
+        "description": "Telnyx API key supplied as `Authorization: Bearer \u003ctoken\u003e`. In production, auth may be validated by the API gateway and forwarded via Telnyx auth headers.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "Payment": {
+        "description": "Machine Payment Protocol credential used on paid retries, sent as `Authorization: Payment ...`. Obtained by paying a challenge returned in the `WWW-Authenticate` header of a 402 response. This is not a Telnyx API key; initial challenge requests use standard bearer authentication instead.",
+        "in": "header",
+        "name": "Authorization",
+        "type": "apiKey"
+      },
+      "agent-memory_bearerAuth": {
+        "description": "Telnyx API key",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "bearerAuth": {
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "branded-calling_bearerAuth": {
+        "description": "Telnyx API key. Generate one at https://portal.telnyx.com/#/app/api-keys.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "collections_bearerAuth": {
+        "description": "Telnyx API key. Collections and results are automatically scoped to the authenticated user's organization.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "number-reputation_bearerAuth": {
+        "description": "Telnyx API key. Generate one at https://portal.telnyx.com/#/app/api-keys.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "oauthClientAuth": {
+        "description": "OAuth 2.0 authentication for Telnyx API and MCP integrations",
+        "flows": {
+          "authorizationCode": {
+            "authorizationUrl": "https://api.telnyx.com/v2/oauth/authorize",
+            "refreshUrl": "https://api.telnyx.com/v2/oauth/token",
+            "scopes": {
+              "admin": "Administrative access to Telnyx resources"
+            },
+            "tokenUrl": "https://api.telnyx.com/v2/oauth/token"
+          },
+          "clientCredentials": {
+            "scopes": {
+              "admin": "Administrative access to Telnyx resources"
+            },
+            "tokenUrl": "https://api.telnyx.com/v2/oauth/token"
+          }
+        },
+        "type": "oauth2"
+      },
+      "outbound-voice-profiles_bearerAuth": {
+        "bearerFormat": "JWT",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "pay-connectors_bearerAuth": {
+        "description": "Telnyx API key, not the processor bearer token.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "pronunciation-dicts_bearerAuth": {
+        "description": "Telnyx API v2 key. Obtain from https://portal.telnyx.com",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "rcs-registration_bearerAuth": {
+        "bearerFormat": "API key",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "stored-payment-transactions_bearerAuth": {
+        "bearerFormat": "JWT",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "telnyxApiKey": {
+        "description": "Management-only Telnyx account credential.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "transcriptions-search_bearerAuth": {
+        "description": "Telnyx API key. Results are automatically scoped to the authenticated user's organization.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "web-search_bearerAuth": {
+        "description": "Telnyx API key",
+        "scheme": "bearer",
+        "type": "http"
+      }
+    }
+  },
+  "info": {
+    "contact": {
+      "email": "support@telnyx.com"
+    },
+    "description": "SIP trunking, SMS, MMS, Call Control and Telephony Data Services.",
+    "title": "Telnyx API",
+    "version": "2.0.0",
+    "x-endpoint-cost": "light",
+    "x-latency-category": "responsive"
+  },
+  "openapi": "3.1.0",
+  "paths": {
+    "/wireguard_interfaces": {
+      "get": {
+        "description": "Returns a paginated list of the WireGuard interfaces on your account, with support for filtering.",
+        "operationId": "ListWireguardInterfaces",
+        "parameters": [
+          {
+            "description": "Consolidated filter parameter (deepObject style). Originally: filter[network_id]",
+            "explode": true,
+            "in": "query",
+            "name": "filter",
+            "schema": {
+              "properties": {
+                "network_id": {
+                  "description": "The associated network id to filter on.",
+                  "example": "6a09cdc3-8948-47f0-aa62-74ac943d6c58",
+                  "type": "string"
+                }
+              },
+              "type": "object"
+            },
+            "style": "deepObject"
+          },
+          {
+            "$ref": "#/components/parameters/PageConsolidated"
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "items": {
+                        "$ref": "#/components/schemas/WireguardInterfaceRead"
+                      },
+                      "type": "array"
+                    },
+                    "meta": {
+                      "$ref": "#/components/schemas/PaginationMeta"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful response"
+          },
+          "422": {
+            "$ref": "#/components/responses/GenericErrorResponse"
+          },
+          "default": {
+            "$ref": "#/components/responses/GenericErrorResponse"
+          }
+        },
+        "summary": "List all WireGuard Interfaces",
+        "tags": [
+          "WireGuard Interfaces"
+        ]
+      },
+      "post": {
+        "description": "Create a new WireGuard Interface. Current limitation of 10 interfaces per user can be created.",
+        "operationId": "CreateWireguardInterface",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/WireguardInterfaceCreate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "202": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/WireguardInterfaceRead"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Creation request accepted. Provisioning is asynchronous; poll GET /wireguard_interfaces/{id} with the returned id to check status."
+          },
+          "422": {
+            "$ref": "#/components/responses/netapps_UnprocessableEntity_17904fcfbc"
+          },
+          "default": {
+            "$ref": "#/components/responses/GenericErrorResponse"
+          }
+        },
+        "summary": "Create a WireGuard Interface",
+        "tags": [
+          "WireGuard Interfaces"
+        ]
+      }
+    },
+    "/wireguard_interfaces/{id}": {
+      "delete": {
+        "description": "Deletes the specified WireGuard interface from its network.",
+        "operationId": "DeleteWireguardInterface",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/ResourceId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/WireguardInterfaceRead"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful response"
+          },
+          "422": {
+            "$ref": "#/components/responses/GenericErrorResponse"
+          },
+          "default": {
+            "$ref": "#/components/responses/GenericErrorResponse"
+          }
+        },
+        "summary": "Delete a WireGuard Interface",
+        "tags": [
+          "WireGuard Interfaces"
+        ]
+      },
+      "get": {
+        "description": "Returns the details of a single WireGuard interface by its identifier.",
+        "operationId": "GetWireguardInterface",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/ResourceId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/WireguardInterfaceRead"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful response"
+          },
+          "422": {
+            "$ref": "#/components/responses/GenericErrorResponse"
+          },
+          "default": {
+            "$ref": "#/components/responses/GenericErrorResponse"
+          }
+        },
+        "summary": "Retrieve a WireGuard Interfaces",
+        "tags": [
+          "WireGuard Interfaces"
+        ]
+      }
+    },
+    "/wireguard_peers": {
+      "get": {
+        "description": "Returns a paginated list of your WireGuard peers, with support for filtering.",
+        "operationId": "ListWireguardPeers",
+        "parameters": [
+          {
+            "description": "Consolidated filter parameter (deepObject style). Originally: filter[wireguard_interface_id]",
+            "explode": true,
+            "in": "query",
+            "name": "filter",
+            "schema": {
+              "properties": {
+                "wireguard_interface_id": {
+                  "description": "The id of the associated WireGuard interface to filter on.",
+                  "example": "6a09cdc3-8948-47f0-aa62-74ac943d6c58",
+                  "format": "uuid",
+                  "type": "string"
+                }
+              },
+              "type": "object"
+            },
+            "style": "deepObject"
+          },
+          {
+            "$ref": "#/components/parameters/PageConsolidated"
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "items": {
+                        "$ref": "#/components/schemas/WireguardPeer"
+                      },
+                      "type": "array"
+                    },
+                    "meta": {
+                      "$ref": "#/components/schemas/PaginationMeta"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful response"
+          },
+          "422": {
+            "$ref": "#/components/responses/GenericErrorResponse"
+          },
+          "default": {
+            "$ref": "#/components/responses/GenericErrorResponse"
+          }
+        },
+        "summary": "List all WireGuard Peers",
+        "tags": [
+          "WireGuard Interfaces"
+        ]
+      },
+      "post": {
+        "description": "Create a new WireGuard Peer. Current limitation of 5 peers per interface can be created.",
+        "operationId": "CreateWireguardPeer",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/WireguardPeerCreate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "202": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/WireguardPeer"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Creation request accepted. Provisioning is asynchronous; poll GET /wireguard_peers/{id} with the returned id to check status."
+          },
+          "422": {
+            "$ref": "#/components/responses/netapps_UnprocessableEntity_17904fcfbc"
+          },
+          "default": {
+            "$ref": "#/components/responses/GenericErrorResponse"
+          }
+        },
+        "summary": "Create a WireGuard Peer",
+        "tags": [
+          "WireGuard Interfaces"
+        ]
+      }
+    },
+    "/wireguard_peers/{id}": {
+      "delete": {
+        "description": "Deletes the specified WireGuard peer from its interface.",
+        "operationId": "DeleteWireguardPeer",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/ResourceId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/WireguardPeer"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful response"
+          },
+          "422": {
+            "$ref": "#/components/responses/GenericErrorResponse"
+          },
+          "default": {
+            "$ref": "#/components/responses/GenericErrorResponse"
+          }
+        },
+        "summary": "Delete the WireGuard Peer",
+        "tags": [
+          "WireGuard Interfaces"
+        ]
+      },
+      "get": {
+        "description": "Returns the details of a single WireGuard peer by its identifier.",
+        "operationId": "GetWireguardPeer",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/ResourceId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/WireguardPeer"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful response"
+          },
+          "422": {
+            "$ref": "#/components/responses/GenericErrorResponse"
+          },
+          "default": {
+            "$ref": "#/components/responses/GenericErrorResponse"
+          }
+        },
+        "summary": "Retrieve the WireGuard Peer",
+        "tags": [
+          "WireGuard Interfaces"
+        ]
+      },
+      "patch": {
+        "description": "Updates the specified WireGuard peer and returns the updated peer.",
+        "operationId": "UpdateWireguardPeer",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/ResourceId"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/WireguardPeerPatch"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/WireguardPeer"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful response"
+          },
+          "422": {
+            "$ref": "#/components/responses/netapps_UnprocessableEntity_17904fcfbc"
+          },
+          "default": {
+            "$ref": "#/components/responses/GenericErrorResponse"
+          }
+        },
+        "summary": "Update the WireGuard Peer",
+        "tags": [
+          "WireGuard Interfaces"
+        ]
+      }
+    },
+    "/wireguard_peers/{id}/config": {
+      "get": {
+        "description": "Retrieve Wireguard config template for Peer",
+        "operationId": "GetWireguardPeerConfig",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/ResourceId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "example": "[Interface]\nPrivateKey = \u003c! INSERT PEER PRIVATE KEY HERE !\u003e\nAddress = 198.51.100.1/32\n\n[Peer]\nPublicKey = qF4EqlZq+5JL2IKYY8ij49daYyfKVhevJrcDxdqC8GU=\nAllowedIPs = 198.51.100.0/29\nEndpoint = 203.0.113.0:51871\nPersistentKeepalive = 25\n",
+                  "type": "string"
+                }
+              }
+            },
+            "description": "Successful response"
+          },
+          "422": {
+            "$ref": "#/components/responses/GenericErrorResponse"
+          },
+          "default": {
+            "$ref": "#/components/responses/GenericErrorResponse"
+          }
+        },
+        "summary": "Retrieve Wireguard config template for Peer",
+        "tags": [
+          "WireGuard Interfaces"
+        ]
+      }
+    }
+  },
+  "security": [
+    {
+      "bearerAuth": []
+    }
+  ],
+  "servers": [
+    {
+      "description": "Version 2.0.0 of the Telnyx API",
+      "url": "https://api.telnyx.com/v2"
+    }
+  ]
+}

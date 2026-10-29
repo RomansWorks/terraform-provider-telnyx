@@ -1,0 +1,327 @@
+{
+  "components": {
+    "schemas": {
+      "AuthorizationServerMetadata": {
+        "properties": {
+          "authorization_endpoint": {
+            "description": "Authorization endpoint URL",
+            "format": "uri",
+            "type": "string"
+          },
+          "code_challenge_methods_supported": {
+            "description": "Supported PKCE code challenge methods",
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "grant_types_supported": {
+            "description": "Supported grant types",
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "introspection_endpoint": {
+            "description": "Token introspection endpoint URL",
+            "format": "uri",
+            "type": "string"
+          },
+          "issuer": {
+            "description": "Authorization server issuer URL",
+            "format": "uri",
+            "type": "string"
+          },
+          "jwks_uri": {
+            "description": "JWK Set endpoint URL",
+            "format": "uri",
+            "type": "string"
+          },
+          "registration_endpoint": {
+            "description": "Dynamic client registration endpoint URL",
+            "format": "uri",
+            "type": "string"
+          },
+          "response_types_supported": {
+            "description": "Supported response types",
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "scopes_supported": {
+            "description": "Supported OAuth scopes",
+            "example": [
+              "admin"
+            ],
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "token_endpoint": {
+            "description": "Token endpoint URL",
+            "format": "uri",
+            "type": "string"
+          },
+          "token_endpoint_auth_methods_supported": {
+            "description": "Supported token endpoint authentication methods",
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          }
+        },
+        "type": "object"
+      },
+      "ResourceMetadata": {
+        "properties": {
+          "authorization_servers": {
+            "description": "List of authorization server URLs",
+            "items": {
+              "format": "uri",
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "resource": {
+            "description": "Protected resource URL",
+            "format": "uri",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "oauth_oauth_Error": {
+        "properties": {
+          "error": {
+            "description": "Error code",
+            "type": "string"
+          },
+          "error_description": {
+            "description": "Human-readable error description",
+            "type": "string"
+          }
+        },
+        "required": [
+          "error"
+        ],
+        "type": "object"
+      }
+    },
+    "securitySchemes": {
+      "BearerAuth": {
+        "bearerFormat": "API key",
+        "description": "Telnyx API key supplied as `Authorization: Bearer \u003ctoken\u003e`. In production, auth may be validated by the API gateway and forwarded via Telnyx auth headers.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "Payment": {
+        "description": "Machine Payment Protocol credential used on paid retries, sent as `Authorization: Payment ...`. Obtained by paying a challenge returned in the `WWW-Authenticate` header of a 402 response. This is not a Telnyx API key; initial challenge requests use standard bearer authentication instead.",
+        "in": "header",
+        "name": "Authorization",
+        "type": "apiKey"
+      },
+      "agent-memory_bearerAuth": {
+        "description": "Telnyx API key",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "bearerAuth": {
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "branded-calling_bearerAuth": {
+        "description": "Telnyx API key. Generate one at https://portal.telnyx.com/#/app/api-keys.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "collections_bearerAuth": {
+        "description": "Telnyx API key. Collections and results are automatically scoped to the authenticated user's organization.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "number-reputation_bearerAuth": {
+        "description": "Telnyx API key. Generate one at https://portal.telnyx.com/#/app/api-keys.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "oauthClientAuth": {
+        "description": "OAuth 2.0 authentication for Telnyx API and MCP integrations",
+        "flows": {
+          "authorizationCode": {
+            "authorizationUrl": "https://api.telnyx.com/v2/oauth/authorize",
+            "refreshUrl": "https://api.telnyx.com/v2/oauth/token",
+            "scopes": {
+              "admin": "Administrative access to Telnyx resources"
+            },
+            "tokenUrl": "https://api.telnyx.com/v2/oauth/token"
+          },
+          "clientCredentials": {
+            "scopes": {
+              "admin": "Administrative access to Telnyx resources"
+            },
+            "tokenUrl": "https://api.telnyx.com/v2/oauth/token"
+          }
+        },
+        "type": "oauth2"
+      },
+      "outbound-voice-profiles_bearerAuth": {
+        "bearerFormat": "JWT",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "pay-connectors_bearerAuth": {
+        "description": "Telnyx API key, not the processor bearer token.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "pronunciation-dicts_bearerAuth": {
+        "description": "Telnyx API v2 key. Obtain from https://portal.telnyx.com",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "rcs-registration_bearerAuth": {
+        "bearerFormat": "API key",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "stored-payment-transactions_bearerAuth": {
+        "bearerFormat": "JWT",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "telnyxApiKey": {
+        "description": "Management-only Telnyx account credential.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "transcriptions-search_bearerAuth": {
+        "description": "Telnyx API key. Results are automatically scoped to the authenticated user's organization.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "web-search_bearerAuth": {
+        "description": "Telnyx API key",
+        "scheme": "bearer",
+        "type": "http"
+      }
+    }
+  },
+  "info": {
+    "contact": {
+      "email": "support@telnyx.com"
+    },
+    "description": "SIP trunking, SMS, MMS, Call Control and Telephony Data Services.",
+    "title": "Telnyx API",
+    "version": "2.0.0",
+    "x-endpoint-cost": "light",
+    "x-latency-category": "responsive"
+  },
+  "openapi": "3.1.0",
+  "paths": {
+    "/.well-known/oauth-authorization-server": {
+      "get": {
+        "description": "OAuth 2.0 Authorization Server Metadata (RFC 8414)",
+        "operationId": "GetOAuthAuthorizationServerMetadata",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthorizationServerMetadata"
+                }
+              }
+            },
+            "description": "Authorization server metadata"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/oauth_oauth_Error"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/oauth_oauth_Error"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          }
+        },
+        "security": [],
+        "summary": "Authorization server metadata",
+        "tags": [
+          "OAuth Discovery"
+        ]
+      }
+    },
+    "/.well-known/oauth-protected-resource": {
+      "get": {
+        "description": "OAuth 2.0 Protected Resource Metadata for resource discovery",
+        "operationId": "GetOAuthProtectedResourceMetadata",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "authorization_servers": [
+                    "https://example.com"
+                  ],
+                  "resource": "https://example.com"
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ResourceMetadata"
+                }
+              }
+            },
+            "description": "Protected resource metadata"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/oauth_oauth_Error"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/oauth_oauth_Error"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          }
+        },
+        "security": [],
+        "summary": "Protected resource metadata",
+        "tags": [
+          "OAuth Discovery"
+        ]
+      }
+    }
+  },
+  "security": [
+    {
+      "bearerAuth": []
+    }
+  ],
+  "servers": [
+    {
+      "description": "Version 2.0.0 of the Telnyx API",
+      "url": "https://api.telnyx.com/v2"
+    }
+  ]
+}

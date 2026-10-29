@@ -1,0 +1,3593 @@
+{
+  "components": {
+    "schemas": {
+      "AddPlanStepsRequest": {
+        "properties": {
+          "steps": {
+            "items": {
+              "$ref": "#/components/schemas/CreatePlanStepRequest"
+            },
+            "title": "Steps",
+            "type": "array"
+          }
+        },
+        "required": [
+          "steps"
+        ],
+        "title": "AddPlanStepsRequest",
+        "type": "object"
+      },
+      "CreateEventRequest": {
+        "properties": {
+          "agent_id": {
+            "title": "Agent Id",
+            "type": "string"
+          },
+          "idempotency_key": {
+            "description": "Prevents duplicate events on retry",
+            "title": "Idempotency Key",
+            "type": "string"
+          },
+          "payload": {
+            "additionalProperties": true,
+            "title": "Payload",
+            "type": "object"
+          },
+          "step_id": {
+            "title": "Step Id",
+            "type": "string"
+          },
+          "summary": {
+            "title": "Summary",
+            "type": "string"
+          },
+          "type": {
+            "$ref": "#/components/schemas/EventType"
+          }
+        },
+        "required": [
+          "type",
+          "summary"
+        ],
+        "title": "CreateEventRequest",
+        "type": "object"
+      },
+      "CreateMissionRequest": {
+        "properties": {
+          "description": {
+            "title": "Description",
+            "type": "string"
+          },
+          "execution_mode": {
+            "$ref": "#/components/schemas/ExecutionMode",
+            "default": "external"
+          },
+          "instructions": {
+            "title": "Instructions",
+            "type": "string"
+          },
+          "metadata": {
+            "additionalProperties": true,
+            "title": "Metadata",
+            "type": "object"
+          },
+          "model": {
+            "title": "Model",
+            "type": "string"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          }
+        },
+        "required": [
+          "name"
+        ],
+        "title": "CreateMissionRequest",
+        "type": "object"
+      },
+      "CreateMissionRunRequest": {
+        "properties": {
+          "input": {
+            "additionalProperties": true,
+            "title": "Input",
+            "type": "object"
+          },
+          "metadata": {
+            "additionalProperties": true,
+            "title": "Metadata",
+            "type": "object"
+          }
+        },
+        "title": "CreateMissionRunRequest",
+        "type": "object"
+      },
+      "CreatePlanRequest": {
+        "properties": {
+          "steps": {
+            "items": {
+              "$ref": "#/components/schemas/CreatePlanStepRequest"
+            },
+            "title": "Steps",
+            "type": "array"
+          }
+        },
+        "required": [
+          "steps"
+        ],
+        "title": "CreatePlanRequest",
+        "type": "object"
+      },
+      "CreatePlanStepRequest": {
+        "properties": {
+          "description": {
+            "title": "Description",
+            "type": "string"
+          },
+          "metadata": {
+            "additionalProperties": true,
+            "title": "Metadata",
+            "type": "object"
+          },
+          "parent_step_id": {
+            "title": "Parent Step Id",
+            "type": "string"
+          },
+          "sequence": {
+            "title": "Sequence",
+            "type": "integer"
+          },
+          "step_id": {
+            "title": "Step Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "step_id",
+          "description",
+          "sequence"
+        ],
+        "title": "CreatePlanStepRequest",
+        "type": "object"
+      },
+      "EventData": {
+        "properties": {
+          "agent_id": {
+            "title": "Agent Id",
+            "type": "string"
+          },
+          "event_id": {
+            "title": "Event Id",
+            "type": "string"
+          },
+          "idempotency_key": {
+            "title": "Idempotency Key",
+            "type": "string"
+          },
+          "payload": {
+            "additionalProperties": true,
+            "title": "Payload",
+            "type": "object"
+          },
+          "run_id": {
+            "title": "Run Id",
+            "type": "string"
+          },
+          "step_id": {
+            "title": "Step Id",
+            "type": "string"
+          },
+          "summary": {
+            "title": "Summary",
+            "type": "string"
+          },
+          "timestamp": {
+            "format": "date-time",
+            "title": "Timestamp",
+            "type": "string"
+          },
+          "type": {
+            "$ref": "#/components/schemas/EventType"
+          }
+        },
+        "required": [
+          "event_id",
+          "run_id",
+          "type",
+          "summary",
+          "timestamp"
+        ],
+        "title": "EventData",
+        "type": "object"
+      },
+      "EventResponse": {
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/EventData"
+          }
+        },
+        "required": [
+          "data"
+        ],
+        "title": "EventResponse",
+        "type": "object"
+      },
+      "EventType": {
+        "enum": [
+          "status_change",
+          "step_started",
+          "step_completed",
+          "step_failed",
+          "tool_call",
+          "tool_result",
+          "message",
+          "error",
+          "custom"
+        ],
+        "title": "EventType",
+        "type": "string"
+      },
+      "EventsListResponse": {
+        "properties": {
+          "data": {
+            "items": {
+              "$ref": "#/components/schemas/EventData"
+            },
+            "title": "Data",
+            "type": "array"
+          },
+          "meta": {
+            "$ref": "#/components/schemas/Meta"
+          }
+        },
+        "required": [
+          "data",
+          "meta"
+        ],
+        "title": "EventsListResponse",
+        "type": "object"
+      },
+      "ExecutionMode": {
+        "enum": [
+          "external",
+          "managed"
+        ],
+        "title": "ExecutionMode",
+        "type": "string"
+      },
+      "HTTPValidationError": {
+        "example": {
+          "detail": [
+            {
+              "loc": [
+                "body",
+                "name"
+              ],
+              "msg": "Field required",
+              "type": "missing"
+            }
+          ]
+        },
+        "properties": {
+          "detail": {
+            "items": {
+              "$ref": "#/components/schemas/ValidationError"
+            },
+            "title": "Detail",
+            "type": "array"
+          }
+        },
+        "title": "HTTPValidationError",
+        "type": "object"
+      },
+      "LinkTelnyxAgentRequest": {
+        "properties": {
+          "telnyx_agent_id": {
+            "description": "The Telnyx AI agent ID to link",
+            "title": "Telnyx Agent Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "telnyx_agent_id"
+        ],
+        "title": "LinkTelnyxAgentRequest",
+        "type": "object"
+      },
+      "Meta": {
+        "properties": {
+          "page_number": {
+            "type": "integer"
+          },
+          "page_size": {
+            "type": "integer"
+          },
+          "total_pages": {
+            "type": "integer"
+          },
+          "total_results": {
+            "type": "integer"
+          }
+        },
+        "required": [
+          "total_pages",
+          "total_results",
+          "page_number",
+          "page_size"
+        ],
+        "title": "Meta",
+        "type": "object"
+      },
+      "MissionData": {
+        "properties": {
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "description": {
+            "title": "Description",
+            "type": "string"
+          },
+          "execution_mode": {
+            "$ref": "#/components/schemas/ExecutionMode"
+          },
+          "instructions": {
+            "title": "Instructions",
+            "type": "string"
+          },
+          "metadata": {
+            "additionalProperties": true,
+            "title": "Metadata",
+            "type": "object"
+          },
+          "mission_id": {
+            "format": "uuid",
+            "title": "Mission Id",
+            "type": "string"
+          },
+          "model": {
+            "title": "Model",
+            "type": "string"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "updated_at": {
+            "format": "date-time",
+            "title": "Updated At",
+            "type": "string"
+          }
+        },
+        "required": [
+          "mission_id",
+          "name",
+          "execution_mode",
+          "created_at",
+          "updated_at"
+        ],
+        "title": "MissionData",
+        "type": "object"
+      },
+      "MissionResponse": {
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/MissionData"
+          }
+        },
+        "required": [
+          "data"
+        ],
+        "title": "MissionResponse",
+        "type": "object"
+      },
+      "MissionRunData": {
+        "properties": {
+          "error": {
+            "title": "Error",
+            "type": "string"
+          },
+          "finished_at": {
+            "format": "date-time",
+            "title": "Finished At",
+            "type": "string"
+          },
+          "input": {
+            "additionalProperties": true,
+            "title": "Input",
+            "type": "object"
+          },
+          "metadata": {
+            "additionalProperties": true,
+            "title": "Metadata",
+            "type": "object"
+          },
+          "mission_id": {
+            "format": "uuid",
+            "title": "Mission Id",
+            "type": "string"
+          },
+          "result_payload": {
+            "additionalProperties": true,
+            "title": "Result Payload",
+            "type": "object"
+          },
+          "result_summary": {
+            "title": "Result Summary",
+            "type": "string"
+          },
+          "run_id": {
+            "format": "uuid",
+            "title": "Run Id",
+            "type": "string"
+          },
+          "started_at": {
+            "format": "date-time",
+            "title": "Started At",
+            "type": "string"
+          },
+          "status": {
+            "$ref": "#/components/schemas/RunStatus"
+          },
+          "updated_at": {
+            "format": "date-time",
+            "title": "Updated At",
+            "type": "string"
+          }
+        },
+        "required": [
+          "run_id",
+          "mission_id",
+          "status",
+          "started_at",
+          "updated_at"
+        ],
+        "title": "MissionRunData",
+        "type": "object"
+      },
+      "MissionRunResponse": {
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/MissionRunData"
+          }
+        },
+        "required": [
+          "data"
+        ],
+        "title": "MissionRunResponse",
+        "type": "object"
+      },
+      "MissionRunsListResponse": {
+        "properties": {
+          "data": {
+            "items": {
+              "$ref": "#/components/schemas/MissionRunData"
+            },
+            "title": "Data",
+            "type": "array"
+          },
+          "meta": {
+            "$ref": "#/components/schemas/Meta"
+          }
+        },
+        "required": [
+          "data",
+          "meta"
+        ],
+        "title": "MissionRunsListResponse",
+        "type": "object"
+      },
+      "MissionsListResponse": {
+        "properties": {
+          "data": {
+            "items": {
+              "$ref": "#/components/schemas/MissionData"
+            },
+            "title": "Data",
+            "type": "array"
+          },
+          "meta": {
+            "$ref": "#/components/schemas/Meta"
+          }
+        },
+        "required": [
+          "data",
+          "meta"
+        ],
+        "title": "MissionsListResponse",
+        "type": "object"
+      },
+      "PlanResponse": {
+        "properties": {
+          "data": {
+            "items": {
+              "$ref": "#/components/schemas/PlanStepData"
+            },
+            "title": "Data",
+            "type": "array"
+          }
+        },
+        "required": [
+          "data"
+        ],
+        "title": "PlanResponse",
+        "type": "object"
+      },
+      "PlanStepData": {
+        "properties": {
+          "completed_at": {
+            "format": "date-time",
+            "title": "Completed At",
+            "type": "string"
+          },
+          "description": {
+            "title": "Description",
+            "type": "string"
+          },
+          "metadata": {
+            "additionalProperties": true,
+            "title": "Metadata",
+            "type": "object"
+          },
+          "parent_step_id": {
+            "title": "Parent Step Id",
+            "type": "string"
+          },
+          "run_id": {
+            "format": "uuid",
+            "title": "Run Id",
+            "type": "string"
+          },
+          "sequence": {
+            "title": "Sequence",
+            "type": "integer"
+          },
+          "started_at": {
+            "format": "date-time",
+            "title": "Started At",
+            "type": "string"
+          },
+          "status": {
+            "$ref": "#/components/schemas/StepStatus"
+          },
+          "step_id": {
+            "title": "Step Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "step_id",
+          "run_id",
+          "sequence",
+          "description",
+          "status"
+        ],
+        "title": "PlanStepData",
+        "type": "object"
+      },
+      "PlanStepResponse": {
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/PlanStepData"
+          }
+        },
+        "required": [
+          "data"
+        ],
+        "title": "PlanStepResponse",
+        "type": "object"
+      },
+      "PlanStepsCreatedResponse": {
+        "properties": {
+          "data": {
+            "items": {
+              "$ref": "#/components/schemas/PlanStepData"
+            },
+            "title": "Data",
+            "type": "array"
+          }
+        },
+        "required": [
+          "data"
+        ],
+        "title": "PlanStepsCreatedResponse",
+        "type": "object"
+      },
+      "RunStatus": {
+        "enum": [
+          "pending",
+          "running",
+          "paused",
+          "succeeded",
+          "failed",
+          "cancelled"
+        ],
+        "title": "RunStatus",
+        "type": "string"
+      },
+      "StepStatus": {
+        "enum": [
+          "pending",
+          "in_progress",
+          "completed",
+          "skipped",
+          "failed"
+        ],
+        "title": "StepStatus",
+        "type": "string"
+      },
+      "TelnyxAgentData": {
+        "properties": {
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "run_id": {
+            "title": "Run Id",
+            "type": "string"
+          },
+          "telnyx_agent_id": {
+            "title": "Telnyx Agent Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "run_id",
+          "telnyx_agent_id",
+          "created_at"
+        ],
+        "title": "TelnyxAgentData",
+        "type": "object"
+      },
+      "TelnyxAgentResponse": {
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/TelnyxAgentData"
+          }
+        },
+        "required": [
+          "data"
+        ],
+        "title": "TelnyxAgentResponse",
+        "type": "object"
+      },
+      "TelnyxAgentsListResponse": {
+        "properties": {
+          "data": {
+            "items": {
+              "$ref": "#/components/schemas/TelnyxAgentData"
+            },
+            "title": "Data",
+            "type": "array"
+          }
+        },
+        "required": [
+          "data"
+        ],
+        "title": "TelnyxAgentsListResponse",
+        "type": "object"
+      },
+      "UpdateMissionRequest": {
+        "properties": {
+          "description": {
+            "title": "Description",
+            "type": "string"
+          },
+          "execution_mode": {
+            "$ref": "#/components/schemas/ExecutionMode"
+          },
+          "instructions": {
+            "title": "Instructions",
+            "type": "string"
+          },
+          "metadata": {
+            "additionalProperties": true,
+            "title": "Metadata",
+            "type": "object"
+          },
+          "model": {
+            "title": "Model",
+            "type": "string"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          }
+        },
+        "title": "UpdateMissionRequest",
+        "type": "object"
+      },
+      "UpdateMissionRunRequest": {
+        "properties": {
+          "error": {
+            "title": "Error",
+            "type": "string"
+          },
+          "metadata": {
+            "additionalProperties": true,
+            "title": "Metadata",
+            "type": "object"
+          },
+          "result_payload": {
+            "additionalProperties": true,
+            "title": "Result Payload",
+            "type": "object"
+          },
+          "result_summary": {
+            "title": "Result Summary",
+            "type": "string"
+          },
+          "status": {
+            "$ref": "#/components/schemas/RunStatus"
+          }
+        },
+        "title": "UpdateMissionRunRequest",
+        "type": "object"
+      },
+      "UpdatePlanStepRequest": {
+        "properties": {
+          "metadata": {
+            "additionalProperties": true,
+            "title": "Metadata",
+            "type": "object"
+          },
+          "status": {
+            "$ref": "#/components/schemas/StepStatus"
+          }
+        },
+        "title": "UpdatePlanStepRequest",
+        "type": "object"
+      },
+      "ValidationError": {
+        "properties": {
+          "loc": {
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "title": "Location",
+            "type": "array"
+          },
+          "msg": {
+            "title": "Message",
+            "type": "string"
+          },
+          "type": {
+            "title": "Error Type",
+            "type": "string"
+          }
+        },
+        "required": [
+          "loc",
+          "msg",
+          "type"
+        ],
+        "title": "ValidationError",
+        "type": "object"
+      }
+    },
+    "securitySchemes": {
+      "BearerAuth": {
+        "bearerFormat": "API key",
+        "description": "Telnyx API key supplied as `Authorization: Bearer \u003ctoken\u003e`. In production, auth may be validated by the API gateway and forwarded via Telnyx auth headers.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "Payment": {
+        "description": "Machine Payment Protocol credential used on paid retries, sent as `Authorization: Payment ...`. Obtained by paying a challenge returned in the `WWW-Authenticate` header of a 402 response. This is not a Telnyx API key; initial challenge requests use standard bearer authentication instead.",
+        "in": "header",
+        "name": "Authorization",
+        "type": "apiKey"
+      },
+      "agent-memory_bearerAuth": {
+        "description": "Telnyx API key",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "bearerAuth": {
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "branded-calling_bearerAuth": {
+        "description": "Telnyx API key. Generate one at https://portal.telnyx.com/#/app/api-keys.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "collections_bearerAuth": {
+        "description": "Telnyx API key. Collections and results are automatically scoped to the authenticated user's organization.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "number-reputation_bearerAuth": {
+        "description": "Telnyx API key. Generate one at https://portal.telnyx.com/#/app/api-keys.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "oauthClientAuth": {
+        "description": "OAuth 2.0 authentication for Telnyx API and MCP integrations",
+        "flows": {
+          "authorizationCode": {
+            "authorizationUrl": "https://api.telnyx.com/v2/oauth/authorize",
+            "refreshUrl": "https://api.telnyx.com/v2/oauth/token",
+            "scopes": {
+              "admin": "Administrative access to Telnyx resources"
+            },
+            "tokenUrl": "https://api.telnyx.com/v2/oauth/token"
+          },
+          "clientCredentials": {
+            "scopes": {
+              "admin": "Administrative access to Telnyx resources"
+            },
+            "tokenUrl": "https://api.telnyx.com/v2/oauth/token"
+          }
+        },
+        "type": "oauth2"
+      },
+      "outbound-voice-profiles_bearerAuth": {
+        "bearerFormat": "JWT",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "pay-connectors_bearerAuth": {
+        "description": "Telnyx API key, not the processor bearer token.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "pronunciation-dicts_bearerAuth": {
+        "description": "Telnyx API v2 key. Obtain from https://portal.telnyx.com",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "rcs-registration_bearerAuth": {
+        "bearerFormat": "API key",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "stored-payment-transactions_bearerAuth": {
+        "bearerFormat": "JWT",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "telnyxApiKey": {
+        "description": "Management-only Telnyx account credential.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "transcriptions-search_bearerAuth": {
+        "description": "Telnyx API key. Results are automatically scoped to the authenticated user's organization.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "web-search_bearerAuth": {
+        "description": "Telnyx API key",
+        "scheme": "bearer",
+        "type": "http"
+      }
+    }
+  },
+  "info": {
+    "contact": {
+      "email": "support@telnyx.com"
+    },
+    "description": "SIP trunking, SMS, MMS, Call Control and Telephony Data Services.",
+    "title": "Telnyx API",
+    "version": "2.0.0",
+    "x-endpoint-cost": "light",
+    "x-latency-category": "responsive"
+  },
+  "openapi": "3.1.0",
+  "paths": {
+    "/ai/missions": {
+      "get": {
+        "description": "Returns a paginated list of all mission definitions in your organization. Missions describe a goal and the tools, knowledge bases, and MCP servers agents may use to accomplish it.",
+        "operationId": "get_public_missions_missions",
+        "parameters": [
+          {
+            "description": "Page number (1-based)",
+            "in": "query",
+            "name": "page[number]",
+            "required": false,
+            "schema": {
+              "default": 1,
+              "description": "Page number (1-based)",
+              "minimum": 1,
+              "title": "Page[Number]",
+              "type": "integer"
+            }
+          },
+          {
+            "description": "Number of items per page",
+            "in": "query",
+            "name": "page[size]",
+            "required": false,
+            "schema": {
+              "default": 20,
+              "description": "Number of items per page",
+              "exclusiveMinimum": 0,
+              "maximum": 1000,
+              "title": "Page[Size]",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "data": [
+                    {
+                      "created_at": "2024-01-23T18:10:02.574Z",
+                      "description": "Description",
+                      "execution_mode": "external",
+                      "instructions": "Instructions",
+                      "mission_id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+                      "model": "Model",
+                      "name": "Name",
+                      "updated_at": "2024-01-23T18:10:02.574Z"
+                    }
+                  ],
+                  "meta": {
+                    "page_number": 0,
+                    "page_size": 0,
+                    "total_pages": 0,
+                    "total_results": 0
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/MissionsListResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "List missions",
+        "tags": [
+          "Missions"
+        ]
+      },
+      "post": {
+        "description": "Creates a new mission definition from the provided configuration and returns the created mission. Execute the mission by starting runs against it.",
+        "operationId": "post_public_missions_missions",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "example": {
+                "description": "Description",
+                "execution_mode": "external",
+                "instructions": "Instructions",
+                "model": "Model",
+                "name": "Name"
+              },
+              "schema": {
+                "$ref": "#/components/schemas/CreateMissionRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "data": {
+                    "created_at": "2024-01-23T18:10:02.574Z",
+                    "description": "Description",
+                    "execution_mode": "external",
+                    "instructions": "Instructions",
+                    "mission_id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+                    "model": "Model",
+                    "name": "Name",
+                    "updated_at": "2024-01-23T18:10:02.574Z"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/MissionResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Create mission",
+        "tags": [
+          "Missions"
+        ]
+      }
+    },
+    "/ai/missions/events": {
+      "get": {
+        "description": "Returns a paginated list of recent events across every mission in your organization, optionally filtered by event type. Useful for building activity feeds or monitoring dashboards.",
+        "operationId": "get_public_missions_missions_events",
+        "parameters": [
+          {
+            "description": "Filter results by type.",
+            "in": "query",
+            "name": "type",
+            "required": false,
+            "schema": {
+              "title": "Type",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Page number (1-based)",
+            "in": "query",
+            "name": "page[number]",
+            "required": false,
+            "schema": {
+              "default": 1,
+              "description": "Page number (1-based)",
+              "minimum": 1,
+              "title": "Page[Number]",
+              "type": "integer"
+            }
+          },
+          {
+            "description": "Number of items per page",
+            "in": "query",
+            "name": "page[size]",
+            "required": false,
+            "schema": {
+              "default": 50,
+              "description": "Number of items per page",
+              "exclusiveMinimum": 0,
+              "maximum": 1000,
+              "title": "Page[Size]",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "data": [
+                    {
+                      "agent_id": "Agent Id",
+                      "event_id": "Event Id",
+                      "idempotency_key": "Idempotency Key",
+                      "run_id": "Run Id",
+                      "step_id": "Step Id",
+                      "summary": "Summary",
+                      "timestamp": "2024-01-23T18:10:02.574Z",
+                      "type": "status_change"
+                    }
+                  ],
+                  "meta": {
+                    "page_number": 0,
+                    "page_size": 0,
+                    "total_pages": 0,
+                    "total_results": 0
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/EventsListResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "List recent events",
+        "tags": [
+          "Missions"
+        ]
+      }
+    },
+    "/ai/missions/runs": {
+      "get": {
+        "description": "Returns a paginated list of recent runs across every mission in your organization, optionally filtered by run status. Useful for monitoring overall mission activity without querying each mission individually.",
+        "operationId": "get_public_missions_missions_runs",
+        "parameters": [
+          {
+            "description": "Filter results by status.",
+            "in": "query",
+            "name": "status",
+            "required": false,
+            "schema": {
+              "title": "Status",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Page number (1-based)",
+            "in": "query",
+            "name": "page[number]",
+            "required": false,
+            "schema": {
+              "default": 1,
+              "description": "Page number (1-based)",
+              "minimum": 1,
+              "title": "Page[Number]",
+              "type": "integer"
+            }
+          },
+          {
+            "description": "Number of items per page",
+            "in": "query",
+            "name": "page[size]",
+            "required": false,
+            "schema": {
+              "default": 20,
+              "description": "Number of items per page",
+              "exclusiveMinimum": 0,
+              "maximum": 1000,
+              "title": "Page[Size]",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "data": [
+                    {
+                      "mission_id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+                      "run_id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+                      "started_at": "2024-01-23T18:10:02.574Z",
+                      "status": "pending",
+                      "updated_at": "2024-01-23T18:10:02.574Z"
+                    }
+                  ],
+                  "meta": {
+                    "page_number": 0,
+                    "page_size": 0,
+                    "total_pages": 0,
+                    "total_results": 0
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/MissionRunsListResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "List recent runs",
+        "tags": [
+          "Missions"
+        ]
+      }
+    },
+    "/ai/missions/{mission_id}": {
+      "delete": {
+        "description": "Permanently deletes the specified mission definition and returns no content on success.",
+        "operationId": "delete_public_missions_missions_mission_id",
+        "parameters": [
+          {
+            "description": "Unique identifier of the mission.",
+            "in": "path",
+            "name": "mission_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Mission Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "detail": [
+                    {
+                      "loc": [
+                        "string"
+                      ],
+                      "msg": "Message",
+                      "type": "Error Type"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Delete mission",
+        "tags": [
+          "Missions"
+        ]
+      },
+      "get": {
+        "description": "Get a mission by ID (includes tools, knowledge_bases, mcp_servers)",
+        "operationId": "get_public_missions_missions_mission_id",
+        "parameters": [
+          {
+            "description": "Unique identifier of the mission.",
+            "in": "path",
+            "name": "mission_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Mission Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "data": {
+                    "created_at": "2024-01-23T18:10:02.574Z",
+                    "description": "Description",
+                    "execution_mode": "external",
+                    "instructions": "Instructions",
+                    "mission_id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+                    "model": "Model",
+                    "name": "Name",
+                    "updated_at": "2024-01-23T18:10:02.574Z"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/MissionResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Get mission",
+        "tags": [
+          "Missions"
+        ]
+      },
+      "put": {
+        "description": "Replaces the specified mission's definition with the provided configuration and returns the updated mission.",
+        "operationId": "put_public_missions_missions_mission_id",
+        "parameters": [
+          {
+            "description": "Unique identifier of the mission.",
+            "in": "path",
+            "name": "mission_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Mission Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "example": {
+                "description": "Description",
+                "execution_mode": "external",
+                "instructions": "Instructions",
+                "model": "Model",
+                "name": "Name"
+              },
+              "schema": {
+                "$ref": "#/components/schemas/UpdateMissionRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "data": {
+                    "created_at": "2024-01-23T18:10:02.574Z",
+                    "description": "Description",
+                    "execution_mode": "external",
+                    "instructions": "Instructions",
+                    "mission_id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+                    "model": "Model",
+                    "name": "Name",
+                    "updated_at": "2024-01-23T18:10:02.574Z"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/MissionResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Update mission",
+        "tags": [
+          "Missions"
+        ]
+      }
+    },
+    "/ai/missions/{mission_id}/clone": {
+      "post": {
+        "description": "Creates a copy of the specified mission as a new mission definition, so you can iterate on its configuration without modifying the original.",
+        "operationId": "post_public_missions_missions_mission_id_clone",
+        "parameters": [
+          {
+            "description": "Unique identifier of the mission.",
+            "in": "path",
+            "name": "mission_id",
+            "required": true,
+            "schema": {
+              "title": "Mission Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "example": {},
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Clone mission",
+        "tags": [
+          "Missions"
+        ]
+      }
+    },
+    "/ai/missions/{mission_id}/knowledge-bases": {
+      "get": {
+        "description": "Returns the knowledge bases attached to the specified mission. Knowledge bases provide reference content agents can draw on during runs.",
+        "operationId": "get_public_missions_missions_mission_id_knowledge_bases",
+        "parameters": [
+          {
+            "description": "Unique identifier of the mission.",
+            "in": "path",
+            "name": "mission_id",
+            "required": true,
+            "schema": {
+              "title": "Mission Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "example": {},
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "List knowledge bases",
+        "tags": [
+          "Missions"
+        ]
+      },
+      "post": {
+        "description": "Create a new knowledge base for a mission",
+        "operationId": "post_public_missions_missions_mission_id_knowledge_bases",
+        "parameters": [
+          {
+            "description": "Unique identifier of the mission.",
+            "in": "path",
+            "name": "mission_id",
+            "required": true,
+            "schema": {
+              "title": "Mission Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "example": {},
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Create knowledge base",
+        "tags": [
+          "Missions"
+        ]
+      }
+    },
+    "/ai/missions/{mission_id}/knowledge-bases/{knowledge_base_id}": {
+      "delete": {
+        "description": "Detaches the specified knowledge base from the mission so its content is no longer available to agents in subsequent runs.",
+        "operationId": "delete_public_missions_missions_mission_id_knowledge_bases_knowledge_base_id",
+        "parameters": [
+          {
+            "description": "Unique identifier of the mission.",
+            "in": "path",
+            "name": "mission_id",
+            "required": true,
+            "schema": {
+              "title": "Mission Id",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Unique identifier of the knowledge base.",
+            "in": "path",
+            "name": "knowledge_base_id",
+            "required": true,
+            "schema": {
+              "title": "Knowledge Base Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "detail": [
+                    {
+                      "loc": [
+                        "string"
+                      ],
+                      "msg": "Message",
+                      "type": "Error Type"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Delete knowledge base",
+        "tags": [
+          "Missions"
+        ]
+      },
+      "get": {
+        "description": "Returns the details of a single knowledge base attached to the specified mission.",
+        "operationId": "get_public_missions_missions_mission_id_knowledge_bases_knowledge_base_id",
+        "parameters": [
+          {
+            "description": "Unique identifier of the mission.",
+            "in": "path",
+            "name": "mission_id",
+            "required": true,
+            "schema": {
+              "title": "Mission Id",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Unique identifier of the knowledge base.",
+            "in": "path",
+            "name": "knowledge_base_id",
+            "required": true,
+            "schema": {
+              "title": "Knowledge Base Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "example": {},
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Get knowledge base",
+        "tags": [
+          "Missions"
+        ]
+      },
+      "put": {
+        "description": "Replaces the definition of the specified knowledge base on this mission.",
+        "operationId": "put_public_missions_missions_mission_id_knowledge_bases_knowledge_base_id",
+        "parameters": [
+          {
+            "description": "Unique identifier of the mission.",
+            "in": "path",
+            "name": "mission_id",
+            "required": true,
+            "schema": {
+              "title": "Mission Id",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Unique identifier of the knowledge base.",
+            "in": "path",
+            "name": "knowledge_base_id",
+            "required": true,
+            "schema": {
+              "title": "Knowledge Base Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "example": {},
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Update knowledge base",
+        "tags": [
+          "Missions"
+        ]
+      }
+    },
+    "/ai/missions/{mission_id}/mcp-servers": {
+      "get": {
+        "description": "Returns the MCP servers configured on the specified mission. MCP servers expose external tools and data sources agents can use during runs.",
+        "operationId": "get_public_missions_missions_mission_id_mcp_servers",
+        "parameters": [
+          {
+            "description": "Unique identifier of the mission.",
+            "in": "path",
+            "name": "mission_id",
+            "required": true,
+            "schema": {
+              "title": "Mission Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "example": {},
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "List MCP servers",
+        "tags": [
+          "Missions"
+        ]
+      },
+      "post": {
+        "description": "Adds an MCP server to the specified mission, making the server's tools available to agents during runs of this mission.",
+        "operationId": "post_public_missions_missions_mission_id_mcp_servers",
+        "parameters": [
+          {
+            "description": "Unique identifier of the mission.",
+            "in": "path",
+            "name": "mission_id",
+            "required": true,
+            "schema": {
+              "title": "Mission Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "example": {},
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Create MCP server",
+        "tags": [
+          "Missions"
+        ]
+      }
+    },
+    "/ai/missions/{mission_id}/mcp-servers/{mcp_server_id}": {
+      "delete": {
+        "description": "Removes the specified MCP server from the mission, revoking agent access to its tools in subsequent runs.",
+        "operationId": "delete_public_missions_missions_mission_id_mcp_servers_mcp_server_id",
+        "parameters": [
+          {
+            "description": "Unique identifier of the mission.",
+            "in": "path",
+            "name": "mission_id",
+            "required": true,
+            "schema": {
+              "title": "Mission Id",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Unique identifier of the mcp server.",
+            "in": "path",
+            "name": "mcp_server_id",
+            "required": true,
+            "schema": {
+              "title": "Mcp Server Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "detail": [
+                    {
+                      "loc": [
+                        "string"
+                      ],
+                      "msg": "Message",
+                      "type": "Error Type"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Delete MCP server",
+        "tags": [
+          "Missions"
+        ]
+      },
+      "get": {
+        "description": "Returns the configuration of a single MCP server attached to the specified mission.",
+        "operationId": "get_public_missions_missions_mission_id_mcp_servers_mcp_server_id",
+        "parameters": [
+          {
+            "description": "Unique identifier of the mission.",
+            "in": "path",
+            "name": "mission_id",
+            "required": true,
+            "schema": {
+              "title": "Mission Id",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Unique identifier of the mcp server.",
+            "in": "path",
+            "name": "mcp_server_id",
+            "required": true,
+            "schema": {
+              "title": "Mcp Server Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "example": {},
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Get MCP server",
+        "tags": [
+          "Missions"
+        ]
+      },
+      "put": {
+        "description": "Replaces the configuration of the specified MCP server on this mission.",
+        "operationId": "put_public_missions_missions_mission_id_mcp_servers_mcp_server_id",
+        "parameters": [
+          {
+            "description": "Unique identifier of the mission.",
+            "in": "path",
+            "name": "mission_id",
+            "required": true,
+            "schema": {
+              "title": "Mission Id",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Unique identifier of the mcp server.",
+            "in": "path",
+            "name": "mcp_server_id",
+            "required": true,
+            "schema": {
+              "title": "Mcp Server Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "example": {},
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Update MCP server",
+        "tags": [
+          "Missions"
+        ]
+      }
+    },
+    "/ai/missions/{mission_id}/runs": {
+      "get": {
+        "description": "Returns a paginated list of runs for the specified mission, optionally filtered by run status, so you can track the mission's execution history over time.",
+        "operationId": "get_public_missions_missions_mission_id_runs",
+        "parameters": [
+          {
+            "description": "Unique identifier of the mission.",
+            "in": "path",
+            "name": "mission_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Mission Id",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Filter results by status.",
+            "in": "query",
+            "name": "status",
+            "required": false,
+            "schema": {
+              "title": "Status",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Page number (1-based)",
+            "in": "query",
+            "name": "page[number]",
+            "required": false,
+            "schema": {
+              "default": 1,
+              "description": "Page number (1-based)",
+              "minimum": 1,
+              "title": "Page[Number]",
+              "type": "integer"
+            }
+          },
+          {
+            "description": "Number of items per page",
+            "in": "query",
+            "name": "page[size]",
+            "required": false,
+            "schema": {
+              "default": 20,
+              "description": "Number of items per page",
+              "exclusiveMinimum": 0,
+              "maximum": 1000,
+              "title": "Page[Size]",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "data": [
+                    {
+                      "mission_id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+                      "run_id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+                      "started_at": "2024-01-23T18:10:02.574Z",
+                      "status": "pending",
+                      "updated_at": "2024-01-23T18:10:02.574Z"
+                    }
+                  ],
+                  "meta": {
+                    "page_number": 0,
+                    "page_size": 0,
+                    "total_pages": 0,
+                    "total_results": 0
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/MissionRunsListResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "List runs for mission",
+        "tags": [
+          "Missions"
+        ]
+      },
+      "post": {
+        "description": "Starts a new run of the specified mission and returns the created run object. Track its progress through the run detail, plan, and events endpoints.",
+        "operationId": "post_public_missions_missions_mission_id_runs",
+        "parameters": [
+          {
+            "description": "Unique identifier of the mission.",
+            "in": "path",
+            "name": "mission_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Mission Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "example": {
+                "input": {
+                  "objective": "Summarize yesterday's failed call attempts"
+                },
+                "metadata": {
+                  "requested_by": "docs-example"
+                }
+              },
+              "schema": {
+                "$ref": "#/components/schemas/CreateMissionRunRequest",
+                "default": {}
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "data": {
+                    "mission_id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+                    "run_id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+                    "started_at": "2024-01-23T18:10:02.574Z",
+                    "status": "pending",
+                    "updated_at": "2024-01-23T18:10:02.574Z"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/MissionRunResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Start a run",
+        "tags": [
+          "Missions"
+        ]
+      }
+    },
+    "/ai/missions/{mission_id}/runs/{run_id}": {
+      "get": {
+        "description": "Returns the full details of a single run, including its current status. Use this to poll an in-flight run or inspect the outcome of a completed one.",
+        "operationId": "get_public_missions_missions_mission_id_runs_run_id",
+        "parameters": [
+          {
+            "description": "Unique identifier of the mission.",
+            "in": "path",
+            "name": "mission_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Mission Id",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Unique identifier of the run.",
+            "in": "path",
+            "name": "run_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Run Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "data": {
+                    "mission_id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+                    "run_id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+                    "started_at": "2024-01-23T18:10:02.574Z",
+                    "status": "pending",
+                    "updated_at": "2024-01-23T18:10:02.574Z"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/MissionRunResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Get run details",
+        "tags": [
+          "Missions"
+        ]
+      },
+      "patch": {
+        "description": "Updates a run's status and/or result and returns the updated run object. Typically used by executing agents to report progress or record the final outcome.",
+        "operationId": "patch_public_missions_missions_mission_id_runs_run_id",
+        "parameters": [
+          {
+            "description": "Unique identifier of the mission.",
+            "in": "path",
+            "name": "mission_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Mission Id",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Unique identifier of the run.",
+            "in": "path",
+            "name": "run_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Run Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "example": {
+                "result_summary": "Processed 24 customer records successfully.",
+                "status": "succeeded"
+              },
+              "schema": {
+                "$ref": "#/components/schemas/UpdateMissionRunRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "data": {
+                    "finished_at": "2024-01-23T18:10:02.574Z",
+                    "mission_id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+                    "result_summary": "Processed 24 customer records successfully.",
+                    "run_id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+                    "started_at": "2024-01-23T18:10:02.574Z",
+                    "status": "succeeded",
+                    "updated_at": "2024-01-23T18:10:02.574Z"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/MissionRunResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Update run",
+        "tags": [
+          "Missions"
+        ]
+      }
+    },
+    "/ai/missions/{mission_id}/runs/{run_id}/cancel": {
+      "post": {
+        "description": "Cancels a running or paused run and returns the updated run object. A cancelled run stops executing; start a new run to execute the mission again.",
+        "operationId": "post_public_missions_missions_mission_id_runs_run_id_cancel",
+        "parameters": [
+          {
+            "description": "Unique identifier of the mission.",
+            "in": "path",
+            "name": "mission_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Mission Id",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Unique identifier of the run.",
+            "in": "path",
+            "name": "run_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Run Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "data": {
+                    "finished_at": "2024-01-23T18:10:02.574Z",
+                    "mission_id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+                    "result_summary": "Mission run cancelled before completion.",
+                    "run_id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+                    "started_at": "2024-01-23T18:10:02.574Z",
+                    "status": "cancelled",
+                    "updated_at": "2024-01-23T18:10:02.574Z"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/MissionRunResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Cancel run",
+        "tags": [
+          "Missions"
+        ]
+      }
+    },
+    "/ai/missions/{mission_id}/runs/{run_id}/events": {
+      "get": {
+        "description": "Returns a paginated list of events logged for the specified run, filterable by event type, plan step, and agent, so you can reconstruct exactly what happened during execution.",
+        "operationId": "get_public_missions_missions_mission_id_runs_run_id_events",
+        "parameters": [
+          {
+            "description": "Unique identifier of the mission.",
+            "in": "path",
+            "name": "mission_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Mission Id",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Unique identifier of the run.",
+            "in": "path",
+            "name": "run_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Run Id",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Filter results by type.",
+            "in": "query",
+            "name": "type",
+            "required": false,
+            "schema": {
+              "title": "Type",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Filter results by step id.",
+            "in": "query",
+            "name": "step_id",
+            "required": false,
+            "schema": {
+              "title": "Step Id",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Filter results by agent id.",
+            "in": "query",
+            "name": "agent_id",
+            "required": false,
+            "schema": {
+              "title": "Agent Id",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Page number (1-based)",
+            "in": "query",
+            "name": "page[number]",
+            "required": false,
+            "schema": {
+              "default": 1,
+              "description": "Page number (1-based)",
+              "minimum": 1,
+              "title": "Page[Number]",
+              "type": "integer"
+            }
+          },
+          {
+            "description": "Number of items per page",
+            "in": "query",
+            "name": "page[size]",
+            "required": false,
+            "schema": {
+              "default": 50,
+              "description": "Number of items per page",
+              "exclusiveMinimum": 0,
+              "maximum": 1000,
+              "title": "Page[Size]",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "data": [
+                    {
+                      "agent_id": "Agent Id",
+                      "event_id": "Event Id",
+                      "idempotency_key": "Idempotency Key",
+                      "run_id": "Run Id",
+                      "step_id": "Step Id",
+                      "summary": "Summary",
+                      "timestamp": "2024-01-23T18:10:02.574Z",
+                      "type": "status_change"
+                    }
+                  ],
+                  "meta": {
+                    "page_number": 0,
+                    "page_size": 0,
+                    "total_pages": 0,
+                    "total_results": 0
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/EventsListResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "List events",
+        "tags": [
+          "Missions"
+        ]
+      },
+      "post": {
+        "description": "Logs a new event against the specified run and returns the created event. Events form the run's audit trail and can reference a plan step or agent.",
+        "operationId": "post_public_missions_missions_mission_id_runs_run_id_events",
+        "parameters": [
+          {
+            "description": "Unique identifier of the mission.",
+            "in": "path",
+            "name": "mission_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Mission Id",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Unique identifier of the run.",
+            "in": "path",
+            "name": "run_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Run Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "example": {
+                "agent_id": "Agent Id",
+                "idempotency_key": "Idempotency Key",
+                "step_id": "Step Id",
+                "summary": "Summary",
+                "type": "status_change"
+              },
+              "schema": {
+                "$ref": "#/components/schemas/CreateEventRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "data": {
+                    "agent_id": "Agent Id",
+                    "event_id": "Event Id",
+                    "idempotency_key": "Idempotency Key",
+                    "run_id": "Run Id",
+                    "step_id": "Step Id",
+                    "summary": "Summary",
+                    "timestamp": "2024-01-23T18:10:02.574Z",
+                    "type": "status_change"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/EventResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Log event",
+        "tags": [
+          "Missions"
+        ]
+      }
+    },
+    "/ai/missions/{mission_id}/runs/{run_id}/events/{event_id}": {
+      "get": {
+        "description": "Returns the details of a single event logged for the specified run, including its type and payload.",
+        "operationId": "get_public_missions_missions_mission_id_runs_run_id_events_event_id",
+        "parameters": [
+          {
+            "description": "Unique identifier of the mission.",
+            "in": "path",
+            "name": "mission_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Mission Id",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Unique identifier of the run.",
+            "in": "path",
+            "name": "run_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Run Id",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Unique identifier of the event.",
+            "in": "path",
+            "name": "event_id",
+            "required": true,
+            "schema": {
+              "title": "Event Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "data": {
+                    "agent_id": "Agent Id",
+                    "event_id": "Event Id",
+                    "idempotency_key": "Idempotency Key",
+                    "run_id": "Run Id",
+                    "step_id": "Step Id",
+                    "summary": "Summary",
+                    "timestamp": "2024-01-23T18:10:02.574Z",
+                    "type": "status_change"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/EventResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Get event details",
+        "tags": [
+          "Missions"
+        ]
+      }
+    },
+    "/ai/missions/{mission_id}/runs/{run_id}/pause": {
+      "post": {
+        "description": "Pauses a currently running run and returns the updated run object. Execution halts until the run is resumed.",
+        "operationId": "post_public_missions_missions_mission_id_runs_run_id_pause",
+        "parameters": [
+          {
+            "description": "Unique identifier of the mission.",
+            "in": "path",
+            "name": "mission_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Mission Id",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Unique identifier of the run.",
+            "in": "path",
+            "name": "run_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Run Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "data": {
+                    "mission_id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+                    "run_id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+                    "started_at": "2024-01-23T18:10:02.574Z",
+                    "status": "paused",
+                    "updated_at": "2024-01-23T18:10:02.574Z"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/MissionRunResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Pause run",
+        "tags": [
+          "Missions"
+        ]
+      }
+    },
+    "/ai/missions/{mission_id}/runs/{run_id}/plan": {
+      "get": {
+        "description": "Returns the plan for the specified run, including all plan steps and their statuses, so you can see how the mission was decomposed and how far execution has progressed.",
+        "operationId": "get_public_missions_missions_mission_id_runs_run_id_plan",
+        "parameters": [
+          {
+            "description": "Unique identifier of the mission.",
+            "in": "path",
+            "name": "mission_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Mission Id",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Unique identifier of the run.",
+            "in": "path",
+            "name": "run_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Run Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "data": [
+                    {
+                      "description": "Description",
+                      "parent_step_id": "Parent Step Id",
+                      "run_id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+                      "sequence": 0,
+                      "started_at": "2024-01-23T18:10:02.574Z",
+                      "status": "pending",
+                      "step_id": "Step Id"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/PlanResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Get plan",
+        "tags": [
+          "Missions"
+        ]
+      },
+      "post": {
+        "description": "Creates the initial plan for the specified run from the provided steps and returns the created plan steps. Progress is subsequently reported by updating individual steps.",
+        "operationId": "post_public_missions_missions_mission_id_runs_run_id_plan",
+        "parameters": [
+          {
+            "description": "Unique identifier of the mission.",
+            "in": "path",
+            "name": "mission_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Mission Id",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Unique identifier of the run.",
+            "in": "path",
+            "name": "run_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Run Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "example": {
+                "steps": [
+                  {
+                    "description": "Description",
+                    "parent_step_id": "Parent Step Id",
+                    "sequence": 0,
+                    "step_id": "Step Id"
+                  }
+                ]
+              },
+              "schema": {
+                "$ref": "#/components/schemas/CreatePlanRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "data": [
+                    {
+                      "description": "Description",
+                      "parent_step_id": "Parent Step Id",
+                      "run_id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+                      "sequence": 0,
+                      "started_at": "2024-01-23T18:10:02.574Z",
+                      "status": "pending",
+                      "step_id": "Step Id"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/PlanStepsCreatedResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Create initial plan",
+        "tags": [
+          "Missions"
+        ]
+      }
+    },
+    "/ai/missions/{mission_id}/runs/{run_id}/plan/steps": {
+      "post": {
+        "description": "Add one or more steps to an existing plan",
+        "operationId": "post_public_missions_missions_mission_id_runs_run_id_plan_steps",
+        "parameters": [
+          {
+            "description": "Unique identifier of the mission.",
+            "in": "path",
+            "name": "mission_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Mission Id",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Unique identifier of the run.",
+            "in": "path",
+            "name": "run_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Run Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "example": {
+                "steps": [
+                  {
+                    "description": "Description",
+                    "parent_step_id": "Parent Step Id",
+                    "sequence": 0,
+                    "step_id": "Step Id"
+                  }
+                ]
+              },
+              "schema": {
+                "$ref": "#/components/schemas/AddPlanStepsRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "data": [
+                    {
+                      "description": "Description",
+                      "parent_step_id": "Parent Step Id",
+                      "run_id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+                      "sequence": 0,
+                      "started_at": "2024-01-23T18:10:02.574Z",
+                      "status": "pending",
+                      "step_id": "Step Id"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/PlanStepsCreatedResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Add step(s) to plan",
+        "tags": [
+          "Missions"
+        ]
+      }
+    },
+    "/ai/missions/{mission_id}/runs/{run_id}/plan/steps/{step_id}": {
+      "get": {
+        "description": "Returns the details of a single plan step within a run's plan, including its status.",
+        "operationId": "get_public_missions_missions_mission_id_runs_run_id_plan_steps_step_id",
+        "parameters": [
+          {
+            "description": "Unique identifier of the mission.",
+            "in": "path",
+            "name": "mission_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Mission Id",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Unique identifier of the run.",
+            "in": "path",
+            "name": "run_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Run Id",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Unique identifier of the step.",
+            "in": "path",
+            "name": "step_id",
+            "required": true,
+            "schema": {
+              "title": "Step Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "data": {
+                    "description": "Description",
+                    "parent_step_id": "Parent Step Id",
+                    "run_id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+                    "sequence": 0,
+                    "started_at": "2024-01-23T18:10:02.574Z",
+                    "status": "pending",
+                    "step_id": "Step Id"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/PlanStepResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Get step details",
+        "tags": [
+          "Missions"
+        ]
+      },
+      "patch": {
+        "description": "Updates the status of a single plan step and returns the updated step. Typically called by the executing agent as it works through the plan.",
+        "operationId": "patch_public_missions_missions_mission_id_runs_run_id_plan_steps_step_id",
+        "parameters": [
+          {
+            "description": "Unique identifier of the mission.",
+            "in": "path",
+            "name": "mission_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Mission Id",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Unique identifier of the run.",
+            "in": "path",
+            "name": "run_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Run Id",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Unique identifier of the step.",
+            "in": "path",
+            "name": "step_id",
+            "required": true,
+            "schema": {
+              "title": "Step Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "example": {
+                "status": "pending"
+              },
+              "schema": {
+                "$ref": "#/components/schemas/UpdatePlanStepRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "data": {
+                    "description": "Description",
+                    "parent_step_id": "Parent Step Id",
+                    "run_id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+                    "sequence": 0,
+                    "started_at": "2024-01-23T18:10:02.574Z",
+                    "status": "pending",
+                    "step_id": "Step Id"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/PlanStepResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Update step status",
+        "tags": [
+          "Missions"
+        ]
+      }
+    },
+    "/ai/missions/{mission_id}/runs/{run_id}/resume": {
+      "post": {
+        "description": "Resumes a previously paused run and returns the updated run object, letting execution continue from where it was paused.",
+        "operationId": "post_public_missions_missions_mission_id_runs_run_id_resume",
+        "parameters": [
+          {
+            "description": "Unique identifier of the mission.",
+            "in": "path",
+            "name": "mission_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Mission Id",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Unique identifier of the run.",
+            "in": "path",
+            "name": "run_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Run Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "data": {
+                    "mission_id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+                    "run_id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+                    "started_at": "2024-01-23T18:10:02.574Z",
+                    "status": "running",
+                    "updated_at": "2024-01-23T18:10:02.574Z"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/MissionRunResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Resume run",
+        "tags": [
+          "Missions"
+        ]
+      }
+    },
+    "/ai/missions/{mission_id}/runs/{run_id}/telnyx-agents": {
+      "get": {
+        "description": "Returns the Telnyx agents currently linked to the specified run. Linked agents participate in executing the run's plan.",
+        "operationId": "get_public_missions_missions_mission_id_runs_run_id_telnyx_agents",
+        "parameters": [
+          {
+            "description": "Unique identifier of the mission.",
+            "in": "path",
+            "name": "mission_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Mission Id",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Unique identifier of the run.",
+            "in": "path",
+            "name": "run_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Run Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "data": [
+                    {
+                      "created_at": "2024-01-23T18:10:02.574Z",
+                      "run_id": "Run Id",
+                      "telnyx_agent_id": "Telnyx Agent Id"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/TelnyxAgentsListResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "List linked Telnyx agents",
+        "tags": [
+          "Missions"
+        ]
+      },
+      "post": {
+        "description": "Link a Telnyx AI agent (voice/messaging) to a run",
+        "operationId": "post_public_missions_missions_mission_id_runs_run_id_telnyx_agents",
+        "parameters": [
+          {
+            "description": "Unique identifier of the mission.",
+            "in": "path",
+            "name": "mission_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Mission Id",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Unique identifier of the run.",
+            "in": "path",
+            "name": "run_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Run Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "example": {
+                "telnyx_agent_id": "Telnyx Agent Id"
+              },
+              "schema": {
+                "$ref": "#/components/schemas/LinkTelnyxAgentRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "data": {
+                    "created_at": "2024-01-23T18:10:02.574Z",
+                    "run_id": "Run Id",
+                    "telnyx_agent_id": "Telnyx Agent Id"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/TelnyxAgentResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Link Telnyx agent to run",
+        "tags": [
+          "Missions"
+        ]
+      }
+    },
+    "/ai/missions/{mission_id}/runs/{run_id}/telnyx-agents/{telnyx_agent_id}": {
+      "delete": {
+        "description": "Unlinks the specified Telnyx agent from the run so it no longer participates in execution. The run itself and its history are unaffected.",
+        "operationId": "delete_public_missions_missions_mission_id_runs_run_id_telnyx_agents_telnyx_agent_id",
+        "parameters": [
+          {
+            "description": "Unique identifier of the mission.",
+            "in": "path",
+            "name": "mission_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Mission Id",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Unique identifier of the run.",
+            "in": "path",
+            "name": "run_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Run Id",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Unique identifier of the telnyx agent.",
+            "in": "path",
+            "name": "telnyx_agent_id",
+            "required": true,
+            "schema": {
+              "title": "Telnyx Agent Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "detail": [
+                    {
+                      "loc": [
+                        "string"
+                      ],
+                      "msg": "Message",
+                      "type": "Error Type"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Unlink Telnyx agent",
+        "tags": [
+          "Missions"
+        ]
+      }
+    },
+    "/ai/missions/{mission_id}/tools": {
+      "get": {
+        "description": "Returns the tools configured on the specified mission. Tools define the actions agents may invoke while executing the mission's runs.",
+        "operationId": "get_public_missions_missions_mission_id_tools",
+        "parameters": [
+          {
+            "description": "Unique identifier of the mission.",
+            "in": "path",
+            "name": "mission_id",
+            "required": true,
+            "schema": {
+              "title": "Mission Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "example": {},
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "List tools",
+        "tags": [
+          "Missions"
+        ]
+      },
+      "post": {
+        "description": "Adds a new tool to the specified mission, defining an action agents can invoke during runs of this mission.",
+        "operationId": "post_public_missions_missions_mission_id_tools",
+        "parameters": [
+          {
+            "description": "Unique identifier of the mission.",
+            "in": "path",
+            "name": "mission_id",
+            "required": true,
+            "schema": {
+              "title": "Mission Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "example": {},
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Create tool",
+        "tags": [
+          "Missions"
+        ]
+      }
+    },
+    "/ai/missions/{mission_id}/tools/{tool_id}": {
+      "delete": {
+        "description": "Removes the specified tool from the mission so agents can no longer invoke it in subsequent runs.",
+        "operationId": "delete_public_missions_missions_mission_id_tools_tool_id",
+        "parameters": [
+          {
+            "description": "Unique identifier of the mission.",
+            "in": "path",
+            "name": "mission_id",
+            "required": true,
+            "schema": {
+              "title": "Mission Id",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Unique identifier of the tool.",
+            "in": "path",
+            "name": "tool_id",
+            "required": true,
+            "schema": {
+              "title": "Tool Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "detail": [
+                    {
+                      "loc": [
+                        "string"
+                      ],
+                      "msg": "Message",
+                      "type": "Error Type"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Delete tool",
+        "tags": [
+          "Missions"
+        ]
+      },
+      "get": {
+        "description": "Returns the definition of a single tool configured on the specified mission.",
+        "operationId": "get_public_missions_missions_mission_id_tools_tool_id",
+        "parameters": [
+          {
+            "description": "Unique identifier of the mission.",
+            "in": "path",
+            "name": "mission_id",
+            "required": true,
+            "schema": {
+              "title": "Mission Id",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Unique identifier of the tool.",
+            "in": "path",
+            "name": "tool_id",
+            "required": true,
+            "schema": {
+              "title": "Tool Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "example": {},
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Get tool",
+        "tags": [
+          "Missions"
+        ]
+      },
+      "put": {
+        "description": "Replaces the definition of the specified tool on this mission.",
+        "operationId": "put_public_missions_missions_mission_id_tools_tool_id",
+        "parameters": [
+          {
+            "description": "Unique identifier of the mission.",
+            "in": "path",
+            "name": "mission_id",
+            "required": true,
+            "schema": {
+              "title": "Mission Id",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Unique identifier of the tool.",
+            "in": "path",
+            "name": "tool_id",
+            "required": true,
+            "schema": {
+              "title": "Tool Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "example": {},
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Update tool",
+        "tags": [
+          "Missions"
+        ]
+      }
+    }
+  },
+  "security": [
+    {
+      "bearerAuth": []
+    }
+  ],
+  "servers": [
+    {
+      "description": "Version 2.0.0 of the Telnyx API",
+      "url": "https://api.telnyx.com/v2"
+    }
+  ]
+}

@@ -1,0 +1,1449 @@
+{
+  "components": {
+    "parameters": {
+      "RecordingId": {
+        "description": "Uniquely identifies the recording by id.",
+        "in": "path",
+        "name": "recording_id",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      },
+      "RecordingTranscriptionId": {
+        "description": "Uniquely identifies the recording transcription by id.",
+        "in": "path",
+        "name": "recording_transcription_id",
+        "required": true,
+        "schema": {
+          "example": "6a09cdc3-8948-47f0-aa62-74ac943d6c58",
+          "format": "uuid",
+          "type": "string"
+        }
+      },
+      "call-recordings_ConnectionId": {
+        "description": "Uniquely identifies a Telnyx application (Call Control, TeXML) or Sip connection resource.",
+        "in": "path",
+        "name": "connection_id",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      },
+      "call-recordings_PageConsolidated": {
+        "description": "Consolidated page parameter (deepObject style). Originally: page[size], page[number]",
+        "explode": true,
+        "in": "query",
+        "name": "page",
+        "schema": {
+          "properties": {
+            "number": {
+              "default": 1,
+              "description": "The page number to load.",
+              "minimum": 1,
+              "type": "integer"
+            },
+            "size": {
+              "default": 20,
+              "description": "The size of the page.",
+              "maximum": 250,
+              "minimum": 1,
+              "type": "integer"
+            }
+          },
+          "type": "object"
+        },
+        "style": "deepObject"
+      }
+    },
+    "requestBodies": {
+      "CreateCredentialsRequest": {
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/CustomStorageConfiguration"
+            }
+          }
+        },
+        "description": "Creates new credentials resource for the specified connection_id.",
+        "required": true
+      },
+      "DeleteRecordingsRequest": {
+        "content": {
+          "application/json": {
+            "example": {
+              "ids": [
+                "428c31b6-7af4-4bcb-b7f5-5013ef9657c1",
+                "428c31b6-7af4-4bcb-b7f5-5013ef9657c2"
+              ]
+            },
+            "schema": {
+              "properties": {
+                "ids": {
+                  "description": "List of call recording IDs to delete.",
+                  "items": {
+                    "type": "string"
+                  },
+                  "type": "array"
+                }
+              },
+              "required": [
+                "ids"
+              ],
+              "type": "object"
+            }
+          }
+        },
+        "description": "Deletes recordings for the given list of IDs.",
+        "required": true
+      }
+    },
+    "responses": {
+      "ForbiddenResponse": {
+        "content": {
+          "application/json": {
+            "example": {
+              "errors": [
+                {
+                  "code": "403",
+                  "detail": "Forbidden",
+                  "title": "Forbidden"
+                }
+              ]
+            },
+            "schema": {
+              "$ref": "#/components/schemas/Errors"
+            }
+          }
+        },
+        "description": "Forbidden. The request is understood but has been refused."
+      },
+      "call-recordings_GenericErrorResponse": {
+        "content": {
+          "application/json": {
+            "example": {
+              "errors": [
+                {
+                  "code": "10007",
+                  "detail": "An unexpected error occured.",
+                  "title": "Unexpected error"
+                }
+              ]
+            },
+            "schema": {
+              "$ref": "#/components/schemas/Errors"
+            }
+          }
+        },
+        "description": "Unexpected error."
+      },
+      "call-recordings_InternalServerErrorResponse": {
+        "content": {
+          "application/json": {
+            "example": {
+              "errors": [
+                {
+                  "code": "500",
+                  "detail": "Internal server error",
+                  "title": "Internal Server Error"
+                }
+              ]
+            },
+            "schema": {
+              "$ref": "#/components/schemas/Errors"
+            }
+          }
+        },
+        "description": "Internal server error. An unexpected error occurred on the server."
+      },
+      "call-recordings_NotFoundResponse": {
+        "content": {
+          "application/json": {
+            "examples": {
+              "connection_not_found": {
+                "summary": "Connection not found",
+                "value": {
+                  "errors": [
+                    {
+                      "code": "10005",
+                      "detail": "The requested resource or URL could not be found.",
+                      "source": {
+                        "pointer": "/connection_id"
+                      },
+                      "title": "Resource not found"
+                    }
+                  ]
+                }
+              },
+              "not_found": {
+                "summary": "Generic not found",
+                "value": {
+                  "errors": [
+                    {
+                      "code": "404",
+                      "detail": "Page not found",
+                      "title": "Not Found"
+                    }
+                  ]
+                }
+              }
+            },
+            "schema": {
+              "$ref": "#/components/schemas/Errors"
+            }
+          }
+        },
+        "description": "Resource not found. The requested resource or URL could not be found."
+      },
+      "call-recordings_UnauthorizedResponse": {
+        "content": {
+          "application/json": {
+            "example": {
+              "errors": [
+                {
+                  "code": "401",
+                  "detail": "Unauthorized",
+                  "title": "Unauthorized"
+                }
+              ]
+            },
+            "schema": {
+              "$ref": "#/components/schemas/Errors"
+            }
+          }
+        },
+        "description": "Unauthorized. The request lacks valid authentication credentials."
+      }
+    },
+    "schemas": {
+      "AwsAccessKeyId": {
+        "description": "AWS credentials access key id.",
+        "example": "AKIAIOSFODNN7EXAMPLE",
+        "type": "string"
+      },
+      "AwsSecretAccessKey": {
+        "description": "AWS secret access key.",
+        "example": "wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY",
+        "type": "string"
+      },
+      "AzureAccountKey": {
+        "description": "Azure Blob Storage account key.",
+        "example": "bPxRfiCYEXAMPLEKEY",
+        "type": "string"
+      },
+      "AzureAccountName": {
+        "description": "Azure Blob Storage account name.",
+        "example": "my-account",
+        "type": "string"
+      },
+      "AzureConfigurationData": {
+        "properties": {
+          "account_key": {
+            "$ref": "#/components/schemas/AzureAccountKey"
+          },
+          "account_name": {
+            "$ref": "#/components/schemas/AzureAccountName"
+          },
+          "backend": {
+            "description": "Storage backend type",
+            "enum": [
+              "azure"
+            ],
+            "type": "string"
+          },
+          "bucket": {
+            "$ref": "#/components/schemas/Bucket"
+          }
+        },
+        "required": [
+          "backend"
+        ],
+        "title": "Azure Blob Storage Configuration Data",
+        "type": "object"
+      },
+      "Bucket": {
+        "description": "Name of the bucket to be used to store recording files.",
+        "example": "example-bucket",
+        "type": "string"
+      },
+      "ConnectionIdCredentials": {
+        "description": "Uniquely identifies a Telnyx application (Call Control, TeXML) or Sip connection resource.",
+        "example": "1234567890",
+        "type": "string"
+      },
+      "Credentials": {
+        "description": "Opaque credential token used to authenticate and authorize with storage provider.",
+        "example": "OPAQUE_CREDENTIALS_TOKEN",
+        "type": "string"
+      },
+      "CredentialsResponse": {
+        "properties": {
+          "connection_id": {
+            "$ref": "#/components/schemas/ConnectionIdCredentials"
+          },
+          "data": {
+            "$ref": "#/components/schemas/CustomStorageConfiguration"
+          },
+          "record_type": {
+            "$ref": "#/components/schemas/RecordType"
+          }
+        },
+        "required": [
+          "data",
+          "connection_id",
+          "record_type"
+        ],
+        "title": "CredentialsResponse",
+        "type": "object"
+      },
+      "Cursor": {
+        "properties": {
+          "after": {
+            "description": "Opaque identifier of next page.",
+            "example": "v1:g3QAAAADZAAKdGVsbnl4X2lkc2wAAAABbQAAACRlYmRiYzdkNi1kZWRmLTExZWQtYTM3MS0wMjQyMGFlZjAwYjRqZAAJdGltZXN0YW1wbggA8Le4pGhpVxdkAAR0eXBlZAAFYWZ0ZXI=",
+            "type": "string"
+          },
+          "before": {
+            "description": "Opaque identifier of previous page.",
+            "example": "v1:g3QAAAADZAAKdGVsbnl4X2lkc2wAAAABbQAAACRlYmRiYzdkNi1kZWRmLTExZWQtYTM3MS0wMjQyMGFlZjAwYjRqZAAJdGltZXN0YW1wbggA8Le4pGhpVxdkAAR0eXBlZAAFYWZ0ZXI=",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "CustomStorageConfiguration": {
+        "properties": {
+          "backend": {
+            "enum": [
+              "gcs",
+              "s3",
+              "s3-generic",
+              "azure"
+            ],
+            "example": "gcs",
+            "type": "string"
+          },
+          "configuration": {
+            "discriminator": {
+              "mapping": {
+                "azure": "#/components/schemas/AzureConfigurationData",
+                "gcs": "#/components/schemas/GCSConfigurationData",
+                "s3": "#/components/schemas/S3ConfigurationData",
+                "s3-generic": "#/components/schemas/S3GenericConfigurationData"
+              },
+              "propertyName": "backend"
+            },
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/GCSConfigurationData"
+              },
+              {
+                "$ref": "#/components/schemas/S3ConfigurationData"
+              },
+              {
+                "$ref": "#/components/schemas/S3GenericConfigurationData"
+              },
+              {
+                "$ref": "#/components/schemas/AzureConfigurationData"
+              }
+            ]
+          }
+        },
+        "required": [
+          "backend",
+          "configuration"
+        ],
+        "title": "Custom Storage Configuration",
+        "type": "object"
+      },
+      "Endpoint": {
+        "description": "URL of an S3-compatible storage endpoint, used to direct uploads and presigned download URLs to a non-AWS store (for example MinIO, Cloudflare R2, Wasabi, Backblaze B2, or Supabase). A bare host (https://s3.example.com) or a path-prefixed URL (https://xyz.supabase.co/storage/v1/s3) is accepted, and must use the http or https scheme.",
+        "example": "https://s3.example.com",
+        "format": "uri",
+        "pattern": "^https?://",
+        "type": "string"
+      },
+      "Error": {
+        "example": {
+          "code": "20207",
+          "description": "The street address provided is invalid.",
+          "source": {
+            "pointer": "/street_address"
+          },
+          "title": "Invalid street address"
+        },
+        "properties": {
+          "code": {
+            "type": "string",
+            "x-format": "int64"
+          },
+          "description": {
+            "type": "string"
+          },
+          "detail": {
+            "description": "A human-readable explanation of the error.",
+            "type": "string"
+          },
+          "meta": {
+            "additionalProperties": true,
+            "type": "object"
+          },
+          "source": {
+            "properties": {
+              "parameter": {
+                "description": "Indicates which query parameter caused the error.",
+                "type": "string"
+              },
+              "pointer": {
+                "description": "JSON pointer (RFC6901) to the offending entity.",
+                "format": "json-pointer",
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
+          "title": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "title"
+        ],
+        "type": "object"
+      },
+      "Errors": {
+        "properties": {
+          "errors": {
+            "items": {
+              "$ref": "#/components/schemas/Error"
+            },
+            "type": "array"
+          }
+        },
+        "type": "object"
+      },
+      "GCSConfigurationData": {
+        "properties": {
+          "backend": {
+            "description": "Storage backend type",
+            "enum": [
+              "gcs"
+            ],
+            "type": "string"
+          },
+          "bucket": {
+            "$ref": "#/components/schemas/Bucket"
+          },
+          "credentials": {
+            "$ref": "#/components/schemas/Credentials"
+          }
+        },
+        "required": [
+          "backend"
+        ],
+        "title": "Google Cloud Storage Configuration Data",
+        "type": "object"
+      },
+      "PaginationMeta": {
+        "properties": {
+          "page_number": {
+            "example": 2,
+            "type": "integer"
+          },
+          "page_size": {
+            "example": 25,
+            "type": "integer"
+          },
+          "total_pages": {
+            "example": 3,
+            "type": "integer"
+          },
+          "total_results": {
+            "example": 55,
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "RecordType": {
+        "description": "Identifies record type.",
+        "enum": [
+          "custom_storage_credentials"
+        ],
+        "type": "string"
+      },
+      "RecordingResponse": {
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/RecordingResponseData"
+          }
+        },
+        "title": "RecordingResponse",
+        "type": "object"
+      },
+      "RecordingResponseData": {
+        "properties": {
+          "call_control_id": {
+            "description": "Unique identifier and token for controlling the call.",
+            "example": "v3:e-31OnvjEM7Y4wvxr3TKNk8M3QyLcGZPiUIzCGtwQtOtEjY-B0urkw",
+            "type": "string"
+          },
+          "call_leg_id": {
+            "description": "ID unique to the call leg (used to correlate webhook events).",
+            "example": "84a97d76-e40f-11ed-9074-02420a0daa69",
+            "type": "string"
+          },
+          "call_session_id": {
+            "description": "ID that is unique to the call session and can be used to correlate webhook events. Call session is a group of related call legs that logically belong to the same phone call, e.g. an inbound and outbound leg of a transferred call.",
+            "example": "84a97d76-e40f-11ed-9074-02420a0daa69",
+            "type": "string"
+          },
+          "channels": {
+            "description": "When `dual`, the final audio file has the first leg on channel A, and the rest on channel B.",
+            "enum": [
+              "single",
+              "dual"
+            ],
+            "example": "dual",
+            "type": "string"
+          },
+          "conference_id": {
+            "description": "Uniquely identifies the conference.",
+            "example": "84a97d76-e40f-11ed-9074-02420a0daa69",
+            "type": "string"
+          },
+          "connection_id": {
+            "description": "Identifies the Telnyx application (Call Control, TeXML) or SIP connection resource associated with this recording.",
+            "example": "175237942907135762",
+            "type": "string"
+          },
+          "created_at": {
+            "description": "ISO 8601 formatted date indicating when the resource was created.",
+            "example": "2018-02-02T22:25:27.521Z",
+            "type": "string"
+          },
+          "download_urls": {
+            "description": "Links to download the recording files.",
+            "properties": {
+              "mp3": {
+                "description": "Link to download the recording in mp3 format.",
+                "type": "string"
+              },
+              "wav": {
+                "description": "Link to download the recording in wav format.",
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
+          "duration_millis": {
+            "description": "The duration of the recording in milliseconds.",
+            "example": 60000,
+            "format": "int32",
+            "type": "integer"
+          },
+          "from": {
+            "description": "The `from` (caller) number for the call that generated this recording.",
+            "example": "+15551234567",
+            "type": "string"
+          },
+          "id": {
+            "description": "Uniquely identifies the recording.",
+            "example": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+            "type": "string"
+          },
+          "initiated_by": {
+            "description": "Indicates what triggered the recording. Possible values include `DialVerb`, `Conference`, `OutboundAPI`, `Trunking`, `RecordVerb`, `StartCallRecordingAPI`, `StartConferenceRecordingAPI`.",
+            "example": "StartCallRecordingAPI",
+            "type": "string"
+          },
+          "record_type": {
+            "enum": [
+              "recording"
+            ],
+            "example": "recording",
+            "type": "string"
+          },
+          "recording_ended_at": {
+            "description": "ISO 8601 formatted date of when the recording ended.",
+            "example": "2019-01-23T18:10:02.574Z",
+            "type": "string"
+          },
+          "recording_started_at": {
+            "description": "ISO 8601 formatted date of when the recording started.",
+            "example": "2019-01-23T18:10:02.574Z",
+            "type": "string"
+          },
+          "source": {
+            "description": "The kind of event that led to this recording being created.",
+            "enum": [
+              "conference",
+              "call"
+            ],
+            "example": "conference",
+            "type": "string"
+          },
+          "status": {
+            "description": "The status of the recording. Only `completed` recordings are currently supported.",
+            "enum": [
+              "completed"
+            ],
+            "example": "completed",
+            "type": "string"
+          },
+          "to": {
+            "description": "The `to` (callee) number for the call that generated this recording.",
+            "example": "+15557654321",
+            "type": "string"
+          },
+          "updated_at": {
+            "description": "ISO 8601 formatted date indicating when the resource was updated.",
+            "example": "2018-02-02T22:25:27.521Z",
+            "type": "string"
+          }
+        },
+        "title": "RecordingResponseData",
+        "type": "object"
+      },
+      "RecordingTranscription": {
+        "properties": {
+          "created_at": {
+            "description": "ISO 8601 formatted date indicating when the resource was created.",
+            "example": "2018-02-02T22:25:27.521Z",
+            "type": "string"
+          },
+          "duration_millis": {
+            "description": "The duration of the recording transcription in milliseconds.",
+            "example": 60000,
+            "format": "int32",
+            "type": "integer"
+          },
+          "id": {
+            "description": "Uniquely identifies the recording transcription.",
+            "example": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+            "type": "string"
+          },
+          "record_type": {
+            "enum": [
+              "recording_transcription"
+            ],
+            "example": "recording_transcription",
+            "type": "string"
+          },
+          "recording_id": {
+            "description": "Uniquely identifies the recording associated with this transcription.",
+            "example": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+            "type": "string"
+          },
+          "status": {
+            "description": "The status of the recording transcription. Only `completed` has transcription text available.",
+            "enum": [
+              "in-progress",
+              "completed"
+            ],
+            "example": "completed",
+            "type": "string"
+          },
+          "transcription_text": {
+            "description": "The recording's transcribed text.",
+            "example": "Good morning, how may I help you?",
+            "type": "string"
+          },
+          "updated_at": {
+            "description": "ISO 8601 formatted date indicating when the resource was updated.",
+            "example": "2018-02-02T22:25:27.521Z",
+            "type": "string"
+          }
+        },
+        "title": "RecordingTranscriptionsResponseData",
+        "type": "object"
+      },
+      "Region": {
+        "description": "Region where the bucket is located.",
+        "example": "us-east-1",
+        "type": "string"
+      },
+      "S3ConfigurationData": {
+        "properties": {
+          "aws_access_key_id": {
+            "$ref": "#/components/schemas/AwsAccessKeyId"
+          },
+          "aws_secret_access_key": {
+            "$ref": "#/components/schemas/AwsSecretAccessKey"
+          },
+          "backend": {
+            "description": "Storage backend type",
+            "enum": [
+              "s3"
+            ],
+            "type": "string"
+          },
+          "bucket": {
+            "$ref": "#/components/schemas/Bucket"
+          },
+          "region": {
+            "$ref": "#/components/schemas/Region"
+          }
+        },
+        "required": [
+          "backend",
+          "bucket",
+          "region",
+          "aws_access_key_id",
+          "aws_secret_access_key"
+        ],
+        "title": "AWS S3 Storage Configuration Data",
+        "type": "object"
+      },
+      "S3GenericConfigurationData": {
+        "properties": {
+          "aws_access_key_id": {
+            "$ref": "#/components/schemas/AwsAccessKeyId"
+          },
+          "aws_secret_access_key": {
+            "$ref": "#/components/schemas/AwsSecretAccessKey"
+          },
+          "backend": {
+            "description": "Storage backend type",
+            "enum": [
+              "s3-generic"
+            ],
+            "type": "string"
+          },
+          "bucket": {
+            "$ref": "#/components/schemas/Bucket"
+          },
+          "endpoint": {
+            "$ref": "#/components/schemas/Endpoint"
+          },
+          "region": {
+            "$ref": "#/components/schemas/Region"
+          }
+        },
+        "required": [
+          "backend",
+          "bucket",
+          "region",
+          "endpoint",
+          "aws_access_key_id",
+          "aws_secret_access_key"
+        ],
+        "title": "S3-Compatible (Generic) Storage Configuration Data",
+        "type": "object"
+      },
+      "call-recordings_CursorPaginationMeta": {
+        "properties": {
+          "cursors": {
+            "$ref": "#/components/schemas/Cursor"
+          },
+          "next": {
+            "description": "Path to next page.",
+            "example": "/v2/recording_transcriptions?page[after]=v1:g3QAAAADZAAKdGVsbnl4X2lkc2wAAAABbQAAACRlYmRiYzdkNi1kZWRmLTExZWQtYTM3MS0wMjQyMGFlZjAwYjRqZAAJdGltZXN0YW1wbggA8Le4pGhpVxdkAAR0eXBlZAAFYWZ0ZXI=",
+            "type": "string"
+          },
+          "previous": {
+            "description": "Path to previous page.",
+            "example": "/v2/recording_transcriptions?page[before]=v1:g3QAAAADZAAKdGVsbnl4X2lkc2wAAAABbQAAACRlYmRiYzdkNi1kZWRmLTExZWQtYTM3MS0wMjQyMGFlZjAwYjRqZAAJdGltZXN0YW1wbggA8Le4pGhpVxdkAAR0eXBlZAAFYWZ0ZXI=",
+            "type": "string"
+          }
+        },
+        "title": "Cursor Pagination Meta",
+        "type": "object"
+      }
+    },
+    "securitySchemes": {
+      "BearerAuth": {
+        "bearerFormat": "API key",
+        "description": "Telnyx API key supplied as `Authorization: Bearer \u003ctoken\u003e`. In production, auth may be validated by the API gateway and forwarded via Telnyx auth headers.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "Payment": {
+        "description": "Machine Payment Protocol credential used on paid retries, sent as `Authorization: Payment ...`. Obtained by paying a challenge returned in the `WWW-Authenticate` header of a 402 response. This is not a Telnyx API key; initial challenge requests use standard bearer authentication instead.",
+        "in": "header",
+        "name": "Authorization",
+        "type": "apiKey"
+      },
+      "agent-memory_bearerAuth": {
+        "description": "Telnyx API key",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "bearerAuth": {
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "branded-calling_bearerAuth": {
+        "description": "Telnyx API key. Generate one at https://portal.telnyx.com/#/app/api-keys.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "collections_bearerAuth": {
+        "description": "Telnyx API key. Collections and results are automatically scoped to the authenticated user's organization.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "number-reputation_bearerAuth": {
+        "description": "Telnyx API key. Generate one at https://portal.telnyx.com/#/app/api-keys.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "oauthClientAuth": {
+        "description": "OAuth 2.0 authentication for Telnyx API and MCP integrations",
+        "flows": {
+          "authorizationCode": {
+            "authorizationUrl": "https://api.telnyx.com/v2/oauth/authorize",
+            "refreshUrl": "https://api.telnyx.com/v2/oauth/token",
+            "scopes": {
+              "admin": "Administrative access to Telnyx resources"
+            },
+            "tokenUrl": "https://api.telnyx.com/v2/oauth/token"
+          },
+          "clientCredentials": {
+            "scopes": {
+              "admin": "Administrative access to Telnyx resources"
+            },
+            "tokenUrl": "https://api.telnyx.com/v2/oauth/token"
+          }
+        },
+        "type": "oauth2"
+      },
+      "outbound-voice-profiles_bearerAuth": {
+        "bearerFormat": "JWT",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "pay-connectors_bearerAuth": {
+        "description": "Telnyx API key, not the processor bearer token.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "pronunciation-dicts_bearerAuth": {
+        "description": "Telnyx API v2 key. Obtain from https://portal.telnyx.com",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "rcs-registration_bearerAuth": {
+        "bearerFormat": "API key",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "stored-payment-transactions_bearerAuth": {
+        "bearerFormat": "JWT",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "telnyxApiKey": {
+        "description": "Management-only Telnyx account credential.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "transcriptions-search_bearerAuth": {
+        "description": "Telnyx API key. Results are automatically scoped to the authenticated user's organization.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "web-search_bearerAuth": {
+        "description": "Telnyx API key",
+        "scheme": "bearer",
+        "type": "http"
+      }
+    }
+  },
+  "info": {
+    "contact": {
+      "email": "support@telnyx.com"
+    },
+    "description": "SIP trunking, SMS, MMS, Call Control and Telephony Data Services.",
+    "title": "Telnyx API",
+    "version": "2.0.0",
+    "x-endpoint-cost": "light",
+    "x-latency-category": "responsive"
+  },
+  "openapi": "3.1.0",
+  "paths": {
+    "/custom_storage_credentials/{connection_id}": {
+      "delete": {
+        "description": "Deletes a stored custom credentials configuration.",
+        "operationId": "DeleteCustomStorageCredentials",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/call-recordings_ConnectionId"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "The credentials configuration for connection_id was deleted successfully."
+          },
+          "401": {
+            "$ref": "#/components/responses/call-recordings_UnauthorizedResponse"
+          },
+          "404": {
+            "$ref": "#/components/responses/call-recordings_NotFoundResponse"
+          },
+          "default": {
+            "$ref": "#/components/responses/call-recordings_GenericErrorResponse"
+          }
+        },
+        "summary": "Delete a stored credential",
+        "tags": [
+          "Call Recordings"
+        ]
+      },
+      "get": {
+        "description": "Returns the information about custom storage credentials.",
+        "operationId": "GetCustomStorageCredentials",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/call-recordings_ConnectionId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CredentialsResponse"
+                }
+              }
+            },
+            "description": "A response containing a credentials resource."
+          },
+          "401": {
+            "$ref": "#/components/responses/call-recordings_UnauthorizedResponse"
+          },
+          "404": {
+            "$ref": "#/components/responses/call-recordings_NotFoundResponse"
+          },
+          "default": {
+            "$ref": "#/components/responses/call-recordings_GenericErrorResponse"
+          }
+        },
+        "summary": "Retrieve a stored credential",
+        "tags": [
+          "Call Recordings"
+        ]
+      },
+      "post": {
+        "description": "Creates a custom storage credentials configuration.",
+        "operationId": "CreateCustomStorageCredentials",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/call-recordings_ConnectionId"
+          }
+        ],
+        "requestBody": {
+          "$ref": "#/components/requestBodies/CreateCredentialsRequest"
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CredentialsResponse"
+                }
+              }
+            },
+            "description": "A response containing a credentials resource."
+          },
+          "401": {
+            "$ref": "#/components/responses/call-recordings_UnauthorizedResponse"
+          },
+          "404": {
+            "$ref": "#/components/responses/call-recordings_NotFoundResponse"
+          },
+          "default": {
+            "$ref": "#/components/responses/call-recordings_GenericErrorResponse"
+          }
+        },
+        "summary": "Create a custom storage credential",
+        "tags": [
+          "Call Recordings"
+        ]
+      },
+      "put": {
+        "description": "Updates a stored custom credentials configuration.",
+        "operationId": "UpdateCustomStorageCredentials",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/call-recordings_ConnectionId"
+          }
+        ],
+        "requestBody": {
+          "$ref": "#/components/requestBodies/CreateCredentialsRequest"
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CredentialsResponse"
+                }
+              }
+            },
+            "description": "A response containing a credentials resource."
+          },
+          "401": {
+            "$ref": "#/components/responses/call-recordings_UnauthorizedResponse"
+          },
+          "404": {
+            "$ref": "#/components/responses/call-recordings_NotFoundResponse"
+          },
+          "default": {
+            "$ref": "#/components/responses/call-recordings_GenericErrorResponse"
+          }
+        },
+        "summary": "Update a stored credential",
+        "tags": [
+          "Call Recordings"
+        ]
+      }
+    },
+    "/recording_transcriptions": {
+      "get": {
+        "description": "Returns a list of your recording transcriptions.",
+        "operationId": "getRecordingTranscriptions",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/call-recordings_PageConsolidated"
+          },
+          {
+            "description": "Filter recording transcriptions by various attributes.",
+            "explode": true,
+            "in": "query",
+            "name": "filter",
+            "schema": {
+              "properties": {
+                "created_at": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "gte": {
+                      "description": "Returns only transcriptions created later than or at given ISO 8601 datetime.",
+                      "example": "2019-03-29T11:10:00Z",
+                      "type": "string"
+                    },
+                    "lte": {
+                      "description": "Returns only transcriptions created earlier than or at given ISO 8601 datetime.",
+                      "example": "2019-03-29T11:10:00Z",
+                      "type": "string"
+                    }
+                  },
+                  "type": "object"
+                },
+                "recording_id": {
+                  "description": "If present, transcriptions will be filtered to those associated with the given recording.",
+                  "example": "428c31b6-7af4-4bcb-b7f5-5013ef9657c1",
+                  "format": "uuid",
+                  "type": "string"
+                }
+              },
+              "type": "object"
+            },
+            "style": "deepObject"
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "items": {
+                        "$ref": "#/components/schemas/RecordingTranscription"
+                      },
+                      "type": "array"
+                    },
+                    "meta": {
+                      "$ref": "#/components/schemas/call-recordings_CursorPaginationMeta"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "A response listing multiple recording transcriptions."
+          },
+          "401": {
+            "$ref": "#/components/responses/call-recordings_UnauthorizedResponse"
+          },
+          "404": {
+            "$ref": "#/components/responses/call-recordings_NotFoundResponse"
+          },
+          "default": {
+            "$ref": "#/components/responses/call-recordings_GenericErrorResponse"
+          }
+        },
+        "summary": "List all recording transcriptions",
+        "tags": [
+          "Call Recordings"
+        ]
+      }
+    },
+    "/recording_transcriptions/{recording_transcription_id}": {
+      "delete": {
+        "description": "Permanently deletes a recording transcription.",
+        "operationId": "deleteRecordingTranscription",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/RecordingTranscriptionId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/RecordingTranscription"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "A response with a single recording transcription resource."
+          },
+          "401": {
+            "$ref": "#/components/responses/call-recordings_UnauthorizedResponse"
+          },
+          "404": {
+            "$ref": "#/components/responses/call-recordings_NotFoundResponse"
+          },
+          "default": {
+            "$ref": "#/components/responses/call-recordings_GenericErrorResponse"
+          }
+        },
+        "summary": "Delete a recording transcription",
+        "tags": [
+          "Call Recordings"
+        ]
+      },
+      "get": {
+        "description": "Retrieves the details of an existing recording transcription.",
+        "operationId": "getRecordingTranscription",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/RecordingTranscriptionId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/RecordingTranscription"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "A response with a single recording transcription resource."
+          },
+          "401": {
+            "$ref": "#/components/responses/call-recordings_UnauthorizedResponse"
+          },
+          "404": {
+            "$ref": "#/components/responses/call-recordings_NotFoundResponse"
+          },
+          "default": {
+            "$ref": "#/components/responses/call-recordings_GenericErrorResponse"
+          }
+        },
+        "summary": "Retrieve a recording transcription",
+        "tags": [
+          "Call Recordings"
+        ]
+      }
+    },
+    "/recordings": {
+      "get": {
+        "description": "Returns a paginated list of your call recordings, with support for filtering to locate specific recordings.",
+        "operationId": "GetRecordings",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/call-recordings_PageConsolidated"
+          },
+          {
+            "description": "Filter recordings by various attributes.",
+            "explode": true,
+            "in": "query",
+            "name": "filter",
+            "schema": {
+              "properties": {
+                "call_control_id": {
+                  "description": "If present, recordings will be filtered to those with a matching `call_control_id`.",
+                  "example": "v3:e-31OnvjEM7Y4wvxr3TKNk8M3QyLcGZPiUIzCGtwQtOtEjY-B0urkw",
+                  "type": "string"
+                },
+                "call_leg_id": {
+                  "description": "If present, recordings will be filtered to those with a matching call_leg_id.",
+                  "example": "428c31b6-7af4-4bcb-b7f5-5013ef9657c1",
+                  "format": "uuid",
+                  "type": "string"
+                },
+                "call_session_id": {
+                  "description": "If present, recordings will be filtered to those with a matching call_session_id.",
+                  "example": "428c31b6-7af4-4bcb-b7f5-5013ef9657c1",
+                  "format": "uuid",
+                  "type": "string"
+                },
+                "conference_id": {
+                  "description": "Returns only recordings associated with a given conference.",
+                  "example": "428c31b6-7af4-4bcb-b7f5-5013ef9657c1",
+                  "type": "string"
+                },
+                "conference_region": {
+                  "description": "If present, recordings will be filtered to those with a matching `conference_region`.",
+                  "example": "us",
+                  "type": "string"
+                },
+                "connection_id": {
+                  "description": "If present, recordings will be filtered to those with a matching `connection_id` attribute (case-sensitive).",
+                  "example": "175237942907135762",
+                  "type": "string"
+                },
+                "created_at": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "gte": {
+                      "description": "Returns only recordings created later than or at given ISO 8601 datetime.",
+                      "example": "2019-03-29T11:10:00Z",
+                      "type": "string"
+                    },
+                    "lte": {
+                      "description": "Returns only recordings created earlier than or at given ISO 8601 datetime.",
+                      "example": "2019-03-29T11:10:00Z",
+                      "type": "string"
+                    }
+                  },
+                  "type": "object"
+                },
+                "end_time": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "gte": {
+                      "description": "Returns only recordings with an end time later than or equal to the given ISO 8601 datetime.",
+                      "example": "2019-03-29T11:10:00Z",
+                      "type": "string"
+                    },
+                    "lte": {
+                      "description": "Returns only recordings with an end time earlier than or equal to the given ISO 8601 datetime.",
+                      "example": "2019-03-29T11:10:00Z",
+                      "type": "string"
+                    }
+                  },
+                  "type": "object"
+                },
+                "from": {
+                  "description": "If present, recordings will be filtered to those with a matching `from` attribute (case-sensitive).",
+                  "example": "1234567890",
+                  "type": "string"
+                },
+                "sip_call_id": {
+                  "description": "If present, recordings will be filtered to those with a matching `sip_call_id` attribute. Matching is case-sensitive.",
+                  "example": "428c31b6-7af4-4bcb-b7f5-5013ef9657c1",
+                  "type": "string"
+                },
+                "start_time": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "gte": {
+                      "description": "Returns only recordings with a start time later than or equal to the given ISO 8601 datetime.",
+                      "example": "2019-03-29T11:10:00Z",
+                      "type": "string"
+                    },
+                    "lte": {
+                      "description": "Returns only recordings with a start time earlier than or equal to the given ISO 8601 datetime.",
+                      "example": "2019-03-29T11:10:00Z",
+                      "type": "string"
+                    }
+                  },
+                  "type": "object"
+                },
+                "to": {
+                  "description": "If present, recordings will be filtered to those with a matching `to` attribute (case-sensitive).",
+                  "example": "1234567890",
+                  "type": "string"
+                }
+              },
+              "type": "object"
+            },
+            "style": "deepObject"
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "items": {
+                        "$ref": "#/components/schemas/RecordingResponseData"
+                      },
+                      "type": "array"
+                    },
+                    "meta": {
+                      "$ref": "#/components/schemas/PaginationMeta"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "A response containing multiple recordings."
+          },
+          "401": {
+            "$ref": "#/components/responses/call-recordings_UnauthorizedResponse"
+          },
+          "403": {
+            "$ref": "#/components/responses/ForbiddenResponse"
+          },
+          "404": {
+            "$ref": "#/components/responses/call-recordings_NotFoundResponse"
+          },
+          "500": {
+            "$ref": "#/components/responses/call-recordings_InternalServerErrorResponse"
+          },
+          "default": {
+            "$ref": "#/components/responses/call-recordings_GenericErrorResponse"
+          }
+        },
+        "summary": "List all call recordings",
+        "tags": [
+          "Call Recordings"
+        ]
+      }
+    },
+    "/recordings/actions/delete": {
+      "post": {
+        "description": "Permanently deletes a list of call recordings.",
+        "operationId": "DeleteRecordings",
+        "requestBody": {
+          "$ref": "#/components/requestBodies/DeleteRecordingsRequest"
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "status": {
+                      "enum": [
+                        "ok"
+                      ],
+                      "example": "ok",
+                      "type": "string"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "The recordings have been successfully deleted."
+          },
+          "401": {
+            "$ref": "#/components/responses/call-recordings_UnauthorizedResponse"
+          },
+          "404": {
+            "$ref": "#/components/responses/call-recordings_NotFoundResponse"
+          },
+          "default": {
+            "$ref": "#/components/responses/call-recordings_GenericErrorResponse"
+          }
+        },
+        "summary": "Delete a list of call recordings",
+        "tags": [
+          "Call Recordings"
+        ]
+      }
+    },
+    "/recordings/{recording_id}": {
+      "delete": {
+        "description": "Permanently deletes the specified call recording and returns the deleted recording resource. The media is removed and can no longer be downloaded.",
+        "operationId": "DeleteRecording",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/RecordingId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RecordingResponse"
+                }
+              }
+            },
+            "description": "A response with a single recording resource."
+          },
+          "401": {
+            "$ref": "#/components/responses/call-recordings_UnauthorizedResponse"
+          },
+          "404": {
+            "$ref": "#/components/responses/call-recordings_NotFoundResponse"
+          },
+          "default": {
+            "$ref": "#/components/responses/call-recordings_GenericErrorResponse"
+          }
+        },
+        "summary": "Delete a call recording",
+        "tags": [
+          "Call Recordings"
+        ]
+      },
+      "get": {
+        "description": "Retrieves the details of an existing call recording.",
+        "operationId": "GetRecording",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/RecordingId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RecordingResponse"
+                }
+              }
+            },
+            "description": "A response with a single recording resource."
+          },
+          "401": {
+            "$ref": "#/components/responses/call-recordings_UnauthorizedResponse"
+          },
+          "404": {
+            "$ref": "#/components/responses/call-recordings_NotFoundResponse"
+          },
+          "default": {
+            "$ref": "#/components/responses/call-recordings_GenericErrorResponse"
+          }
+        },
+        "summary": "Retrieve a call recording",
+        "tags": [
+          "Call Recordings"
+        ]
+      }
+    }
+  },
+  "security": [
+    {
+      "bearerAuth": []
+    }
+  ],
+  "servers": [
+    {
+      "description": "Version 2.0.0 of the Telnyx API",
+      "url": "https://api.telnyx.com/v2"
+    }
+  ]
+}

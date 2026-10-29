@@ -1,0 +1,1962 @@
+{
+  "components": {
+    "parameters": {
+      "PageConsolidated": {
+        "description": "Consolidated page parameter (deepObject style). Originally: page[number], page[size]",
+        "explode": true,
+        "in": "query",
+        "name": "page",
+        "schema": {
+          "properties": {
+            "number": {
+              "default": 1,
+              "description": "The page number to load",
+              "minimum": 1,
+              "type": "integer"
+            },
+            "size": {
+              "default": 20,
+              "description": "The size of the page",
+              "maximum": 250,
+              "minimum": 1,
+              "type": "integer"
+            }
+          },
+          "type": "object"
+        },
+        "style": "deepObject"
+      }
+    },
+    "requestBodies": {
+      "CreatePortoutReport": {
+        "content": {
+          "application/json": {
+            "schema": {
+              "description": "The parameters for generating a new port-out related report.",
+              "properties": {
+                "params": {
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/ExportPortoutsCSVReport"
+                    }
+                  ]
+                },
+                "report_type": {
+                  "description": "Identifies the type of report",
+                  "enum": [
+                    "export_portouts_csv"
+                  ],
+                  "example": "export_portouts_csv",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "report_type",
+                "params"
+              ],
+              "type": "object"
+            }
+          }
+        },
+        "required": true
+      }
+    },
+    "schemas": {
+      "ExportPortoutsCSVReport": {
+        "description": "The parameters for generating a port-outs CSV report.",
+        "properties": {
+          "filters": {
+            "description": "The filters to apply to the export port-out CSV report.",
+            "properties": {
+              "created_at__gt": {
+                "description": "The date and time the port-out was created after.",
+                "format": "date-time",
+                "type": "string"
+              },
+              "created_at__lt": {
+                "description": "The date and time the port-out was created before.",
+                "format": "date-time",
+                "type": "string"
+              },
+              "customer_reference__in": {
+                "description": "The customer reference of the port-outs to include in the report.",
+                "items": {
+                  "example": "my-customer-reference",
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              "end_user_name": {
+                "description": "The end user name of the port-outs to include in the report.",
+                "example": "McPortersen",
+                "type": "string"
+              },
+              "phone_numbers__overlaps": {
+                "description": "A list of phone numbers that the port-outs phone numbers must overlap with.",
+                "items": {
+                  "example": "+1234567890",
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              "status__in": {
+                "description": "The status of the port-outs to include in the report.",
+                "items": {
+                  "enum": [
+                    "pending",
+                    "authorized",
+                    "ported",
+                    "rejected",
+                    "rejected-pending",
+                    "canceled"
+                  ],
+                  "type": "string"
+                },
+                "type": "array"
+              }
+            },
+            "type": "object"
+          }
+        },
+        "required": [
+          "filters"
+        ],
+        "type": "object"
+      },
+      "Metadata": {
+        "properties": {
+          "page_number": {
+            "description": "Current Page based on pagination settings (included when defaults are used.)",
+            "example": 3,
+            "format": "integer",
+            "type": "number"
+          },
+          "page_size": {
+            "description": "Number of results to return per page based on pagination settings (included when defaults are used.)",
+            "example": 1,
+            "format": "integer",
+            "type": "number"
+          },
+          "total_pages": {
+            "description": "Total number of pages based on pagination settings",
+            "example": 13,
+            "format": "integer",
+            "type": "number"
+          },
+          "total_results": {
+            "description": "Total number of results",
+            "example": 13,
+            "format": "integer",
+            "type": "number"
+          }
+        },
+        "title": "Metadata",
+        "type": "object"
+      },
+      "PaginationMeta": {
+        "properties": {
+          "page_number": {
+            "example": 2,
+            "type": "integer"
+          },
+          "page_size": {
+            "example": 25,
+            "type": "integer"
+          },
+          "total_pages": {
+            "example": 3,
+            "type": "integer"
+          },
+          "total_results": {
+            "example": 55,
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "PortOutSupportingDocument": {
+        "example": {
+          "created_at": "2018-02-02T22:25:27.521Z",
+          "document_id": "f1c5e079-9d82-4f50-95bc-ae2f6b8d84d7",
+          "id": "5a16902a-2ee9-4882-a247-420fc6627b62",
+          "portout_id": "0ccc7b54-4df3-4bca-a65a-3da1ecc777f0",
+          "record_type": "supporting_document",
+          "type": "loa",
+          "updated_at": "2018-02-02T22:25:27.521Z"
+        },
+        "properties": {
+          "created_at": {
+            "description": "Supporting document creation timestamp in ISO 8601 format",
+            "example": "2018-02-02T22:25:27.521Z",
+            "type": "string"
+          },
+          "document_id": {
+            "description": "Identifies the associated document",
+            "example": "f1c5e079-9d82-4f50-95bc-ae2f6b8d84d7",
+            "format": "uuid",
+            "type": "string"
+          },
+          "id": {
+            "example": "5a16902a-2ee9-4882-a247-420fc6627b62",
+            "format": "uuid",
+            "type": "string"
+          },
+          "portout_id": {
+            "description": "Identifies the associated port request",
+            "example": "0ccc7b54-4df3-4bca-a65a-3da1ecc777f0",
+            "format": "uuid",
+            "readOnly": true,
+            "type": "string"
+          },
+          "record_type": {
+            "description": "Identifies the type of the resource.",
+            "example": "supporting_document",
+            "readOnly": true,
+            "type": "string"
+          },
+          "type": {
+            "description": "Identifies the type of the document",
+            "enum": [
+              "loa",
+              "invoice"
+            ],
+            "example": "loa",
+            "readOnly": true,
+            "type": "string"
+          },
+          "updated_at": {
+            "description": "Supporting document last changed timestamp in ISO 8601 format",
+            "example": "2018-02-02T22:25:27.521Z",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "record_type",
+          "type",
+          "portout_id",
+          "document_id",
+          "created_at",
+          "updated_at"
+        ],
+        "type": "object"
+      },
+      "PortoutComment": {
+        "example": {
+          "body": "This is a comment",
+          "created_at": "2018-02-02T22:25:27.521Z",
+          "id": "0ccc7b54-4df3-4bca-a65a-3da1ecc777f0",
+          "portout_id": "0ccc7b54-4df3-4bca-a65a-3da1ecc777f0",
+          "record_type": "portout",
+          "user_id": "0ccc7b54-4df3-4bca-a65a-3da1ecc777f0"
+        },
+        "properties": {
+          "body": {
+            "description": "Comment body",
+            "example": "This is a comment",
+            "type": "string"
+          },
+          "created_at": {
+            "description": "Comment creation timestamp in ISO 8601 format",
+            "example": "2018-02-02T22:25:27.521Z",
+            "type": "string"
+          },
+          "id": {
+            "example": "0ccc7b54-4df3-4bca-a65a-3da1ecc777f0",
+            "type": "string"
+          },
+          "portout_id": {
+            "default": null,
+            "description": "Identifies the associated port request",
+            "example": "0ccc7b54-4df3-4bca-a65a-3da1ecc777f0",
+            "type": "string"
+          },
+          "record_type": {
+            "description": "Identifies the type of the resource.",
+            "example": "portout",
+            "readOnly": true,
+            "type": "string"
+          },
+          "user_id": {
+            "description": "Identifies the user who created the comment. Will be null if created by Telnyx Admin",
+            "example": "0ccc7b54-4df3-4bca-a65a-3da1ecc777f0",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "body",
+          "user_id",
+          "created_at"
+        ],
+        "type": "object"
+      },
+      "PortoutDetails": {
+        "properties": {
+          "already_ported": {
+            "description": "Is true when the number is already ported",
+            "example": false,
+            "type": "boolean"
+          },
+          "authorized_name": {
+            "description": "Name of person authorizing the porting order",
+            "example": "McPortersen",
+            "type": "string"
+          },
+          "carrier_name": {
+            "description": "Carrier the number will be ported out to",
+            "example": "test",
+            "type": "string"
+          },
+          "city": {
+            "description": "City or municipality of billing address",
+            "example": "Chicago",
+            "type": "string"
+          },
+          "created_at": {
+            "description": "ISO 8601 formatted date of when the portout was created",
+            "example": "2018-02-02T22:25:27.521Z",
+            "type": "string"
+          },
+          "current_carrier": {
+            "description": "The current carrier",
+            "example": "telnyx",
+            "type": "string"
+          },
+          "end_user_name": {
+            "description": "Person name or company name requesting the port",
+            "example": "McPortersen",
+            "type": "string"
+          },
+          "foc_date": {
+            "description": "ISO 8601 formatted Date/Time of the FOC date",
+            "example": "2018-02-02T22:25:27.521Z",
+            "type": "string"
+          },
+          "host_messaging": {
+            "default": false,
+            "description": "Indicates whether messaging services should be maintained with Telnyx after the port out completes",
+            "example": false,
+            "type": "boolean"
+          },
+          "id": {
+            "example": "0ccc7b54-4df3-4bca-a65a-3da1ecc777f0",
+            "type": "string"
+          },
+          "inserted_at": {
+            "description": "ISO 8601 formatted date of when the portout was created",
+            "example": "2018-02-02T22:25:27.521Z",
+            "type": "string"
+          },
+          "lsr": {
+            "description": "The Local Service Request",
+            "example": [
+              "https://example.com/files/lsr.pdf"
+            ],
+            "items": {
+              "description": "A link to the Local Service Request",
+              "format": "uri",
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "phone_numbers": {
+            "description": "Phone numbers associated with this portout",
+            "example": [
+              "+35312345678"
+            ],
+            "items": {
+              "description": "E164 formatted phone number",
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "pon": {
+            "description": "Port order number assigned by the carrier the number will be ported out to",
+            "example": "00000000",
+            "type": "string"
+          },
+          "reason": {
+            "description": "The reason why the order is being rejected by the user. If the order is authorized, this field can be left null",
+            "example": null,
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "record_type": {
+            "description": "Identifies the type of the resource.",
+            "example": "portout",
+            "readOnly": true,
+            "type": "string"
+          },
+          "rejection_code": {
+            "description": "The rejection code for one of the valid rejections to reject a port out order",
+            "example": 1002,
+            "type": "integer"
+          },
+          "requested_foc_date": {
+            "description": "ISO 8601 formatted Date/Time of the user requested FOC date",
+            "example": "2018-02-02T22:25:27.521Z",
+            "type": "string"
+          },
+          "service_address": {
+            "description": "First line of billing address (street address)",
+            "example": "000 Example Street",
+            "type": "string"
+          },
+          "spid": {
+            "description": "New service provider spid",
+            "example": "0ccc7b54-4df3-4bca-a65a-3da1ecc777f0",
+            "type": "string"
+          },
+          "state": {
+            "description": "State, province, or similar of billing address",
+            "example": "IL",
+            "type": "string"
+          },
+          "status": {
+            "description": "Status of portout request",
+            "enum": [
+              "pending",
+              "authorized",
+              "ported",
+              "rejected",
+              "rejected-pending",
+              "canceled"
+            ],
+            "example": "rejected",
+            "type": "string"
+          },
+          "support_key": {
+            "description": "A key to reference this port out request when contacting Telnyx customer support",
+            "example": "PO_764725",
+            "type": "string"
+          },
+          "updated_at": {
+            "description": "ISO 8601 formatted date of when the portout was last updated",
+            "example": "2018-02-02T22:25:27.521Z",
+            "type": "string"
+          },
+          "user_id": {
+            "description": "Identifies the user (or organization) who requested the port out",
+            "example": "7865816a-ee85-4e50-b19e-52983dcc6d4a",
+            "format": "uuid",
+            "type": "string"
+          },
+          "vendor": {
+            "description": "Telnyx partner providing network coverage",
+            "example": "0e66ed3b-37e6-4fed-93d6-a30ce2493661",
+            "format": "uuid",
+            "type": "string"
+          },
+          "zip": {
+            "description": "Postal Code of billing address",
+            "example": "00000",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "PortoutEvent": {
+        "discriminator": {
+          "mapping": {
+            "portout.foc_date_changed": "#/components/schemas/WebhookPortoutFocDateChanged",
+            "portout.new_comment": "#/components/schemas/WebhookPortoutNewComment",
+            "portout.status_changed": "#/components/schemas/WebhookPortoutStatusChanged"
+          },
+          "propertyName": "event_type"
+        },
+        "oneOf": [
+          {
+            "$ref": "#/components/schemas/WebhookPortoutStatusChanged"
+          },
+          {
+            "$ref": "#/components/schemas/WebhookPortoutNewComment"
+          },
+          {
+            "$ref": "#/components/schemas/WebhookPortoutFocDateChanged"
+          }
+        ],
+        "type": "object"
+      },
+      "PortoutRejection": {
+        "properties": {
+          "code": {
+            "example": 1002,
+            "type": "integer"
+          },
+          "description": {
+            "example": "Invalid PIN",
+            "type": "string"
+          },
+          "reason_required": {
+            "example": false,
+            "type": "boolean"
+          }
+        },
+        "type": "object"
+      },
+      "PortoutReport": {
+        "properties": {
+          "created_at": {
+            "description": "ISO 8601 formatted date indicating when the resource was created.",
+            "example": "2021-03-19T10:07:15.527000Z",
+            "format": "date-time",
+            "type": "string"
+          },
+          "document_id": {
+            "description": "Identifies the document that was uploaded when report was generated. This field is only populated when the report is under completed status.",
+            "example": "f1486bae-f067-460c-ad43-73a92848f902",
+            "format": "uuid",
+            "type": "string"
+          },
+          "id": {
+            "description": "Uniquely identifies the report.",
+            "example": "eef3340b-8903-4466-b445-89b697315a3a",
+            "format": "uuid",
+            "type": "string"
+          },
+          "params": {
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/ExportPortoutsCSVReport"
+              }
+            ]
+          },
+          "record_type": {
+            "description": "Identifies the type of the resource.",
+            "example": "portout_report",
+            "readOnly": true,
+            "type": "string"
+          },
+          "report_type": {
+            "description": "Identifies the type of report",
+            "enum": [
+              "export_portouts_csv"
+            ],
+            "example": "export_portouts_csv",
+            "type": "string"
+          },
+          "status": {
+            "description": "The current status of the report generation.",
+            "enum": [
+              "pending",
+              "completed"
+            ],
+            "example": "completed",
+            "type": "string"
+          },
+          "updated_at": {
+            "description": "ISO 8601 formatted date indicating when the resource was updated.",
+            "example": "2021-03-19T10:07:15.527000Z",
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "WebhookPortoutFocDateChanged": {
+        "properties": {
+          "available_notification_methods": {
+            "description": "Indicates the notification methods used.",
+            "items": {
+              "enum": [
+                "email",
+                "webhook"
+              ],
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "created_at": {
+            "description": "ISO 8601 formatted date indicating when the resource was created.",
+            "example": "2021-03-19T10:07:15.527000Z",
+            "format": "date-time",
+            "type": "string"
+          },
+          "event_type": {
+            "description": "Identifies the event type",
+            "enum": [
+              "portout.status_changed",
+              "portout.foc_date_changed",
+              "portout.new_comment"
+            ],
+            "example": "portout.status_changed",
+            "type": "string"
+          },
+          "id": {
+            "description": "Uniquely identifies the event.",
+            "example": "eef3340b-8903-4466-b445-89b697315a3a",
+            "format": "uuid",
+            "type": "string"
+          },
+          "payload": {
+            "description": "The webhook payload for the portout.foc_date_changed event",
+            "properties": {
+              "foc_date": {
+                "description": "ISO 8601 formatted date indicating the new FOC date.",
+                "example": "2021-03-19T10:07:15.527Z",
+                "format": "date-time",
+                "type": "string"
+              },
+              "id": {
+                "description": "Identifies the port-out order that have the FOC date changed.",
+                "example": "96dfa9e4-c753-4fd3-97cd-42d66f26cf0c",
+                "format": "uuid",
+                "type": "string"
+              },
+              "user_id": {
+                "description": "Identifies the organization that port-out order belongs to.",
+                "example": "0e19c89e-f0ce-458a-a36c-3c60bc2014b1",
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
+          "payload_status": {
+            "description": "The status of the payload generation.",
+            "enum": [
+              "created",
+              "completed"
+            ],
+            "example": "created",
+            "type": "string"
+          },
+          "portout_id": {
+            "description": "Identifies the port-out order associated with the event.",
+            "example": "9471c873-e3eb-4ca1-957d-f9a451334d52",
+            "format": "uuid",
+            "type": "string"
+          },
+          "record_type": {
+            "description": "Identifies the type of the resource.",
+            "example": "portout_event",
+            "readOnly": true,
+            "type": "string"
+          },
+          "updated_at": {
+            "description": "ISO 8601 formatted date indicating when the resource was updated.",
+            "example": "2021-03-19T10:07:15.527000Z",
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "WebhookPortoutNewComment": {
+        "properties": {
+          "available_notification_methods": {
+            "description": "Indicates the notification methods used.",
+            "items": {
+              "enum": [
+                "email",
+                "webhook"
+              ],
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "created_at": {
+            "description": "ISO 8601 formatted date indicating when the resource was created.",
+            "example": "2021-03-19T10:07:15.527000Z",
+            "format": "date-time",
+            "type": "string"
+          },
+          "event_type": {
+            "description": "Identifies the event type",
+            "enum": [
+              "portout.status_changed",
+              "portout.foc_date_changed",
+              "portout.new_comment"
+            ],
+            "example": "portout.status_changed",
+            "type": "string"
+          },
+          "id": {
+            "description": "Uniquely identifies the event.",
+            "example": "eef3340b-8903-4466-b445-89b697315a3a",
+            "format": "uuid",
+            "type": "string"
+          },
+          "payload": {
+            "description": "The webhook payload for the portout.new_comment event",
+            "properties": {
+              "comment": {
+                "description": "The body of the comment.",
+                "example": "This is a comment.",
+                "type": "string"
+              },
+              "id": {
+                "description": "Identifies the comment that was added to the port-out order.",
+                "example": "96dfa9e4-c753-4fd3-97cd-42d66f26cf0c",
+                "format": "uuid",
+                "type": "string"
+              },
+              "portout_id": {
+                "description": "Identifies the port-out order that the comment was added to.",
+                "example": "d26109e5-0605-4671-a235-d3c649cc8406",
+                "format": "uuid",
+                "type": "string"
+              },
+              "user_id": {
+                "description": "Identifies the user that added the comment.",
+                "example": "1c45c968-c2e0-4559-b1dd-db073962fc61",
+                "format": "uuid",
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
+          "payload_status": {
+            "description": "The status of the payload generation.",
+            "enum": [
+              "created",
+              "completed"
+            ],
+            "example": "created",
+            "type": "string"
+          },
+          "portout_id": {
+            "description": "Identifies the port-out order associated with the event.",
+            "example": "9471c873-e3eb-4ca1-957d-f9a451334d52",
+            "format": "uuid",
+            "type": "string"
+          },
+          "record_type": {
+            "description": "Identifies the type of the resource.",
+            "example": "portout_event",
+            "readOnly": true,
+            "type": "string"
+          },
+          "updated_at": {
+            "description": "ISO 8601 formatted date indicating when the resource was updated.",
+            "example": "2021-03-19T10:07:15.527000Z",
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "WebhookPortoutStatusChanged": {
+        "properties": {
+          "available_notification_methods": {
+            "description": "Indicates the notification methods used.",
+            "items": {
+              "enum": [
+                "email",
+                "webhook"
+              ],
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "created_at": {
+            "description": "ISO 8601 formatted date indicating when the resource was created.",
+            "example": "2021-03-19T10:07:15.527000Z",
+            "format": "date-time",
+            "type": "string"
+          },
+          "event_type": {
+            "description": "Identifies the event type",
+            "enum": [
+              "portout.status_changed",
+              "portout.foc_date_changed",
+              "portout.new_comment"
+            ],
+            "example": "portout.status_changed",
+            "type": "string"
+          },
+          "id": {
+            "description": "Uniquely identifies the event.",
+            "example": "eef3340b-8903-4466-b445-89b697315a3a",
+            "format": "uuid",
+            "type": "string"
+          },
+          "payload": {
+            "description": "The webhook payload for the portout.status_changed event",
+            "properties": {
+              "attempted_pin": {
+                "description": "The PIN that was attempted to be used to authorize the port out.",
+                "example": "1234",
+                "type": "string"
+              },
+              "carrier_name": {
+                "description": "Carrier the number will be ported out to",
+                "example": "Testing Carrier",
+                "type": "string"
+              },
+              "id": {
+                "description": "Identifies the port out that was moved.",
+                "example": "96dfa9e4-c753-4fd3-97cd-42d66f26cf0c",
+                "format": "uuid",
+                "type": "string"
+              },
+              "phone_numbers": {
+                "description": "Phone numbers associated with this port-out order",
+                "example": [
+                  "+35312345678"
+                ],
+                "items": {
+                  "description": "E164 formatted phone number",
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              "rejection_reason": {
+                "description": "The reason why the order is being rejected by the user. If the order is authorized, this field can be left null",
+                "example": null,
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "spid": {
+                "description": "The new carrier SPID.",
+                "example": "987H",
+                "type": "string"
+              },
+              "status": {
+                "description": "The new status of the port out.",
+                "enum": [
+                  "pending",
+                  "authorized",
+                  "ported",
+                  "rejected",
+                  "rejected-pending",
+                  "canceled"
+                ],
+                "example": "authorized",
+                "type": "string"
+              },
+              "subscriber_name": {
+                "description": "The name of the port-out's end user.",
+                "example": "John Doe",
+                "type": "string"
+              },
+              "user_id": {
+                "description": "Identifies the user that the port-out order belongs to.",
+                "example": "96dfa9e4-c753-4fd3-97cd-42d66f26cf0c",
+                "format": "uuid",
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
+          "payload_status": {
+            "description": "The status of the payload generation.",
+            "enum": [
+              "created",
+              "completed"
+            ],
+            "example": "created",
+            "type": "string"
+          },
+          "portout_id": {
+            "description": "Identifies the port-out order associated with the event.",
+            "example": "9471c873-e3eb-4ca1-957d-f9a451334d52",
+            "format": "uuid",
+            "type": "string"
+          },
+          "record_type": {
+            "description": "Identifies the type of the resource.",
+            "example": "portout_event",
+            "readOnly": true,
+            "type": "string"
+          },
+          "updated_at": {
+            "description": "ISO 8601 formatted date indicating when the resource was updated.",
+            "example": "2021-03-19T10:07:15.527000Z",
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      }
+    },
+    "securitySchemes": {
+      "BearerAuth": {
+        "bearerFormat": "API key",
+        "description": "Telnyx API key supplied as `Authorization: Bearer \u003ctoken\u003e`. In production, auth may be validated by the API gateway and forwarded via Telnyx auth headers.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "Payment": {
+        "description": "Machine Payment Protocol credential used on paid retries, sent as `Authorization: Payment ...`. Obtained by paying a challenge returned in the `WWW-Authenticate` header of a 402 response. This is not a Telnyx API key; initial challenge requests use standard bearer authentication instead.",
+        "in": "header",
+        "name": "Authorization",
+        "type": "apiKey"
+      },
+      "agent-memory_bearerAuth": {
+        "description": "Telnyx API key",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "bearerAuth": {
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "branded-calling_bearerAuth": {
+        "description": "Telnyx API key. Generate one at https://portal.telnyx.com/#/app/api-keys.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "collections_bearerAuth": {
+        "description": "Telnyx API key. Collections and results are automatically scoped to the authenticated user's organization.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "number-reputation_bearerAuth": {
+        "description": "Telnyx API key. Generate one at https://portal.telnyx.com/#/app/api-keys.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "oauthClientAuth": {
+        "description": "OAuth 2.0 authentication for Telnyx API and MCP integrations",
+        "flows": {
+          "authorizationCode": {
+            "authorizationUrl": "https://api.telnyx.com/v2/oauth/authorize",
+            "refreshUrl": "https://api.telnyx.com/v2/oauth/token",
+            "scopes": {
+              "admin": "Administrative access to Telnyx resources"
+            },
+            "tokenUrl": "https://api.telnyx.com/v2/oauth/token"
+          },
+          "clientCredentials": {
+            "scopes": {
+              "admin": "Administrative access to Telnyx resources"
+            },
+            "tokenUrl": "https://api.telnyx.com/v2/oauth/token"
+          }
+        },
+        "type": "oauth2"
+      },
+      "outbound-voice-profiles_bearerAuth": {
+        "bearerFormat": "JWT",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "pay-connectors_bearerAuth": {
+        "description": "Telnyx API key, not the processor bearer token.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "pronunciation-dicts_bearerAuth": {
+        "description": "Telnyx API v2 key. Obtain from https://portal.telnyx.com",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "rcs-registration_bearerAuth": {
+        "bearerFormat": "API key",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "stored-payment-transactions_bearerAuth": {
+        "bearerFormat": "JWT",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "telnyxApiKey": {
+        "description": "Management-only Telnyx account credential.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "transcriptions-search_bearerAuth": {
+        "description": "Telnyx API key. Results are automatically scoped to the authenticated user's organization.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "web-search_bearerAuth": {
+        "description": "Telnyx API key",
+        "scheme": "bearer",
+        "type": "http"
+      }
+    }
+  },
+  "info": {
+    "contact": {
+      "email": "support@telnyx.com"
+    },
+    "description": "SIP trunking, SMS, MMS, Call Control and Telephony Data Services.",
+    "title": "Telnyx API",
+    "version": "2.0.0",
+    "x-endpoint-cost": "light",
+    "x-latency-category": "responsive"
+  },
+  "openapi": "3.1.0",
+  "paths": {
+    "/portouts": {
+      "get": {
+        "description": "Returns the portout requests according to filters. Carrier Port Out API available. Please contact porting@telnyx.com.",
+        "operationId": "ListPortoutRequest",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/PageConsolidated"
+          },
+          {
+            "description": "Consolidated filter parameter (deepObject style). Originally: filter[carrier_name], filter[country_code], filter[country_code_in], filter[foc_date], filter[inserted_at], filter[phone_number], filter[pon], filter[ported_out_at], filter[spid], filter[status], filter[status_in], filter[support_key]",
+            "explode": true,
+            "in": "query",
+            "name": "filter",
+            "schema": {
+              "properties": {
+                "carrier_name": {
+                  "description": "Filter by new carrier name.",
+                  "type": "string"
+                },
+                "country_code": {
+                  "description": "Filter by 2-letter country code",
+                  "example": "US",
+                  "type": "string"
+                },
+                "country_code_in": {
+                  "description": "Filter by a list of 2-letter country codes",
+                  "example": [
+                    "CA",
+                    "US"
+                  ],
+                  "items": {
+                    "type": "string"
+                  },
+                  "type": "array"
+                },
+                "foc_date": {
+                  "description": "Filter by foc_date. Matches all portouts with the same date",
+                  "example": "2024-09-04T00:00:00.000Z",
+                  "format": "date-time",
+                  "type": "string"
+                },
+                "inserted_at": {
+                  "description": "Filter by inserted_at date range using nested operations",
+                  "properties": {
+                    "gte": {
+                      "description": "Filter by inserted_at date greater than or equal.",
+                      "example": "2024-09-04T00:00:00.000Z",
+                      "format": "date-time",
+                      "type": "string"
+                    },
+                    "lte": {
+                      "description": "Filter by inserted_at date less than or equal.",
+                      "example": "2024-09-04T00:00:00.000Z",
+                      "format": "date-time",
+                      "type": "string"
+                    }
+                  },
+                  "type": "object"
+                },
+                "phone_number": {
+                  "description": "Filter by a phone number on the portout. Matches all portouts with the phone number",
+                  "example": "+13035551212",
+                  "type": "string"
+                },
+                "pon": {
+                  "description": "Filter by Port Order Number (PON).",
+                  "type": "string"
+                },
+                "ported_out_at": {
+                  "description": "Filter by ported_out_at date range using nested operations",
+                  "properties": {
+                    "gte": {
+                      "description": "Filter by ported_out_at date greater than or equal.",
+                      "example": "2024-09-04T00:00:00.000Z",
+                      "format": "date-time",
+                      "type": "string"
+                    },
+                    "lte": {
+                      "description": "Filter by ported_out_at date less than or equal.",
+                      "example": "2024-09-04T00:00:00.000Z",
+                      "format": "date-time",
+                      "type": "string"
+                    }
+                  },
+                  "type": "object"
+                },
+                "spid": {
+                  "description": "Filter by new carrier spid.",
+                  "type": "string"
+                },
+                "status": {
+                  "description": "Filter by portout status.",
+                  "enum": [
+                    "pending",
+                    "authorized",
+                    "ported",
+                    "rejected",
+                    "rejected-pending",
+                    "canceled"
+                  ],
+                  "type": "string"
+                },
+                "status_in": {
+                  "description": "Filter by a list of portout statuses",
+                  "items": {
+                    "enum": [
+                      "pending",
+                      "authorized",
+                      "ported",
+                      "rejected",
+                      "rejected-pending",
+                      "canceled"
+                    ],
+                    "type": "string"
+                  },
+                  "type": "array"
+                },
+                "support_key": {
+                  "description": "Filter by the portout's support_key",
+                  "example": "PO_abc123",
+                  "type": "string"
+                }
+              },
+              "type": "object"
+            },
+            "style": "deepObject"
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "items": {
+                        "$ref": "#/components/schemas/PortoutDetails"
+                      },
+                      "type": "array"
+                    },
+                    "meta": {
+                      "$ref": "#/components/schemas/Metadata"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Portout Response"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Resource not found"
+          },
+          "422": {
+            "description": "Unprocessable entity. Check message field in response for details."
+          }
+        },
+        "summary": "List portout requests",
+        "tags": [
+          "Number Portout"
+        ]
+      }
+    },
+    "/portouts/events": {
+      "get": {
+        "description": "Returns a paginated list of port-out events on your account, such as status changes on port-out requests, with support for filtering.",
+        "operationId": "listPortoutEvents",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/PageConsolidated"
+          },
+          {
+            "description": "Consolidated filter parameter (deepObject style). Originally: filter[event_type], filter[portout_id], filter[created_at]",
+            "explode": true,
+            "in": "query",
+            "name": "filter",
+            "schema": {
+              "properties": {
+                "created_at": {
+                  "description": "Filter by created_at date range using nested operations",
+                  "properties": {
+                    "gte": {
+                      "description": "Filter by created at greater than or equal to.",
+                      "example": "2021-01-01T00:00:00Z",
+                      "format": "date-time",
+                      "type": "string"
+                    },
+                    "lte": {
+                      "description": "Filter by created at less than or equal to.",
+                      "example": "2021-01-01T00:00:00Z",
+                      "format": "date-time",
+                      "type": "string"
+                    }
+                  },
+                  "type": "object"
+                },
+                "event_type": {
+                  "description": "Filter by event type.",
+                  "enum": [
+                    "portout.status_changed",
+                    "portout.new_comment",
+                    "portout.foc_date_changed"
+                  ],
+                  "example": "portout.status_changed",
+                  "type": "string"
+                },
+                "portout_id": {
+                  "description": "Filter by port-out order ID.",
+                  "example": "34dc46a9-53ed-4e01-9454-26227ea13326",
+                  "format": "uuid",
+                  "type": "string"
+                }
+              },
+              "type": "object"
+            },
+            "style": "deepObject"
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "items": {
+                        "$ref": "#/components/schemas/PortoutEvent"
+                      },
+                      "type": "array"
+                    },
+                    "meta": {
+                      "$ref": "#/components/schemas/PaginationMeta"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful response"
+          },
+          "422": {
+            "description": "Unprocessable entity. Check message field in response for details."
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        },
+        "summary": "List all port-out events",
+        "tags": [
+          "Number Portout"
+        ]
+      }
+    },
+    "/portouts/events/{id}": {
+      "get": {
+        "description": "Returns the details of a single port-out event, including its type and payload.",
+        "operationId": "showPortoutEvent",
+        "parameters": [
+          {
+            "description": "Identifies the port-out event.",
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/PortoutEvent"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful response"
+          },
+          "404": {
+            "description": "Not found"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        },
+        "summary": "Show a port-out event",
+        "tags": [
+          "Number Portout"
+        ]
+      }
+    },
+    "/portouts/events/{id}/republish": {
+      "post": {
+        "description": "Republishes the specified port-out event, triggering re-delivery of the corresponding webhook to your account.",
+        "operationId": "republishPortoutEvent",
+        "parameters": [
+          {
+            "description": "Identifies the port-out event.",
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No content"
+          },
+          "404": {
+            "description": "Not found"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        },
+        "summary": "Republish a port-out event",
+        "tags": [
+          "Number Portout"
+        ]
+      }
+    },
+    "/portouts/rejections/{portout_id}": {
+      "get": {
+        "description": "Given a port-out ID, list rejection codes that are eligible for that port-out",
+        "operationId": "ListPortoutRejections",
+        "parameters": [
+          {
+            "description": "Identifies a port out order.",
+            "in": "path",
+            "name": "portout_id",
+            "required": true,
+            "schema": {
+              "example": "329d6658-8f93-405d-862f-648776e8afd7",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Consolidated filter parameter (deepObject style). Originally: filter[code], filter[code][in]",
+            "explode": true,
+            "in": "query",
+            "name": "filter",
+            "schema": {
+              "properties": {
+                "code": {
+                  "oneOf": [
+                    {
+                      "description": "Filter rejections of a specific code",
+                      "example": 1002,
+                      "type": "integer"
+                    },
+                    {
+                      "description": "Filter rejections in a list of codes",
+                      "example": [
+                        1002,
+                        1003
+                      ],
+                      "items": {
+                        "type": "integer"
+                      },
+                      "type": "array"
+                    }
+                  ]
+                }
+              },
+              "type": "object"
+            },
+            "style": "deepObject"
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "items": {
+                        "$ref": "#/components/schemas/PortoutRejection"
+                      },
+                      "type": "array"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful response"
+          },
+          "404": {
+            "description": "Resource not found"
+          },
+          "422": {
+            "description": "Unprocessable entity. Check message field in response for details."
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        },
+        "summary": "List eligible port-out rejection codes for a specific order",
+        "tags": [
+          "Number Portout"
+        ]
+      }
+    },
+    "/portouts/reports": {
+      "get": {
+        "description": "List the reports generated about port-out operations.",
+        "operationId": "ListPortoutReports",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/PageConsolidated"
+          },
+          {
+            "description": "Consolidated filter parameter (deepObject style). Originally: filter[report_type], filter[status]",
+            "explode": true,
+            "in": "query",
+            "name": "filter",
+            "schema": {
+              "properties": {
+                "report_type": {
+                  "description": "Filter reports of a specific type",
+                  "enum": [
+                    "export_portouts_csv"
+                  ],
+                  "example": "export_portouts_csv",
+                  "type": "string"
+                },
+                "status": {
+                  "description": "Filter reports of a specific status",
+                  "enum": [
+                    "pending",
+                    "completed"
+                  ],
+                  "example": "completed",
+                  "type": "string"
+                }
+              },
+              "type": "object"
+            },
+            "style": "deepObject"
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "items": {
+                        "$ref": "#/components/schemas/PortoutReport"
+                      },
+                      "type": "array"
+                    },
+                    "meta": {
+                      "$ref": "#/components/schemas/PaginationMeta"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful response"
+          },
+          "422": {
+            "description": "Unprocessable entity. Check message field in response for details."
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        },
+        "summary": "List port-out related reports",
+        "tags": [
+          "Number Portout"
+        ]
+      },
+      "post": {
+        "description": "Generate reports about port-out operations.",
+        "operationId": "CreatePortoutReport",
+        "requestBody": {
+          "$ref": "#/components/requestBodies/CreatePortoutReport"
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/PortoutReport"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful response"
+          },
+          "422": {
+            "description": "Unprocessable entity. Check message field in response for details."
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        },
+        "summary": "Create a port-out related report",
+        "tags": [
+          "Number Portout"
+        ]
+      }
+    },
+    "/portouts/reports/{id}": {
+      "get": {
+        "description": "Returns the details of a previously requested port-out report, including its status and parameters.",
+        "operationId": "GetPortoutReport",
+        "parameters": [
+          {
+            "description": "Identifies a report.",
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/PortoutReport"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful response"
+          },
+          "404": {
+            "description": "Resource not found"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        },
+        "summary": "Retrieve a report",
+        "tags": [
+          "Number Portout"
+        ]
+      }
+    },
+    "/portouts/{id}": {
+      "get": {
+        "description": "Returns the portout request based on the ID provided",
+        "operationId": "FindPortoutRequest",
+        "parameters": [
+          {
+            "description": "Portout id",
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/PortoutDetails"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Portout Response"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Resource not found"
+          },
+          "422": {
+            "description": "Unprocessable entity. Check message field in response for details."
+          }
+        },
+        "summary": "Get a portout request",
+        "tags": [
+          "Number Portout"
+        ]
+      }
+    },
+    "/portouts/{id}/comments": {
+      "get": {
+        "description": "Returns a list of comments for a portout request.",
+        "operationId": "FindPortoutComments",
+        "parameters": [
+          {
+            "description": "Portout id",
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "items": {
+                        "$ref": "#/components/schemas/PortoutComment"
+                      },
+                      "type": "array"
+                    },
+                    "meta": {
+                      "$ref": "#/components/schemas/Metadata"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Portout Comments"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Resource not found"
+          },
+          "422": {
+            "description": "Unprocessable entity. Check message field in response for details."
+          }
+        },
+        "summary": "List all comments for a portout request",
+        "tags": [
+          "Number Portout"
+        ]
+      },
+      "post": {
+        "description": "Creates a comment on the specified port-out request and returns the created comment.",
+        "operationId": "PostPortRequestComment",
+        "parameters": [
+          {
+            "description": "Portout id",
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "example": {
+                "body": "string"
+              },
+              "schema": {
+                "properties": {
+                  "body": {
+                    "description": "Comment to post on this portout request",
+                    "type": "string"
+                  }
+                },
+                "type": "object"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/PortoutComment"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Portout Comment Response"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Resource not found"
+          },
+          "422": {
+            "description": "Unprocessable entity. Check message field in response for details."
+          }
+        },
+        "summary": "Create a comment on a portout request",
+        "tags": [
+          "Number Portout"
+        ]
+      }
+    },
+    "/portouts/{id}/supporting_documents": {
+      "get": {
+        "description": "List every supporting documents for a portout request.",
+        "operationId": "GetPortRequestSupportingDocuments",
+        "parameters": [
+          {
+            "description": "Portout id",
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "items": {
+                        "$ref": "#/components/schemas/PortOutSupportingDocument"
+                      },
+                      "type": "array"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Portout Supporting Documents"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Resource not found"
+          }
+        },
+        "summary": "List supporting documents on a portout request",
+        "tags": [
+          "Number Portout"
+        ]
+      },
+      "post": {
+        "description": "Creates a list of supporting documents on a portout request.",
+        "operationId": "PostPortRequestSupportingDocuments",
+        "parameters": [
+          {
+            "description": "Portout id",
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "documents": {
+                    "description": "List of supporting documents parameters",
+                    "items": {
+                      "properties": {
+                        "document_id": {
+                          "description": "Identifies the associated document",
+                          "example": "0ccc7b54-4df3-4bca-a65a-3da1ecc777f0",
+                          "format": "uuid",
+                          "type": "string"
+                        },
+                        "type": {
+                          "description": "Identifies the type of the document",
+                          "enum": [
+                            "loa",
+                            "invoice"
+                          ],
+                          "example": "loa",
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "type",
+                        "document_id"
+                      ],
+                      "type": "object"
+                    },
+                    "maxItems": 10,
+                    "minItems": 1,
+                    "type": "array"
+                  }
+                },
+                "type": "object"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "items": {
+                        "$ref": "#/components/schemas/PortOutSupportingDocument"
+                      },
+                      "type": "array"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Portout Supporting Documents"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Resource not found"
+          },
+          "422": {
+            "description": "Unprocessable entity. Check message field in response for details."
+          }
+        },
+        "summary": "Create a list of supporting documents on a portout request",
+        "tags": [
+          "Number Portout"
+        ]
+      }
+    },
+    "/portouts/{id}/{status}": {
+      "patch": {
+        "description": "Updates the status of the specified port-out request, using the status path segment to authorize or reject the port-out.",
+        "operationId": "UpdatePortoutStatus",
+        "parameters": [
+          {
+            "description": "Portout id",
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Updated portout status",
+            "in": "path",
+            "name": "status",
+            "required": true,
+            "schema": {
+              "enum": [
+                "authorized",
+                "rejected-pending"
+              ],
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "host_messaging": {
+                    "default": false,
+                    "description": "Indicates whether messaging services should be maintained with Telnyx after the port out completes",
+                    "example": false,
+                    "type": "boolean"
+                  },
+                  "reason": {
+                    "description": "Provide a reason if rejecting the port out request",
+                    "example": "I do not recognize this transaction",
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "reason"
+                ],
+                "type": "object"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/PortoutDetails"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Portout Response"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Resource not found"
+          },
+          "422": {
+            "description": "Unprocessable entity. Check message field in response for details."
+          }
+        },
+        "summary": "Update Status",
+        "tags": [
+          "Number Portout"
+        ]
+      }
+    }
+  },
+  "security": [
+    {
+      "bearerAuth": []
+    }
+  ],
+  "servers": [
+    {
+      "description": "Version 2.0.0 of the Telnyx API",
+      "url": "https://api.telnyx.com/v2"
+    }
+  ]
+}

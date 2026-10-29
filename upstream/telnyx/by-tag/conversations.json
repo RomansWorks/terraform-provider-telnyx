@@ -1,0 +1,2730 @@
+{
+  "components": {
+    "headers": {
+      "IdempotentReplayed": {
+        "description": "Present with value `true` when Edge replayed a stored successful response for the supplied Idempotency-Key. Omitted for first-time requests and error responses.",
+        "schema": {
+          "enum": [
+            true
+          ],
+          "example": true,
+          "type": "boolean"
+        }
+      }
+    },
+    "parameters": {
+      "IdempotencyKey": {
+        "description": "Optional opaque, unquoted key for safely retrying the same logical request. Keys must contain 1 to 255 letters, numbers, hyphens, or underscores. Generate a unique UUID v4 for each operation and reuse it only when retrying that operation with the same request. Invalid headers—including duplicate, empty, malformed, or overlong values—return 400 with error code 10015. A request already in progress with the same key returns 409; reusing the key with a different request returns 422. Only successful responses are replayed, for up to 24 hours. Do not include sensitive data in the key.",
+        "example": "8e03978e-40d5-43e8-bc93-6894a57f9326",
+        "in": "header",
+        "name": "Idempotency-Key",
+        "required": false,
+        "schema": {
+          "maxLength": 255,
+          "minLength": 1,
+          "pattern": "^[A-Za-z0-9_-]{1,255}$",
+          "type": "string"
+        }
+      }
+    },
+    "responses": {
+      "IdempotencyConflictResponse": {
+        "content": {
+          "application/json": {
+            "example": {
+              "errors": [
+                {
+                  "code": "10036",
+                  "detail": "A request with this Idempotency-Key is already being processed.",
+                  "source": {
+                    "pointer": "/header/Idempotency-Key"
+                  },
+                  "title": "Resource is being processed"
+                }
+              ]
+            },
+            "schema": {
+              "$ref": "#/components/schemas/email_ErrorResponse"
+            }
+          }
+        },
+        "description": "A request with the same Idempotency-Key is still being processed (10036). Retry later with the same key and request."
+      }
+    },
+    "schemas": {
+      "Conversation": {
+        "properties": {
+          "created_at": {
+            "description": "The datetime the conversation was created.",
+            "example": "2025-04-15T13:07:28.764Z",
+            "format": "date-time",
+            "type": "string"
+          },
+          "id": {
+            "example": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+            "format": "uuid",
+            "type": "string"
+          },
+          "last_message_at": {
+            "description": "The datetime of the latest message in the conversation.",
+            "example": "2025-04-15T13:07:28.764Z",
+            "format": "date-time",
+            "type": "string"
+          },
+          "metadata": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "description": "Metadata associated with the conversation. Telnyx provides several pieces of metadata, but customers can also add their own. The reserved field `ai_disabled` (boolean) can be set to `true` to prevent AI-generated responses on this conversation. When `ai_disabled` is `true`, calls to the chat endpoint will return a 400 error. Set to `false` or remove the field to re-enable AI responses. This is useful when a human agent needs to take over the conversation mid-stream (e.g., a technician stepping in while AI was messaging a resident).",
+            "example": {
+              "assistant_id": "assistant-123",
+              "telnyx_agent_target": "+13128675309",
+              "telnyx_conversation_channel": "sms",
+              "telnyx_end_user_target": "+13128675309"
+            },
+            "type": "object"
+          },
+          "name": {
+            "example": "",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "created_at",
+          "metadata",
+          "last_message_at"
+        ],
+        "type": "object"
+      },
+      "ConversationInsight": {
+        "properties": {
+          "conversation_insights": {
+            "description": "List of insights extracted from the conversation.",
+            "items": {
+              "properties": {
+                "insight_id": {
+                  "description": "Unique identifier for the insight configuration.",
+                  "type": "string"
+                },
+                "result": {
+                  "description": "Insight result from the conversation. If the insight has a JSON schema, this will be stringified JSON object.",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "result",
+                "insight_id"
+              ],
+              "type": "object"
+            },
+            "type": "array"
+          },
+          "created_at": {
+            "description": "Timestamp of when the object was created.",
+            "format": "date-time",
+            "type": "string"
+          },
+          "id": {
+            "description": "Unique identifier for the conversation insight.",
+            "type": "string"
+          },
+          "status": {
+            "description": "Current status of the insight generation for the conversation.",
+            "enum": [
+              "pending",
+              "in_progress",
+              "completed",
+              "failed"
+            ],
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "status",
+          "created_at",
+          "conversation_insights"
+        ],
+        "type": "object"
+      },
+      "ConversationInsightAggregateResp": {
+        "description": "Aggregated conversation insight counts grouped by the specified fields. Each item in `data` contains the grouped field values and a `record_count` indicating how many conversation insights match that combination.",
+        "properties": {
+          "data": {
+            "description": "Aggregation result rows. Each row contains the grouped field values and a `record_count`.",
+            "items": {
+              "additionalProperties": true,
+              "description": "An aggregation row. Contains the grouped field values (keyed by the group_by field names) and a `record_count` integer. For example, when grouping by `score`, each row has a `score` value and a `record_count` of conversations with that score. When also splitting by `metadata.assistant_version_id`, each row includes both `score` and `metadata.assistant_version_id` plus their combined `record_count`.",
+              "properties": {
+                "record_count": {
+                  "description": "Number of conversation insights that match this combination of grouped field values.",
+                  "type": "integer"
+                }
+              },
+              "required": [
+                "record_count"
+              ],
+              "type": "object"
+            },
+            "title": "Data",
+            "type": "array"
+          }
+        },
+        "required": [
+          "data"
+        ],
+        "title": "ConversationInsightAggregateResp",
+        "type": "object"
+      },
+      "ConversationInsightListData": {
+        "properties": {
+          "data": {
+            "items": {
+              "$ref": "#/components/schemas/ConversationInsight"
+            },
+            "title": "Data",
+            "type": "array"
+          },
+          "meta": {
+            "$ref": "#/components/schemas/Meta"
+          }
+        },
+        "required": [
+          "data",
+          "meta"
+        ],
+        "title": "ConversationInsightListData",
+        "type": "object"
+      },
+      "ConversationMessage": {
+        "properties": {
+          "created_at": {
+            "description": "The datetime the message was created on the conversation. This does not necesarily correspond to the time the message was sent. The best field to use to determine the time the end user experienced the message is `sent_at`.",
+            "example": "2025-04-15T13:07:28.764Z",
+            "format": "date-time",
+            "type": "string"
+          },
+          "metadata": {
+            "additionalProperties": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "boolean"
+                },
+                {
+                  "items": {
+                    "anyOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "integer"
+                      },
+                      {
+                        "type": "boolean"
+                      }
+                    ]
+                  },
+                  "type": "array"
+                }
+              ]
+            },
+            "title": "Metadata",
+            "type": "object"
+          },
+          "role": {
+            "description": "The role of the message sender.",
+            "enum": [
+              "user",
+              "assistant",
+              "tool"
+            ],
+            "type": "string"
+          },
+          "sent_at": {
+            "description": "The datetime the message was sent to the end user.",
+            "example": "2025-04-15T13:07:28.764Z",
+            "format": "date-time",
+            "type": "string"
+          },
+          "text": {
+            "description": "The message content. Can be null for tool calls.",
+            "type": "string"
+          },
+          "tool_calls": {
+            "description": "Optional tool calls made by the assistant.",
+            "items": {
+              "properties": {
+                "function": {
+                  "properties": {
+                    "arguments": {
+                      "description": "JSON-formatted arguments to pass to the function.",
+                      "type": "string"
+                    },
+                    "name": {
+                      "description": "Name of the function to call.",
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "name",
+                    "arguments"
+                  ],
+                  "type": "object"
+                },
+                "id": {
+                  "description": "Unique identifier for the tool call.",
+                  "type": "string"
+                },
+                "type": {
+                  "description": "Type of the tool call.",
+                  "enum": [
+                    "function"
+                  ],
+                  "type": "string"
+                }
+              },
+              "required": [
+                "id",
+                "type",
+                "function"
+              ],
+              "type": "object"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "role",
+          "text"
+        ],
+        "type": "object"
+      },
+      "ConversationMessageListData": {
+        "properties": {
+          "data": {
+            "items": {
+              "$ref": "#/components/schemas/ConversationMessage"
+            },
+            "title": "Data",
+            "type": "array"
+          },
+          "meta": {
+            "$ref": "#/components/schemas/Meta"
+          }
+        },
+        "required": [
+          "data",
+          "meta"
+        ],
+        "title": "ConversationMessageListData",
+        "type": "object"
+      },
+      "ConversationsListData": {
+        "properties": {
+          "data": {
+            "items": {
+              "$ref": "#/components/schemas/Conversation"
+            },
+            "title": "Data",
+            "type": "array"
+          }
+        },
+        "required": [
+          "data"
+        ],
+        "title": "ConversationsListData",
+        "type": "object"
+      },
+      "CreateConversationRequest": {
+        "properties": {
+          "metadata": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "description": "Metadata associated with the conversation. Set `ai_disabled` to `true` to create the conversation with AI message responses disabled.",
+            "type": "object"
+          },
+          "name": {
+            "type": "string"
+          }
+        },
+        "title": "CreateConversationRequest",
+        "type": "object"
+      },
+      "CreateMsgReq": {
+        "properties": {
+          "content": {
+            "default": "",
+            "title": "Content",
+            "type": "string"
+          },
+          "metadata": {
+            "additionalProperties": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "boolean"
+                },
+                {
+                  "items": {
+                    "anyOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "integer"
+                      },
+                      {
+                        "type": "boolean"
+                      }
+                    ]
+                  },
+                  "type": "array"
+                }
+              ]
+            },
+            "title": "Metadata",
+            "type": "object"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "role": {
+            "title": "Role",
+            "type": "string"
+          },
+          "sent_at": {
+            "format": "date-time",
+            "title": "Sent At",
+            "type": "string"
+          },
+          "tool_call_id": {
+            "title": "Tool Call Id",
+            "type": "string"
+          },
+          "tool_calls": {
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "title": "Tool Calls",
+            "type": "array"
+          },
+          "tool_choice": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "title": "ToolChoiceObject",
+                "type": "object"
+              }
+            ],
+            "title": "Tool Choice"
+          }
+        },
+        "required": [
+          "role"
+        ],
+        "title": "CreateMsgReq",
+        "type": "object"
+      },
+      "ErrorObject": {
+        "properties": {
+          "code": {
+            "description": "Telnyx error code. Send admission errors include account daily quota 10011 and sender-domain ramp code domain_graduation_limit_exceeded. Edge idempotency errors use 10027 or 10036. Fallback 404/500 responses from the framework may use string status codes ('404', '500') instead.",
+            "enum": [
+              "10001",
+              "10006",
+              "10007",
+              "10011",
+              "10015",
+              "10016",
+              "10019",
+              "domain_graduation_limit_exceeded",
+              "recipient_suppressed",
+              "reputation_suspended",
+              "404",
+              "500",
+              "10027",
+              "10036"
+            ],
+            "type": "string"
+          },
+          "detail": {
+            "description": "Human-readable error detail. Changeset responses may return a structured object.",
+            "oneOf": [
+              {
+                "type": "string"
+              },
+              {
+                "additionalProperties": true,
+                "type": "object"
+              }
+            ]
+          },
+          "meta": {
+            "additionalProperties": true,
+            "description": "Additional metadata. Present on 401 errors with a documentation URL.",
+            "nullable": true,
+            "type": "object"
+          },
+          "source": {
+            "additionalProperties": true,
+            "nullable": true,
+            "type": "object"
+          },
+          "title": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "title",
+          "detail"
+        ],
+        "type": "object"
+      },
+      "GetInsightTemplateGroupsRespData": {
+        "properties": {
+          "data": {
+            "items": {
+              "$ref": "#/components/schemas/InsightTemplateGroupResp"
+            },
+            "title": "Data",
+            "type": "array"
+          },
+          "meta": {
+            "$ref": "#/components/schemas/Meta"
+          }
+        },
+        "required": [
+          "data",
+          "meta"
+        ],
+        "title": "GetInsightTemplateGroupsRespData",
+        "type": "object"
+      },
+      "GetInsightTemplatesRespData": {
+        "properties": {
+          "data": {
+            "items": {
+              "$ref": "#/components/schemas/InsightTemplateResp"
+            },
+            "title": "Data",
+            "type": "array"
+          },
+          "meta": {
+            "$ref": "#/components/schemas/Meta"
+          }
+        },
+        "required": [
+          "data",
+          "meta"
+        ],
+        "title": "GetInsightTemplatesRespData",
+        "type": "object"
+      },
+      "HTTPValidationError": {
+        "example": {
+          "detail": [
+            {
+              "loc": [
+                "body",
+                "name"
+              ],
+              "msg": "Field required",
+              "type": "missing"
+            }
+          ]
+        },
+        "properties": {
+          "detail": {
+            "items": {
+              "$ref": "#/components/schemas/ValidationError"
+            },
+            "title": "Detail",
+            "type": "array"
+          }
+        },
+        "title": "HTTPValidationError",
+        "type": "object"
+      },
+      "InsightTemplateCreateReq": {
+        "properties": {
+          "instructions": {
+            "title": "Instructions",
+            "type": "string"
+          },
+          "json_schema": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "title": "JsonSchemaObject",
+                "type": "object"
+              }
+            ],
+            "description": "If specified, the output will follow the JSON schema.",
+            "title": "Json Schema"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "webhook": {
+            "default": "",
+            "title": "Webhook",
+            "type": "string"
+          }
+        },
+        "required": [
+          "instructions",
+          "name"
+        ],
+        "title": "InsightTemplateCreateReq",
+        "type": "object"
+      },
+      "InsightTemplateDetailRespData": {
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/InsightTemplateResp"
+          }
+        },
+        "required": [
+          "data"
+        ],
+        "title": "InsightTemplateDetailRespData",
+        "type": "object"
+      },
+      "InsightTemplateGroupCreateReq": {
+        "properties": {
+          "description": {
+            "title": "Description",
+            "type": "string"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "webhook": {
+            "default": "",
+            "title": "Webhook",
+            "type": "string"
+          }
+        },
+        "required": [
+          "name"
+        ],
+        "title": "InsightTemplateGroupCreateReq",
+        "type": "object"
+      },
+      "InsightTemplateGroupDetailRespData": {
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/InsightTemplateGroupResp"
+          }
+        },
+        "required": [
+          "data"
+        ],
+        "title": "InsightTemplateGroupDetailRespData",
+        "type": "object"
+      },
+      "InsightTemplateGroupResp": {
+        "properties": {
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "description": {
+            "title": "Description",
+            "type": "string"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "insights": {
+            "items": {
+              "$ref": "#/components/schemas/InsightTemplateResp"
+            },
+            "title": "Insights",
+            "type": "array"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "webhook": {
+            "default": "",
+            "title": "Webhook",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "created_at"
+        ],
+        "title": "InsightTemplateGroupResp",
+        "type": "object"
+      },
+      "InsightTemplateGroupUpdateReq": {
+        "properties": {
+          "description": {
+            "title": "Description",
+            "type": "string"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "webhook": {
+            "title": "Webhook",
+            "type": "string"
+          }
+        },
+        "title": "InsightTemplateGroupUpdateReq",
+        "type": "object"
+      },
+      "InsightTemplateResp": {
+        "properties": {
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "insight_type": {
+            "$ref": "#/components/schemas/TemplateType",
+            "default": "custom"
+          },
+          "instructions": {
+            "title": "Instructions",
+            "type": "string"
+          },
+          "json_schema": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "title": "JsonSchemaObject",
+                "type": "object"
+              }
+            ],
+            "description": "If specified, the output will follow the JSON schema.",
+            "title": "Json Schema"
+          },
+          "name": {
+            "default": "",
+            "title": "Name",
+            "type": "string"
+          },
+          "webhook": {
+            "default": "",
+            "title": "Webhook",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "instructions",
+          "created_at"
+        ],
+        "title": "InsightTemplateResp",
+        "type": "object"
+      },
+      "InsightTemplateUpdateReq": {
+        "properties": {
+          "instructions": {
+            "title": "Instructions",
+            "type": "string"
+          },
+          "json_schema": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "title": "JsonSchemaObject",
+                "type": "object"
+              }
+            ],
+            "title": "Json Schema"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "webhook": {
+            "title": "Webhook",
+            "type": "string"
+          }
+        },
+        "title": "InsightTemplateUpdateReq",
+        "type": "object"
+      },
+      "Meta": {
+        "properties": {
+          "page_number": {
+            "type": "integer"
+          },
+          "page_size": {
+            "type": "integer"
+          },
+          "total_pages": {
+            "type": "integer"
+          },
+          "total_results": {
+            "type": "integer"
+          }
+        },
+        "required": [
+          "total_pages",
+          "total_results",
+          "page_number",
+          "page_size"
+        ],
+        "title": "Meta",
+        "type": "object"
+      },
+      "SuppressedRecipient": {
+        "properties": {
+          "override_allowed": {
+            "description": "Whether an authorized send may override this suppression.",
+            "type": "boolean"
+          },
+          "reason": {
+            "description": "Suppression reason returned by the recipient suppression service.",
+            "type": "string"
+          },
+          "scope": {
+            "description": "Scope at which the suppression applies.",
+            "type": "string"
+          },
+          "to": {
+            "description": "Suppressed recipient email address.",
+            "format": "email",
+            "type": "string"
+          }
+        },
+        "required": [
+          "to",
+          "reason",
+          "scope",
+          "override_allowed"
+        ],
+        "type": "object"
+      },
+      "TemplateType": {
+        "enum": [
+          "custom",
+          "default"
+        ],
+        "title": "TemplateType",
+        "type": "string"
+      },
+      "UpdateConversationRequest": {
+        "properties": {
+          "metadata": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "description": "Metadata associated with the conversation. Set `ai_disabled` to `true` to stop AI from responding to messages (e.g., when a human agent takes over). Set to `false` to re-enable AI responses.",
+            "type": "object"
+          }
+        },
+        "title": "UpdateConversationRequest",
+        "type": "object"
+      },
+      "ValidationError": {
+        "properties": {
+          "loc": {
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "title": "Location",
+            "type": "array"
+          },
+          "msg": {
+            "title": "Message",
+            "type": "string"
+          },
+          "type": {
+            "title": "Error Type",
+            "type": "string"
+          }
+        },
+        "required": [
+          "loc",
+          "msg",
+          "type"
+        ],
+        "title": "ValidationError",
+        "type": "object"
+      },
+      "email_ErrorResponse": {
+        "properties": {
+          "errors": {
+            "items": {
+              "$ref": "#/components/schemas/ErrorObject"
+            },
+            "type": "array"
+          },
+          "suppressed": {
+            "description": "Present when every recipient is suppressed, so the request is rejected and no message is created.",
+            "items": {
+              "$ref": "#/components/schemas/SuppressedRecipient"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "errors"
+        ],
+        "type": "object"
+      },
+      "inference-embedding_ErrorObject": {
+        "properties": {
+          "code": {
+            "description": "Telnyx error code. Edge idempotency errors use 10015, 10027, or 10036; idempotency protection outages use 10016; replay-cap 413s surface 10007. Fallback 404/500 responses from the framework may use string status codes ('404', '500') instead.",
+            "enum": [
+              "10007",
+              "10015",
+              "10016",
+              "10027",
+              "10036",
+              "404",
+              "500"
+            ],
+            "type": "string"
+          },
+          "detail": {
+            "type": "string"
+          },
+          "source": {
+            "properties": {
+              "pointer": {
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
+          "title": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "title"
+        ],
+        "type": "object"
+      },
+      "inference-embedding_ErrorResponse": {
+        "properties": {
+          "errors": {
+            "items": {
+              "$ref": "#/components/schemas/inference-embedding_ErrorObject"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "errors"
+        ],
+        "type": "object"
+      }
+    },
+    "securitySchemes": {
+      "BearerAuth": {
+        "bearerFormat": "API key",
+        "description": "Telnyx API key supplied as `Authorization: Bearer \u003ctoken\u003e`. In production, auth may be validated by the API gateway and forwarded via Telnyx auth headers.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "Payment": {
+        "description": "Machine Payment Protocol credential used on paid retries, sent as `Authorization: Payment ...`. Obtained by paying a challenge returned in the `WWW-Authenticate` header of a 402 response. This is not a Telnyx API key; initial challenge requests use standard bearer authentication instead.",
+        "in": "header",
+        "name": "Authorization",
+        "type": "apiKey"
+      },
+      "agent-memory_bearerAuth": {
+        "description": "Telnyx API key",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "bearerAuth": {
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "branded-calling_bearerAuth": {
+        "description": "Telnyx API key. Generate one at https://portal.telnyx.com/#/app/api-keys.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "collections_bearerAuth": {
+        "description": "Telnyx API key. Collections and results are automatically scoped to the authenticated user's organization.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "number-reputation_bearerAuth": {
+        "description": "Telnyx API key. Generate one at https://portal.telnyx.com/#/app/api-keys.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "oauthClientAuth": {
+        "description": "OAuth 2.0 authentication for Telnyx API and MCP integrations",
+        "flows": {
+          "authorizationCode": {
+            "authorizationUrl": "https://api.telnyx.com/v2/oauth/authorize",
+            "refreshUrl": "https://api.telnyx.com/v2/oauth/token",
+            "scopes": {
+              "admin": "Administrative access to Telnyx resources"
+            },
+            "tokenUrl": "https://api.telnyx.com/v2/oauth/token"
+          },
+          "clientCredentials": {
+            "scopes": {
+              "admin": "Administrative access to Telnyx resources"
+            },
+            "tokenUrl": "https://api.telnyx.com/v2/oauth/token"
+          }
+        },
+        "type": "oauth2"
+      },
+      "outbound-voice-profiles_bearerAuth": {
+        "bearerFormat": "JWT",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "pay-connectors_bearerAuth": {
+        "description": "Telnyx API key, not the processor bearer token.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "pronunciation-dicts_bearerAuth": {
+        "description": "Telnyx API v2 key. Obtain from https://portal.telnyx.com",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "rcs-registration_bearerAuth": {
+        "bearerFormat": "API key",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "stored-payment-transactions_bearerAuth": {
+        "bearerFormat": "JWT",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "telnyxApiKey": {
+        "description": "Management-only Telnyx account credential.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "transcriptions-search_bearerAuth": {
+        "description": "Telnyx API key. Results are automatically scoped to the authenticated user's organization.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "web-search_bearerAuth": {
+        "description": "Telnyx API key",
+        "scheme": "bearer",
+        "type": "http"
+      }
+    }
+  },
+  "info": {
+    "contact": {
+      "email": "support@telnyx.com"
+    },
+    "description": "SIP trunking, SMS, MMS, Call Control and Telephony Data Services.",
+    "title": "Telnyx API",
+    "version": "2.0.0",
+    "x-endpoint-cost": "light",
+    "x-latency-category": "responsive"
+  },
+  "openapi": "3.1.0",
+  "paths": {
+    "/ai/conversations": {
+      "get": {
+        "description": "Retrieve a list of all AI conversations configured by the user. Supports [PostgREST-style query parameters](https://postgrest.org/en/stable/api.html#horizontal-filtering-rows) for filtering. Examples are included for the standard metadata fields, but you can filter on any field in the metadata JSON object. For example, to filter by a custom field `metadata-\u003ecustom_field`, use `metadata-\u003ecustom_field=eq.value`.",
+        "operationId": "get_conversations_public_conversations_get",
+        "parameters": [
+          {
+            "description": "Filter by conversation ID (e.g. id=eq.123)",
+            "in": "query",
+            "name": "id",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Filter by conversation Name (e.g. `name=like.Voice%`)",
+            "in": "query",
+            "name": "name",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Filter by creation datetime (e.g., `created_at=gte.2025-01-01`)",
+            "in": "query",
+            "name": "created_at",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Filter by last message datetime (e.g., `last_message_at=lte.2025-06-01`)",
+            "in": "query",
+            "name": "last_message_at",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Filter by assistant ID (e.g., `metadata-\u003eassistant_id=eq.assistant-123`)",
+            "in": "query",
+            "name": "metadata-\u003eassistant_id",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Filter by assistant version ID (e.g., `metadata-\u003eassistant_version_id=eq.20250812T114318034399`). The version that handled the conversation is stored in metadata when the conversation starts; conversations created before this field was tracked, or that never resolved a version, have no `assistant_version_id` and do not match this filter.",
+            "in": "query",
+            "name": "metadata-\u003eassistant_version_id",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Filter by call control ID (e.g., `metadata-\u003ecall_control_id=eq.v3:123`)",
+            "in": "query",
+            "name": "metadata-\u003ecall_control_id",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Filter by the phone number, SIP URI, or other identifier for the agent (e.g., `metadata-\u003etelnyx_agent_target=eq.+13128675309`)",
+            "in": "query",
+            "name": "metadata-\u003etelnyx_agent_target",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Filter by the phone number, SIP URI, or other identifier for the end user (e.g., `metadata-\u003etelnyx_end_user_target=eq.+13128675309`)",
+            "in": "query",
+            "name": "metadata-\u003etelnyx_end_user_target",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Filter by conversation channel (e.g., `metadata-\u003etelnyx_conversation_channel=eq.phone_call`)",
+            "in": "query",
+            "name": "metadata-\u003etelnyx_conversation_channel",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Limit the number of returned conversations (e.g., `limit=10`)",
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "schema": {
+              "minimum": 1,
+              "type": "integer"
+            }
+          },
+          {
+            "description": "Order the results by specific fields (e.g., `order=created_at.desc` or `order=last_message_at.asc`)",
+            "in": "query",
+            "name": "order",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Apply OR conditions using PostgREST syntax (e.g., `or=(created_at.gte.2025-04-01,last_message_at.gte.2025-04-01)`)",
+            "in": "query",
+            "name": "or",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ConversationsListData"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "List conversations",
+        "tags": [
+          "Conversations"
+        ]
+      },
+      "post": {
+        "description": "Creates a new AI conversation, the container for messages exchanged with an assistant, and returns the created conversation.",
+        "operationId": "create_new_conversation_public_conversations_post",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/IdempotencyKey"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "example": {
+                "name": "string"
+              },
+              "schema": {
+                "$ref": "#/components/schemas/CreateConversationRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Conversation"
+                }
+              }
+            },
+            "description": "Successful Response",
+            "headers": {
+              "Idempotent-Replayed": {
+                "$ref": "#/components/headers/IdempotentReplayed"
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/inference-embedding_ErrorResponse"
+                }
+              }
+            },
+            "description": "Bad Request / Validation Failed (10015). Invalid, duplicate, empty, malformed, or overlong Idempotency-Key headers are rejected by Edge with HTTP 400 and error code 10015."
+          },
+          "409": {
+            "$ref": "#/components/responses/IdempotencyConflictResponse"
+          },
+          "413": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/inference-embedding_ErrorResponse"
+                }
+              }
+            },
+            "description": "Payload Too Large. A request sent with an Idempotency-Key whose body exceeds the endpoint's Edge replay-protection limit (256 KB) is rejected before it reaches the service. Requests sent without the header are not subject to this limit."
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "anyOf": [
+                    {
+                      "$ref": "#/components/schemas/HTTPValidationError"
+                    },
+                    {
+                      "$ref": "#/components/schemas/inference-embedding_ErrorResponse"
+                    }
+                  ]
+                }
+              }
+            },
+            "description": "Validation Error. Reusing an Idempotency-Key with a different request body also returns 422 with error code 10027."
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/inference-embedding_ErrorResponse"
+                }
+              }
+            },
+            "description": "Service unavailable (10016), including unavailable Edge idempotency protection for a keyed request."
+          }
+        },
+        "summary": "Create a conversation",
+        "tags": [
+          "Conversations"
+        ]
+      }
+    },
+    "/ai/conversations/conversation-insights/aggregates": {
+      "get": {
+        "description": "Aggregate conversation insights by specified fields",
+        "operationId": "aggregate_conversation_insights",
+        "parameters": [
+          {
+            "description": "Fields to group by (can be comma-separated or multiple parameters). Prefix a field with 'metadata.' (e.g. 'metadata.assistant_id') to group by the conversation's metadata instead of the insight result.\n\nCommon fields used for over-time charts:\n- `score` — Group by the insight's score value (e.g. for Agent Instruction Following, User Satisfaction).\n- `metadata.assistant_id` — Group by the assistant that handled the conversation.\n- `metadata.assistant_version_id` — Group by the assistant version, useful for comparing performance across versions in the portal's 'Insights Over Time' chart.\n- `metadata.telnyx_conversation_channel` — Group by conversation channel (phone_call, web_chat, etc.).",
+            "in": "query",
+            "name": "group_by",
+            "required": false,
+            "schema": {
+              "description": "Fields to group by (can be comma-separated or multiple parameters). Prefix a field with 'metadata.' (e.g. 'metadata.assistant_id') to group by the conversation's metadata instead of the insight result.\n\nCommon fields used for over-time charts:\n- `score` — Group by the insight's score value (e.g. for Agent Instruction Following, User Satisfaction).\n- `metadata.assistant_id` — Group by the assistant that handled the conversation.\n- `metadata.assistant_version_id` — Group by the assistant version, useful for comparing performance across versions in the portal's 'Insights Over Time' chart.\n- `metadata.telnyx_conversation_channel` — Group by conversation channel (phone_call, web_chat, etc.).",
+              "items": {
+                "type": "string"
+              },
+              "title": "Group By",
+              "type": "array"
+            }
+          },
+          {
+            "description": "Fields to include in the result (can be comma-separated or multiple parameters). Supports the same 'metadata.\u003ckey\u003e' prefix as group_by. Each returned row will contain the grouped field values plus a `record_count` indicating how many conversation insights match that combination.",
+            "in": "query",
+            "name": "show",
+            "required": false,
+            "schema": {
+              "description": "Fields to include in the result (can be comma-separated or multiple parameters). Supports the same 'metadata.\u003ckey\u003e' prefix as group_by. Each returned row will contain the grouped field values plus a `record_count` indicating how many conversation insights match that combination.",
+              "items": {
+                "type": "string"
+              },
+              "title": "Show",
+              "type": "array"
+            }
+          },
+          {
+            "description": "Optional insight ID to filter conversation insights. Only insights matching this ID will be included in the aggregation.",
+            "in": "query",
+            "name": "insight_id",
+            "required": false,
+            "schema": {
+              "description": "Optional insight ID to filter conversation insights. Only insights matching this ID will be included in the aggregation.",
+              "format": "uuid",
+              "title": "Insight Id",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Filter by creation datetime to scope the aggregation window. Supports range operators (e.g., `created_at=gte.2025-01-01T00:00:00Z` for the start of the range, `created_at=lt.2025-01-02T00:00:00Z` for the end). To build per-day time series (as the portal does for the 'Insights Over Time' chart), issue one request per day bounded by `created_at=gte.\u003cday_start\u003e` and `created_at=lt.\u003cnext_day_start\u003e`.",
+            "in": "query",
+            "name": "created_at",
+            "required": false,
+            "schema": {
+              "description": "Filter by creation datetime to scope the aggregation window. Supports range operators (e.g., `created_at=gte.2025-01-01T00:00:00Z` for the start of the range, `created_at=lt.2025-01-02T00:00:00Z` for the end). To build per-day time series (as the portal does for the 'Insights Over Time' chart), issue one request per day bounded by `created_at=gte.\u003cday_start\u003e` and `created_at=lt.\u003cnext_day_start\u003e`.",
+              "title": "Created At",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Filter by assistant ID (e.g., `metadata.assistant_id=eq.\u003cassistant_id\u003e`). When provided, only conversation insights for the specified assistant are aggregated. Used by the portal to scope the 'Insights Over Time' chart to a single assistant.",
+            "in": "query",
+            "name": "metadata.assistant_id",
+            "required": false,
+            "schema": {
+              "description": "Filter by assistant ID (e.g., `metadata.assistant_id=eq.\u003cassistant_id\u003e`). When provided, only conversation insights for the specified assistant are aggregated. Used by the portal to scope the 'Insights Over Time' chart to a single assistant.",
+              "title": "Metadata Assistant Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "data": [
+                    {
+                      "record_count": 0
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ConversationInsightAggregateResp"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Aggregate Conversation Insights",
+        "tags": [
+          "Conversations"
+        ]
+      }
+    },
+    "/ai/conversations/insight-groups": {
+      "get": {
+        "description": "Returns a paginated list of your insight template groups. Groups organize related insight templates that are applied together when analyzing conversations.",
+        "operationId": "get_all_insight_groups",
+        "parameters": [
+          {
+            "description": "Consolidated page parameter (deepObject style). Originally: page[number], page[size]",
+            "explode": true,
+            "in": "query",
+            "name": "page",
+            "schema": {
+              "properties": {
+                "number": {
+                  "default": 1,
+                  "description": "Page number (0-based)",
+                  "minimum": 1,
+                  "title": "Page[Number]",
+                  "type": "integer"
+                },
+                "size": {
+                  "default": 20,
+                  "description": "Number of items per page",
+                  "exclusiveMaximum": 100,
+                  "minimum": 0,
+                  "title": "Page[Size]",
+                  "type": "integer"
+                }
+              },
+              "type": "object"
+            },
+            "style": "deepObject"
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "data": [
+                    {
+                      "created_at": "2024-01-23T18:10:02.574Z",
+                      "description": "Description",
+                      "id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+                      "insights": [
+                        {
+                          "created_at": "2024-01-23T18:10:02.574Z",
+                          "id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+                          "insight_type": "custom",
+                          "instructions": "Instructions",
+                          "json_schema": "string",
+                          "name": "",
+                          "webhook": ""
+                        }
+                      ],
+                      "name": "Name",
+                      "webhook": ""
+                    }
+                  ],
+                  "meta": {
+                    "page_number": 0,
+                    "page_size": 0,
+                    "total_pages": 0,
+                    "total_results": 0
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/GetInsightTemplateGroupsRespData"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Get Insight Template Groups",
+        "tags": [
+          "Conversations"
+        ]
+      },
+      "post": {
+        "description": "Creates a new insight template group for organizing related insight templates, and returns the created group.",
+        "operationId": "create_insight_group",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/IdempotencyKey"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "example": {
+                "description": "Description",
+                "name": "Name",
+                "webhook": ""
+              },
+              "schema": {
+                "$ref": "#/components/schemas/InsightTemplateGroupCreateReq"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "data": {
+                    "created_at": "2024-01-23T18:10:02.574Z",
+                    "description": "Description",
+                    "id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+                    "insights": [
+                      {
+                        "created_at": "2024-01-23T18:10:02.574Z",
+                        "id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+                        "insight_type": "custom",
+                        "instructions": "Instructions",
+                        "json_schema": "string",
+                        "name": "",
+                        "webhook": ""
+                      }
+                    ],
+                    "name": "Name",
+                    "webhook": ""
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/InsightTemplateGroupDetailRespData"
+                }
+              }
+            },
+            "description": "Successful Response",
+            "headers": {
+              "Idempotent-Replayed": {
+                "$ref": "#/components/headers/IdempotentReplayed"
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/inference-embedding_ErrorResponse"
+                }
+              }
+            },
+            "description": "Bad Request / Validation Failed (10015). Invalid, duplicate, empty, malformed, or overlong Idempotency-Key headers are rejected by Edge with HTTP 400 and error code 10015."
+          },
+          "409": {
+            "$ref": "#/components/responses/IdempotencyConflictResponse"
+          },
+          "413": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/inference-embedding_ErrorResponse"
+                }
+              }
+            },
+            "description": "Payload Too Large. A request sent with an Idempotency-Key whose body exceeds the endpoint's Edge replay-protection limit (256 KB) is rejected before it reaches the service. Requests sent without the header are not subject to this limit."
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "anyOf": [
+                    {
+                      "$ref": "#/components/schemas/HTTPValidationError"
+                    },
+                    {
+                      "$ref": "#/components/schemas/inference-embedding_ErrorResponse"
+                    }
+                  ]
+                }
+              }
+            },
+            "description": "Validation Error. Reusing an Idempotency-Key with a different request body also returns 422 with error code 10027."
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/inference-embedding_ErrorResponse"
+                }
+              }
+            },
+            "description": "Service unavailable (10016), including unavailable Edge idempotency protection for a keyed request."
+          }
+        },
+        "summary": "Create Insight Template Group",
+        "tags": [
+          "Conversations"
+        ]
+      }
+    },
+    "/ai/conversations/insight-groups/{group_id}": {
+      "delete": {
+        "description": "Permanently deletes the specified insight template group by its ID.",
+        "operationId": "delete_insight_group_by_id",
+        "parameters": [
+          {
+            "description": "The ID of the insight group",
+            "in": "path",
+            "name": "group_id",
+            "required": true,
+            "schema": {
+              "description": "The ID of the insight group",
+              "format": "uuid",
+              "title": "Group Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "detail": [
+                    {
+                      "loc": [
+                        "string"
+                      ],
+                      "msg": "Message",
+                      "type": "Error Type"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Delete Insight Template Group",
+        "tags": [
+          "Conversations"
+        ]
+      },
+      "get": {
+        "description": "Returns the details of a single insight template group, including the insight templates assigned to it.",
+        "operationId": "get_insight_group_by_id",
+        "parameters": [
+          {
+            "description": "The ID of the insight group",
+            "in": "path",
+            "name": "group_id",
+            "required": true,
+            "schema": {
+              "description": "The ID of the insight group",
+              "format": "uuid",
+              "title": "Group Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "data": {
+                    "created_at": "2024-01-23T18:10:02.574Z",
+                    "description": "Description",
+                    "id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+                    "insights": [
+                      {
+                        "created_at": "2024-01-23T18:10:02.574Z",
+                        "id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+                        "insight_type": "custom",
+                        "instructions": "Instructions",
+                        "json_schema": "string",
+                        "name": "",
+                        "webhook": ""
+                      }
+                    ],
+                    "name": "Name",
+                    "webhook": ""
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/InsightTemplateGroupDetailRespData"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Get Insight Template Group",
+        "tags": [
+          "Conversations"
+        ]
+      },
+      "put": {
+        "description": "Updates the specified insight template group and returns the updated group.",
+        "operationId": "update_insight_group_by_id",
+        "parameters": [
+          {
+            "description": "The ID of the insight group",
+            "in": "path",
+            "name": "group_id",
+            "required": true,
+            "schema": {
+              "description": "The ID of the insight group",
+              "format": "uuid",
+              "title": "Group Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "example": {
+                "description": "Description",
+                "name": "Name",
+                "webhook": "Webhook"
+              },
+              "schema": {
+                "$ref": "#/components/schemas/InsightTemplateGroupUpdateReq"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "data": {
+                    "created_at": "2024-01-23T18:10:02.574Z",
+                    "description": "Description",
+                    "id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+                    "insights": [
+                      {
+                        "created_at": "2024-01-23T18:10:02.574Z",
+                        "id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+                        "insight_type": "custom",
+                        "instructions": "Instructions",
+                        "json_schema": "string",
+                        "name": "",
+                        "webhook": ""
+                      }
+                    ],
+                    "name": "Name",
+                    "webhook": ""
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/InsightTemplateGroupDetailRespData"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Update Insight Template Group",
+        "tags": [
+          "Conversations"
+        ]
+      }
+    },
+    "/ai/conversations/insight-groups/{group_id}/insights/{insight_id}/assign": {
+      "post": {
+        "description": "Assigns the specified insight template to the specified insight template group.",
+        "operationId": "assign_insight_to_group",
+        "parameters": [
+          {
+            "description": "The ID of the insight group",
+            "in": "path",
+            "name": "group_id",
+            "required": true,
+            "schema": {
+              "description": "The ID of the insight group",
+              "format": "uuid",
+              "title": "Group Id",
+              "type": "string"
+            }
+          },
+          {
+            "description": "The ID of the insight",
+            "in": "path",
+            "name": "insight_id",
+            "required": true,
+            "schema": {
+              "description": "The ID of the insight",
+              "format": "uuid",
+              "title": "Insight Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "detail": [
+                    {
+                      "loc": [
+                        "string"
+                      ],
+                      "msg": "Message",
+                      "type": "Error Type"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Assign Insight Template To Group",
+        "tags": [
+          "Conversations"
+        ]
+      }
+    },
+    "/ai/conversations/insight-groups/{group_id}/insights/{insight_id}/unassign": {
+      "delete": {
+        "description": "Removes the specified insight template from the specified group. The insight template itself is not deleted.",
+        "operationId": "unassign_insight_from_group",
+        "parameters": [
+          {
+            "description": "The ID of the insight group",
+            "in": "path",
+            "name": "group_id",
+            "required": true,
+            "schema": {
+              "description": "The ID of the insight group",
+              "format": "uuid",
+              "title": "Group Id",
+              "type": "string"
+            }
+          },
+          {
+            "description": "The ID of the insight",
+            "in": "path",
+            "name": "insight_id",
+            "required": true,
+            "schema": {
+              "description": "The ID of the insight",
+              "format": "uuid",
+              "title": "Insight Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "detail": [
+                    {
+                      "loc": [
+                        "string"
+                      ],
+                      "msg": "Message",
+                      "type": "Error Type"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Unassign Insight Template From Group",
+        "tags": [
+          "Conversations"
+        ]
+      }
+    },
+    "/ai/conversations/insights": {
+      "get": {
+        "description": "Returns a paginated list of your insight templates. Insight templates define analyses that run over AI conversations to extract structured findings.",
+        "operationId": "get_all_insights",
+        "parameters": [
+          {
+            "description": "Consolidated page parameter (deepObject style). Originally: page[number], page[size]",
+            "explode": true,
+            "in": "query",
+            "name": "page",
+            "schema": {
+              "properties": {
+                "number": {
+                  "default": 1,
+                  "description": "Page number (0-based)",
+                  "minimum": 1,
+                  "title": "Page[Number]",
+                  "type": "integer"
+                },
+                "size": {
+                  "default": 20,
+                  "description": "Number of items per page",
+                  "exclusiveMaximum": 100,
+                  "minimum": 0,
+                  "title": "Page[Size]",
+                  "type": "integer"
+                }
+              },
+              "type": "object"
+            },
+            "style": "deepObject"
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "data": [
+                    {
+                      "created_at": "2024-01-23T18:10:02.574Z",
+                      "id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+                      "insight_type": "custom",
+                      "instructions": "Instructions",
+                      "json_schema": "string",
+                      "name": "",
+                      "webhook": ""
+                    }
+                  ],
+                  "meta": {
+                    "page_number": 0,
+                    "page_size": 0,
+                    "total_pages": 0,
+                    "total_results": 0
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/GetInsightTemplatesRespData"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Get Insight Templates",
+        "tags": [
+          "Conversations"
+        ]
+      },
+      "post": {
+        "description": "Creates a new insight template defining an analysis to run over conversations, and returns the created template.",
+        "operationId": "create_insight",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/IdempotencyKey"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "example": {
+                "instructions": "Instructions",
+                "json_schema": "string",
+                "name": "Name",
+                "webhook": ""
+              },
+              "schema": {
+                "$ref": "#/components/schemas/InsightTemplateCreateReq"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "data": {
+                    "created_at": "2024-01-23T18:10:02.574Z",
+                    "id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+                    "insight_type": "custom",
+                    "instructions": "Instructions",
+                    "json_schema": "string",
+                    "name": "",
+                    "webhook": ""
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/InsightTemplateDetailRespData"
+                }
+              }
+            },
+            "description": "Successful Response",
+            "headers": {
+              "Idempotent-Replayed": {
+                "$ref": "#/components/headers/IdempotentReplayed"
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/inference-embedding_ErrorResponse"
+                }
+              }
+            },
+            "description": "Bad Request / Validation Failed (10015). Invalid, duplicate, empty, malformed, or overlong Idempotency-Key headers are rejected by Edge with HTTP 400 and error code 10015."
+          },
+          "409": {
+            "$ref": "#/components/responses/IdempotencyConflictResponse"
+          },
+          "413": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/inference-embedding_ErrorResponse"
+                }
+              }
+            },
+            "description": "Payload Too Large. A request sent with an Idempotency-Key whose body exceeds the endpoint's Edge replay-protection limit (256 KB) is rejected before it reaches the service. Requests sent without the header are not subject to this limit."
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "anyOf": [
+                    {
+                      "$ref": "#/components/schemas/HTTPValidationError"
+                    },
+                    {
+                      "$ref": "#/components/schemas/inference-embedding_ErrorResponse"
+                    }
+                  ]
+                }
+              }
+            },
+            "description": "Validation Error. Reusing an Idempotency-Key with a different request body also returns 422 with error code 10027."
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/inference-embedding_ErrorResponse"
+                }
+              }
+            },
+            "description": "Service unavailable (10016), including unavailable Edge idempotency protection for a keyed request."
+          }
+        },
+        "summary": "Create Insight Template",
+        "tags": [
+          "Conversations"
+        ]
+      }
+    },
+    "/ai/conversations/insights/{insight_id}": {
+      "delete": {
+        "description": "Permanently deletes the specified insight template by its ID.",
+        "operationId": "delete_insight_by_id",
+        "parameters": [
+          {
+            "description": "The ID of the insight",
+            "in": "path",
+            "name": "insight_id",
+            "required": true,
+            "schema": {
+              "description": "The ID of the insight",
+              "format": "uuid",
+              "title": "Insight Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "detail": [
+                    {
+                      "loc": [
+                        "string"
+                      ],
+                      "msg": "Message",
+                      "type": "Error Type"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Delete Insight Template",
+        "tags": [
+          "Conversations"
+        ]
+      },
+      "get": {
+        "description": "Returns the details of a single insight template by its ID, including its configuration.",
+        "operationId": "get_insight_by_id",
+        "parameters": [
+          {
+            "description": "The ID of the insight",
+            "in": "path",
+            "name": "insight_id",
+            "required": true,
+            "schema": {
+              "description": "The ID of the insight",
+              "format": "uuid",
+              "title": "Insight Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "data": {
+                    "created_at": "2024-01-23T18:10:02.574Z",
+                    "id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+                    "insight_type": "custom",
+                    "instructions": "Instructions",
+                    "json_schema": "string",
+                    "name": "",
+                    "webhook": ""
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/InsightTemplateDetailRespData"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Get Insight Template",
+        "tags": [
+          "Conversations"
+        ]
+      },
+      "put": {
+        "description": "Updates the specified insight template and returns the updated template.",
+        "operationId": "update_insight_by_id",
+        "parameters": [
+          {
+            "description": "The ID of the insight",
+            "in": "path",
+            "name": "insight_id",
+            "required": true,
+            "schema": {
+              "description": "The ID of the insight",
+              "format": "uuid",
+              "title": "Insight Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "example": {
+                "instructions": "Instructions",
+                "json_schema": "string",
+                "name": "Name",
+                "webhook": "Webhook"
+              },
+              "schema": {
+                "$ref": "#/components/schemas/InsightTemplateUpdateReq"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "data": {
+                    "created_at": "2024-01-23T18:10:02.574Z",
+                    "id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+                    "insight_type": "custom",
+                    "instructions": "Instructions",
+                    "json_schema": "string",
+                    "name": "",
+                    "webhook": ""
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/InsightTemplateDetailRespData"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Update Insight Template",
+        "tags": [
+          "Conversations"
+        ]
+      }
+    },
+    "/ai/conversations/{conversation_id}": {
+      "delete": {
+        "description": "Delete a specific conversation by its ID.",
+        "operationId": "delete_conversation_by_id_public_conversations_delete",
+        "parameters": [
+          {
+            "description": "The ID of the conversation to delete",
+            "in": "path",
+            "name": "conversation_id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response"
+          },
+          "404": {
+            "description": "Conversation Not Found"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "detail": [
+                    {
+                      "loc": [
+                        "string"
+                      ],
+                      "msg": "Message",
+                      "type": "Error Type"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Delete a conversation",
+        "tags": [
+          "Conversations"
+        ]
+      },
+      "get": {
+        "description": "Retrieve a specific AI conversation by its ID.",
+        "operationId": "get_conversation_by_id_public_conversations_get",
+        "parameters": [
+          {
+            "description": "The ID of the conversation to retrieve",
+            "in": "path",
+            "name": "conversation_id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/Conversation"
+                    }
+                  }
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "404": {
+            "description": "Conversation Not Found"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Get a conversation",
+        "tags": [
+          "Conversations"
+        ]
+      },
+      "put": {
+        "description": "Update metadata for a specific conversation.",
+        "operationId": "update_conversation_by_id_public_conversations_put",
+        "parameters": [
+          {
+            "description": "The ID of the conversation to update",
+            "in": "path",
+            "name": "conversation_id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "example": {
+                "metadata": {
+                  "ai_disabled": "true"
+                }
+              },
+              "schema": {
+                "$ref": "#/components/schemas/UpdateConversationRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/Conversation"
+                    }
+                  }
+                }
+              }
+            },
+            "description": "Successful Update"
+          },
+          "404": {
+            "description": "Conversation Not Found"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Update conversation metadata",
+        "tags": [
+          "Conversations"
+        ]
+      }
+    },
+    "/ai/conversations/{conversation_id}/conversations-insights": {
+      "get": {
+        "description": "Retrieve insights for a specific conversation",
+        "operationId": "get_conversations_public__conversation_id__insights_get",
+        "parameters": [
+          {
+            "description": "Unique identifier of the conversation.",
+            "in": "path",
+            "name": "conversation_id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "data": [
+                    {
+                      "conversation_insights": [
+                        {
+                          "insight_id": "string",
+                          "result": "string"
+                        }
+                      ],
+                      "created_at": "2024-01-23T18:10:02.574Z",
+                      "id": "string",
+                      "status": "pending"
+                    }
+                  ],
+                  "meta": {
+                    "page_number": 0,
+                    "page_size": 0,
+                    "total_pages": 0,
+                    "total_results": 0
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ConversationInsightListData"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Get insights for a conversation",
+        "tags": [
+          "Conversations"
+        ]
+      }
+    },
+    "/ai/conversations/{conversation_id}/message": {
+      "post": {
+        "description": "Add a new message to the conversation. Used to insert a new messages to a conversation manually ( without using chat endpoint )",
+        "operationId": "add_new_message",
+        "parameters": [
+          {
+            "description": "The ID of the conversation",
+            "in": "path",
+            "name": "conversation_id",
+            "required": true,
+            "schema": {
+              "description": "The ID of the conversation",
+              "format": "uuid",
+              "title": "Conversation Id",
+              "type": "string"
+            }
+          },
+          {
+            "$ref": "#/components/parameters/IdempotencyKey"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "example": {
+                "content": "",
+                "name": "Name",
+                "role": "Role",
+                "sent_at": "2024-01-23T18:10:02.574Z",
+                "tool_call_id": "Tool Call Id",
+                "tool_calls": [],
+                "tool_choice": "string"
+              },
+              "schema": {
+                "$ref": "#/components/schemas/CreateMsgReq"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "headers": {
+              "Idempotent-Replayed": {
+                "$ref": "#/components/headers/IdempotentReplayed"
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/inference-embedding_ErrorResponse"
+                }
+              }
+            },
+            "description": "Bad Request / Validation Failed (10015). Invalid, duplicate, empty, malformed, or overlong Idempotency-Key headers are rejected by Edge with HTTP 400 and error code 10015."
+          },
+          "409": {
+            "$ref": "#/components/responses/IdempotencyConflictResponse"
+          },
+          "413": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/inference-embedding_ErrorResponse"
+                }
+              }
+            },
+            "description": "Payload Too Large. A request sent with an Idempotency-Key whose body exceeds the endpoint's Edge replay-protection limit (256 KB) is rejected before it reaches the service. Requests sent without the header are not subject to this limit."
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "detail": [
+                    {
+                      "loc": [
+                        "string"
+                      ],
+                      "msg": "Message",
+                      "type": "Error Type"
+                    }
+                  ]
+                },
+                "schema": {
+                  "anyOf": [
+                    {
+                      "$ref": "#/components/schemas/HTTPValidationError"
+                    },
+                    {
+                      "$ref": "#/components/schemas/inference-embedding_ErrorResponse"
+                    }
+                  ]
+                }
+              }
+            },
+            "description": "Validation Error. Reusing an Idempotency-Key with a different request body also returns 422 with error code 10027."
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/inference-embedding_ErrorResponse"
+                }
+              }
+            },
+            "description": "Service unavailable (10016), including unavailable Edge idempotency protection for a keyed request."
+          }
+        },
+        "summary": "Create Message",
+        "tags": [
+          "Conversations"
+        ]
+      }
+    },
+    "/ai/conversations/{conversation_id}/messages": {
+      "get": {
+        "description": "Retrieve messages for a specific conversation, including tool calls made by the assistant.",
+        "operationId": "get_conversations_public__conversation_id__messages_get",
+        "parameters": [
+          {
+            "description": "Unique identifier of the conversation.",
+            "in": "path",
+            "name": "conversation_id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "The number of messages to return per page.",
+            "in": "query",
+            "name": "page[size]",
+            "required": false,
+            "schema": {
+              "default": 20,
+              "maximum": 100,
+              "minimum": 1,
+              "type": "integer"
+            }
+          },
+          {
+            "description": "The page number to retrieve.",
+            "in": "query",
+            "name": "page[number]",
+            "required": false,
+            "schema": {
+              "default": 1,
+              "minimum": 1,
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ConversationMessageListData"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Get conversation messages",
+        "tags": [
+          "Conversations"
+        ]
+      }
+    }
+  },
+  "security": [
+    {
+      "bearerAuth": []
+    }
+  ],
+  "servers": [
+    {
+      "description": "Version 2.0.0 of the Telnyx API",
+      "url": "https://api.telnyx.com/v2"
+    }
+  ]
+}

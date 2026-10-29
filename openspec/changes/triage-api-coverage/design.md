@@ -114,7 +114,7 @@ Each wave is one OpenSpec change and one PR, built in this order. A wave also sh
 
 `telnyx_authentication_provider`, `telnyx_auto_recharge_preferences`, `telnyx_display_identity_record`, `telnyx_enterprise`, `telnyx_managed_account`, `telnyx_oauth_client`, `telnyx_reputation_enterprise`, `telnyx_reputation_number`, `telnyx_spend_limit`
 
-## Open questions
+## Open questions and decisions
 
-- **Releasing purchased assets on destroy.** `telnyx_phone_number`, `telnyx_sim_card` and `telnyx_messaging_hosted_number` adopt objects that were bought or hosted elsewhere. Their `DELETE` releases the number or SIM, and that cannot be undone. Proposed default: destroy only removes the object from state and warns. An explicit attribute such as `release_on_destroy = true` would opt in to the real delete. Roman decides this before wave 1 ships `telnyx_phone_number`.
+- **Releasing purchased assets on destroy (decided 2026-10-29 by Roman).** `telnyx_phone_number`, `telnyx_sim_card` and `telnyx_messaging_hosted_number` adopt objects that were bought or hosted elsewhere. Their `DELETE` releases the number or SIM, and that cannot be undone. By default, destroy only removes the object from state and warns. An optional `release_on_destroy = true` (default `false`) opts in to the real delete. Wave 1 specifies this in the `numbers` spec when it ships `telnyx_phone_number`.
 - **Storage buckets.** The pinned spec has bucket SSL certificates, usage and presigned URLs, but no operation that creates a bucket. Buckets are created through Telnyx's S3-compatible API. Covering them means either a hand-written `telnyx_storage_bucket` over the S3 API, which is outside the OpenAPI contract, or documenting the AWS provider with a Telnyx endpoint. This is decided in wave 5.

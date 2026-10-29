@@ -28,9 +28,6 @@ func testAccPreCheck(t *testing.T) {
 	}
 }
 
-var _ = testAccProtoV6ProviderFactories
-var _ = testAccPreCheck
-
 func TestProviderSchemaValid(t *testing.T) {
 	p := New("test")()
 	var resp fwprovider.SchemaResponse

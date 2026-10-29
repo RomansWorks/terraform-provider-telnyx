@@ -16,6 +16,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 
 	"github.com/RomansWorks/terraform-provider-telnyx/internal/client"
+	"github.com/RomansWorks/terraform-provider-telnyx/internal/engine"
 )
 
 var _ provider.Provider = &TelnyxProvider{}
@@ -109,11 +110,21 @@ func (p *TelnyxProvider) Configure(ctx context.Context, req provider.ConfigureRe
 }
 
 func (p *TelnyxProvider) Resources(ctx context.Context) []func() resource.Resource {
-	return []func() resource.Resource{}
+	var out []func() resource.Resource
+	for _, d := range descriptors() {
+		out = append(out, engine.NewResource(d))
+	}
+	return out
 }
 
 func (p *TelnyxProvider) DataSources(ctx context.Context) []func() datasource.DataSource {
-	return []func() datasource.DataSource{}
+	var out []func() datasource.DataSource
+	for _, d := range descriptors() {
+		if d.DataSource {
+			out = append(out, engine.NewDataSource(d))
+		}
+	}
+	return out
 }
 
 // New returns a constructor for the provider at the given version.

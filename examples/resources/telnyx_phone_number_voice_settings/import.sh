@@ -1,0 +1,1 @@
+terraform import telnyx_phone_number_voice_settings.example <phone_number_id>

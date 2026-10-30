@@ -3538,6 +3538,7 @@
                       "type": "object"
                     },
                     "minItems": 1,
+                    "title": "Pay Tool Prompt List",
                     "type": "array"
                   }
                 ],
@@ -3606,6 +3607,7 @@
                       "type": "object"
                     },
                     "minItems": 1,
+                    "title": "Pay Tool Prompt List",
                     "type": "array"
                   }
                 ],
@@ -3674,6 +3676,7 @@
                       "type": "object"
                     },
                     "minItems": 1,
+                    "title": "Pay Tool Prompt List",
                     "type": "array"
                   }
                 ],
@@ -3742,6 +3745,7 @@
                       "type": "object"
                     },
                     "minItems": 1,
+                    "title": "Pay Tool Prompt List",
                     "type": "array"
                   }
                 ],
@@ -3810,6 +3814,7 @@
                       "type": "object"
                     },
                     "minItems": 1,
+                    "title": "Pay Tool Prompt List",
                     "type": "array"
                   }
                 ],
@@ -3878,6 +3883,7 @@
                       "type": "object"
                     },
                     "minItems": 1,
+                    "title": "Pay Tool Prompt List",
                     "type": "array"
                   }
                 ],
@@ -3954,7 +3960,7 @@
           },
           "in_transit_data_locality": {
             "default": false,
-            "description": "Requires every model call made for a web chat turn to be received and served inside your organization's data-locality region, rather than only stored there. Applies to web chat only — voice and messaging assistants are unaffected. Enabling it requires a data-locality region with in-region inference (USA, EU, AUS, UAE; see [Inference regions](https://developers.telnyx.com/docs/inference/models/regions)) and Telnyx-hosted models for the assistant, its fallback, and any conversation-flow node that overrides the model; the request is rejected otherwise. Once enabled, send chat requests to your region's API hostname: a request entering the platform in another region is rejected rather than forwarded, because forwarding it would already have moved the content across the border. Defaults to false.",
+            "description": "Requires this assistant's conversations to be processed inside your organization's data-locality region, rather than only stored there, on every channel: for web chat, every model call of a turn; for voice, the call's model calls and the Telnyx-hosted speech services it uses; for SMS and WhatsApp, the model calls of each turn (how messages travel through carriers is not covered). Covered processing that cannot be handled in region fails rather than being served elsewhere. Enabling it requires a data-locality region with in-region inference (USA, EU, AUS, UAE; see [Inference regions](https://developers.telnyx.com/docs/inference/models/regions)), Telnyx-hosted models for the assistant, its fallback, and any conversation-flow node that overrides the model, and, when `insight_settings.model` is set, an insight model available in that region; the request is rejected otherwise. A voice call fails when it starts if its STT model or TTS voice is not self-hosted by Telnyx, if the assistant uses a speech-to-speech model, or if the call's media is anchored outside the region. Once enabled, send web chat requests and WebSocket or WebRTC conversations to your region's API hostname: one entering the platform in another region is refused rather than forwarded, because forwarding it would already have moved the content across the border. See [Data residency](https://developers.telnyx.com/docs/inference/data-residency#in-region-processing-for-ai-assistants). Defaults to false.",
             "type": "boolean"
           },
           "pii_redaction": {
@@ -4767,6 +4773,15 @@
             "description": "Destination number or SIP URI to transfer the caller to when the AI conversation ends abnormally, for example because of an assistant-side error, so the caller is not left in dead air. This only fires for abnormal ends: it does not fire when the conversation ends on purpose (the caller hung up, the assistant completed normally, the caller hung up after a relay handoff, or voicemail was detected), and it does not fire when the assistant already transferred or bridged the call.",
             "type": "string"
           },
+          "greeting_delay_ms": {
+            "description": "Milliseconds to wait after an inbound call is answered before the assistant starts and speaks its greeting. Increase it if the beginning of the greeting is cut off on some connections (for example, WebRTC calls). When unset (`null`), the platform default of 250 ms is used. Set to `0` to start without a delay. Maximum 2000.",
+            "maximum": 2000,
+            "minimum": 0,
+            "type": [
+              "integer",
+              "null"
+            ]
+          },
           "noise_suppression": {
             "description": "The noise suppression engine to use. 'aicoustics' is STT-optimized and recommended for AI assistants (configure through noise_suppression_config). Use 'disabled' to turn off noise suppression.",
             "enum": [
@@ -5554,7 +5569,8 @@
             "maximum": 1,
             "minimum": 0,
             "title": "End Of Turn Confidence Threshold",
-            "type": "number"
+            "type": "number",
+            "x-stainless-deprecation-message": "Ignored. Configure AssemblyAI turn detection with min_turn_silence and max_turn_silence instead."
           },
           "eot_threshold": {
             "default": 0.8,
@@ -7302,7 +7318,7 @@
                 }
               }
             },
-            "description": "Bad Request / Validation Failed (10015). Invalid, duplicate, empty, malformed, or overlong Idempotency-Key headers are rejected by Edge with HTTP 400 and error code 10015. The assistant configuration is validated too: enabling `privacy_settings.in_transit_data_locality` is refused when the organization's data-locality region has no in-region inference, or when any model the assistant could use — its `model`, its `fallback_config`, or a conversation-flow node override — is not Telnyx-hosted."
+            "description": "Bad Request / Validation Failed (10015). Invalid, duplicate, empty, malformed, or overlong Idempotency-Key headers are rejected by Edge with HTTP 400 and error code 10015. The assistant configuration is validated too: enabling `privacy_settings.in_transit_data_locality` is refused when the organization's data-locality region has no in-region inference, when any model the assistant could use — its `model`, its `fallback_config`, or a conversation-flow node override — is not Telnyx-hosted, or when its `insight_settings.model` is not available in that region."
           },
           "409": {
             "$ref": "#/components/responses/IdempotencyConflictResponse"
@@ -8576,7 +8592,7 @@
                 }
               }
             },
-            "description": "Bad Request. The resulting assistant configuration was rejected. For example, enabling `privacy_settings.in_transit_data_locality` is refused when the organization's data-locality region has no in-region inference, or when any model the assistant could use — its `model`, its `fallback_config`, or a conversation-flow node override — is not Telnyx-hosted. The response detail names the model and where it is configured. Validation runs against the merged result of the update, not only the fields sent."
+            "description": "Bad Request. The resulting assistant configuration was rejected. For example, enabling `privacy_settings.in_transit_data_locality` is refused when the organization's data-locality region has no in-region inference, when any model the assistant could use — its `model`, its `fallback_config`, or a conversation-flow node override — is not Telnyx-hosted, or when its `insight_settings.model` is not available in that region. The response detail names the model and where it is configured. Validation runs against the merged result of the update, not only the fields sent."
           },
           "422": {
             "content": {
@@ -10542,7 +10558,7 @@
                 }
               }
             },
-            "description": "Bad Request. The resulting assistant configuration was rejected. For example, enabling `privacy_settings.in_transit_data_locality` is refused when the organization's data-locality region has no in-region inference, or when any model the assistant could use — its `model`, its `fallback_config`, or a conversation-flow node override — is not Telnyx-hosted. The response detail names the model and where it is configured. Validation runs against the merged result of the update, not only the fields sent."
+            "description": "Bad Request. The resulting assistant configuration was rejected. For example, enabling `privacy_settings.in_transit_data_locality` is refused when the organization's data-locality region has no in-region inference, when any model the assistant could use — its `model`, its `fallback_config`, or a conversation-flow node override — is not Telnyx-hosted, or when its `insight_settings.model` is not available in that region. The response detail names the model and where it is configured. Validation runs against the merged result of the update, not only the fields sent."
           },
           "422": {
             "content": {

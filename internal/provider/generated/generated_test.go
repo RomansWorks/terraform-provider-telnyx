@@ -21,16 +21,27 @@ func TestSchemasAreValid(t *testing.T) {
 			t.Errorf("%s is generated twice", r.TypeName)
 		}
 		seen[r.TypeName] = true
-		if diags := r.ResourceSchema(ctx).ValidateImplementation(ctx); diags.HasError() {
-			t.Errorf("%s resource schema: %v", r.TypeName, diags)
+		if !r.NoResource {
+			if diags := r.ResourceSchema(ctx).ValidateImplementation(ctx); diags.HasError() {
+				t.Errorf("%s resource schema: %v", r.TypeName, diags)
+			}
 		}
 		if r.DataSource {
 			if diags := r.DataSourceSchema().ValidateImplementation(ctx); diags.HasError() {
 				t.Errorf("%s data source schema: %v", r.TypeName, diags)
 			}
 		}
-		if r.Attr(r.IDAttr) == nil {
+		if !r.NoResource && r.Attr(r.IDAttr) == nil {
 			t.Errorf("%s has no id attribute %s", r.TypeName, r.IDAttr)
+		}
+	}
+	for _, l := range Lists() {
+		if seen[l.TypeName] {
+			t.Errorf("%s is generated twice", l.TypeName)
+		}
+		seen[l.TypeName] = true
+		if diags := l.Schema().ValidateImplementation(ctx); diags.HasError() {
+			t.Errorf("%s list schema: %v", l.TypeName, diags)
 		}
 	}
 }
@@ -42,20 +53,40 @@ func TestCoverageNamesEveryGeneratedOperation(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+	check := func(name, key, bucket string) {
+		t.Helper()
+		e, ok := cov[key]
+		switch {
+		case !ok:
+			t.Errorf("%s: %s is not in coverage.yaml", name, key)
+		case e.Bucket != bucket || e.Terraform != name || !e.Reviewed:
+			t.Errorf("%s: coverage.yaml has %s as %s/%s reviewed=%t; want %s/%s reviewed=true",
+				name, key, e.Bucket, e.Terraform, e.Reviewed, bucket, name)
+		}
+	}
 	for _, r := range All() {
-		for _, op := range []*engine.Op{r.Create, r.Read, r.Update, r.Delete} {
-			if op == nil {
-				continue
-			}
-			key := op.Method + " " + op.Path
-			e, ok := cov[key]
-			switch {
-			case !ok:
-				t.Errorf("%s: %s is not in coverage.yaml", r.TypeName, key)
-			case e.Bucket != apisync.BucketResource || e.Terraform != r.TypeName || !e.Reviewed:
-				t.Errorf("%s: coverage.yaml has %s as %s/%s reviewed=%t; want resource/%s reviewed=true",
-					r.TypeName, key, e.Bucket, e.Terraform, e.Reviewed, r.TypeName)
+		if r.NoResource {
+			check(r.TypeName, r.Read.Method+" "+r.Read.Path, apisync.BucketDataSource)
+			continue
+		}
+		ops := []*engine.Op{r.Create, r.Read, r.Update, r.Delete}
+		for _, u := range r.Updates {
+			ops = append(ops, u.Op, u.Clear)
+		}
+		for _, op := range ops {
+			if op != nil {
+				check(r.TypeName, op.Method+" "+op.Path, apisync.BucketResource)
 			}
 		}
+		// A read_from list may also back a list data source, so its bucket
+		// is not fixed; it only has to be in coverage.yaml.
+		if r.ReadFrom != nil {
+			if _, ok := cov[r.ReadFrom.Op.Method+" "+r.ReadFrom.Op.Path]; !ok {
+				t.Errorf("%s: read_from %s is not in coverage.yaml", r.TypeName, r.ReadFrom.Op.Path)
+			}
+		}
+	}
+	for _, l := range Lists() {
+		check(l.TypeName, l.Op.Method+" "+l.Op.Path, apisync.BucketDataSource)
 	}
 }

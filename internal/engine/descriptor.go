@@ -77,6 +77,45 @@ type Op struct {
 	Path   string
 	// Envelope is true when the response wraps the object in "data".
 	Envelope bool
+	// Paging says how a list operation pages; PageSize is the page size to
+	// ask for.
+	Paging   Paging
+	PageSize int
+}
+
+// Paging is a list operation's paging style.
+type Paging int
+
+// Paging styles.
+const (
+	// PagingNone reads the list with one request.
+	PagingNone Paging = iota
+	// PagingNumber sends page[number] and page[size] and stops at
+	// meta.total_pages.
+	PagingNumber
+	// PagingFlat sends page_number and page_size and stops at
+	// meta.total_pages.
+	PagingFlat
+)
+
+// ReadFrom reads an object that has no item read from a collection: the
+// pages of a list operation, or an array field of its parent object.
+type ReadFrom struct {
+	Op *Op
+	// Field is the parent object's array field; empty means the list
+	// response's data array.
+	Field string
+	// Key is the element field that holds the id; empty means the elements
+	// are plain values and the value is the id.
+	Key string
+}
+
+// ExtraUpdate is an operation, besides the main update, that sets some
+// attributes. Clear, when set, removes them.
+type ExtraUpdate struct {
+	Op    *Op
+	Clear *Op
+	Attrs []string
 }
 
 // Resource describes one Terraform resource (and its data source).
@@ -106,6 +145,14 @@ type Resource struct {
 	Timeouts bool
 	// DataSource also registers a data source of the same name.
 	DataSource bool
+	// NoResource registers only the data source: the descriptor describes
+	// read-only data.
+	NoResource bool
+
+	// ReadFrom, when set, replaces Read.
+	ReadFrom *ReadFrom
+	// Updates are further update operations for some attributes.
+	Updates []ExtraUpdate
 
 	Hooks Hooks
 }
@@ -133,6 +180,18 @@ type Hooks struct {
 	DeleteWarning func(state Values) string
 	// Wait is called after create until the object is ready.
 	Wait func(ctx context.Context, c *client.Client, r *Resource, obj Object) (Object, error)
+}
+
+// List describes a data source that lists objects.
+type List struct {
+	TypeName    string
+	Description string
+	Op          *Op
+	// Params are the path parameters (Required, with PathParams) and query
+	// parameters (Optional; JSON is the query key, such as filter[name]).
+	Params []*Attr
+	// Items is the computed list attribute holding the objects.
+	Items *Attr
 }
 
 // Attr returns the top-level attribute with the given name, or nil.

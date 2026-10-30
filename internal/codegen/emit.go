@@ -65,8 +65,22 @@ func EmitResource(pkg string, r *engine.Resource, source string) ([]byte, error)
 		op   *engine.Op
 	}{{"Create", r.Create}, {"Read", r.Read}, {"Update", r.Update}, {"Delete", r.Delete}} {
 		if o.op != nil {
-			field(&b, o.name, fmt.Sprintf("&engine.Op{Method: %q, Path: %q, Envelope: %t}", o.op.Method, o.op.Path, o.op.Envelope))
+			field(&b, o.name, opLiteral(o.op))
 		}
+	}
+	if rf := r.ReadFrom; rf != nil {
+		field(&b, "ReadFrom", fmt.Sprintf("&engine.ReadFrom{Op: %s, Field: %q, Key: %q}", opLiteral(rf.Op), rf.Field, rf.Key))
+	}
+	if len(r.Updates) > 0 {
+		b.WriteString("Updates: []engine.ExtraUpdate{\n")
+		for _, u := range r.Updates {
+			fmt.Fprintf(&b, "{Op: %s, ", opLiteral(u.Op))
+			if u.Clear != nil {
+				fmt.Fprintf(&b, "Clear: %s, ", opLiteral(u.Clear))
+			}
+			fmt.Fprintf(&b, "Attrs: %s},\n", quoteList(u.Attrs))
+		}
+		b.WriteString("},\n")
 	}
 	field(&b, "IDAttr", strconv.Quote(r.IDAttr))
 	field(&b, "Import", quoteList(r.Import))
@@ -86,12 +100,53 @@ func EmitResource(pkg string, r *engine.Resource, source string) ([]byte, error)
 	if r.DataSource {
 		field(&b, "DataSource", "true")
 	}
+	if r.NoResource {
+		field(&b, "NoResource", "true")
+	}
 	b.WriteString("Attrs: ")
 	attrs(&b, r.Attrs)
 	b.WriteString(",\n}\n}\n")
 	out, err := format.Source(b.Bytes())
 	if err != nil {
 		return nil, fmt.Errorf("formatting %s: %w\n%s", r.TypeName, err, b.String())
+	}
+	return out, nil
+}
+
+var pagingNames = map[engine.Paging]string{
+	engine.PagingNumber: "engine.PagingNumber",
+	engine.PagingFlat:   "engine.PagingFlat",
+}
+
+// opLiteral renders an operation as a Go literal.
+func opLiteral(o *engine.Op) string {
+	s := fmt.Sprintf("&engine.Op{Method: %q, Path: %q, Envelope: %t", o.Method, o.Path, o.Envelope)
+	if o.Paging != engine.PagingNone {
+		s += fmt.Sprintf(", Paging: %s, PageSize: %d", pagingNames[o.Paging], o.PageSize)
+	}
+	return s + "}"
+}
+
+// EmitList renders one list descriptor as a Go source file.
+func EmitList(pkg string, l *engine.List, source string) ([]byte, error) {
+	var b bytes.Buffer
+	fmt.Fprintf(&b, "%s\n// Source: %s\n\n", Marker, source)
+	fmt.Fprintf(&b, "package %s\n\n", pkg)
+	b.WriteString("import \"github.com/RomansWorks/terraform-provider-telnyx/internal/engine\"\n\n")
+	name := GoName(l.TypeName) + "List"
+	fmt.Fprintf(&b, "// %s returns the list descriptor of %s.\n", name, l.TypeName)
+	fmt.Fprintf(&b, "func %s() *engine.List {\n\treturn &engine.List{\n", name)
+	field(&b, "TypeName", strconv.Quote(l.TypeName))
+	field(&b, "Description", strconv.Quote(l.Description))
+	field(&b, "Op", opLiteral(l.Op))
+	b.WriteString("Params: ")
+	attrs(&b, l.Params)
+	b.WriteString(",\nItems: &engine.Attr")
+	attr(&b, l.Items)
+	b.WriteString(",\n}\n}\n")
+	out, err := format.Source(b.Bytes())
+	if err != nil {
+		return nil, fmt.Errorf("formatting %s: %w\n%s", l.TypeName, err, b.String())
 	}
 	return out, nil
 }
@@ -166,18 +221,29 @@ func attr(b *bytes.Buffer, a *engine.Attr) {
 }
 
 // EmitAll renders the file listing every generated descriptor.
-func EmitAll(pkg string, rs []*engine.Resource) ([]byte, error) {
+func EmitAll(pkg string, rs []*engine.Resource, ls []*engine.List) ([]byte, error) {
 	names := make([]string, len(rs))
 	for i, r := range rs {
 		names[i] = GoName(r.TypeName)
 	}
 	sort.Strings(names)
+	lists := make([]string, len(ls))
+	for i, l := range ls {
+		lists[i] = GoName(l.TypeName) + "List"
+	}
+	sort.Strings(lists)
 	var b bytes.Buffer
 	fmt.Fprintf(&b, "%s\n\npackage %s\n\n", Marker, pkg)
 	b.WriteString("import \"github.com/RomansWorks/terraform-provider-telnyx/internal/engine\"\n\n")
 	b.WriteString("// All returns a fresh copy of every generated descriptor.\n")
 	b.WriteString("func All() []*engine.Resource {\n\treturn []*engine.Resource{\n")
 	for _, n := range names {
+		fmt.Fprintf(&b, "%s(),\n", n)
+	}
+	b.WriteString("}\n}\n\n")
+	b.WriteString("// Lists returns a fresh copy of every generated list descriptor.\n")
+	b.WriteString("func Lists() []*engine.List {\n\treturn []*engine.List{\n")
+	for _, n := range lists {
 		fmt.Fprintf(&b, "%s(),\n", n)
 	}
 	b.WriteString("}\n}\n")
@@ -227,29 +293,52 @@ func Write(dir string, files map[string][]byte) error {
 
 // Run derives every override in overridesDir and writes the descriptors
 // into outDir as package pkg.
-func Run(g *Generator, overridesDir, outDir, pkg string) ([]*engine.Resource, error) {
+func Run(g *Generator, overridesDir, outDir, pkg string) ([]*engine.Resource, []*engine.List, error) {
 	ovs, err := LoadOverrides(overridesDir)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 	files := map[string][]byte{}
-	var rs []*engine.Resource
-	for _, ov := range ovs {
-		r, err := g.Derive(ov)
-		if err != nil {
-			return nil, err
+	add := func(name string, src []byte) error {
+		if _, dup := files[name]; dup {
+			return fmt.Errorf("two descriptors would be written to %s", name)
 		}
-		src, err := EmitResource(pkg, r, filepath.ToSlash(ov.file))
-		if err != nil {
-			return nil, err
-		}
-		files[FileName(r.TypeName)] = src
-		rs = append(rs, r)
+		files[name] = src
+		return nil
 	}
-	all, err := EmitAll(pkg, rs)
+	var rs []*engine.Resource
+	var ls []*engine.List
+	for _, ov := range ovs {
+		r, l, err := g.DeriveAll(ov)
+		if err != nil {
+			return nil, nil, err
+		}
+		source := filepath.ToSlash(ov.file)
+		if r != nil {
+			src, err := EmitResource(pkg, r, source)
+			if err != nil {
+				return nil, nil, err
+			}
+			if err := add(FileName(r.TypeName), src); err != nil {
+				return nil, nil, err
+			}
+			rs = append(rs, r)
+		}
+		if l != nil {
+			src, err := EmitList(pkg, l, source)
+			if err != nil {
+				return nil, nil, err
+			}
+			if err := add(strings.TrimSuffix(FileName(l.TypeName), ".go")+"_list.go", src); err != nil {
+				return nil, nil, err
+			}
+			ls = append(ls, l)
+		}
+	}
+	all, err := EmitAll(pkg, rs, ls)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 	files["all.go"] = all
-	return rs, Write(outDir, files)
+	return rs, ls, Write(outDir, files)
 }

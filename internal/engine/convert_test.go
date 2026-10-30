@@ -230,14 +230,14 @@ func TestDecodeObjectEnvelope(t *testing.T) {
 
 func TestFillPath(t *testing.T) {
 	d := &Resource{Attrs: testAttrs()}
-	p, err := fillPath(d, "/things/{id}/voice", Values{"id": str("a/b c")})
+	p, err := fillPath(d.Attrs, "/things/{id}/voice", Values{"id": str("a/b c")})
 	if err != nil || p != "/things/a%2Fb%20c/voice" {
 		t.Errorf("got %q, %v", p, err)
 	}
-	if _, err := fillPath(d, "/things/{id}", Values{"id": tftypes.NewValue(tftypes.String, nil)}); err == nil {
+	if _, err := fillPath(d.Attrs, "/things/{id}", Values{"id": tftypes.NewValue(tftypes.String, nil)}); err == nil {
 		t.Error("a null id must be an error")
 	}
-	if _, err := fillPath(d, "/things/{other}", Values{}); err == nil {
+	if _, err := fillPath(d.Attrs, "/things/{other}", Values{}); err == nil {
 		t.Error("an unknown path parameter must be an error")
 	}
 }

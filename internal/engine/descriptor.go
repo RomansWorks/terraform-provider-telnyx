@@ -1,5 +1,5 @@
 // Copyright (c) 2026 Roman Baron
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 
 // Package engine implements create, read, update, delete and import once for
 // every Telnyx resource. Each resource is described by a Resource descriptor,

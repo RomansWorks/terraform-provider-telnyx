@@ -67,4 +67,4 @@ for `romansworks/telnyx` pointing at `$(go env GOPATH)/bin` and run `make instal
 
 ## License
 
-[MIT](LICENSE)
+[Apache License 2.0](LICENSE)

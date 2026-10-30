@@ -1,5 +1,5 @@
 // Copyright (c) 2026 Roman Baron
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 
 // Command codegen derives resource descriptors from the pinned Telnyx
 // OpenAPI spec and the override files, and writes them as Go. Run it with

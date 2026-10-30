@@ -1,5 +1,5 @@
 // Copyright (c) 2026 Roman Baron
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 
 // Command apisync keeps the pinned Telnyx OpenAPI spec and its derived views
 // up to date. Run it through the Makefile targets rather than directly.

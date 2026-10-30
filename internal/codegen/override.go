@@ -1,5 +1,5 @@
 // Copyright (c) 2026 Roman Baron
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 
 // Package codegen derives resource descriptors from the pinned Telnyx
 // OpenAPI spec and per-resource override files, and writes them as Go.

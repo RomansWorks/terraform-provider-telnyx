@@ -1,5 +1,5 @@
 // Copyright (c) 2026 Roman Baron
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 
 // Package apisync pins the upstream Telnyx OpenAPI spec and derives the
 // agent-sized views of it that the rest of the repository works from: a

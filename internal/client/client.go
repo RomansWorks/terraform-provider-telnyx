@@ -1,5 +1,5 @@
 // Copyright (c) 2026 Roman Baron
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 
 // Package client is the HTTP core shared by every Telnyx resource and data
 // source: authentication, retries with backoff, and error decoding.

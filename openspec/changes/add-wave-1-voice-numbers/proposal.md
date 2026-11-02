@@ -15,6 +15,10 @@ This change covers no upstream range: it builds on the current pin.
   - An ephemeral resource whose operation answers in plain text exposes the text as one attribute.
   - A data-source-only override with `read` takes the operation's scalar query parameters as lookup attributes.
   - Settings objects identified by a path parameter (`id_from_path`) import with every path parameter, parents first.
+  - A create that answers with a list of one object (porting orders) is read from that element.
+  - Objects named by the user (`name`, `phone_number`, `queue_name`) send that field on create and are identified by it.
+  - `masked: true` keeps passwords that the API returns as asterisks; list data sources inherit sensitive and set settings.
+  - Form-encoded request bodies (TeXML queues); unsupported body types fail generation.
 - **Wave 1 resources, data sources, actions and the ephemeral token**, generated from overrides. The list is in `tasks.md`.
 - **`telnyx_phone_number`** adopts a number already on the account. Destroy keeps it unless `release_on_destroy = true`, as decided for numbers and SIM cards.
 - **Porting.** Porting orders, their documents, number blocks, extensions and associated numbers become resources, and the order workflow (confirm, activate, cancel, verification codes) becomes actions.

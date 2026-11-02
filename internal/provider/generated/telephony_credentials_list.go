@@ -27,9 +27,9 @@ func TelephonyCredentialsList() *engine.List {
 				{Name: "name", JSON: "name", Kind: engine.KindString, Computed: true, InResponse: true},
 				{Name: "record_type", JSON: "record_type", Kind: engine.KindString, Computed: true, InResponse: true, Description: "Identifies the type of the resource."},
 				{Name: "resource_id", JSON: "resource_id", Kind: engine.KindString, Computed: true, InResponse: true, Description: "Identifies the resource this credential is associated with."},
-				{Name: "sip_password", JSON: "sip_password", Kind: engine.KindString, Computed: true, InResponse: true, Description: "The randomly generated SIP password for the credential."},
+				{Name: "sip_password", JSON: "sip_password", Kind: engine.KindString, Computed: true, Sensitive: true, InResponse: true, Description: "The randomly generated SIP password for the credential."},
 				{Name: "sip_username", JSON: "sip_username", Kind: engine.KindString, Computed: true, InResponse: true, Description: "The randomly generated SIP username for the credential."},
-				{Name: "token_material", JSON: "token_material", Kind: engine.KindObject, Computed: true, InResponse: true, Description: "What a server needs to mint login tokens for the credential itself, with no request per token (`TelephonyCredential#to_jwt` in telnyx-ruby 3.1.0 or later). As sensitive as `sip_password`: keep it on the server.",
+				{Name: "token_material", JSON: "token_material", Kind: engine.KindObject, Computed: true, Sensitive: true, InResponse: true, Description: "What a server needs to mint login tokens for the credential itself, with no request per token (`TelephonyCredential#to_jwt` in telnyx-ruby 3.1.0 or later). As sensitive as `sip_password`: keep it on the server.",
 					Attrs: []*engine.Attr{
 						{Name: "kid", JSON: "kid", Kind: engine.KindString, Computed: true, InResponse: true, Description: "Identifies the Telnyx signing key the `signing_secret` was derived with. Goes in the token header."},
 						{Name: "signing_secret", JSON: "signing_secret", Kind: engine.KindString, Computed: true, InResponse: true, Description: "The HMAC-SHA256 key the token is signed with, base64url without padding."},

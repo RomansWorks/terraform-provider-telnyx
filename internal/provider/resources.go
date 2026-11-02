@@ -16,7 +16,9 @@ var hooks = map[string]engine.Hooks{
 	"telnyx_ai_avatar":                         aiAvatarHooks,
 	"telnyx_ai_tool":                           aiToolHooks,
 	"telnyx_number_order":                      numberOrderHooks,
+	"telnyx_porting_order":                     portingOrderHooks,
 	"telnyx_porting_order_additional_document": portingOrderAdditionalDocumentHooks,
+	"telnyx_texml_queue":                       texmlQueueHooks,
 }
 
 // descriptors returns every generated resource with its hooks attached.

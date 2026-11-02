@@ -38,7 +38,7 @@ The provider SHALL manage `telnyx_address`, `telnyx_user_address`, `telnyx_dynam
 
 #### Scenario: Verified number id
 - **WHEN** a `telnyx_verified_number` is created for `+13125550100`
-- **THEN** its id is the phone number, and import takes the phone number
+- **THEN** the create request carries `phone_number`, the resource is identified by it, and import takes the phone number
 
 ### Requirement: Number workflow actions and lookups
 The provider SHALL offer the wave 1 number actions (accepting address suggestions, setting requirement groups on orders, submitting a requirement group for approval, fulfilling sub number order requirements, bulk messaging profile updates and verifying a verified number) and data sources (document links, messaging settings of all numbers, bulk update status and sub number order requirements).

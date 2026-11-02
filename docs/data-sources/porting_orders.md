@@ -57,7 +57,7 @@ Read-Only:
 - `parent_support_key` (String) A key to reference for the porting order group when contacting Telnyx customer support. This information is not available for porting orders in `draft` state
 - `phone_number_configuration` (Attributes) (see [below for nested schema](#nestedatt--porting_orders--phone_number_configuration))
 - `phone_number_type` (String) The type of the phone number
-- `phone_numbers` (Attributes List) List of phone numbers associated with this porting order (see [below for nested schema](#nestedatt--porting_orders--phone_numbers))
+- `phone_numbers` (Attributes Set) List of phone numbers associated with this porting order (see [below for nested schema](#nestedatt--porting_orders--phone_numbers))
 - `porting_phone_numbers_count` (Number) Count of phone numbers associated with this porting order
 - `record_type` (String) Identifies the type of the resource.
 - `requirements` (Attributes List) List of documentation requirements for porting numbers. Can be set directly or via the `requirement_group_id` parameter. (see [below for nested schema](#nestedatt--porting_orders--requirements))
@@ -107,7 +107,7 @@ Read-Only:
 - `billing_phone_number` (String) Billing phone number associated with these phone numbers
 - `business_identifier` (String) European business identification number. Applicable only in the European Union
 - `entity_name` (String) Person Name or Company name requesting the port
-- `pin_passcode` (String) PIN/passcode possibly required by the old service provider for extra verification
+- `pin_passcode` (String, Sensitive) PIN/passcode possibly required by the old service provider for extra verification
 - `tax_identifier` (String) European tax identification number. Applicable only in the European Union
 
 
@@ -155,7 +155,7 @@ Read-Only:
 - `connection_id` (String) identifies the connection to set on the numbers when ported
 - `emergency_address_id` (String) identifies the emergency address to set on the numbers when ported
 - `messaging_profile_id` (String) identifies the messaging profile to set on the numbers when ported
-- `tags` (List of String)
+- `tags` (Set of String)
 
 
 <a id="nestedatt--porting_orders--phone_numbers"></a>

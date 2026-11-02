@@ -67,6 +67,10 @@ type Attr struct {
 	// sometimes name the parameter differently.
 	PathParams []string
 
+	// Masked attributes keep their state value when the API answers with
+	// asterisks, as Telnyx does for passwords after create.
+	Masked bool
+
 	// Query names the query parameter this attribute fills when a data
 	// source reads the object. Unless Required, it is optional.
 	Query string
@@ -88,6 +92,11 @@ type Op struct {
 	Envelope bool
 	// Text says the response is plain text, decoded as one "value" field.
 	Text bool
+	// First says the response's "data" is a list holding the one object,
+	// as when a create takes a batch.
+	First bool
+	// Form says the request body is a URL-encoded form of scalar fields.
+	Form bool
 	// Paging says how a list operation pages; PageSize is the page size to
 	// ask for.
 	Paging   Paging

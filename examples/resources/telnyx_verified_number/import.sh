@@ -1,1 +1,1 @@
-terraform import telnyx_verified_number.example <id>
+terraform import telnyx_verified_number.example <phone_number>

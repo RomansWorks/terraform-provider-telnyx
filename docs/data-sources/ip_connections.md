@@ -54,7 +54,7 @@ Read-Only:
 - `outbound` (Attributes) (see [below for nested schema](#nestedatt--ip_connections--outbound))
 - `record_type` (String) Identifies the type of the resource.
 - `rtcp_settings` (Attributes) (see [below for nested schema](#nestedatt--ip_connections--rtcp_settings))
-- `tags` (List of String) Tags associated with the connection.
+- `tags` (Set of String) Tags associated with the connection.
 - `transport_protocol` (String) One of UDP, TLS, or TCP. Applies only to connections with IP authentication or FQDN authentication.
 - `updated_at` (String) ISO 8601 formatted date indicating when the resource was updated.
 - `webhook_api_version` (String) Determines which webhook format will be used, Telnyx API v1 or v2.
@@ -118,7 +118,7 @@ Read-Only:
 - `generate_ringback_tone` (Boolean) Generate ringback tone through 183 session progress message with early media.
 - `instant_ringback_enabled` (Boolean) When set, ringback will not wait for indication before sending ringback tone to calling party.
 - `ip_authentication_method` (String)
-- `ip_authentication_token` (String)
+- `ip_authentication_token` (String, Sensitive)
 - `localization` (String) A 2-character country code specifying the country whose national dialing rules should be used. For example, if set to `US` then any US number can be dialed without preprending +1 to the number. When left blank, Telnyx will try US and GB dialing rules, in that order, by default.
 - `outbound_voice_profile_id` (String) Identifies the associated outbound voice profile.
 - `t38_reinvite_source` (String) This setting only affects connections with Fax-type Outbound Voice Profiles. The setting dictates whether or not Telnyx sends a t.38 reinvite.<br/><br/> By default, Telnyx will send the re-invite. If set to `customer`, the caller is expected to send the t.38 reinvite.

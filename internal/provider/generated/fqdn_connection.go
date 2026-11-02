@@ -89,7 +89,7 @@ func FQDNConnection() *engine.Resource {
 					{Name: "timeout_1xx_secs", JSON: "timeout_1xx_secs", Kind: engine.KindInt, Optional: true, Computed: true, InCreate: true, InUpdate: true, InResponse: true, Description: "Time(sec) before aborting if connection is not made."},
 					{Name: "timeout_2xx_secs", JSON: "timeout_2xx_secs", Kind: engine.KindInt, Optional: true, Computed: true, InCreate: true, InUpdate: true, InResponse: true, Description: "Time(sec) before aborting if call is unanswered (min: 1, max: 600)."},
 				}},
-			{Name: "password", JSON: "password", Kind: engine.KindString, Computed: true, Sensitive: true, InResponse: true, Description: "The password for the FQDN connection. For primary accounts created on or after September 8, 2026, this password is returned as `********`. The password is returned in full on create, and on update only when that update changed the password. Accounts created before September 8, 2026 are unaffected."},
+			{Name: "password", JSON: "password", Kind: engine.KindString, Computed: true, Sensitive: true, InResponse: true, Masked: true, Description: "The password for the FQDN connection. For primary accounts created on or after September 8, 2026, this password is returned as `********`. The password is returned in full on create, and on update only when that update changed the password. Accounts created before September 8, 2026 are unaffected."},
 			{Name: "record_type", JSON: "record_type", Kind: engine.KindString, Computed: true, InResponse: true, Description: "Identifies the type of the resource."},
 			{Name: "rtcp_settings", JSON: "rtcp_settings", Kind: engine.KindObject, Optional: true, Computed: true, InCreate: true, InUpdate: true, InResponse: true,
 				Attrs: []*engine.Attr{

@@ -9,6 +9,8 @@ import (
 	"io"
 	"net/http"
 	"net/http/httptest"
+	"net/url"
+	"os"
 	"regexp"
 	"slices"
 	"sort"
@@ -64,7 +66,12 @@ func conform(t *testing.T, d *engine.Resource) {
 	if d.DataSource {
 		fmt.Fprintf(&b, "data %q \"x\" {\n", d.TypeName)
 		for _, n := range d.Import {
-			fmt.Fprintf(&b, "  %s = %s.%s\n", n, name, n)
+			if d.FixedID == "" {
+				fmt.Fprintf(&b, "  %s = %s.%s\n", n, name, n)
+			}
+		}
+		if d.FixedID != "" {
+			fmt.Fprintf(&b, "  depends_on = [%s]\n", name)
 		}
 		b.WriteString("}\n")
 	}
@@ -264,7 +271,15 @@ func (a *descriptorAPI) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	defer a.mu.Unlock()
 	raw, _ := io.ReadAll(r.Body)
 	var body map[string]any
-	_ = json.Unmarshal(raw, &body)
+	if strings.HasPrefix(r.Header.Get("Content-Type"), "application/x-www-form-urlencoded") {
+		form, _ := url.ParseQuery(string(raw))
+		body = map[string]any{}
+		for k := range form {
+			body[k] = form.Get(k)
+		}
+	} else {
+		_ = json.Unmarshal(raw, &body)
+	}
 
 	for _, rt := range a.routes() {
 		if rt.op.Method != r.Method {
@@ -284,6 +299,13 @@ func (a *descriptorAPI) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			kind = "create"
 		} else if kind == "create" && rt.op == a.d.Update {
 			kind = "update"
+		}
+		if kind == "create" || rt.kind == "create" {
+			for _, f := range testSpec.required(rt.op.Method, rt.op.Path) {
+				if _, ok := body[f]; !ok && !batchCreate(body) {
+					a.t.Errorf("%s: %s %s is missing required field %s in %s", a.d.TypeName, r.Method, r.URL.Path, f, raw)
+				}
+			}
 		}
 		switch kind {
 		case "create":
@@ -332,11 +354,11 @@ func (a *descriptorAPI) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 func (a *descriptorAPI) create(w http.ResponseWriter, rt route, body map[string]any, params map[string]string) {
 	d := a.d
-	asList := false
-	// Batch creates (a list of one) store and return that one element.
+	// Operations whose response holds a list of objects answer with a
+	// list of one; batch requests (a list of one) store that element.
+	asList := testSpec.dataList(rt.op.Method, rt.op.Path)
 	if docs, ok := body["additional_documents"].([]any); ok && len(docs) == 1 {
 		body, _ = docs[0].(map[string]any)
-		asList = true
 	}
 	obj := map[string]any{}
 	for k, v := range body {
@@ -409,5 +431,120 @@ func TestConformanceSkipList(t *testing.T) {
 		if !names[k] {
 			t.Errorf("conformanceSkip names %s, which is not a resource", k)
 		}
+	}
+}
+
+// batchCreate reports whether a request body is a batch of one, whose
+// required fields belong to its elements.
+func batchCreate(body map[string]any) bool {
+	_, ok := body["additional_documents"]
+	return ok
+}
+
+// specIndex answers questions about the pinned OpenAPI spec for the fake.
+type specIndex struct {
+	doc map[string]any
+}
+
+var testSpec = loadSpec()
+
+func loadSpec() *specIndex {
+	data, err := os.ReadFile("../../upstream/telnyx/spec3.json")
+	if err != nil {
+		panic(err)
+	}
+	var doc map[string]any
+	if err := json.Unmarshal(data, &doc); err != nil {
+		panic(err)
+	}
+	return &specIndex{doc: doc}
+}
+
+func (s *specIndex) resolve(n any) map[string]any {
+	m, _ := n.(map[string]any)
+	for m != nil {
+		ref, ok := m["$ref"].(string)
+		if !ok {
+			return m
+		}
+		var cur any = s.doc
+		for _, part := range strings.Split(strings.TrimPrefix(ref, "#/"), "/") {
+			cm, _ := cur.(map[string]any)
+			cur = cm[part]
+		}
+		m, _ = cur.(map[string]any)
+	}
+	return m
+}
+
+func (s *specIndex) op(method, path string) map[string]any {
+	paths, _ := s.doc["paths"].(map[string]any)
+	item, _ := paths[path].(map[string]any)
+	op, _ := item[strings.ToLower(method)].(map[string]any)
+	return op
+}
+
+// required returns the required top-level fields of an operation's
+// request body, following $ref and allOf.
+func (s *specIndex) required(method, path string) []string {
+	body := s.resolve(s.op(method, path)["requestBody"])
+	content, _ := body["content"].(map[string]any)
+	for _, ct := range []string{"application/json", "application/x-www-form-urlencoded", "multipart/form-data"} {
+		if c, ok := content[ct].(map[string]any); ok {
+			return s.requiredOf(s.resolve(c["schema"]))
+		}
+	}
+	return nil
+}
+
+func (s *specIndex) requiredOf(schema map[string]any) []string {
+	var out []string
+	for _, r := range asAnySlice(schema["required"]) {
+		if f, ok := r.(string); ok {
+			out = append(out, f)
+		}
+	}
+	for _, part := range asAnySlice(schema["allOf"]) {
+		out = append(out, s.requiredOf(s.resolve(part))...)
+	}
+	return out
+}
+
+// dataList reports whether an operation's first 2xx response wraps a list
+// in "data".
+func (s *specIndex) dataList(method, path string) bool {
+	responses, _ := s.op(method, path)["responses"].(map[string]any)
+	codes := make([]string, 0, len(responses))
+	for c := range responses {
+		codes = append(codes, c)
+	}
+	sort.Strings(codes)
+	for _, c := range codes {
+		if !strings.HasPrefix(c, "2") {
+			continue
+		}
+		content, _ := s.resolve(responses[c])["content"].(map[string]any)
+		js, ok := content["application/json"].(map[string]any)
+		if !ok {
+			continue
+		}
+		props, _ := s.resolve(js["schema"])["properties"].(map[string]any)
+		data := s.resolve(props["data"])
+		return data != nil && data["type"] == "array"
+	}
+	return false
+}
+
+func asAnySlice(v any) []any {
+	s, _ := v.([]any)
+	return s
+}
+
+func TestSpecIndex(t *testing.T) {
+	if got := testSpec.required("POST", "/siprec_connectors"); !slices.Contains(got, "name") {
+		t.Errorf("siprec connector required fields: %v", got)
+	}
+	if !testSpec.dataList("POST", "/porting_orders") || testSpec.dataList("POST", "/queues") {
+		t.Error("dataList: porting orders create a list, queues one object")
 	}
 }

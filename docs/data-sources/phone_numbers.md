@@ -61,7 +61,7 @@ Read-Only:
 - `emergency_address_id` (String) Identifies the emergency address associated with the phone number.
 - `emergency_enabled` (Boolean) Indicates whether emergency services are enabled for this number.
 - `emergency_status` (String) Indicates the status of the provisioning of emergency services for the phone number. This field contains information about activity that may be ongoing for a number where it either is being provisioned or deprovisioned but is not yet enabled/disabled.
-- `external_pin` (String) If someone attempts to port your phone number away from Telnyx and your phone number has an external PIN set, Telnyx will attempt to verify that you provided the correct external PIN to the winning carrier. Note that not all carriers cooperate with this security mechanism.
+- `external_pin` (String, Sensitive) If someone attempts to port your phone number away from Telnyx and your phone number has an external PIN set, Telnyx will attempt to verify that you provided the correct external PIN to the winning carrier. Note that not all carriers cooperate with this security mechanism.
 - `hd_voice_enabled` (Boolean) Indicates whether HD voice is enabled for this number.
 - `id` (String) Identifies the resource.
 - `inbound_call_screening` (String) The inbound_call_screening setting is a phone number configuration option variable that allows users to configure their settings to block or flag fraudulent calls. It can be set to disabled, reject_calls, or flag_calls. This feature has an additional per-number monthly cost associated with it.
@@ -75,5 +75,5 @@ Read-Only:
 - `source_type` (String) Indicates if the phone number was purchased or ported in. For some numbers this information may not be available.
 - `status` (String) The phone number's current status.
 - `t38_fax_gateway_enabled` (Boolean) Indicates whether T38 Fax Gateway for inbound calls to this number.
-- `tags` (List of String) A list of user-assigned tags to help manage the phone number.
+- `tags` (Set of String) A list of user-assigned tags to help manage the phone number.
 - `updated_at` (String) ISO 8601 formatted date indicating when the resource was updated.

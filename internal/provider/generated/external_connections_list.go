@@ -35,7 +35,7 @@ func ExternalConnectionsList() *engine.List {
 						{Name: "outbound_voice_profile_id", JSON: "outbound_voice_profile_id", Kind: engine.KindString, Computed: true, InResponse: true, Description: "Identifies the associated outbound voice profile."},
 					}},
 				{Name: "record_type", JSON: "record_type", Kind: engine.KindString, Computed: true, InResponse: true, Description: "Identifies the type of the resource."},
-				{Name: "tags", JSON: "tags", Kind: engine.KindList, Computed: true, InResponse: true, Description: "Tags associated with the connection.", Elem: &engine.Attr{Kind: engine.KindString}},
+				{Name: "tags", JSON: "tags", Kind: engine.KindSet, Computed: true, InResponse: true, Description: "Tags associated with the connection.", Elem: &engine.Attr{Kind: engine.KindString}},
 				{Name: "updated_at", JSON: "updated_at", Kind: engine.KindString, Computed: true, InResponse: true, Description: "ISO 8601 formatted date indicating when the resource was updated."},
 				{Name: "webhook_api_version", JSON: "webhook_api_version", Kind: engine.KindString, Computed: true, InResponse: true, Description: "Determines which webhook format will be used, Telnyx API v1 or v2."},
 				{Name: "webhook_event_failover_url", JSON: "webhook_event_failover_url", Kind: engine.KindString, Computed: true, InResponse: true, Description: "The failover URL where webhooks related to this connection will be sent if sending to the primary URL fails. Must include a scheme, such as 'https'."},

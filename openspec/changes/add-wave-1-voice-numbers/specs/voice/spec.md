@@ -1,21 +1,21 @@
 ## ADDED Requirements
 
 ### Requirement: Connections
-The provider SHALL manage `telnyx_credential_connection`, `telnyx_fqdn_connection`, `telnyx_ip_connection`, `telnyx_uac_connection`, `telnyx_external_connection` and `telnyx_mobile_voice_connection`. Passwords and authentication tokens SHALL be sensitive, and `tags` SHALL be sets. Codec lists SHALL stay lists, because their order is a preference.
+The provider SHALL manage `telnyx_credential_connection`, `telnyx_fqdn_connection`, `telnyx_ip_connection`, `telnyx_uac_connection`, `telnyx_external_connection` and `telnyx_mobile_voice_connection`. Passwords SHALL be masked (sensitive, kept in state when the API answers with asterisks), authentication tokens SHALL be sensitive, and `tags` SHALL be sets. Codec lists SHALL stay lists, because their order is a preference.
 
 #### Scenario: Sensitive password
 - **WHEN** a credential connection is planned
 - **THEN** its `password` is shown as sensitive
 
 ### Requirement: Settings of connections
-The provider SHALL manage `telnyx_fqdn_connection_authentication`, `telnyx_external_connection_phone_number_settings`, `telnyx_custom_storage_credential` and `telnyx_dialogflow_connection` as settings of an existing connection or number, identified by its path parameters. Create SHALL apply the configured settings. Destroy SHALL delete them where the API can, and otherwise remove them from state with a warning. Storage credentials and Dialogflow service accounts SHALL be sensitive.
+The provider SHALL manage `telnyx_fqdn_connection_authentication`, `telnyx_external_connection_phone_number_settings`, `telnyx_custom_storage_credential` and `telnyx_dialogflow_connection` as settings of an existing connection or number, identified by its path parameters. Create SHALL apply the configured settings. Destroy SHALL delete them where the API can, and otherwise remove them from state with a warning.
 
 #### Scenario: Import phone number settings of an external connection
 - **WHEN** `terraform import telnyx_external_connection_phone_number_settings.x ec1/pn1` runs
 - **THEN** the settings are read and a matching configuration has an empty plan
 
 ### Requirement: Applications and call features
-The provider SHALL manage `telnyx_call_control_application`, `telnyx_texml_application`, `telnyx_fax_application`, `telnyx_queue`, `telnyx_texml_queue`, `telnyx_pay_connector`, `telnyx_siprec_connector`, `telnyx_telephony_credential` and `telnyx_mobile_push_credential`. A SIPREC connector's id SHALL be its `name` and a TeXML queue's id its `sid` under `account_sid`. Credential secrets and push keys SHALL be sensitive.
+The provider SHALL manage `telnyx_call_control_application`, `telnyx_texml_application`, `telnyx_fax_application`, `telnyx_queue`, `telnyx_texml_queue`, `telnyx_pay_connector`, `telnyx_siprec_connector`, `telnyx_telephony_credential` and `telnyx_mobile_push_credential`. A SIPREC connector's and a Pay connector's id SHALL be their `name`, a queue's its `queue_name`, and a TeXML queue's its `sid` under `account_sid`.
 
 #### Scenario: Import a TeXML queue
 - **WHEN** `terraform import telnyx_texml_queue.x AC1/QU1` runs
@@ -41,3 +41,10 @@ The provider SHALL offer the wave 1 voice actions (registration status checks, e
 #### Scenario: Check registration
 - **WHEN** `action "telnyx_uac_connection_check_registration_status"` is invoked for connection `u1`
 - **THEN** the provider sends `POST /uac_connections/u1/actions/check_registration_status` once
+
+### Requirement: Voice secrets
+Storage credentials, credential secrets and push keys SHALL be sensitive. The Dialogflow service account (`service_account_wo`) and a Pay connector's `config` (`config_wo`) SHALL be write-only, because the API never returns them in full.
+
+#### Scenario: Rotate a Pay connector's credentials
+- **WHEN** `config_wo` changes together with `config_wo_version`
+- **THEN** the update sends the new `config`, and state holds no `config_wo` value

@@ -1,1 +1,1 @@
-terraform import telnyx_queue.example <id>
+terraform import telnyx_queue.example <queue_name>

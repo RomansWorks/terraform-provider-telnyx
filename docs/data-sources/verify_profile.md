@@ -44,7 +44,7 @@ Read-Only:
 - `code_length` (Number) The length of the verify code to generate.
 - `default_verification_timeout_secs` (Number) For every request that is initiated via this Verify profile, this sets the number of seconds before a verification request code expires. Once the verification request expires, the user cannot use the code to verify their identity.
 - `messaging_template_id` (String) The message template identifier selected from /verify_profiles/templates
-- `whitelisted_destinations` (List of String) Enabled country destinations to send verification codes. The elements in the list must be valid ISO 3166-1 alpha-2 country codes. If set to `["*"]`, all destinations will be allowed. **Conditionally required:** this field must be provided when your organization is configured to require explicit whitelisted destinations; otherwise it is optional.
+- `whitelisted_destinations` (Set of String) Enabled country destinations to send verification codes. The elements in the list must be valid ISO 3166-1 alpha-2 country codes. If set to `["*"]`, all destinations will be allowed. **Conditionally required:** this field must be provided when your organization is configured to require explicit whitelisted destinations; otherwise it is optional.
 
 
 <a id="nestedatt--flashcall"></a>
@@ -54,7 +54,7 @@ Read-Only:
 
 - `app_name` (String) The name that identifies the application requesting 2fa in the verification message.
 - `default_verification_timeout_secs` (Number) For every request that is initiated via this Verify profile, this sets the number of seconds before a verification request code expires. Once the verification request expires, the user cannot use the code to verify their identity.
-- `whitelisted_destinations` (List of String) Enabled country destinations to send verification codes. The elements in the list must be valid ISO 3166-1 alpha-2 country codes. If set to `["*"]`, all destinations will be allowed. **Conditionally required:** this field must be provided when your organization is configured to require explicit whitelisted destinations; otherwise it is optional. The API does not return this value, so changes made outside Terraform are not detected.
+- `whitelisted_destinations` (Set of String) Enabled country destinations to send verification codes. The elements in the list must be valid ISO 3166-1 alpha-2 country codes. If set to `["*"]`, all destinations will be allowed. **Conditionally required:** this field must be provided when your organization is configured to require explicit whitelisted destinations; otherwise it is optional. The API does not return this value, so changes made outside Terraform are not detected.
 
 
 <a id="nestedatt--sms"></a>
@@ -67,7 +67,7 @@ Read-Only:
 - `code_length` (Number) The length of the verify code to generate.
 - `default_verification_timeout_secs` (Number) For every request that is initiated via this Verify profile, this sets the number of seconds before a verification request code expires. Once the verification request expires, the user cannot use the code to verify their identity.
 - `messaging_template_id` (String) The message template identifier selected from /verify_profiles/templates
-- `whitelisted_destinations` (List of String) Enabled country destinations to send verification codes. The elements in the list must be valid ISO 3166-1 alpha-2 country codes. If set to `["*"]`, all destinations will be allowed. **Conditionally required:** this field must be provided when your organization is configured to require explicit whitelisted destinations; otherwise it is optional.
+- `whitelisted_destinations` (Set of String) Enabled country destinations to send verification codes. The elements in the list must be valid ISO 3166-1 alpha-2 country codes. If set to `["*"]`, all destinations will be allowed. **Conditionally required:** this field must be provided when your organization is configured to require explicit whitelisted destinations; otherwise it is optional.
 
 
 <a id="nestedatt--whatsapp"></a>
@@ -82,4 +82,4 @@ Read-Only:
 - `sender_phone_number` (String) Phone number registered on the customer WABA to send OTPs from
 - `template_id` (String) Customer pre-approved authentication template ID registered on Meta
 - `waba_id` (String) Customer Meta WABA ID for Bring-Your-Own-WABA sending
-- `whitelisted_destinations` (List of String) Enabled country destinations to send verification codes. The elements in the list must be valid ISO 3166-1 alpha-2 country codes. If set to `["*"]`, all destinations will be allowed. **Conditionally required:** this field must be provided when your organization is configured to require explicit whitelisted destinations; otherwise it is optional.
+- `whitelisted_destinations` (Set of String) Enabled country destinations to send verification codes. The elements in the list must be valid ISO 3166-1 alpha-2 country codes. If set to `["*"]`, all destinations will be allowed. **Conditionally required:** this field must be provided when your organization is configured to require explicit whitelisted destinations; otherwise it is optional.

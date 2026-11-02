@@ -45,7 +45,7 @@ Read-Only:
 - `record_type` (String) Identifies the type of the resource.
 - `status_callback` (String) URL for Telnyx to send requests to containing information about call progress events.
 - `status_callback_method` (String) HTTP request method Telnyx should use when requesting the status_callback URL.
-- `tags` (List of String) Tags associated with the Texml Application.
+- `tags` (Set of String) Tags associated with the Texml Application.
 - `updated_at` (String) ISO 8601 formatted date indicating when the resource was updated.
 - `voice_fallback_url` (String) URL to which Telnyx will deliver your XML Translator webhooks if we get an error response from your voice_url.
 - `voice_method` (String) HTTP request method Telnyx will use to interact with your XML Translator webhooks. Either 'get' or 'post'.

@@ -40,9 +40,9 @@ Read-Only:
 - `name` (String)
 - `record_type` (String) Identifies the type of the resource.
 - `resource_id` (String) Identifies the resource this credential is associated with.
-- `sip_password` (String) The randomly generated SIP password for the credential.
+- `sip_password` (String, Sensitive) The randomly generated SIP password for the credential.
 - `sip_username` (String) The randomly generated SIP username for the credential.
-- `token_material` (Attributes) What a server needs to mint login tokens for the credential itself, with no request per token (`TelephonyCredential#to_jwt` in telnyx-ruby 3.1.0 or later). As sensitive as `sip_password`: keep it on the server. (see [below for nested schema](#nestedatt--telephony_credentials--token_material))
+- `token_material` (Attributes, Sensitive) What a server needs to mint login tokens for the credential itself, with no request per token (`TelephonyCredential#to_jwt` in telnyx-ruby 3.1.0 or later). As sensitive as `sip_password`: keep it on the server. (see [below for nested schema](#nestedatt--telephony_credentials--token_material))
 - `updated_at` (String) ISO-8601 formatted date indicating when the resource was updated.
 - `user_id` (String) Identifies the user this credential is associated with.
 

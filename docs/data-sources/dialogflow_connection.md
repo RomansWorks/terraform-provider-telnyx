@@ -24,4 +24,3 @@ The Google Dialogflow integration of a connection.
 - `conversation_profile_id` (String) The id of a configured conversation profile on your Dialogflow account. (If you use Dialogflow CX, this param is required)
 - `environment` (String) Which Dialogflow environment will be used.
 - `record_type` (String)
-- `service_account` (String, Sensitive) The JSON map to connect your Dialoglow account. A JSON document; use `jsonencode()`.

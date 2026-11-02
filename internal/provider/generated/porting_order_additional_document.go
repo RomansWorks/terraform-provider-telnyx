@@ -10,7 +10,7 @@ func PortingOrderAdditionalDocument() *engine.Resource {
 	return &engine.Resource{
 		TypeName:    "telnyx_porting_order_additional_document",
 		Description: "A document attached to a porting order in addition to its LOA and invoice.",
-		Create:      &engine.Op{Method: "POST", Path: "/porting_orders/{id}/additional_documents", Envelope: true},
+		Create:      &engine.Op{Method: "POST", Path: "/porting_orders/{id}/additional_documents", Envelope: true, First: true},
 		Delete:      &engine.Op{Method: "DELETE", Path: "/porting_orders/{id}/additional_documents/{additional_document_id}", Envelope: false},
 		ReadFrom:    &engine.ReadFrom{Op: &engine.Op{Method: "GET", Path: "/porting_orders/{id}/additional_documents", Envelope: true, Paging: engine.PagingNumber, PageSize: 250}, Field: "", Key: "id"},
 		IDAttr:      "id",

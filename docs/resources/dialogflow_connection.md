@@ -17,8 +17,10 @@ The Google Dialogflow integration of a connection.
 
 ### Required
 
+> **NOTE**: [Write-only arguments](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments) are supported in Terraform 1.11 and later.
+
 - `connection_id` (String) Uniquely identifies a Telnyx application (Call Control).
-- `service_account` (String, Sensitive) The JSON map to connect your Dialoglow account. A JSON document; use `jsonencode()`.
+- `service_account_wo` (String, Sensitive, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) The JSON map to connect your Dialoglow account. A JSON document; use `jsonencode()`. Write-only: never stored in state. Change `service_account_wo_version` to send a new value.
 
 ### Optional
 
@@ -26,6 +28,7 @@ The Google Dialogflow integration of a connection.
 - `dialogflow_api` (String) Determine which Dialogflow will be used. One of `cx`, `es`. The API does not return this value, so changes made outside Terraform are not detected.
 - `environment` (String) Which Dialogflow environment will be used.
 - `location` (String) The region of your agent is. (If you use Dialogflow CX, this param is required) The API does not return this value, so changes made outside Terraform are not detected.
+- `service_account_wo_version` (Number) Change this number to send `service_account_wo` again; Terraform cannot detect a change to a value it does not store.
 
 ### Read-Only
 

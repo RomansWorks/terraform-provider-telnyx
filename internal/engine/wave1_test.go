@@ -11,6 +11,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/hashicorp/terraform-plugin-go/tftypes"
 	rtest "github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/tfversion"
 
@@ -167,5 +168,44 @@ data "telnyx_status" "s" {
 		if s != "GET /status?connection_id=conn-1&credential_type=telephony_credential" {
 			t.Errorf("request: %s", s)
 		}
+	}
+}
+
+func TestMasked(t *testing.T) {
+	attrs := []*Attr{{Name: "password", JSON: "password", Kind: KindString, Required: true, Masked: true, InResponse: true}}
+	prior := map[string]tftypes.Value{"password": tftypes.NewValue(tftypes.String, "s3cret")}
+	for raw, want := range map[string]string{"********": "s3cret", "changed": "changed"} {
+		v, err := objectFromJSON(attrs, Object{"password": raw}, prior, modeRead)
+		if err != nil {
+			t.Fatal(err)
+		}
+		var got string
+		_ = fields(v)["password"].As(&got)
+		if got != want {
+			t.Errorf("%s: got %q, want %q", raw, got, want)
+		}
+	}
+	if isMask("") || isMask("a*") || !isMask("****") {
+		t.Error("isMask")
+	}
+}
+
+func TestFormBody(t *testing.T) {
+	got, err := formBody(Object{"MaxSize": json.Number("5"), "FriendlyName": "q", "Skip": nil, "On": true})
+	if err != nil || string(got) != "FriendlyName=q&MaxSize=5&On=true" {
+		t.Errorf("got %s, %v", got, err)
+	}
+	if _, err := formBody(Object{"nested": map[string]any{}}); err == nil {
+		t.Error("nested field: want an error")
+	}
+}
+
+func TestDecodeOnly(t *testing.T) {
+	obj, err := decodeOnly([]byte(`{"data":[{"id":"po1"}]}`))
+	if err != nil || obj["id"] != "po1" {
+		t.Errorf("one: %v %v", obj, err)
+	}
+	if _, err := decodeOnly([]byte(`{"data":[{"id":"a"},{"id":"b"}]}`)); err == nil || !strings.Contains(err.Error(), "a, b") {
+		t.Errorf("two: %v", err)
 	}
 }

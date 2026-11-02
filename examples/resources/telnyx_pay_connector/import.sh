@@ -1,1 +1,1 @@
-terraform import telnyx_pay_connector.example <id>
+terraform import telnyx_pay_connector.example <name>

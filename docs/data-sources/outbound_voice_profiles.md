@@ -50,11 +50,11 @@ Read-Only:
 - `name` (String) A user-supplied name to help with organization.
 - `record_type` (String) Identifies the type of the resource.
 - `service_plan` (String) Indicates the coverage of the termination regions.
-- `tags` (List of String)
+- `tags` (Set of String)
 - `traffic_type` (String) Specifies the type of traffic allowed in this profile.
 - `updated_at` (String) ISO 8601 formatted date-time indicating when the resource was updated.
 - `usage_payment_method` (String) Setting for how costs for outbound profile are calculated.
-- `whitelisted_destinations` (List of String) The list of destinations you want to be able to call using this outbound voice profile formatted in alpha2.
+- `whitelisted_destinations` (Set of String) The list of destinations you want to be able to call using this outbound voice profile formatted in alpha2.
 
 <a id="nestedatt--outbound_voice_profiles--call_recording"></a>
 ### Nested Schema for `outbound_voice_profiles.call_recording`

@@ -207,7 +207,8 @@ func attrType(a *Attr) attrTypeT {
 func (r *Resource) DataSourceSchema() dschema.Schema {
 	attrs := map[string]dschema.Attribute{}
 	for _, a := range r.dataAttrs() {
-		required := slices.Contains(r.Import, a.Name) || a.Query != "" && a.Required
+		// A singleton needs no lookup: its id is fixed.
+		required := slices.Contains(r.Import, a.Name) && r.FixedID == "" || a.Query != "" && a.Required
 		attrs[a.Name] = dataAttr(a, required, a.Query != "" && !required)
 	}
 	return dschema.Schema{MarkdownDescription: r.Description, Attributes: attrs}

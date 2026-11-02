@@ -41,7 +41,7 @@ Read-Only:
 - `inbound` (Attributes) (see [below for nested schema](#nestedatt--external_connections--inbound))
 - `outbound` (Attributes) (see [below for nested schema](#nestedatt--external_connections--outbound))
 - `record_type` (String) Identifies the type of the resource.
-- `tags` (List of String) Tags associated with the connection.
+- `tags` (Set of String) Tags associated with the connection.
 - `updated_at` (String) ISO 8601 formatted date indicating when the resource was updated.
 - `webhook_api_version` (String) Determines which webhook format will be used, Telnyx API v1 or v2.
 - `webhook_event_failover_url` (String) The failover URL where webhooks related to this connection will be sent if sending to the primary URL fails. Must include a scheme, such as 'https'.

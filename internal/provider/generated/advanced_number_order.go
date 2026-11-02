@@ -20,7 +20,7 @@ func AdvancedNumberOrder() *engine.Resource {
 			{Name: "comments", JSON: "comments", Kind: engine.KindString, Optional: true, Computed: true, ForceNew: true, InCreate: true, InResponse: true},
 			{Name: "country_code", JSON: "country_code", Kind: engine.KindString, Optional: true, Computed: true, ForceNew: true, InCreate: true, InResponse: true},
 			{Name: "customer_reference", JSON: "customer_reference", Kind: engine.KindString, Optional: true, Computed: true, ForceNew: true, InCreate: true, InResponse: true},
-			{Name: "features", JSON: "features", Kind: engine.KindSet, Optional: true, Computed: true, ForceNew: true, InCreate: true, InResponse: true, Elem: &engine.Attr{Kind: engine.KindJSON}},
+			{Name: "features", JSON: "features", Kind: engine.KindSet, Optional: true, Computed: true, ForceNew: true, InCreate: true, InResponse: true, Elem: &engine.Attr{Kind: engine.KindString}},
 			{Name: "id", JSON: "id", Kind: engine.KindString, Computed: true, InResponse: true, PathParams: []string{"order_id"}, Description: "The object's id."},
 			{Name: "orders", JSON: "orders", Kind: engine.KindList, Computed: true, InResponse: true, Elem: &engine.Attr{Kind: engine.KindString}},
 			{Name: "phone_number_type", JSON: "phone_number_type", Kind: engine.KindString, Optional: true, Computed: true, ForceNew: true, InCreate: true, InResponse: true, Enum: []string{"landline", "local", "mobile", "national", "shared_cost", "toll_free"}},

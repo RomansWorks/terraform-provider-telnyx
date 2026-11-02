@@ -10,7 +10,7 @@ func PortingOrder() *engine.Resource {
 	return &engine.Resource{
 		TypeName:    "telnyx_porting_order",
 		Description: "An order to port phone numbers into Telnyx from another carrier.",
-		Create:      &engine.Op{Method: "POST", Path: "/porting_orders", Envelope: true},
+		Create:      &engine.Op{Method: "POST", Path: "/porting_orders", Envelope: true, First: true},
 		Read:        &engine.Op{Method: "GET", Path: "/porting_orders/{id}", Envelope: true},
 		Update:      &engine.Op{Method: "PATCH", Path: "/porting_orders/{id}", Envelope: true},
 		Delete:      &engine.Op{Method: "DELETE", Path: "/porting_orders/{id}", Envelope: false},

@@ -135,6 +135,12 @@ func opLiteral(o *engine.Op) string {
 	if o.Text {
 		s += ", Text: true"
 	}
+	if o.First {
+		s += ", First: true"
+	}
+	if o.Form {
+		s += ", Form: true"
+	}
 	return s + "}"
 }
 
@@ -245,7 +251,7 @@ func attr(b *bytes.Buffer, a *engine.Attr) {
 		{"Required", a.Required}, {"Optional", a.Optional}, {"Computed", a.Computed},
 		{"Sensitive", a.Sensitive}, {"ForceNew", a.ForceNew},
 		{"InCreate", a.InCreate}, {"InUpdate", a.InUpdate}, {"InResponse", a.InResponse}, {"Local", a.Local},
-		{"WriteOnly", a.WriteOnly},
+		{"WriteOnly", a.WriteOnly}, {"Masked", a.Masked},
 	}
 	for _, f := range flags {
 		if f.on {

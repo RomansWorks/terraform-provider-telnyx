@@ -115,6 +115,10 @@ func (r *frameworkResource) Create(ctx context.Context, req resource.CreateReque
 	} else {
 		obj, err = r.send(ctx, d.Create, send, "create", func(a *Attr) bool { return a.InCreate }, send)
 	}
+	if err == nil {
+		// The create response is an API object like any read.
+		obj, err = r.afterRead(ctx, obj)
+	}
 	if err != nil {
 		resp.Diagnostics.AddError("Unable to create "+d.TypeName, err.Error())
 		return
@@ -441,13 +445,23 @@ func (r *frameworkResource) sendBody(ctx context.Context, op *Op, plan Values, n
 	if err != nil {
 		return nil, err
 	}
-	data, err := json.Marshal(body)
+	contentType := "application/json"
+	var data []byte
+	if op.Form {
+		contentType = "application/x-www-form-urlencoded"
+		data, err = formBody(body)
+	} else {
+		data, err = json.Marshal(body)
+	}
 	if err != nil {
 		return nil, err
 	}
-	out, err := r.c.Send(ctx, op.Method, p, nil, "application/json", data)
+	out, err := r.c.Send(ctx, op.Method, p, nil, contentType, data)
 	if err != nil {
 		return nil, err
+	}
+	if op.First {
+		return decodeOnly(out)
 	}
 	return Decode(out, op.Envelope)
 }

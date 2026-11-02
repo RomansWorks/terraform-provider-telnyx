@@ -17,13 +17,14 @@ A call queue for Call Control applications.
 
 ### Required
 
-- `id` (String) Uniquely identifies the queue
+- `queue_name` (String) The name of the queue. Must be between 1 and 255 characters. The API does not return this value, so changes made outside Terraform are not detected.
 
 ### Read-Only
 
 - `average_wait_time_secs` (Number) The average time that the calls currently in the queue have spent waiting, given in seconds.
 - `created_at` (String) ISO 8601 formatted date of when the queue was created
 - `current_size` (Number) The number of calls currently in the queue
+- `id` (String) Uniquely identifies the queue
 - `max_size` (Number) The maximum number of calls allowed in the queue
 - `name` (String) Name of the queue
 - `record_type` (String)

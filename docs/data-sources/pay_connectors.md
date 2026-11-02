@@ -42,7 +42,7 @@ Lists pay connectors, with optional filters. Each item has the attributes of `te
 
 Read-Only:
 
-- `config` (Attributes) Redacted stored configuration. Generic connector fields are shown here. Unknown config keys are discarded. Password and token are never returned. (see [below for nested schema](#nestedatt--pay_connectors--config))
+- `config` (Attributes, Sensitive) Redacted stored configuration. Generic connector fields are shown here. Unknown config keys are discarded. Password and token are never returned. (see [below for nested schema](#nestedatt--pay_connectors--config))
 - `created_at` (String) Creation time.
 - `id` (String) Connector identifier.
 - `mode` (String) Configured mode.

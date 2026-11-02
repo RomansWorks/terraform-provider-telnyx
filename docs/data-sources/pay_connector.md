@@ -17,14 +17,13 @@ A Pay connector, which takes card payments during calls through your payment gat
 
 ### Required
 
-- `id` (String) Connector identifier.
+- `name` (String) Connector name used for retrieval, update, deletion and Pay.
 
 ### Read-Only
 
-- `config` (String) Redacted stored configuration. Generic connector fields are shown here. Unknown config keys are discarded. Password and token are never returned. A JSON document; use `jsonencode()`.
 - `created_at` (String) Creation time.
+- `id` (String) Connector identifier.
 - `mode` (String) Configured mode. One of `live`, `test`.
-- `name` (String) Connector name used for retrieval, update, deletion and Pay.
 - `organization_id` (String) Owning organization; assigned from authentication, not request input.
 - `record_type` (String) Resource type.
 - `type` (String) Connector type; generic is covered by this reference. Other types may appear in unfiltered lists. One of `generic`.

@@ -17,4 +17,30 @@ The phone numbers that use channel billing in one zone.
 
 ### Required
 
-- `channel_zone_id` (String) The channel zone.
+- `channel_zone_id` (String) The channel zone id.
+
+### Optional
+
+- `max_items` (Number) Stop reading after this many items. By default every page is read.
+
+### Read-Only
+
+- `channel_billing_zone_numbers` (Attributes List) The objects, in the order the API returns them. (see [below for nested schema](#nestedatt--channel_billing_zone_numbers))
+
+<a id="nestedatt--channel_billing_zone_numbers"></a>
+### Nested Schema for `channel_billing_zone_numbers`
+
+Read-Only:
+
+- `number_of_channels` (Number)
+- `numbers` (Attributes List) (see [below for nested schema](#nestedatt--channel_billing_zone_numbers--numbers))
+- `zone_id` (String)
+- `zone_name` (String)
+
+<a id="nestedatt--channel_billing_zone_numbers--numbers"></a>
+### Nested Schema for `channel_billing_zone_numbers.numbers`
+
+Read-Only:
+
+- `country` (String)
+- `number` (String)

@@ -52,6 +52,9 @@ func (g *Generator) DeriveEphemeral(ov *Override) (*engine.Ephemeral, error) {
 		return nil, fmt.Errorf("%s: open: %w", ov.Type, err)
 	}
 	schema, env := g.responseSchema(op)
+	if g.dataList(op) {
+		return nil, fmt.Errorf("%s: %s returns a list", ov.Type, ov.Open)
+	}
 	text := false
 	if schema == nil && g.textResponse(op) {
 		// A plain-text answer, such as a token, is one string field.

@@ -32,7 +32,7 @@ Read-Only:
 - `comments` (String)
 - `country_code` (String)
 - `customer_reference` (String)
-- `features` (List of String)
+- `features` (Set of String)
 - `id` (String)
 - `orders` (List of String)
 - `phone_number_type` (String) A JSON document; use `jsondecode()` to read it.

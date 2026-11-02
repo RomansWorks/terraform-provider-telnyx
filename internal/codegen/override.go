@@ -80,6 +80,19 @@ type Override struct {
 	file string
 }
 
+// itemSettings returns the attribute settings that also apply to the items
+// of the resource's list: secrets stay sensitive and sets stay sets.
+func (o *Override) itemSettings() map[string]AttrOverride {
+	out := map[string]AttrOverride{}
+	for p, a := range o.Attributes {
+		s := AttrOverride{Sensitive: a.Sensitive || a.Masked || a.WriteOnly, Set: a.Set}
+		if s.Sensitive || s.Set {
+			out[p] = s
+		}
+	}
+	return out
+}
+
 // ReadFromOverride names the collection an object is read from.
 type ReadFromOverride struct {
 	// Op is the list operation, or the parent object's read.
@@ -115,6 +128,9 @@ type AttrOverride struct {
 	// WriteOnly makes a secret request field <name>_wo, never stored, with
 	// <name>_wo_version to send it again.
 	WriteOnly bool `yaml:"write_only"`
+	// Masked says the API answers with asterisks in place of the value
+	// after create; the value in state is kept. Masked implies sensitive.
+	Masked bool `yaml:"masked"`
 }
 
 // AddAttr is a local attribute.

@@ -29,7 +29,7 @@ func PayConnectorsList() *engine.List {
 		},
 		Items: &engine.Attr{Name: "pay_connectors", JSON: "data", Kind: engine.KindList, Computed: true, InResponse: true, Description: "The objects, in the order the API returns them.",
 			Attrs: []*engine.Attr{
-				{Name: "config", JSON: "config", Kind: engine.KindObject, Computed: true, InResponse: true, Description: "Redacted stored configuration. Generic connector fields are shown here. Unknown config keys are discarded. Password and token are never returned.",
+				{Name: "config", JSON: "config", Kind: engine.KindObject, Computed: true, Sensitive: true, InResponse: true, Description: "Redacted stored configuration. Generic connector fields are shown here. Unknown config keys are discarded. Password and token are never returned.",
 					Attrs: []*engine.Attr{
 						{Name: "auth_type", JSON: "auth_type", Kind: engine.KindString, Computed: true, InResponse: true, Description: "Stored processor authentication selection. Omitted if it was not explicitly configured."},
 						{Name: "endpoint_url", JSON: "endpoint_url", Kind: engine.KindString, Computed: true, InResponse: true, Description: "HTTP or HTTPS processor URL with a host. Use HTTPS to protect payment data in transit."},

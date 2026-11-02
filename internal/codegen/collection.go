@@ -34,7 +34,7 @@ func (g *Generator) DeriveAll(ov *Override) (*engine.Resource, *engine.List, err
 		desc = "Lists " + strings.ReplaceAll(strings.TrimPrefix(Plural(ov.Type), "telnyx_"), "_", " ") +
 			", with optional filters. Each item has the attributes of `" + ov.Type + "`."
 	}
-	l, err := g.DeriveList(ov.listName(), desc, ov.List, ov.Paging)
+	l, err := g.DeriveList(ov.listName(), desc, ov.List, ov.Paging, ov.itemSettings())
 	if err != nil {
 		return nil, nil, fmt.Errorf("%s: list: %w", ov.Type, err)
 	}
@@ -51,6 +51,9 @@ func (g *Generator) deriveData(ov *Override) (*engine.Resource, error) {
 	schema, env := g.responseSchema(read)
 	if schema == nil {
 		return nil, fmt.Errorf("%s: %s has no JSON response schema", ov.Type, ov.Read)
+	}
+	if g.dataList(read) {
+		return nil, fmt.Errorf("%s: read %s returns a list; use list", ov.Type, ov.Read)
 	}
 	d := &deriver{g: g, ov: ov, used: map[string]bool{}}
 	attrs, err := d.attrs(sources{read: schema}, 0, false, "")
@@ -194,7 +197,8 @@ var otherPaging = []string{"page[after]", "page[before]", "page[limit]", "page[s
 	"cursor", "limit", "offset", "recordsPerPage", "page"}
 
 // DeriveList derives a list data source from a list operation.
-func (g *Generator) DeriveList(name, description, key, pagingOverride string) (*engine.List, error) {
+// settings carries the resource's sensitive and set settings to the items.
+func (g *Generator) DeriveList(name, description, key, pagingOverride string, settings map[string]AttrOverride) (*engine.List, error) {
 	op, err := g.operation(key)
 	if err != nil {
 		return nil, err
@@ -248,7 +252,7 @@ func (g *Generator) DeriveList(name, description, key, pagingOverride string) (*
 
 	items := &engine.Attr{Name: strings.TrimPrefix(name, "telnyx_"), JSON: "data", Kind: engine.KindList,
 		Computed: true, InResponse: true, Description: "The objects, in the order the API returns them."}
-	ov := &Override{Type: name}
+	ov := &Override{Type: name, Attributes: settings}
 	d := &deriver{g: g, ov: ov, used: map[string]bool{}}
 	shape := item
 	t, _ := shape["type"].(string)

@@ -17,7 +17,7 @@ A phone number you verified ownership of, such as for caller id. Creating it sen
 
 ### Required
 
-- `id` (String) The object's id.
+- `phone_number` (String)
 
 ### Read-Only
 

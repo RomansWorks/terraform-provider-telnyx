@@ -59,7 +59,7 @@ Read-Only:
 - `outbound` (Attributes) (see [below for nested schema](#nestedatt--call_control_applications--outbound))
 - `record_type` (String)
 - `redact_dtmf_debug_logging` (Boolean) When enabled, DTMF digits entered by users will be redacted in debug logs to protect PII data entered through IVR interactions.
-- `tags` (List of String) Tags assigned to the Call Control Application.
+- `tags` (Set of String) Tags assigned to the Call Control Application.
 - `updated_at` (String) ISO 8601 formatted date of when the resource was last updated
 - `webhook_api_version` (String) Determines which webhook format will be used, Telnyx API v1 or v2.
 - `webhook_event_failover_url` (String) The failover URL where webhooks related to this connection will be sent if sending to the primary URL fails. Must include a scheme, such as `https`.

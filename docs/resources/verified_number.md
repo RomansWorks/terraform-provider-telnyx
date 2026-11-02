@@ -17,6 +17,7 @@ A phone number you verified ownership of, such as for caller id. Creating it sen
 
 ### Required
 
+- `phone_number` (String)
 - `verification_method` (String) Verification method. One of `call`, `sms`. The API does not return this value, so changes made outside Terraform are not detected.
 
 ### Optional
@@ -25,7 +26,6 @@ A phone number you verified ownership of, such as for caller id. Creating it sen
 
 ### Read-Only
 
-- `id` (String) The object's id.
 - `record_type` (String) The possible verified numbers record types.
 - `verified_at` (String)
 
@@ -36,5 +36,5 @@ Import is supported using the following syntax:
 The [`terraform import` command](https://developer.hashicorp.com/terraform/cli/commands/import) can be used, for example:
 
 ```shell
-terraform import telnyx_verified_number.example <id>
+terraform import telnyx_verified_number.example <phone_number>
 ```

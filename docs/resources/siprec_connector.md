@@ -18,6 +18,7 @@ A SIPREC connector, which sends call media to a SIP recording server.
 ### Required
 
 - `host` (String) Hostname/IPv4 address of the SIPREC SRS.
+- `name` (String) Name for the SIPREC connector resource.
 - `port` (Number) Port for the SIPREC SRS.
 
 ### Optional
@@ -27,7 +28,6 @@ A SIPREC connector, which sends call media to a SIP recording server.
 ### Read-Only
 
 - `created_at` (String) ISO 8601 formatted date/time of creation.
-- `id` (String) Name for the SIPREC connector resource.
 - `record_type` (String)
 - `updated_at` (String) ISO 8601 formatted date/time of last update.
 
@@ -38,5 +38,5 @@ Import is supported using the following syntax:
 The [`terraform import` command](https://developer.hashicorp.com/terraform/cli/commands/import) can be used, for example:
 
 ```shell
-terraform import telnyx_siprec_connector.example <id>
+terraform import telnyx_siprec_connector.example <name>
 ```

@@ -21,3 +21,10 @@ The provider SHALL offer the porting workflow as actions: confirm (submit), acti
 #### Scenario: Share token
 - **WHEN** `telnyx_porting_order_share` is invoked
 - **THEN** the share is created, and the token is not available to the configuration because actions return no values
+
+### Requirement: Porting order numbers
+A porting order's `phone_numbers` SHALL be the set of numbers it was created with, compared with the numbers the order holds; a change SHALL force replacement.
+
+#### Scenario: Read numbers
+- **WHEN** the API returns the order's numbers as objects
+- **THEN** `phone_numbers` holds their `phone_number` values and the next plan is empty

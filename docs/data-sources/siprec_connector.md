@@ -17,7 +17,7 @@ A SIPREC connector, which sends call media to a SIP recording server.
 
 ### Required
 
-- `id` (String) Name for the SIPREC connector resource.
+- `name` (String) Name for the SIPREC connector resource.
 
 ### Read-Only
 

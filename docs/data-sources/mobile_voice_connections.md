@@ -37,7 +37,7 @@ Read-Only:
 - `inbound` (Attributes) (see [below for nested schema](#nestedatt--mobile_voice_connections--inbound))
 - `outbound` (Attributes) (see [below for nested schema](#nestedatt--mobile_voice_connections--outbound))
 - `record_type` (String) Identifies the type of the resource.
-- `tags` (List of String) A list of tags associated with the connection.
+- `tags` (Set of String) A list of tags associated with the connection.
 - `updated_at` (String)
 - `webhook_api_version` (String) The API version for webhooks.
 - `webhook_event_failover_url` (String) The failover URL where webhooks are sent.

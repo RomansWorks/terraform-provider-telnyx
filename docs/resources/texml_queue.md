@@ -19,6 +19,11 @@ A queue of TeXML calls in an account.
 
 - `account_sid` (String) The id of the account the resource belongs to.
 
+### Optional
+
+- `friendly_name` (String) A human readable name for the queue. The API does not return this value, so changes made outside Terraform are not detected.
+- `max_size` (Number) The maximum size of the queue.
+
 ### Read-Only
 
 - `average_wait_time` (Number) The average wait time in seconds for members in the queue.
@@ -26,7 +31,6 @@ A queue of TeXML calls in an account.
 - `date_created` (String) The timestamp of when the resource was created.
 - `date_updated` (String) The timestamp of when the resource was last updated.
 - `id` (String) The unique identifier of the queue.
-- `max_size` (Number) The maximum size of the queue.
 - `subresource_uris` (String) A list of related resources identified by their relative URIs. A JSON document; use `jsondecode()` to read it.
 - `uri` (String) The relative URI for this queue.
 

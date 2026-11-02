@@ -52,11 +52,11 @@ Read-Only:
 - `noise_suppression_details` (Attributes) Configuration options for noise suppression. These settings are stored regardless of the noise_suppression value, but only take effect when noise_suppression is not 'disabled'. If you disable noise suppression and later re-enable it, the previously configured settings will be used. (see [below for nested schema](#nestedatt--credential_connections--noise_suppression_details))
 - `onnet_t38_passthrough_enabled` (Boolean) Enable on-net T38 if you prefer the sender and receiver negotiating T38 directly if both are on the Telnyx network. If this is disabled, Telnyx will be able to use T38 on just one leg of the call depending on each leg's settings.
 - `outbound` (Attributes) (see [below for nested schema](#nestedatt--credential_connections--outbound))
-- `password` (String) The password to be used as part of the credentials. Must be 8 to 128 characters long. For primary accounts created on or after September 8, 2026, this password is returned as `********`. The password is returned in full on create, and on update only when that update changed the password. Accounts created before September 8, 2026 are unaffected.
+- `password` (String, Sensitive) The password to be used as part of the credentials. Must be 8 to 128 characters long. For primary accounts created on or after September 8, 2026, this password is returned as `********`. The password is returned in full on create, and on update only when that update changed the password. Accounts created before September 8, 2026 are unaffected.
 - `record_type` (String) Identifies the type of the resource.
 - `rtcp_settings` (Attributes) (see [below for nested schema](#nestedatt--credential_connections--rtcp_settings))
 - `sip_uri_calling_preference` (String) This feature enables inbound SIP URI calls to your Credential Auth Connection. If enabled for all (unrestricted) then anyone who calls the SIP URI <your-username>@telnyx.com will be connected to your Connection. You can also choose to allow only calls that are originated on any Connections under your account (internal).
-- `tags` (List of String) Tags associated with the connection.
+- `tags` (Set of String) Tags associated with the connection.
 - `updated_at` (String) ISO-8601 formatted date indicating when the resource was updated.
 - `user_name` (String) The user name to be used as part of the credentials. Must be 4-32 characters long and alphanumeric values only (no spaces or special characters). At least one of the first 5 characters must be a letter.
 - `webhook_api_version` (String) Determines which webhook format will be used, Telnyx API v1 or v2.

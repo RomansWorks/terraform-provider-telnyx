@@ -57,12 +57,12 @@ Read-Only:
 - `noise_suppression_details` (Attributes) Configuration options for noise suppression. These settings are stored regardless of the noise_suppression value, but only take effect when noise_suppression is not 'disabled'. If you disable noise suppression and later re-enable it, the previously configured settings will be used. (see [below for nested schema](#nestedatt--fqdn_connections--noise_suppression_details))
 - `onnet_t38_passthrough_enabled` (Boolean) Enable on-net T38 if you prefer that the sender and receiver negotiate T38 directly when both are on the Telnyx network. If this is disabled, Telnyx will be able to use T38 on just one leg of the call according to each leg's settings.
 - `outbound` (Attributes) (see [below for nested schema](#nestedatt--fqdn_connections--outbound))
-- `password` (String) The password for the FQDN connection. For primary accounts created on or after September 8, 2026, this password is returned as `********`. The password is returned in full on create, and on update only when that update changed the password. Accounts created before September 8, 2026 are unaffected.
+- `password` (String, Sensitive) The password for the FQDN connection. For primary accounts created on or after September 8, 2026, this password is returned as `********`. The password is returned in full on create, and on update only when that update changed the password. Accounts created before September 8, 2026 are unaffected.
 - `record_type` (String) Identifies the type of the resource.
 - `rtcp_settings` (Attributes) (see [below for nested schema](#nestedatt--fqdn_connections--rtcp_settings))
 - `rtp_pass_codecs_on_stream_change` (Boolean) Defines if codecs should be passed on stream change.
 - `send_normalized_timestamps` (Boolean) Indicates whether normalized timestamps should be sent.
-- `tags` (List of String) Tags associated with the connection.
+- `tags` (Set of String) Tags associated with the connection.
 - `third_party_control_enabled` (Boolean) Indicates whether third-party control is enabled.
 - `transport_protocol` (String) One of UDP, TLS, or TCP. Applies only to connections with IP authentication or FQDN authentication.
 - `txt_name` (String) The name for the TXT record associated with the FQDN connection.
@@ -132,7 +132,7 @@ Read-Only:
 - `generate_ringback_tone` (Boolean) Generate ringback tone through 183 session progress message with early media.
 - `instant_ringback_enabled` (Boolean) When set, ringback will not wait for indication before sending ringback tone to calling party.
 - `ip_authentication_method` (String)
-- `ip_authentication_token` (String)
+- `ip_authentication_token` (String, Sensitive)
 - `localization` (String) A 2-character country code specifying the country whose national dialing rules should be used. For example, if set to `US` then any US number can be dialed without preprending +1 to the number. When left blank, Telnyx will try US and GB dialing rules, in that order, by default.",
 - `outbound_voice_profile_id` (String) Identifies the associated outbound voice profile.
 - `t38_reinvite_source` (String) This setting only affects connections with Fax-type Outbound Voice Profiles. The setting dictates whether or not Telnyx sends a t.38 reinvite. By default, Telnyx will send the re-invite. If set to `customer`, the caller is expected to send the t.38 reinvite.

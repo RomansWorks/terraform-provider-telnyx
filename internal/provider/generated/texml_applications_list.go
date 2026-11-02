@@ -42,7 +42,7 @@ func TexmlApplicationsList() *engine.List {
 				{Name: "record_type", JSON: "record_type", Kind: engine.KindString, Computed: true, InResponse: true, Description: "Identifies the type of the resource."},
 				{Name: "status_callback", JSON: "status_callback", Kind: engine.KindString, Computed: true, InResponse: true, Description: "URL for Telnyx to send requests to containing information about call progress events."},
 				{Name: "status_callback_method", JSON: "status_callback_method", Kind: engine.KindString, Computed: true, InResponse: true, Description: "HTTP request method Telnyx should use when requesting the status_callback URL."},
-				{Name: "tags", JSON: "tags", Kind: engine.KindList, Computed: true, InResponse: true, Description: "Tags associated with the Texml Application.", Elem: &engine.Attr{Kind: engine.KindString}},
+				{Name: "tags", JSON: "tags", Kind: engine.KindSet, Computed: true, InResponse: true, Description: "Tags associated with the Texml Application.", Elem: &engine.Attr{Kind: engine.KindString}},
 				{Name: "updated_at", JSON: "updated_at", Kind: engine.KindString, Computed: true, InResponse: true, Description: "ISO 8601 formatted date indicating when the resource was updated."},
 				{Name: "voice_fallback_url", JSON: "voice_fallback_url", Kind: engine.KindString, Computed: true, InResponse: true, Description: "URL to which Telnyx will deliver your XML Translator webhooks if we get an error response from your voice_url."},
 				{Name: "voice_method", JSON: "voice_method", Kind: engine.KindString, Computed: true, InResponse: true, Description: "HTTP request method Telnyx will use to interact with your XML Translator webhooks. Either 'get' or 'post'."},

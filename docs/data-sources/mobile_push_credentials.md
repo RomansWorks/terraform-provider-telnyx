@@ -31,11 +31,11 @@ Lists mobile push credentials, with optional filters. Each item has the attribut
 Read-Only:
 
 - `alias` (String) Alias to uniquely identify a credential
-- `certificate` (String) Apple certificate for sending push notifications. For iOS only
+- `certificate` (String, Sensitive) Apple certificate for sending push notifications. For iOS only
 - `created_at` (String) ISO 8601 timestamp when the room was created
 - `id` (String) Unique identifier of a push credential
-- `private_key` (String) Apple private key for a given certificate for sending push notifications. For iOS only
-- `project_account_json_file` (String) Google server key for sending push notifications. For Android only A JSON document; use `jsondecode()` to read it.
+- `private_key` (String, Sensitive) Apple private key for a given certificate for sending push notifications. For iOS only
+- `project_account_json_file` (String, Sensitive) Google server key for sending push notifications. For Android only A JSON document; use `jsondecode()` to read it.
 - `record_type` (String)
 - `type` (String) Type of mobile push credential. Either <code>ios</code> or <code>android</code>
 - `updated_at` (String) ISO 8601 timestamp when the room was updated.

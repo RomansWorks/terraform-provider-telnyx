@@ -24,7 +24,8 @@ func DialogflowConnection() *engine.Resource {
 			{Name: "environment", JSON: "environment", Kind: engine.KindString, Optional: true, Computed: true, InCreate: true, InUpdate: true, InResponse: true, Description: "Which Dialogflow environment will be used."},
 			{Name: "location", JSON: "location", Kind: engine.KindString, Optional: true, InCreate: true, InUpdate: true, Description: "The region of your agent is. (If you use Dialogflow CX, this param is required)"},
 			{Name: "record_type", JSON: "record_type", Kind: engine.KindString, Computed: true, InResponse: true},
-			{Name: "service_account", JSON: "service_account", Kind: engine.KindJSON, Required: true, Sensitive: true, InCreate: true, InUpdate: true, InResponse: true, Description: "The JSON map to connect your Dialoglow account."},
+			{Name: "service_account_wo", JSON: "service_account", Kind: engine.KindJSON, Required: true, Sensitive: true, InCreate: true, InUpdate: true, WriteOnly: true, Version: "service_account_wo_version", Description: "The JSON map to connect your Dialoglow account."},
+			{Name: "service_account_wo_version", Kind: engine.KindInt, Optional: true, Local: true, Description: "Change this number to send `service_account_wo` again; Terraform cannot detect a change to a value it does not store."},
 		},
 	}
 }

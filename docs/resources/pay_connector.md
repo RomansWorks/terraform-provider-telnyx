@@ -17,11 +17,14 @@ A Pay connector, which takes card payments during calls through your payment gat
 
 ### Required
 
-- `config` (String) Redacted stored configuration. Generic connector fields are shown here. Unknown config keys are discarded. Password and token are never returned. A JSON document; use `jsonencode()`.
+> **NOTE**: [Write-only arguments](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments) are supported in Terraform 1.11 and later.
+
+- `config_wo` (String, Sensitive, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) Redacted stored configuration. Generic connector fields are shown here. Unknown config keys are discarded. Password and token are never returned. A JSON document; use `jsonencode()`. Write-only: never stored in state. Change `config_wo_version` to send a new value.
 - `name` (String) Connector name used for retrieval, update, deletion and Pay.
 
 ### Optional
 
+- `config_wo_version` (Number) Change this number to send `config_wo` again; Terraform cannot detect a change to a value it does not store.
 - `mode` (String) Configured mode. One of `live`, `test`.
 - `type` (String) Connector type; generic is covered by this reference. Other types may appear in unfiltered lists. One of `generic`.
 
@@ -41,5 +44,5 @@ Import is supported using the following syntax:
 The [`terraform import` command](https://developer.hashicorp.com/terraform/cli/commands/import) can be used, for example:
 
 ```shell
-terraform import telnyx_pay_connector.example <id>
+terraform import telnyx_pay_connector.example <name>
 ```

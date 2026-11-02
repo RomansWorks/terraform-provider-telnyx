@@ -31,7 +31,7 @@ func MobileVoiceConnectionsList() *engine.List {
 						{Name: "outbound_voice_profile_id", JSON: "outbound_voice_profile_id", Kind: engine.KindString, Computed: true, InResponse: true},
 					}},
 				{Name: "record_type", JSON: "record_type", Kind: engine.KindString, Computed: true, InResponse: true, Description: "Identifies the type of the resource."},
-				{Name: "tags", JSON: "tags", Kind: engine.KindList, Computed: true, InResponse: true, Description: "A list of tags associated with the connection.", Elem: &engine.Attr{Kind: engine.KindString}},
+				{Name: "tags", JSON: "tags", Kind: engine.KindSet, Computed: true, InResponse: true, Description: "A list of tags associated with the connection.", Elem: &engine.Attr{Kind: engine.KindString}},
 				{Name: "updated_at", JSON: "updated_at", Kind: engine.KindString, Computed: true, InResponse: true},
 				{Name: "webhook_api_version", JSON: "webhook_api_version", Kind: engine.KindString, Computed: true, InResponse: true, Description: "The API version for webhooks."},
 				{Name: "webhook_event_failover_url", JSON: "webhook_event_failover_url", Kind: engine.KindString, Computed: true, InResponse: true, Description: "The failover URL where webhooks are sent."},

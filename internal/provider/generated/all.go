@@ -28,3 +28,13 @@ func Lists() []*engine.List {
 		OutboundVoiceProfilesList(),
 	}
 }
+
+// Actions returns a fresh copy of every generated action descriptor.
+func Actions() []*engine.Action {
+	return []*engine.Action{}
+}
+
+// Ephemerals returns a fresh copy of every generated ephemeral resource descriptor.
+func Ephemerals() []*engine.Ephemeral {
+	return []*engine.Ephemeral{}
+}

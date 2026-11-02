@@ -26,10 +26,11 @@ func main() {
 		fmt.Fprintln(os.Stderr, "codegen:", err)
 		os.Exit(1)
 	}
-	rs, ls, err := codegen.Run(&codegen.Generator{Spec: s}, *overrides, *out, "generated")
+	gen, err := codegen.Run(&codegen.Generator{Spec: s}, *overrides, *out, "generated")
 	if err != nil {
 		fmt.Fprintln(os.Stderr, "codegen:", err)
 		os.Exit(1)
 	}
-	fmt.Printf("codegen: %d descriptors and %d lists in %s\n", len(rs), len(ls), *out)
+	fmt.Printf("codegen: %d descriptors, %d lists, %d actions and %d ephemeral resources in %s\n",
+		len(gen.Resources), len(gen.Lists), len(gen.Actions), len(gen.Ephemerals), *out)
 }

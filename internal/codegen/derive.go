@@ -355,6 +355,8 @@ type deriver struct {
 	used         map[string]bool
 	hasUpdate    bool
 	updateMethod string
+	// writeOnly collects the write-only attributes, which need a version.
+	writeOnly []*engine.Attr
 }
 
 // attrs derives the attributes of one object level.
@@ -426,6 +428,11 @@ func (d *deriver) attrs(src sources, depth int, parentComputed bool, prefix stri
 		if err := d.kind(a, cs, depth, parentComputed || a.Computed, p, aov); err != nil {
 			return nil, err
 		}
+		if aov.WriteOnly {
+			if err := d.writeOnlyAttr(a, p, depth, configurable); err != nil {
+				return nil, err
+			}
+		}
 		if prev, ok := names[a.Name]; ok {
 			return nil, fmt.Errorf("%s and %s both map to attribute %s; rename one", prev, p, a.Name)
 		}
@@ -436,6 +443,40 @@ func (d *deriver) attrs(src sources, depth int, parentComputed bool, prefix stri
 		out = append(out, a)
 	}
 	return out, nil
+}
+
+// writeOnlyAttr turns a secret request field into <name>_wo: sent from
+// configuration, never stored or read back.
+func (d *deriver) writeOnlyAttr(a *engine.Attr, p string, depth int, configurable bool) error {
+	switch {
+	case depth > 0:
+		return fmt.Errorf("%s: write_only applies to top-level fields only", p)
+	case !configurable:
+		return fmt.Errorf("%s: write_only needs a field the request takes", p)
+	case a.Kind != engine.KindString && a.Kind != engine.KindJSON && a.Kind != engine.KindInt && a.Kind != engine.KindFloat && a.Kind != engine.KindBool:
+		return fmt.Errorf("%s: write_only applies to scalar fields only", p)
+	}
+	base := a.Name
+	a.Name = base + "_wo"
+	a.Version = base + "_wo_version"
+	a.WriteOnly, a.Sensitive = true, true
+	a.Computed, a.InResponse, a.ForceNew = false, false, false
+	a.Optional = !a.Required
+	d.writeOnly = append(d.writeOnly, a)
+	return nil
+}
+
+// versions returns the <name>_wo_version attribute of each write-only
+// attribute. A new version replaces the object when no update takes the
+// field.
+func (d *deriver) versions() []*engine.Attr {
+	var out []*engine.Attr
+	for _, a := range d.writeOnly {
+		out = append(out, &engine.Attr{Name: a.Version, Kind: engine.KindInt, Optional: true, Local: true,
+			ForceNew:    !d.hasUpdate || !a.InUpdate,
+			Description: "Change this number to send `" + a.Name + "` again; Terraform cannot detect a change to a value it does not store."})
+	}
+	return out
 }
 
 // kind sets the attribute's Terraform shape.
@@ -623,6 +664,16 @@ func (g *Generator) Derive(ov *Override) (*engine.Resource, error) {
 		r.Delete = &engine.Op{Method: del.method, Path: del.path}
 	}
 	others := []*operation{read, update, del}
+	r.Attrs = append(r.Attrs, d.versions()...)
+	if ov.ReleaseOnDestroy {
+		if r.Attr(engine.ReleaseAttr) != nil {
+			return nil, fmt.Errorf("%s: the API already has a field named %s; rename it", ov.Type, engine.ReleaseAttr)
+		}
+		r.ReleaseOnDestroy = true
+		r.Attrs = append(r.Attrs, &engine.Attr{Name: engine.ReleaseAttr, Kind: engine.KindBool, Optional: true, Local: true,
+			Description: "Whether destroy deletes the object in Telnyx. By default destroy only removes it from Terraform state. " +
+				"Destroy uses the value in state, so set it to true and apply before destroying."})
+	}
 	extra, err := g.extraUpdates(r, ov, d, readSchema)
 	if err != nil {
 		return nil, fmt.Errorf("%s: %w", ov.Type, err)
@@ -736,6 +787,9 @@ func (g *Generator) extraUpdates(r *engine.Resource, ov *Override, d *deriver, r
 			if !a.InUpdate {
 				// Only read returns it.
 				continue
+			}
+			if a.WriteOnly {
+				return nil, fmt.Errorf("updates: %s sets write-only %s; write_only is not supported there", u.Op, a.Name)
 			}
 			if prev, ok := owner[a.Name]; ok {
 				return nil, fmt.Errorf("updates %s and %s both set %s", prev, u.Op, a.Name)

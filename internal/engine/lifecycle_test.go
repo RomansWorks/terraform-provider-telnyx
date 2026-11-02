@@ -16,7 +16,9 @@ import (
 	"testing"
 	"time"
 
+	"github.com/hashicorp/terraform-plugin-framework/action"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
+	"github.com/hashicorp/terraform-plugin-framework/ephemeral"
 	"github.com/hashicorp/terraform-plugin-framework/provider"
 	"github.com/hashicorp/terraform-plugin-framework/providerserver"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
@@ -213,9 +215,27 @@ func gadget() *Resource {
 }
 
 type testProvider struct {
-	c     *client.Client
-	res   []*Resource
-	lists []*List
+	c          *client.Client
+	res        []*Resource
+	lists      []*List
+	actions    []*Action
+	ephemerals []*Ephemeral
+}
+
+func (p *testProvider) Actions(context.Context) []func() action.Action {
+	var out []func() action.Action
+	for _, a := range p.actions {
+		out = append(out, NewAction(a))
+	}
+	return out
+}
+
+func (p *testProvider) EphemeralResources(context.Context) []func() ephemeral.EphemeralResource {
+	var out []func() ephemeral.EphemeralResource
+	for _, e := range p.ephemerals {
+		out = append(out, NewEphemeral(e))
+	}
+	return out
 }
 
 func (p *testProvider) Metadata(_ context.Context, _ provider.MetadataRequest, resp *provider.MetadataResponse) {
@@ -227,6 +247,8 @@ func (p *testProvider) Schema(context.Context, provider.SchemaRequest, *provider
 func (p *testProvider) Configure(_ context.Context, _ provider.ConfigureRequest, resp *provider.ConfigureResponse) {
 	resp.ResourceData = p.c
 	resp.DataSourceData = p.c
+	resp.ActionData = p.c
+	resp.EphemeralResourceData = p.c
 }
 
 func (p *testProvider) Resources(context.Context) []func() resource.Resource {

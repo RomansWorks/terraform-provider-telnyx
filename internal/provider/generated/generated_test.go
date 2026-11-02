@@ -44,6 +44,20 @@ func TestSchemasAreValid(t *testing.T) {
 			t.Errorf("%s list schema: %v", l.TypeName, diags)
 		}
 	}
+	for _, a := range Actions() {
+		if seen[a.TypeName] {
+			t.Errorf("%s is generated twice", a.TypeName)
+		}
+		seen[a.TypeName] = true
+		if diags := a.Schema().ValidateImplementation(ctx); diags.HasError() {
+			t.Errorf("%s action schema: %v", a.TypeName, diags)
+		}
+	}
+	for _, e := range Ephemerals() {
+		if diags := e.Schema().ValidateImplementation(ctx); diags.HasError() {
+			t.Errorf("%s ephemeral schema: %v", e.TypeName, diags)
+		}
+	}
 }
 
 // Every operation a resource uses is classified as that resource, reviewed,
@@ -88,5 +102,11 @@ func TestCoverageNamesEveryGeneratedOperation(t *testing.T) {
 	}
 	for _, l := range Lists() {
 		check(l.TypeName, l.Op.Method+" "+l.Op.Path, apisync.BucketDataSource)
+	}
+	for _, a := range Actions() {
+		check(a.TypeName, a.Op.Method+" "+a.Op.Path, apisync.BucketAction)
+	}
+	for _, e := range Ephemerals() {
+		check(e.TypeName, e.Open.Method+" "+e.Open.Path, apisync.BucketEphemeral)
 	}
 }

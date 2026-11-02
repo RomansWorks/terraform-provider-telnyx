@@ -30,12 +30,13 @@ func fixture(t *testing.T) *Generator {
 // testdata/golden. Run with -update after an intended change.
 func TestGolden(t *testing.T) {
 	out := t.TempDir()
-	rs, ls, err := Run(fixture(t), "testdata/overrides", out, "generated")
+	gen, err := Run(fixture(t), "testdata/overrides", out, "generated")
 	if err != nil {
 		t.Fatal(err)
 	}
-	if len(rs) != 6 || len(ls) != 2 {
-		t.Fatalf("got %d resources and %d lists", len(rs), len(ls))
+	rs, ls := gen.Resources, gen.Lists
+	if len(rs) != 7 || len(ls) != 2 || len(gen.Actions) != 1 || len(gen.Ephemerals) != 1 {
+		t.Fatalf("got %d resources, %d lists, %d actions and %d ephemeral resources", len(rs), len(ls), len(gen.Actions), len(gen.Ephemerals))
 	}
 	ctx := context.Background()
 	for _, r := range rs {
@@ -53,6 +54,16 @@ func TestGolden(t *testing.T) {
 	for _, l := range ls {
 		if diags := l.Schema().ValidateImplementation(ctx); diags.HasError() {
 			t.Errorf("%s: %v", l.TypeName, diags)
+		}
+	}
+	for _, a := range gen.Actions {
+		if diags := a.Schema().ValidateImplementation(ctx); diags.HasError() {
+			t.Errorf("%s: %v", a.TypeName, diags)
+		}
+	}
+	for _, e := range gen.Ephemerals {
+		if diags := e.Schema().ValidateImplementation(ctx); diags.HasError() {
+			t.Errorf("%s: %v", e.TypeName, diags)
 		}
 	}
 	files, _ := filepath.Glob(filepath.Join(out, "*.go"))
@@ -78,7 +89,7 @@ func TestGolden(t *testing.T) {
 func TestRunIsDeterministic(t *testing.T) {
 	a, b := t.TempDir(), t.TempDir()
 	for _, dir := range []string{a, b} {
-		if _, _, err := Run(fixture(t), "testdata/overrides", dir, "generated"); err != nil {
+		if _, err := Run(fixture(t), "testdata/overrides", dir, "generated"); err != nil {
 			t.Fatal(err)
 		}
 	}
@@ -358,6 +369,91 @@ func TestPlural(t *testing.T) {
 	} {
 		if got := Plural(in); got != want {
 			t.Errorf("Plural(%s) = %s", in, got)
+		}
+	}
+}
+
+func TestPart2Shapes(t *testing.T) {
+	g := fixture(t)
+	load := func(name string) *Override {
+		ov, err := LoadOverride("testdata/overrides/" + name + ".yaml")
+		if err != nil {
+			t.Fatal(err)
+		}
+		return ov
+	}
+	r, err := g.Derive(load("vault"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if pw := r.Attr("password_wo"); pw == nil || !pw.WriteOnly || !pw.Sensitive || pw.Computed || pw.InResponse || pw.Version != "password_wo_version" {
+		t.Errorf("password_wo: %+v", pw)
+	}
+	if r.Attr("password") != nil {
+		t.Error("the stored password attribute must not exist")
+	}
+	if v := r.Attr("password_wo_version"); v == nil || !v.Local || v.ForceNew || v.Kind != engine.KindInt {
+		t.Errorf("password_wo_version: %+v", v)
+	}
+	if rel := r.Attr("release_on_destroy"); !r.ReleaseOnDestroy || rel == nil || !rel.Local || rel.ForceNew {
+		t.Errorf("release_on_destroy: %+v", rel)
+	}
+
+	a, err := g.DeriveAction(load("gadget_set_blocklist"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if id := a.Attrs[1]; id.Name != "gadget_id" || !id.Required || !id.Local {
+		t.Errorf("action path parameter: %+v", id)
+	}
+	if b := a.Attrs[0]; b.Name != "blocklist_id" || b.Required || !b.Optional || b.Computed {
+		t.Errorf("action body field: %+v", b)
+	}
+
+	e, err := g.DeriveEphemeral(load("vault_token"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if e.Open.Method != "POST" || !e.Open.Envelope || len(e.Attrs) != 3 || !e.Attrs[1].Computed {
+		t.Errorf("ephemeral: %+v %+v", e.Open, e.Attrs)
+	}
+}
+
+func TestPart2Errors(t *testing.T) {
+	g := fixture(t)
+	vault := "type: telnyx_x\ndescription: x\ncreate: POST /vaults\nread: \"GET /vaults/{vault_id}\"\n"
+	cases := map[string]string{
+		"release without delete":     vault + "release_on_destroy: true\n",
+		"write_only nested":          vault + "attributes:\n  settings.pin: {write_only: true}\n",
+		"write_only on a read field": vault + "attributes:\n  id: {write_only: true}\n",
+		"action without op":          "type: telnyx_x\nkind: action\ndescription: x\n",
+		"action with create":         "type: telnyx_x\nkind: action\ndescription: x\nop: POST /vaults\ncreate: POST /vaults\n",
+		"op on a resource":           vault + "op: POST /vaults\n",
+		"ephemeral with op":          "type: telnyx_x\nkind: ephemeral\ndescription: x\nop: POST /vaults\n",
+		"ephemeral without JSON":     "type: telnyx_x\nkind: ephemeral\ndescription: x\nopen: \"DELETE /vaults/{vault_id}\"\n",
+		"action path clash":          "type: telnyx_x\nkind: action\ndescription: x\nop: \"POST /gadgets/{gadget_id}/actions/set_blocklist\"\npath_params: {gadget_id: blocklist_id}\n",
+		"unknown kind":               "type: telnyx_x\nkind: thing\ndescription: x\n",
+	}
+	for name, body := range cases {
+		p := filepath.Join(t.TempDir(), "x.yaml")
+		if err := os.WriteFile(p, []byte(body), 0o644); err != nil {
+			t.Fatal(err)
+		}
+		ov, err := LoadOverride(p)
+		if err == nil {
+			switch ov.Kind {
+			case "action":
+				_, err = g.DeriveAction(ov)
+			case "ephemeral":
+				_, err = g.DeriveEphemeral(ov)
+			default:
+				_, err = g.Derive(ov)
+			}
+		}
+		if err == nil {
+			t.Errorf("%s: want an error", name)
+		} else {
+			t.Logf("%s: %v", name, err)
 		}
 	}
 }

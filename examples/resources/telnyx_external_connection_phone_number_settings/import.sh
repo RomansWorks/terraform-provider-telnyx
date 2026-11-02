@@ -1,0 +1,1 @@
+terraform import telnyx_external_connection_phone_number_settings.example <external_connection_id>/<phone_number_id>

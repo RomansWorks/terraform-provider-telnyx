@@ -1,0 +1,1 @@
+terraform import telnyx_custom_storage_credential.example <connection_id>

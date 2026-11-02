@@ -1,0 +1,1 @@
+terraform import telnyx_fqdn_connection_authentication.example <fqdn_connection_id>

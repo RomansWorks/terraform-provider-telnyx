@@ -1,0 +1,1 @@
+terraform import telnyx_voice_channel_zone.example <channel_zone_id>

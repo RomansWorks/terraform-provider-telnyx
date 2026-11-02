@@ -1,0 +1,1 @@
+terraform import telnyx_dialogflow_connection.example <connection_id>

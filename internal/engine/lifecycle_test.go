@@ -213,8 +213,9 @@ func gadget() *Resource {
 }
 
 type testProvider struct {
-	c   *client.Client
-	res []*Resource
+	c     *client.Client
+	res   []*Resource
+	lists []*List
 }
 
 func (p *testProvider) Metadata(_ context.Context, _ provider.MetadataRequest, resp *provider.MetadataResponse) {
@@ -231,7 +232,9 @@ func (p *testProvider) Configure(_ context.Context, _ provider.ConfigureRequest,
 func (p *testProvider) Resources(context.Context) []func() resource.Resource {
 	var out []func() resource.Resource
 	for _, r := range p.res {
-		out = append(out, NewResource(r))
+		if !r.NoResource {
+			out = append(out, NewResource(r))
+		}
 	}
 	return out
 }
@@ -243,12 +246,21 @@ func (p *testProvider) DataSources(context.Context) []func() datasource.DataSour
 			out = append(out, NewDataSource(r))
 		}
 	}
+	for _, l := range p.lists {
+		out = append(out, NewListDataSource(l))
+	}
 	return out
 }
 
 func factories(c *client.Client, res ...*Resource) map[string]func() (tfprotov6.ProviderServer, error) {
 	return map[string]func() (tfprotov6.ProviderServer, error){
 		"telnyx": providerserver.NewProtocol6WithError(&testProvider{c: c, res: res}),
+	}
+}
+
+func listFactories(c *client.Client, lists []*List, res ...*Resource) map[string]func() (tfprotov6.ProviderServer, error) {
+	return map[string]func() (tfprotov6.ProviderServer, error){
+		"telnyx": providerserver.NewProtocol6WithError(&testProvider{c: c, res: res, lists: lists}),
 	}
 }
 

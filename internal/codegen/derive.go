@@ -569,9 +569,23 @@ func (g *Generator) Derive(ov *Override) (*engine.Resource, error) {
 	}
 	create, read, update, del := ops["create"], ops["read"], ops["update"], ops["delete"]
 
-	readSchema, readEnv := g.responseSchema(read)
-	if readSchema == nil {
-		return nil, fmt.Errorf("%s: %s has no JSON response schema", ov.Type, ov.Read)
+	var readSchema map[string]any
+	var readEnv bool
+	var rf *engine.ReadFrom
+	var collection *operation
+	if ov.ReadFrom != nil {
+		var err error
+		if collection, err = g.operation(ov.ReadFrom.Op); err != nil {
+			return nil, fmt.Errorf("%s: read_from: %w", ov.Type, err)
+		}
+		if readSchema, rf, err = g.collection(ov, collection); err != nil {
+			return nil, fmt.Errorf("%s: read_from: %w", ov.Type, err)
+		}
+	} else {
+		readSchema, readEnv = g.responseSchema(read)
+		if readSchema == nil {
+			return nil, fmt.Errorf("%s: %s has no JSON response schema", ov.Type, ov.Read)
+		}
 	}
 	_, createEnv := g.responseSchema(create)
 	src := sources{create: g.requestSchema(create), read: readSchema}
@@ -591,12 +605,15 @@ func (g *Generator) Derive(ov *Override) (*engine.Resource, error) {
 		TypeName:      ov.Type,
 		Description:   ov.Description,
 		Create:        &engine.Op{Method: create.method, Path: create.path, Envelope: createEnv},
-		Read:          &engine.Op{Method: read.method, Path: read.path, Envelope: readEnv},
+		ReadFrom:      rf,
 		Attrs:         attrs,
 		ExactlyOne:    ov.ExactlyOne,
 		DeleteWarning: ov.DeleteWarning,
 		Timeouts:      ov.Timeouts,
-		DataSource:    ov.dataSource(),
+		DataSource:    ov.dataSource() && read != nil,
+	}
+	if read != nil {
+		r.Read = &engine.Op{Method: read.method, Path: read.path, Envelope: readEnv}
 	}
 	if update != nil {
 		_, env := g.responseSchema(update)
@@ -605,7 +622,13 @@ func (g *Generator) Derive(ov *Override) (*engine.Resource, error) {
 	if del != nil {
 		r.Delete = &engine.Op{Method: del.method, Path: del.path}
 	}
-	if err := g.ids(r, ov, create, []*operation{read, update, del}); err != nil {
+	others := []*operation{read, update, del}
+	extra, err := g.extraUpdates(r, ov, d, readSchema)
+	if err != nil {
+		return nil, fmt.Errorf("%s: %w", ov.Type, err)
+	}
+	others = append(others, extra...)
+	if err := g.ids(r, ov, create, others, collection); err != nil {
 		return nil, fmt.Errorf("%s: %w", ov.Type, err)
 	}
 	for _, add := range ov.Add {
@@ -618,15 +641,8 @@ func (g *Generator) Derive(ov *Override) (*engine.Resource, error) {
 			Sensitive: add.Sensitive, ForceNew: add.ForceNew,
 		})
 	}
-	var unused []string
-	for p := range ov.Attributes {
-		if !d.used[p] {
-			unused = append(unused, p)
-		}
-	}
-	if len(unused) > 0 {
-		sort.Strings(unused)
-		return nil, fmt.Errorf("%s: attributes not in the spec: %s", ov.Type, strings.Join(unused, ", "))
+	if err := checkUnused(ov, d); err != nil {
+		return nil, err
 	}
 	for _, group := range ov.ExactlyOne {
 		for _, n := range group {
@@ -639,8 +655,118 @@ func (g *Generator) Derive(ov *Override) (*engine.Resource, error) {
 	return r, nil
 }
 
+// collection returns the schema of one element of the collection an object
+// is read from, shaped like a read response, and the engine's ReadFrom.
+// Plain-value elements become an object with the id field alone.
+func (g *Generator) collection(ov *Override, op *operation) (map[string]any, *engine.ReadFrom, error) {
+	rf := &engine.ReadFrom{Field: ov.ReadFrom.Field, Key: ov.ReadFrom.Key}
+	var item map[string]any
+	if rf.Field == "" {
+		o, err := g.listOp(op, "")
+		if err != nil {
+			return nil, nil, err
+		}
+		rf.Op = o
+		if item, o.Envelope, err = g.listItems(op); err != nil {
+			return nil, nil, err
+		}
+	} else {
+		parent, env := g.responseSchema(op)
+		if parent == nil {
+			return nil, nil, fmt.Errorf("%s %s has no JSON response schema", op.method, op.path)
+		}
+		f := g.norm(properties(parent)[rf.Field])
+		if f == nil || f["type"] != "array" {
+			return nil, nil, fmt.Errorf("%s %s has no array field %s", op.method, op.path, rf.Field)
+		}
+		rf.Op = &engine.Op{Method: op.method, Path: op.path, Envelope: env}
+		item = g.norm(f["items"])
+	}
+	if t, _ := item["type"].(string); t == "object" || properties(item) != nil {
+		if rf.Key == "" {
+			return nil, nil, fmt.Errorf("elements are objects; set key")
+		}
+		if properties(item)[rf.Key] == nil {
+			return nil, nil, fmt.Errorf("elements have no field %s", rf.Key)
+		}
+		return item, rf, nil
+	}
+	if rf.Key != "" {
+		return nil, nil, fmt.Errorf("elements are plain values; leave key empty")
+	}
+	if ov.ID == "" {
+		return nil, nil, fmt.Errorf("elements are plain values; set id to the create field that holds the value")
+	}
+	return map[string]any{"type": "object", "properties": map[string]any{ov.ID: item}}, rf, nil
+}
+
+// extraUpdates derives the attributes each extra update operation sets and
+// records the operations on r. It returns the operations, for their path
+// parameters.
+func (g *Generator) extraUpdates(r *engine.Resource, ov *Override, d *deriver, readSchema map[string]any) ([]*operation, error) {
+	var ops []*operation
+	owner := map[string]string{}
+	for _, u := range ov.Updates {
+		op, err := g.operation(u.Op)
+		if err != nil {
+			return nil, fmt.Errorf("updates: %w", err)
+		}
+		clearOp, err := g.operation(u.Clear)
+		if err != nil {
+			return nil, fmt.Errorf("updates: clear: %w", err)
+		}
+		body := g.requestSchema(op)
+		if body == nil {
+			return nil, fmt.Errorf("updates: %s has no request body", u.Op)
+		}
+		ud := &deriver{g: g, ov: ov, used: d.used, hasUpdate: true}
+		as, err := ud.attrs(sources{update: body, read: readSchema}, 0, false, "")
+		if err != nil {
+			return nil, err
+		}
+		x := engine.ExtraUpdate{Op: &engine.Op{Method: op.method, Path: op.path}}
+		if _, env := g.responseSchema(op); env {
+			x.Op.Envelope = true
+		}
+		if clearOp != nil {
+			x.Clear = &engine.Op{Method: clearOp.method, Path: clearOp.path}
+			ops = append(ops, clearOp)
+		}
+		for _, a := range as {
+			if !a.InUpdate {
+				// Only read returns it.
+				continue
+			}
+			if prev, ok := owner[a.Name]; ok {
+				return nil, fmt.Errorf("updates %s and %s both set %s", prev, u.Op, a.Name)
+			}
+			owner[a.Name] = u.Op
+			// Removing the attribute from configuration must read as null so
+			// that the clear operation runs: optional, never computed.
+			a.Required, a.Optional, a.Computed, a.ForceNew = false, true, false, false
+			a.InCreate, a.InUpdate = false, false
+			if i := slices.IndexFunc(r.Attrs, func(b *engine.Attr) bool { return b.Name == a.Name }); i >= 0 {
+				a.InCreate = r.Attrs[i].InCreate
+				r.Attrs[i] = a
+			} else {
+				r.Attrs = append(r.Attrs, a)
+			}
+			x.Attrs = append(x.Attrs, a.Name)
+		}
+		if len(x.Attrs) == 0 {
+			return nil, fmt.Errorf("updates: %s sets no attributes", u.Op)
+		}
+		sort.Strings(x.Attrs)
+		r.Updates = append(r.Updates, x)
+		ops = append(ops, op)
+	}
+	return ops, nil
+}
+
 // ids wires the id attribute and parent path parameters, and sets Import.
-func (g *Generator) ids(r *engine.Resource, ov *Override, create *operation, others []*operation) error {
+// collection, when set, is the read_from operation: all its path
+// parameters are parents.
+func (g *Generator) ids(r *engine.Resource, ov *Override, create *operation, others []*operation, collection *operation) error {
 	createParams := pathParams(create.path)
 	rename := func(p string) string {
 		if n, ok := ov.PathParams[p]; ok {
@@ -677,7 +803,7 @@ func (g *Generator) ids(r *engine.Resource, ov *Override, create *operation, oth
 		id = parents[i]
 		r.IDAttr = id.Name
 		r.Import = []string{id.Name}
-		for _, op := range others {
+		for _, op := range append(others, collection) {
 			if op == nil {
 				continue
 			}
@@ -692,6 +818,9 @@ func (g *Generator) ids(r *engine.Resource, ov *Override, create *operation, oth
 	}
 
 	field := ov.ID
+	if field == "" && ov.ReadFrom != nil {
+		field = ov.ReadFrom.Key
+	}
 	if field == "" {
 		field = "id"
 	}
@@ -703,17 +832,28 @@ func (g *Generator) ids(r *engine.Resource, ov *Override, create *operation, oth
 	if id == nil {
 		return fmt.Errorf("read response has no %s field; set id or id_from_path", field)
 	}
-	if other := r.Attr("id"); other != nil && other != id {
-		return fmt.Errorf("response field %s is the id, but another attribute is named id; rename it", field)
+	if ov.ReadFrom != nil && ov.ReadFrom.Key == "" {
+		// A plain value is its own id: the user sets it, and a new value is
+		// a new element.
+		if !id.InCreate {
+			return fmt.Errorf("%s is not in the create body", field)
+		}
+		id.Required, id.Optional, id.Computed, id.ForceNew = true, false, false, true
+		id.InUpdate, id.InResponse = false, true
+		id.Kind = engine.KindString
+	} else {
+		if other := r.Attr("id"); other != nil && other != id {
+			return fmt.Errorf("response field %s is the id, but another attribute is named id; rename it", field)
+		}
+		id.Name = "id"
+		id.Required, id.Optional, id.Computed, id.ForceNew = false, false, true, false
+		id.InCreate, id.InUpdate, id.InResponse = false, false, true
+		id.Kind = engine.KindString
+		if id.Description == "" {
+			id.Description = "The object's id."
+		}
 	}
-	id.Name = "id"
-	id.Required, id.Optional, id.Computed, id.ForceNew = false, false, true, false
-	id.InCreate, id.InUpdate, id.InResponse = false, false, true
-	id.Kind = engine.KindString
-	if id.Description == "" {
-		id.Description = "The object's id."
-	}
-	r.IDAttr = "id"
+	r.IDAttr = id.Name
 	for _, op := range others {
 		if op == nil {
 			continue
@@ -735,9 +875,19 @@ func (g *Generator) ids(r *engine.Resource, ov *Override, create *operation, oth
 			}
 		}
 	}
+	if collection != nil {
+		for j, p := range pathParams(collection.path) {
+			if j >= len(parents) {
+				return fmt.Errorf("%s %s has a parameter %s that create does not", collection.method, collection.path, p)
+			}
+			if !slices.Contains(parents[j].PathParams, p) {
+				parents[j].PathParams = append(parents[j].PathParams, p)
+			}
+		}
+	}
 	for _, p := range parents {
 		r.Import = append(r.Import, p.Name)
 	}
-	r.Import = append(r.Import, "id")
+	r.Import = append(r.Import, r.IDAttr)
 	return nil
 }

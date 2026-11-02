@@ -160,7 +160,12 @@ func (r *frameworkResource) Create(ctx context.Context, req resource.CreateReque
 		}
 	}
 
-	if d.Read != nil && d.Read != d.Create {
+	if err := r.extraUpdates(ctx, plan, nil, vals); err != nil {
+		resp.Diagnostics.AddError("Unable to update "+d.TypeName+" after create", err.Error())
+		return
+	}
+
+	if d.ReadFrom != nil || d.Read != nil && d.Read != d.Create {
 		obj, err = r.get(ctx, vals)
 		if err != nil {
 			resp.Diagnostics.AddError("Unable to read "+d.TypeName+" after create", err.Error())
@@ -205,13 +210,13 @@ func (r *frameworkResource) Update(ctx context.Context, req resource.UpdateReque
 	plan := fields(req.Plan.Raw)
 	state := fields(req.State.Raw)
 	d := r.d
-	if d.Update == nil {
+	if d.Update == nil && len(d.Updates) == 0 {
 		resp.Diagnostics.AddError("Update not supported", d.TypeName+" cannot be updated in place; this is a provider bug.")
 		return
 	}
 
 	include := func(a *Attr) bool { return a.InUpdate }
-	if d.Update.Method != http.MethodPut {
+	if d.Update != nil && d.Update.Method != http.MethodPut {
 		include = func(a *Attr) bool {
 			p, s := plan[a.Name], state[a.Name]
 			return a.InUpdate && !p.Equal(s)
@@ -228,7 +233,7 @@ func (r *frameworkResource) Update(ctx context.Context, req resource.UpdateReque
 		}
 	}
 	clearRemoved := func(body Object) {
-		if d.Update.Method == http.MethodPut {
+		if d.Update == nil || d.Update.Method == http.MethodPut {
 			return
 		}
 		// A value removed from configuration is cleared explicitly; leaving
@@ -241,14 +246,18 @@ func (r *frameworkResource) Update(ctx context.Context, req resource.UpdateReque
 	}
 	var obj Object
 	var err error
-	if d.Update.Method == http.MethodPut || r.changed(plan, state) {
+	if d.Update != nil && (d.Update.Method == http.MethodPut || r.changed(plan, state)) {
 		obj, err = r.sendBody(ctx, d.Update, plan, "update", include, pathVals, clearRemoved)
 		if err != nil {
 			resp.Diagnostics.AddError("Unable to update "+d.TypeName, err.Error())
 			return
 		}
 	}
-	if d.Read != nil {
+	if err := r.extraUpdates(ctx, plan, state, pathVals); err != nil {
+		resp.Diagnostics.AddError("Unable to update "+d.TypeName, err.Error())
+		return
+	}
+	if d.Read != nil || d.ReadFrom != nil {
 		if obj, err = r.get(ctx, pathVals); err != nil {
 			resp.Diagnostics.AddError("Unable to read "+d.TypeName+" after update", err.Error())
 			return
@@ -273,7 +282,7 @@ func (r *frameworkResource) Delete(ctx context.Context, req resource.DeleteReque
 		return
 	}
 	state := fields(req.State.Raw)
-	p, err := fillPath(d, d.Delete.Path, state)
+	p, err := fillPath(d.Attrs, d.Delete.Path, state)
 	if err == nil {
 		_, err = r.c.Send(ctx, d.Delete.Method, p, nil, "", nil)
 	}
@@ -320,6 +329,45 @@ func (r *frameworkResource) changed(plan, state Values) bool {
 	return false
 }
 
+// extraUpdates sends the extra update operations whose attributes are set
+// (on create, when state is nil) or changed. When an operation's attributes
+// were all removed and it has a clear operation, that is sent instead.
+func (r *frameworkResource) extraUpdates(ctx context.Context, plan, state Values, pathVals Values) error {
+	for _, u := range r.d.Updates {
+		var set, changed bool
+		for _, n := range u.Attrs {
+			p := plan[n]
+			if p.IsKnown() && !p.IsNull() {
+				set = true
+			}
+			if state == nil || !p.Equal(state[n]) {
+				changed = true
+			}
+		}
+		if state == nil && !set || !changed {
+			continue
+		}
+		if !set {
+			if u.Clear == nil {
+				continue
+			}
+			p, err := fillPath(r.d.Attrs, u.Clear.Path, pathVals)
+			if err != nil {
+				return err
+			}
+			if _, err := r.c.Send(ctx, u.Clear.Method, p, nil, "", nil); err != nil {
+				return err
+			}
+			continue
+		}
+		include := func(a *Attr) bool { return slices.Contains(u.Attrs, a.Name) }
+		if _, err := r.send(ctx, u.Op, plan, "update", include, pathVals); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
 // send builds a request body from the selected attributes and sends op.
 func (r *frameworkResource) send(ctx context.Context, op *Op, plan Values, name string, include func(*Attr) bool, pathVals Values) (Object, error) {
 	return r.sendBody(ctx, op, plan, name, include, pathVals, nil)
@@ -339,7 +387,7 @@ func (r *frameworkResource) sendBody(ctx context.Context, op *Op, plan Values, n
 			return nil, err
 		}
 	}
-	p, err := fillPath(r.d, op.Path, pathVals)
+	p, err := fillPath(r.d.Attrs, op.Path, pathVals)
 	if err != nil {
 		return nil, err
 	}
@@ -362,7 +410,10 @@ func (r *frameworkResource) get(ctx context.Context, vals Values) (Object, error
 // Get reads an object with the descriptor's read operation. Hooks use it to
 // poll.
 func Get(ctx context.Context, c *client.Client, d *Resource, vals Values) (Object, error) {
-	p, err := fillPath(d, d.Read.Path, vals)
+	if d.ReadFrom != nil {
+		return readFrom(ctx, c, d, vals)
+	}
+	p, err := fillPath(d.Attrs, d.Read.Path, vals)
 	if err != nil {
 		return nil, err
 	}
@@ -402,7 +453,7 @@ func (r *frameworkResource) toState(ctx context.Context, obj Object, prior Value
 
 // fillPath substitutes {param} placeholders from the attributes that carry
 // those path parameters.
-func fillPath(d *Resource, p string, vals Values) (string, error) {
+func fillPath(attrs []*Attr, p string, vals Values) (string, error) {
 	var b strings.Builder
 	for {
 		i := strings.Index(p, "{")
@@ -416,7 +467,7 @@ func fillPath(d *Resource, p string, vals Values) (string, error) {
 		}
 		param := p[i+1 : i+j]
 		var attr *Attr
-		for _, a := range d.Attrs {
+		for _, a := range attrs {
 			if slices.Contains(a.PathParams, param) {
 				attr = a
 			}

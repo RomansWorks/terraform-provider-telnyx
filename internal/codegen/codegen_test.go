@@ -30,17 +30,29 @@ func fixture(t *testing.T) *Generator {
 // testdata/golden. Run with -update after an intended change.
 func TestGolden(t *testing.T) {
 	out := t.TempDir()
-	rs, err := Run(fixture(t), "testdata/overrides", out, "generated")
+	rs, ls, err := Run(fixture(t), "testdata/overrides", out, "generated")
 	if err != nil {
 		t.Fatal(err)
 	}
-	if len(rs) != 2 {
-		t.Fatalf("got %d resources", len(rs))
+	if len(rs) != 6 || len(ls) != 2 {
+		t.Fatalf("got %d resources and %d lists", len(rs), len(ls))
 	}
 	ctx := context.Background()
 	for _, r := range rs {
-		if diags := r.ResourceSchema(ctx).ValidateImplementation(ctx); diags.HasError() {
-			t.Errorf("%s: %v", r.TypeName, diags)
+		if !r.NoResource {
+			if diags := r.ResourceSchema(ctx).ValidateImplementation(ctx); diags.HasError() {
+				t.Errorf("%s: %v", r.TypeName, diags)
+			}
+		}
+		if r.DataSource {
+			if diags := r.DataSourceSchema().ValidateImplementation(ctx); diags.HasError() {
+				t.Errorf("%s data source: %v", r.TypeName, diags)
+			}
+		}
+	}
+	for _, l := range ls {
+		if diags := l.Schema().ValidateImplementation(ctx); diags.HasError() {
+			t.Errorf("%s: %v", l.TypeName, diags)
 		}
 	}
 	files, _ := filepath.Glob(filepath.Join(out, "*.go"))
@@ -66,7 +78,7 @@ func TestGolden(t *testing.T) {
 func TestRunIsDeterministic(t *testing.T) {
 	a, b := t.TempDir(), t.TempDir()
 	for _, dir := range []string{a, b} {
-		if _, err := Run(fixture(t), "testdata/overrides", dir, "generated"); err != nil {
+		if _, _, err := Run(fixture(t), "testdata/overrides", dir, "generated"); err != nil {
 			t.Fatal(err)
 		}
 	}
@@ -230,3 +242,122 @@ const (
 	kindList   = engine.KindList
 	kindObject = engine.KindObject
 )
+
+func TestCollectionShapes(t *testing.T) {
+	g := fixture(t)
+	load := func(name string) *Override {
+		ov, err := LoadOverride("testdata/overrides/" + name + ".yaml")
+		if err != nil {
+			t.Fatal(err)
+		}
+		return ov
+	}
+	r, l, err := g.DeriveAll(load("gadget"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if l.TypeName != "telnyx_gadgets" || l.Op.Paging != engine.PagingNumber || l.Op.PageSize != 100 {
+		t.Errorf("list: %+v %+v", l, l.Op)
+	}
+	var params []string
+	for _, p := range l.Params {
+		params = append(params, p.Name+"="+p.JSON)
+	}
+	if got := strings.Join(params, " "); got != "filter_name=filter[name][eq] filter_name_contains=filter[name][contains] filter_status=filter[status] filter_tag=filter[tag] sort=sort" {
+		t.Errorf("params: %s", got)
+	}
+	if u := r.Updates; len(u) != 1 || strings.Join(u[0].Attrs, ",") != "blocklist_id" || u[0].Clear == nil {
+		t.Errorf("updates: %+v", u)
+	}
+	if b := r.Attr("blocklist_id"); !b.Optional || b.Computed || b.ForceNew || b.InUpdate || b.InCreate {
+		t.Errorf("blocklist_id: %+v", b)
+	}
+
+	tag, _, err := g.DeriveAll(load("gadget_tag"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if a := tag.Attr("tag"); tag.IDAttr != "tag" || !a.Required || !a.ForceNew || !a.InCreate || tag.DataSource {
+		t.Errorf("tag: %+v %+v", tag, a)
+	}
+	if strings.Join(tag.Import, "/") != "gadget_id/tag" || tag.ReadFrom.Field != "tags" || tag.Read != nil {
+		t.Errorf("tag: %+v", tag)
+	}
+
+	sec, _, err := g.DeriveAll(load("secret"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if sec.ReadFrom.Op.Paging != engine.PagingFlat || sec.ReadFrom.Op.PageSize != 50 || sec.ReadFrom.Key != "id" {
+		t.Errorf("secret read_from: %+v %+v", sec.ReadFrom, sec.ReadFrom.Op)
+	}
+
+	bal, l, err := g.DeriveAll(load("balance"))
+	if err != nil || l != nil || !bal.NoResource || !bal.DataSource || !bal.Attr("currency").Computed {
+		t.Errorf("balance: %+v %+v %v", bal, l, err)
+	}
+	reg, l, err := g.DeriveAll(load("regions"))
+	if err != nil || reg != nil || l.TypeName != "telnyx_regions" || l.Items.Elem.Kind != engine.KindString ||
+		l.Op.Paging != engine.PagingNumber || l.Op.PageSize != 10 {
+		t.Errorf("regions: %+v %+v %v", reg, l, err)
+	}
+}
+
+func TestCollectionErrors(t *testing.T) {
+	g := fixture(t)
+	cases := map[string]string{
+		"unsupported paging":       "type: telnyx_x\nkind: data_source\ndescription: x\nlist: GET /cursor_things\n",
+		"read and read_from":       "type: telnyx_x\ndescription: x\ncreate: POST /secrets\nread: GET /widgets/{widget_id}\nread_from: {op: GET /secrets, key: id}\n",
+		"object elements, no key":  "type: telnyx_x\ndescription: x\ncreate: POST /secrets\nread_from: {op: GET /secrets}\n",
+		"plain values with key":    "type: telnyx_x\ndescription: x\ncreate: POST /gadgets/{gadget_id}/tags\nid: tag\nread_from: {op: \"GET /gadgets/{gadget_id}\", field: tags, key: id}\n",
+		"plain values, no id":      "type: telnyx_x\ndescription: x\ncreate: POST /gadgets/{gadget_id}/tags\nread_from: {op: \"GET /gadgets/{gadget_id}\", field: tags}\n",
+		"not an array field":       "type: telnyx_x\ndescription: x\ncreate: POST /gadgets/{gadget_id}/tags\nid: tag\nread_from: {op: \"GET /gadgets/{gadget_id}\", field: name}\n",
+		"update without body":      "type: telnyx_x\ndescription: x\ncreate: POST /gadgets\nread: GET /gadgets/{gadget_id}\nupdates: [{op: \"POST /gadgets/{gadget_id}/actions/remove_blocklist\"}]\n",
+		"data source with create":  "type: telnyx_x\nkind: data_source\ndescription: x\ncreate: POST /gadgets\nread: GET /gadgets/{gadget_id}\n",
+		"bad paging value":         "type: telnyx_x\nkind: data_source\ndescription: x\nlist: GET /regions\npaging: cursor\n",
+		"list_name without list":   "type: telnyx_x\ndescription: x\ncreate: POST /gadgets\nread: GET /gadgets/{gadget_id}\nlist_name: telnyx_xs\n",
+		"list not returning array": "type: telnyx_x\nkind: data_source\ndescription: x\nlist: GET /balance\n",
+	}
+	for name, body := range cases {
+		p := filepath.Join(t.TempDir(), "x.yaml")
+		if err := os.WriteFile(p, []byte(body), 0o644); err != nil {
+			t.Fatal(err)
+		}
+		ov, err := LoadOverride(p)
+		if err == nil {
+			_, _, err = g.DeriveAll(ov)
+		}
+		if err == nil {
+			t.Errorf("%s: want an error", name)
+		} else {
+			t.Logf("%s: %v", name, err)
+		}
+	}
+
+	// paging: none reads one page of a list the engine cannot page.
+	p := filepath.Join(t.TempDir(), "x.yaml")
+	_ = os.WriteFile(p, []byte("type: telnyx_x\nkind: data_source\ndescription: x\nlist: GET /cursor_things\npaging: none\n"), 0o644)
+	ov, err := LoadOverride(p)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, l, err := g.DeriveAll(ov); err != nil || l.Op.Paging != engine.PagingNone {
+		t.Errorf("paging none: %+v %v", l, err)
+	}
+}
+
+func TestPlural(t *testing.T) {
+	for in, want := range map[string]string{
+		"telnyx_billing_group":    "telnyx_billing_groups",
+		"telnyx_address":          "telnyx_addresses",
+		"telnyx_policy":           "telnyx_policies",
+		"telnyx_gateway":          "telnyx_gateways",
+		"telnyx_voice_settings":   "telnyx_voice_settings",
+		"telnyx_messaging_box":    "telnyx_messaging_boxes",
+		"telnyx_ai_assistant_tag": "telnyx_ai_assistant_tags",
+	} {
+		if got := Plural(in); got != want {
+			t.Errorf("Plural(%s) = %s", in, got)
+		}
+	}
+}

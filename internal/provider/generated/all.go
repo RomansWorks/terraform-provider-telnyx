@@ -16,3 +16,15 @@ func All() []*engine.Resource {
 		PhoneNumberVoiceSettings(),
 	}
 }
+
+// Lists returns a fresh copy of every generated list descriptor.
+func Lists() []*engine.List {
+	return []*engine.List{
+		AIAssistantsList(),
+		AIAvatarsList(),
+		AIMCPServersList(),
+		AIToolsList(),
+		NumberOrdersList(),
+		OutboundVoiceProfilesList(),
+	}
+}

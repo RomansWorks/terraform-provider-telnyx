@@ -17,6 +17,7 @@ import (
 
 	"github.com/RomansWorks/terraform-provider-telnyx/internal/client"
 	"github.com/RomansWorks/terraform-provider-telnyx/internal/engine"
+	"github.com/RomansWorks/terraform-provider-telnyx/internal/provider/generated"
 )
 
 var _ provider.Provider = &TelnyxProvider{}
@@ -112,7 +113,9 @@ func (p *TelnyxProvider) Configure(ctx context.Context, req provider.ConfigureRe
 func (p *TelnyxProvider) Resources(ctx context.Context) []func() resource.Resource {
 	var out []func() resource.Resource
 	for _, d := range descriptors() {
-		out = append(out, engine.NewResource(d))
+		if !d.NoResource {
+			out = append(out, engine.NewResource(d))
+		}
 	}
 	return out
 }
@@ -123,6 +126,9 @@ func (p *TelnyxProvider) DataSources(ctx context.Context) []func() datasource.Da
 		if d.DataSource {
 			out = append(out, engine.NewDataSource(d))
 		}
+	}
+	for _, l := range generated.Lists() {
+		out = append(out, engine.NewListDataSource(l))
 	}
 	return out
 }

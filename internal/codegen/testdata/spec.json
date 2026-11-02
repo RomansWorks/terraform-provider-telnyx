@@ -1,92 +1,1084 @@
 {
-  "openapi": "3.1.0",
-  "info": {"title": "Codegen fixture", "version": "1"},
-  "paths": {
-    "/widgets": {
-      "post": {
-        "requestBody": {"content": {"application/json": {"schema": {"$ref": "#/components/schemas/WidgetCreate"}}}},
-        "responses": {"200": {"$ref": "#/components/responses/Widget"}}
+ "openapi": "3.1.0",
+ "info": {
+  "title": "Codegen fixture",
+  "version": "1"
+ },
+ "paths": {
+  "/widgets": {
+   "post": {
+    "requestBody": {
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/WidgetCreate"
+       }
       }
+     }
     },
-    "/widgets/{widget_id}": {
-      "get": {"responses": {"200": {"$ref": "#/components/responses/Widget"}}},
-      "patch": {
-        "requestBody": {"content": {"application/json": {"schema": {"$ref": "#/components/schemas/WidgetUpdate"}}}},
-        "responses": {"200": {"$ref": "#/components/responses/Widget"}}
-      },
-      "delete": {"responses": {"204": {"description": "deleted"}}}
-    },
-    "/folders/{folder_id}/notes": {
-      "post": {
-        "requestBody": {"content": {"application/json": {"schema": {"type": "object", "required": ["text"], "properties": {"text": {"type": "string"}, "count": {"type": "integer"}}}}}},
-        "responses": {"201": {"content": {"application/json": {"schema": {"$ref": "#/components/schemas/Note"}}}}}
-      }
-    },
-    "/folders/{folder_id}/notes/{note_id}": {
-      "get": {"responses": {"200": {"content": {"application/json": {"schema": {"$ref": "#/components/schemas/Note"}}}}}},
-      "put": {
-        "requestBody": {"content": {"application/json": {"schema": {"$ref": "#/components/schemas/Note"}}}},
-        "responses": {"200": {"content": {"application/json": {"schema": {"$ref": "#/components/schemas/Note"}}}}}
-      }
-    }
-  },
-  "components": {
     "responses": {
-      "Widget": {"description": "ok", "content": {"application/json": {"schema": {"type": "object", "properties": {"data": {"$ref": "#/components/schemas/Widget"}}}}}}
-    },
-    "schemas": {
-      "WidgetCreate": {
-        "type": "object",
-        "required": ["name"],
-        "properties": {
-          "name": {"type": "string", "description": "The   widget's\nname."},
-          "color": {"type": "string", "enum": ["red", "blue"]},
-          "size": {"type": ["integer", "null"]},
-          "region": {"type": "string", "description": "Where it lives; cannot change."},
-          "secret": {"type": "string", "writeOnly": true},
-          "labels": {"type": "object", "additionalProperties": {"type": "string"}},
-          "tools": {"type": "array", "items": {"oneOf": [{"$ref": "#/components/schemas/WebhookTool"}, {"$ref": "#/components/schemas/HangupTool"}]}},
-          "target": {"anyOf": [{"type": "string"}, {"type": "integer"}]},
-          "avatar": {"anyOf": [{"$ref": "#/components/schemas/Avatar"}, {"type": "null"}]},
-          "deep": {"$ref": "#/components/schemas/Level1"},
-          "matrix": {"type": "array", "items": {"type": "array", "items": {"type": "number"}}},
-          "old_flag": {"type": "boolean", "deprecated": true},
-          "count": {"type": "integer"}
-        }
-      },
-      "WidgetUpdate": {
-        "type": "object",
-        "properties": {
-          "name": {"type": "string"},
-          "color": {"type": "string", "enum": ["red", "blue", "green"]},
-          "size": {"type": ["integer", "null"]},
-          "secret": {"type": "string", "writeOnly": true},
-          "labels": {"type": "object", "additionalProperties": {"type": "string"}},
-          "tools": {"type": "array", "items": {"oneOf": [{"$ref": "#/components/schemas/WebhookTool"}, {"$ref": "#/components/schemas/HangupTool"}]}},
-          "target": {"anyOf": [{"type": "string"}, {"type": "integer"}]},
-          "avatar": {"anyOf": [{"$ref": "#/components/schemas/Avatar"}, {"type": "null"}]},
-          "deep": {"$ref": "#/components/schemas/Level1"},
-          "matrix": {"type": "array", "items": {"type": "array", "items": {"type": "number"}}},
-          "old_flag": {"type": "boolean", "deprecated": true},
-          "count": {"type": "integer"},
-          "publish": {"type": "boolean", "description": "Publish after saving."}
-        }
-      },
-      "Widget": {
-        "allOf": [
-          {"$ref": "#/components/schemas/WidgetCreate"},
-          {"type": "object", "properties": {
-            "id": {"type": "string", "readOnly": true},
-            "created_at": {"type": "string", "format": "date-time"},
-            "status": {"type": "string", "enum": ["pending", "ready"]}
-          }}
-        ]
-      },
-      "WebhookTool": {"type": "object", "required": ["type", "webhook"], "properties": {"type": {"type": "string", "enum": ["webhook"]}, "webhook": {"type": "object", "properties": {"url": {"type": "string"}}}}},
-      "HangupTool": {"type": "object", "required": ["type"], "properties": {"type": {"type": "string", "const": "hangup"}, "hangup": {"type": "object", "additionalProperties": true}}},
-      "Avatar": {"type": "object", "properties": {"avatar_id": {"type": "string"}}},
-      "Level1": {"type": "object", "properties": {"level2": {"type": "object", "properties": {"level3": {"type": "object", "properties": {"level4": {"type": "object", "properties": {"leaf": {"type": "string"}}}}}}}}},
-      "Note": {"type": "object", "properties": {"id": {"type": "string"}, "text": {"type": "string"}, "count": {"type": "integer"}, "created_at": {"type": "string"}}}
+     "200": {
+      "$ref": "#/components/responses/Widget"
+     }
     }
+   }
+  },
+  "/widgets/{widget_id}": {
+   "get": {
+    "responses": {
+     "200": {
+      "$ref": "#/components/responses/Widget"
+     }
+    }
+   },
+   "patch": {
+    "requestBody": {
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/WidgetUpdate"
+       }
+      }
+     }
+    },
+    "responses": {
+     "200": {
+      "$ref": "#/components/responses/Widget"
+     }
+    }
+   },
+   "delete": {
+    "responses": {
+     "204": {
+      "description": "deleted"
+     }
+    }
+   }
+  },
+  "/folders/{folder_id}/notes": {
+   "post": {
+    "requestBody": {
+     "content": {
+      "application/json": {
+       "schema": {
+        "type": "object",
+        "required": [
+         "text"
+        ],
+        "properties": {
+         "text": {
+          "type": "string"
+         },
+         "count": {
+          "type": "integer"
+         }
+        }
+       }
+      }
+     }
+    },
+    "responses": {
+     "201": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/Note"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/folders/{folder_id}/notes/{note_id}": {
+   "get": {
+    "responses": {
+     "200": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/Note"
+        }
+       }
+      }
+     }
+    }
+   },
+   "put": {
+    "requestBody": {
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/Note"
+       }
+      }
+     }
+    },
+    "responses": {
+     "200": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/Note"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/gadgets": {
+   "post": {
+    "requestBody": {
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/GadgetCreate"
+       }
+      }
+     }
+    },
+    "responses": {
+     "200": {
+      "description": "ok",
+      "content": {
+       "application/json": {
+        "schema": {
+         "type": "object",
+         "properties": {
+          "data": {
+           "$ref": "#/components/schemas/Gadget"
+          }
+         }
+        }
+       }
+      }
+     }
+    }
+   },
+   "get": {
+    "parameters": [
+     {
+      "name": "page",
+      "in": "query",
+      "style": "deepObject",
+      "schema": {
+       "type": "object",
+       "properties": {
+        "number": {
+         "type": "integer"
+        },
+        "size": {
+         "type": "integer",
+         "maximum": 100
+        }
+       }
+      }
+     },
+     {
+      "name": "filter",
+      "in": "query",
+      "style": "deepObject",
+      "schema": {
+       "type": "object",
+       "properties": {
+        "name": {
+         "type": "object",
+         "properties": {
+          "eq": {
+           "type": "string",
+           "description": "Exact name."
+          },
+          "contains": {
+           "type": "string"
+          }
+         }
+        },
+        "status": {
+         "type": "string",
+         "enum": [
+          "on",
+          "off"
+         ]
+        }
+       }
+      }
+     },
+     {
+      "name": "filter[tag]",
+      "in": "query",
+      "schema": {
+       "type": "array",
+       "items": {
+        "type": "string"
+       }
+      }
+     },
+     {
+      "name": "sort",
+      "in": "query",
+      "schema": {
+       "type": "string"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "ok",
+      "content": {
+       "application/json": {
+        "schema": {
+         "type": "object",
+         "properties": {
+          "data": {
+           "type": "array",
+           "items": {
+            "$ref": "#/components/schemas/Gadget"
+           }
+          },
+          "meta": {
+           "type": "object",
+           "properties": {
+            "total_pages": {
+             "type": "integer"
+            }
+           }
+          }
+         }
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/gadgets/{gadget_id}": {
+   "parameters": [
+    {
+     "name": "gadget_id",
+     "in": "path",
+     "required": true,
+     "schema": {
+      "type": "string"
+     }
+    }
+   ],
+   "get": {
+    "responses": {
+     "200": {
+      "description": "ok",
+      "content": {
+       "application/json": {
+        "schema": {
+         "type": "object",
+         "properties": {
+          "data": {
+           "$ref": "#/components/schemas/Gadget"
+          }
+         }
+        }
+       }
+      }
+     }
+    }
+   },
+   "patch": {
+    "requestBody": {
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/GadgetCreate"
+       }
+      }
+     }
+    },
+    "responses": {
+     "200": {
+      "description": "ok",
+      "content": {
+       "application/json": {
+        "schema": {
+         "type": "object",
+         "properties": {
+          "data": {
+           "$ref": "#/components/schemas/Gadget"
+          }
+         }
+        }
+       }
+      }
+     }
+    }
+   },
+   "delete": {
+    "responses": {
+     "204": {
+      "description": "gone"
+     }
+    }
+   }
+  },
+  "/gadgets/{gadget_id}/actions/set_blocklist": {
+   "parameters": [
+    {
+     "name": "gadget_id",
+     "in": "path",
+     "required": true,
+     "schema": {
+      "type": "string"
+     }
+    }
+   ],
+   "post": {
+    "requestBody": {
+     "content": {
+      "application/json": {
+       "schema": {
+        "type": "object",
+        "properties": {
+         "blocklist_id": {
+          "type": "string"
+         }
+        }
+       }
+      }
+     }
+    },
+    "responses": {
+     "200": {
+      "description": "ok",
+      "content": {
+       "application/json": {
+        "schema": {
+         "type": "object",
+         "properties": {
+          "data": {
+           "$ref": "#/components/schemas/Gadget"
+          }
+         }
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/gadgets/{gadget_id}/actions/remove_blocklist": {
+   "parameters": [
+    {
+     "name": "gadget_id",
+     "in": "path",
+     "required": true,
+     "schema": {
+      "type": "string"
+     }
+    }
+   ],
+   "post": {
+    "responses": {
+     "200": {
+      "description": "ok",
+      "content": {
+       "application/json": {
+        "schema": {
+         "type": "object",
+         "properties": {
+          "data": {
+           "$ref": "#/components/schemas/Gadget"
+          }
+         }
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/gadgets/{gadget_id}/tags": {
+   "parameters": [
+    {
+     "name": "gadget_id",
+     "in": "path",
+     "required": true,
+     "schema": {
+      "type": "string"
+     }
+    }
+   ],
+   "post": {
+    "requestBody": {
+     "content": {
+      "application/json": {
+       "schema": {
+        "type": "object",
+        "required": [
+         "tag"
+        ],
+        "properties": {
+         "tag": {
+          "type": "string",
+          "description": "The tag."
+         }
+        }
+       }
+      }
+     }
+    },
+    "responses": {
+     "200": {
+      "description": "ok",
+      "content": {
+       "application/json": {
+        "schema": {
+         "type": "object",
+         "properties": {
+          "data": {
+           "$ref": "#/components/schemas/Gadget"
+          }
+         }
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/gadgets/{gadget_id}/tags/{tag}": {
+   "parameters": [
+    {
+     "name": "gadget_id",
+     "in": "path",
+     "required": true,
+     "schema": {
+      "type": "string"
+     }
+    },
+    {
+     "name": "tag",
+     "in": "path",
+     "required": true,
+     "schema": {
+      "type": "string"
+     }
+    }
+   ],
+   "delete": {
+    "responses": {
+     "200": {
+      "description": "ok",
+      "content": {
+       "application/json": {
+        "schema": {
+         "type": "object",
+         "properties": {
+          "data": {
+           "$ref": "#/components/schemas/Gadget"
+          }
+         }
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/secrets": {
+   "post": {
+    "requestBody": {
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/Secret"
+       }
+      }
+     }
+    },
+    "responses": {
+     "200": {
+      "description": "ok",
+      "content": {
+       "application/json": {
+        "schema": {
+         "type": "object",
+         "properties": {
+          "data": {
+           "$ref": "#/components/schemas/Secret"
+          }
+         }
+        }
+       }
+      }
+     }
+    }
+   },
+   "get": {
+    "parameters": [
+     {
+      "name": "page_number",
+      "in": "query",
+      "schema": {
+       "type": "integer"
+      }
+     },
+     {
+      "name": "page_size",
+      "in": "query",
+      "schema": {
+       "type": "integer",
+       "maximum": 50
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "ok",
+      "content": {
+       "application/json": {
+        "schema": {
+         "type": "object",
+         "properties": {
+          "data": {
+           "type": "array",
+           "items": {
+            "$ref": "#/components/schemas/Secret"
+           }
+          },
+          "meta": {
+           "type": "object",
+           "properties": {
+            "total_pages": {
+             "type": "integer"
+            }
+           }
+          }
+         }
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/secrets/{id}": {
+   "delete": {
+    "parameters": [
+     {
+      "name": "id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "string"
+      }
+     }
+    ],
+    "responses": {
+     "204": {
+      "description": "gone"
+     }
+    }
+   }
+  },
+  "/regions": {
+   "get": {
+    "responses": {
+     "200": {
+      "description": "ok",
+      "content": {
+       "application/json": {
+        "schema": {
+         "type": "object",
+         "properties": {
+          "data": {
+           "type": "array",
+           "items": {
+            "type": "string"
+           }
+          },
+          "meta": {
+           "type": "object",
+           "properties": {
+            "total_pages": {
+             "type": "integer"
+            }
+           }
+          }
+         }
+        }
+       }
+      }
+     }
+    },
+    "parameters": [
+     {
+      "name": "page[number]",
+      "in": "query",
+      "schema": {
+       "type": "integer"
+      }
+     },
+     {
+      "name": "page[size]",
+      "in": "query",
+      "schema": {
+       "type": "integer",
+       "maximum": 10
+      }
+     }
+    ]
+   }
+  },
+  "/balance": {
+   "get": {
+    "responses": {
+     "200": {
+      "description": "ok",
+      "content": {
+       "application/json": {
+        "schema": {
+         "type": "object",
+         "properties": {
+          "data": {
+           "type": "object",
+           "properties": {
+            "balance": {
+             "type": "string"
+            },
+            "currency": {
+             "type": "string"
+            }
+           }
+          }
+         }
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/cursor_things": {
+   "get": {
+    "parameters": [
+     {
+      "name": "page",
+      "in": "query",
+      "style": "deepObject",
+      "schema": {
+       "type": "object",
+       "properties": {
+        "after": {
+         "type": "string"
+        }
+       }
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "ok",
+      "content": {
+       "application/json": {
+        "schema": {
+         "type": "object",
+         "properties": {
+          "data": {
+           "type": "array",
+           "items": {
+            "type": "object",
+            "properties": {
+             "id": {
+              "type": "string"
+             }
+            }
+           }
+          },
+          "meta": {
+           "type": "object",
+           "properties": {
+            "total_pages": {
+             "type": "integer"
+            }
+           }
+          }
+         }
+        }
+       }
+      }
+     }
+    }
+   }
   }
+ },
+ "components": {
+  "responses": {
+   "Widget": {
+    "description": "ok",
+    "content": {
+     "application/json": {
+      "schema": {
+       "type": "object",
+       "properties": {
+        "data": {
+         "$ref": "#/components/schemas/Widget"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "schemas": {
+   "WidgetCreate": {
+    "type": "object",
+    "required": [
+     "name"
+    ],
+    "properties": {
+     "name": {
+      "type": "string",
+      "description": "The   widget's\nname."
+     },
+     "color": {
+      "type": "string",
+      "enum": [
+       "red",
+       "blue"
+      ]
+     },
+     "size": {
+      "type": [
+       "integer",
+       "null"
+      ]
+     },
+     "region": {
+      "type": "string",
+      "description": "Where it lives; cannot change."
+     },
+     "secret": {
+      "type": "string",
+      "writeOnly": true
+     },
+     "labels": {
+      "type": "object",
+      "additionalProperties": {
+       "type": "string"
+      }
+     },
+     "tools": {
+      "type": "array",
+      "items": {
+       "oneOf": [
+        {
+         "$ref": "#/components/schemas/WebhookTool"
+        },
+        {
+         "$ref": "#/components/schemas/HangupTool"
+        }
+       ]
+      }
+     },
+     "target": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "integer"
+       }
+      ]
+     },
+     "avatar": {
+      "anyOf": [
+       {
+        "$ref": "#/components/schemas/Avatar"
+       },
+       {
+        "type": "null"
+       }
+      ]
+     },
+     "deep": {
+      "$ref": "#/components/schemas/Level1"
+     },
+     "matrix": {
+      "type": "array",
+      "items": {
+       "type": "array",
+       "items": {
+        "type": "number"
+       }
+      }
+     },
+     "old_flag": {
+      "type": "boolean",
+      "deprecated": true
+     },
+     "count": {
+      "type": "integer"
+     }
+    }
+   },
+   "WidgetUpdate": {
+    "type": "object",
+    "properties": {
+     "name": {
+      "type": "string"
+     },
+     "color": {
+      "type": "string",
+      "enum": [
+       "red",
+       "blue",
+       "green"
+      ]
+     },
+     "size": {
+      "type": [
+       "integer",
+       "null"
+      ]
+     },
+     "secret": {
+      "type": "string",
+      "writeOnly": true
+     },
+     "labels": {
+      "type": "object",
+      "additionalProperties": {
+       "type": "string"
+      }
+     },
+     "tools": {
+      "type": "array",
+      "items": {
+       "oneOf": [
+        {
+         "$ref": "#/components/schemas/WebhookTool"
+        },
+        {
+         "$ref": "#/components/schemas/HangupTool"
+        }
+       ]
+      }
+     },
+     "target": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "integer"
+       }
+      ]
+     },
+     "avatar": {
+      "anyOf": [
+       {
+        "$ref": "#/components/schemas/Avatar"
+       },
+       {
+        "type": "null"
+       }
+      ]
+     },
+     "deep": {
+      "$ref": "#/components/schemas/Level1"
+     },
+     "matrix": {
+      "type": "array",
+      "items": {
+       "type": "array",
+       "items": {
+        "type": "number"
+       }
+      }
+     },
+     "old_flag": {
+      "type": "boolean",
+      "deprecated": true
+     },
+     "count": {
+      "type": "integer"
+     },
+     "publish": {
+      "type": "boolean",
+      "description": "Publish after saving."
+     }
+    }
+   },
+   "Widget": {
+    "allOf": [
+     {
+      "$ref": "#/components/schemas/WidgetCreate"
+     },
+     {
+      "type": "object",
+      "properties": {
+       "id": {
+        "type": "string",
+        "readOnly": true
+       },
+       "created_at": {
+        "type": "string",
+        "format": "date-time"
+       },
+       "status": {
+        "type": "string",
+        "enum": [
+         "pending",
+         "ready"
+        ]
+       }
+      }
+     }
+    ]
+   },
+   "WebhookTool": {
+    "type": "object",
+    "required": [
+     "type",
+     "webhook"
+    ],
+    "properties": {
+     "type": {
+      "type": "string",
+      "enum": [
+       "webhook"
+      ]
+     },
+     "webhook": {
+      "type": "object",
+      "properties": {
+       "url": {
+        "type": "string"
+       }
+      }
+     }
+    }
+   },
+   "HangupTool": {
+    "type": "object",
+    "required": [
+     "type"
+    ],
+    "properties": {
+     "type": {
+      "type": "string",
+      "const": "hangup"
+     },
+     "hangup": {
+      "type": "object",
+      "additionalProperties": true
+     }
+    }
+   },
+   "Avatar": {
+    "type": "object",
+    "properties": {
+     "avatar_id": {
+      "type": "string"
+     }
+    }
+   },
+   "Level1": {
+    "type": "object",
+    "properties": {
+     "level2": {
+      "type": "object",
+      "properties": {
+       "level3": {
+        "type": "object",
+        "properties": {
+         "level4": {
+          "type": "object",
+          "properties": {
+           "leaf": {
+            "type": "string"
+           }
+          }
+         }
+        }
+       }
+      }
+     }
+    }
+   },
+   "Note": {
+    "type": "object",
+    "properties": {
+     "id": {
+      "type": "string"
+     },
+     "text": {
+      "type": "string"
+     },
+     "count": {
+      "type": "integer"
+     },
+     "created_at": {
+      "type": "string"
+     }
+    }
+   },
+   "GadgetCreate": {
+    "type": "object",
+    "required": [
+     "name"
+    ],
+    "properties": {
+     "name": {
+      "type": "string",
+      "description": "The gadget's name."
+     }
+    }
+   },
+   "Gadget": {
+    "type": "object",
+    "properties": {
+     "id": {
+      "type": "string"
+     },
+     "name": {
+      "type": "string"
+     },
+     "status": {
+      "type": "string",
+      "enum": [
+       "on",
+       "off"
+      ]
+     },
+     "blocklist_id": {
+      "type": [
+       "string",
+       "null"
+      ],
+      "description": "The blocklist applied to the gadget."
+     },
+     "tags": {
+      "type": "array",
+      "items": {
+       "type": "string"
+      }
+     }
+    }
+   },
+   "Secret": {
+    "type": "object",
+    "properties": {
+     "id": {
+      "type": "string"
+     },
+     "name": {
+      "type": "string"
+     },
+     "value": {
+      "type": "string",
+      "writeOnly": true
+     }
+    }
+   }
+  }
+ }
 }

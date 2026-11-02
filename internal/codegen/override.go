@@ -23,12 +23,27 @@ type Override struct {
 	// Type is the Terraform type name, such as telnyx_ai_assistant.
 	Type        string `yaml:"type"`
 	Description string `yaml:"description"`
+	// Kind is empty for a resource, or "data_source" for a data source with
+	// no resource.
+	Kind string `yaml:"kind"`
 
 	// Operations as "METHOD /path".
 	Create string `yaml:"create"`
 	Read   string `yaml:"read"`
 	Update string `yaml:"update"`
 	Delete string `yaml:"delete"`
+
+	// List is the list operation; it adds a plural data source named
+	// ListName (default: the plural of Type).
+	List     string `yaml:"list"`
+	ListName string `yaml:"list_name"`
+	// Paging is empty to derive the list's paging, or "none" to read one
+	// page whatever the parameters say.
+	Paging string `yaml:"paging"`
+	// ReadFrom reads an object that has no item read from a collection.
+	ReadFrom *ReadFromOverride `yaml:"read_from"`
+	// Updates are further operations that each set some attributes.
+	Updates []UpdateOverride `yaml:"updates"`
 
 	// ID is the response field holding the object's id. Default "id".
 	ID string `yaml:"id"`
@@ -52,6 +67,23 @@ type Override struct {
 	Add []AddAttr `yaml:"add"`
 
 	file string
+}
+
+// ReadFromOverride names the collection an object is read from.
+type ReadFromOverride struct {
+	// Op is the list operation, or the parent object's read.
+	Op string `yaml:"op"`
+	// Field is the parent's array field; empty for a list operation.
+	Field string `yaml:"field"`
+	// Key is the element field matched against the id; empty when the
+	// elements are plain values.
+	Key string `yaml:"key"`
+}
+
+// UpdateOverride is an extra update operation and its optional clear.
+type UpdateOverride struct {
+	Op    string `yaml:"op"`
+	Clear string `yaml:"clear"`
 }
 
 // AttrOverride adjusts one derived attribute.
@@ -138,10 +170,44 @@ func (o *Override) validate() error {
 	if o.Description == "" {
 		return fmt.Errorf("description is required")
 	}
-	if o.Create == "" || o.Read == "" {
-		return fmt.Errorf("create and read are required")
+	ops := []string{o.Create, o.Read, o.Update, o.Delete, o.List}
+	switch o.Kind {
+	case "":
+		if o.Create == "" || o.Read == "" && o.ReadFrom == nil {
+			return fmt.Errorf("create, and read or read_from, are required")
+		}
+		if o.Read != "" && o.ReadFrom != nil {
+			return fmt.Errorf("set read or read_from, not both")
+		}
+	case "data_source":
+		if o.Read == "" && o.List == "" {
+			return fmt.Errorf("a data_source needs read or list")
+		}
+		if o.Create != "" || o.Update != "" || o.Delete != "" || o.ReadFrom != nil || len(o.Updates) > 0 {
+			return fmt.Errorf("a data_source has only read and list")
+		}
+	default:
+		return fmt.Errorf("kind %q must be empty or data_source", o.Kind)
 	}
-	for _, op := range []string{o.Create, o.Read, o.Update, o.Delete} {
+	if o.Paging != "" && o.Paging != "none" {
+		return fmt.Errorf("paging %q must be empty or none", o.Paging)
+	}
+	if o.ListName != "" && (o.List == "" || !strings.HasPrefix(o.ListName, "telnyx_") || !namePattern.MatchString(o.ListName)) {
+		return fmt.Errorf("list_name %q needs list and must be telnyx_<snake_case>", o.ListName)
+	}
+	if o.ReadFrom != nil {
+		if o.ReadFrom.Op == "" {
+			return fmt.Errorf("read_from needs op")
+		}
+		ops = append(ops, o.ReadFrom.Op)
+	}
+	for _, u := range o.Updates {
+		if u.Op == "" {
+			return fmt.Errorf("each update needs op")
+		}
+		ops = append(ops, u.Op, u.Clear)
+	}
+	for _, op := range ops {
 		if op != "" && !opPattern.MatchString(op) {
 			return fmt.Errorf("operation %q must be \"METHOD /path\"", op)
 		}
@@ -166,4 +232,33 @@ func (o *Override) validate() error {
 }
 
 // dataSource reports whether the resource also gets a data source.
-func (o *Override) dataSource() bool { return o.DataSource == nil || *o.DataSource }
+func (o *Override) dataSource() bool {
+	return o.Kind == "data_source" && o.Read != "" || o.Kind == "" && (o.DataSource == nil || *o.DataSource)
+}
+
+// listName is the list data source's type name.
+func (o *Override) listName() string {
+	if o.ListName != "" {
+		return o.ListName
+	}
+	if o.Kind == "data_source" && o.Read == "" {
+		return o.Type
+	}
+	return Plural(o.Type)
+}
+
+// Plural returns the plural of a snake_case name's last word.
+func Plural(name string) string {
+	i := strings.LastIndex(name, "_")
+	last := name[i+1:]
+	switch {
+	case strings.HasSuffix(name, "settings"), strings.HasSuffix(name, "_status"), strings.HasSuffix(name, "details"),
+		last == "sms" || last == "rcs" || last == "dns" || last == "data":
+		return name
+	case strings.HasSuffix(last, "s"), strings.HasSuffix(last, "x"), strings.HasSuffix(last, "ch"), strings.HasSuffix(last, "sh"):
+		return name + "es"
+	case len(last) > 1 && strings.HasSuffix(last, "y") && !strings.ContainsAny(last[len(last)-2:len(last)-1], "aeiou"):
+		return name[:len(name)-1] + "ies"
+	}
+	return name + "s"
+}

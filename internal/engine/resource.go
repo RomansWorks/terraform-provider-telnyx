@@ -484,7 +484,7 @@ func (r *frameworkResource) afterRead(ctx context.Context, obj Object) (Object, 
 // toState maps an API object to the full state value, carrying over the
 // timeouts block from prior.
 func (r *frameworkResource) toState(ctx context.Context, obj Object, prior Values, m mode, priorRaw tftypes.Value) (tftypes.Value, error) {
-	v, err := objectFromJSON(r.d.Attrs, obj, prior, m)
+	v, err := objectFromJSON(r.d.Attrs, r.d.withFixedID(obj), prior, m)
 	if err != nil {
 		return tftypes.Value{}, err
 	}

@@ -101,6 +101,9 @@ const (
 	// PagingFlat sends page_number and page_size and stops at
 	// meta.total_pages.
 	PagingFlat
+	// PagingCursor sends page[size] and page[after] and follows
+	// meta.cursors.after or meta.end_cursor until it is empty.
+	PagingCursor
 )
 
 // ReadFrom reads an object that has no item read from a collection: the
@@ -161,6 +164,9 @@ type Resource struct {
 	// ReleaseOnDestroy keeps the object in Telnyx on destroy unless the
 	// release_on_destroy attribute is true.
 	ReleaseOnDestroy bool
+	// FixedID is the id of an object that exists once per account. The
+	// engine puts it into every response as "id".
+	FixedID string
 
 	Hooks Hooks
 }
@@ -231,4 +237,17 @@ func (r *Resource) Attr(name string) *Attr {
 		}
 	}
 	return nil
+}
+
+// withFixedID returns obj with "id" set to FixedID, when there is one.
+func (r *Resource) withFixedID(obj Object) Object {
+	if r.FixedID == "" {
+		return obj
+	}
+	out := make(Object, len(obj)+1)
+	for k, v := range obj {
+		out[k] = v
+	}
+	out["id"] = r.FixedID
+	return out
 }

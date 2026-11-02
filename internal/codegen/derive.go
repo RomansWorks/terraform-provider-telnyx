@@ -118,12 +118,25 @@ func (g *Generator) responseSchema(op *operation) (map[string]any, bool) {
 		}
 		s := g.norm(c["schema"])
 		props := properties(s)
-		if len(props) == 1 && props["data"] != nil {
-			return g.norm(props["data"]), true
+		if d := g.norm(props["data"]); d != nil && (onlyEnvelopeKeys(props) || d["type"] == "object") {
+			// Telnyx wraps objects in "data"; siblings such as meta,
+			// links or a repeated id are envelope, not the object.
+			return d, true
 		}
 		return s, false
 	}
 	return nil, false
+}
+
+// onlyEnvelopeKeys reports whether a response holds nothing but "data"
+// and envelope metadata such as "meta" or "links".
+func onlyEnvelopeKeys(props map[string]any) bool {
+	for k := range props {
+		if k != "data" && k != "meta" && k != "links" {
+			return false
+		}
+	}
+	return true
 }
 
 // norm resolves a schema and flattens allOf, nullable types and unions to a
@@ -849,6 +862,20 @@ func (g *Generator) ids(r *engine.Resource, ov *Override, create *operation, oth
 	}
 
 	var id *engine.Attr
+	if ov.Singleton {
+		if len(createParams) > 0 {
+			return fmt.Errorf("singleton: %s has path parameters", create.path)
+		}
+		if r.Attr("id") != nil {
+			return fmt.Errorf("singleton: the response already has an id field")
+		}
+		r.FixedID = strings.TrimPrefix(r.TypeName, "telnyx_")
+		r.Attrs = append(r.Attrs, &engine.Attr{Name: "id", JSON: "id", Kind: engine.KindString, Computed: true, InResponse: true,
+			Description: "Always " + r.FixedID + ": there is one per account."})
+		r.IDAttr = "id"
+		r.Import = []string{"id"}
+		return nil
+	}
 	if ov.IDFromPath != "" {
 		i := slices.Index(createParams, ov.IDFromPath)
 		if i < 0 {

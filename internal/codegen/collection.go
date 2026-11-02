@@ -163,7 +163,8 @@ var pagingParams = map[string]engine.Paging{
 	"page_number": engine.PagingFlat, "page_size": engine.PagingFlat,
 }
 
-// otherPaging are paging parameters the engine does not drive.
+// otherPaging are paging parameters the engine does not drive on their
+// own; page[after] is driven as a cursor when no page number is offered.
 var otherPaging = []string{"page[after]", "page[before]", "page[limit]", "page[snapshot]", "page_cursor",
 	"cursor", "limit", "offset", "recordsPerPage", "page"}
 
@@ -268,42 +269,48 @@ func (g *Generator) listOp(op *operation, pagingOverride string) (*engine.Op, er
 		}
 		return fmt.Errorf("paging parameter %s is not supported; set paging: none and page in a hook", name)
 	}
+	// Collect the paging parameters, with a deepObject "page" spelled out
+	// as page[number], page[size] and so on, and the maximum page sizes.
+	present := map[string]bool{}
+	sizes := map[string]int{}
 	for _, p := range g.params(op) {
 		if p.in != "query" {
 			continue
 		}
-		// A deepObject "page" with number and size is page[number]/page[size].
 		if p.name == "page" && properties(p.schema) != nil {
-			keys := make([]string, 0, len(properties(p.schema)))
-			for k := range properties(p.schema) {
-				keys = append(keys, k)
-			}
-			sort.Strings(keys)
-			for _, k := range keys {
+			for k, v := range properties(p.schema) {
 				full := "page[" + k + "]"
-				st, ok := pagingParams[full]
-				if !ok {
-					if err := unsupported(full); err != nil {
-						return nil, err
-					}
-					continue
-				}
-				paging = st
+				present[full] = true
 				if k == "size" {
-					size = maxOf(g.norm(properties(p.schema)[k]))
+					sizes[full] = maxOf(g.norm(v))
 				}
 			}
 			continue
 		}
-		if st, ok := pagingParams[p.name]; ok {
-			paging = st
+		if _, ok := pagingParams[p.name]; ok || contains(otherPaging, p.name) {
+			present[p.name] = true
 			if strings.Contains(p.name, "size") {
-				size = maxOf(p.schema)
+				sizes[p.name] = maxOf(p.schema)
 			}
-			continue
 		}
-		if contains(otherPaging, p.name) {
-			if err := unsupported(p.name); err != nil {
+	}
+	// Page numbers win over cursors when an operation offers both.
+	switch {
+	case present["page[number]"] || present["page[size]"] && !present["page[after]"]:
+		paging, size = engine.PagingNumber, sizes["page[size]"]
+	case present["page_number"] || present["page_size"]:
+		paging, size = engine.PagingFlat, sizes["page_size"]
+	case present["page[after]"]:
+		paging, size = engine.PagingCursor, sizes["page[size]"]
+	}
+	if paging == engine.PagingNone {
+		names := make([]string, 0, len(present))
+		for n := range present {
+			names = append(names, n)
+		}
+		sort.Strings(names)
+		for _, n := range names {
+			if err := unsupported(n); err != nil {
 				return nil, err
 			}
 		}

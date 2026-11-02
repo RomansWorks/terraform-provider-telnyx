@@ -7,6 +7,7 @@ package codegen
 
 import (
 	"bytes"
+	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -54,6 +55,9 @@ type Override struct {
 	// IDFromPath names the path parameter that identifies the object when
 	// the object has no id of its own (settings of another object).
 	IDFromPath string `yaml:"id_from_path"`
+	// Singleton says the object exists once per account and its paths
+	// have no parameters; its id is always the type name without telnyx_.
+	Singleton bool `yaml:"singleton"`
 	// PathParams renames path parameters that become attributes, such as
 	// {"id": "phone_number_id"}.
 	PathParams map[string]string `yaml:"path_params"`
@@ -138,19 +142,23 @@ func LoadOverrides(dir string) ([]*Override, error) {
 	}
 	sort.Strings(files)
 	var out []*Override
+	var errs []error
 	seen := map[string]string{}
 	for _, f := range files {
 		o, err := LoadOverride(f)
 		if err != nil {
-			return nil, err
+			errs = append(errs, err)
+			continue
 		}
 		if prev, ok := seen[o.Type]; ok {
-			return nil, fmt.Errorf("%s: type %s is also defined in %s", f, o.Type, prev)
+			errs = append(errs, fmt.Errorf("%s: type %s is also defined in %s", f, o.Type, prev))
+			continue
 		}
 		seen[o.Type] = f
 		out = append(out, o)
 	}
-	return out, nil
+	// Every broken file is reported at once.
+	return out, errors.Join(errs...)
 }
 
 // LoadOverride reads and validates one override file. Unknown keys are
@@ -203,6 +211,9 @@ func (o *Override) validate() error {
 		}
 		if o.Read != "" && o.ReadFrom != nil {
 			return fmt.Errorf("set read or read_from, not both")
+		}
+		if o.Singleton && (o.IDFromPath != "" || o.ID != "") {
+			return fmt.Errorf("singleton takes neither id nor id_from_path")
 		}
 	case "data_source":
 		if o.Read == "" && o.List == "" {

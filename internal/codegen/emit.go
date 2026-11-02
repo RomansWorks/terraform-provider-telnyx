@@ -103,6 +103,9 @@ func EmitResource(pkg string, r *engine.Resource, source string) ([]byte, error)
 	if r.NoResource {
 		field(&b, "NoResource", "true")
 	}
+	if r.ReleaseOnDestroy {
+		field(&b, "ReleaseOnDestroy", "true")
+	}
 	b.WriteString("Attrs: ")
 	attrs(&b, r.Attrs)
 	b.WriteString(",\n}\n}\n")
@@ -151,6 +154,50 @@ func EmitList(pkg string, l *engine.List, source string) ([]byte, error) {
 	return out, nil
 }
 
+// EmitAction renders one action descriptor as a Go source file.
+func EmitAction(pkg string, a *engine.Action, source string) ([]byte, error) {
+	return emitOne(pkg, a.TypeName, "Action", source, func(b *bytes.Buffer) {
+		field(b, "TypeName", strconv.Quote(a.TypeName))
+		field(b, "Description", strconv.Quote(a.Description))
+		field(b, "Op", opLiteral(a.Op))
+		b.WriteString("Attrs: ")
+		attrs(b, a.Attrs)
+		b.WriteString(",\n")
+	})
+}
+
+// EmitEphemeral renders one ephemeral resource descriptor as a Go source
+// file.
+func EmitEphemeral(pkg string, e *engine.Ephemeral, source string) ([]byte, error) {
+	return emitOne(pkg, e.TypeName, "Ephemeral", source, func(b *bytes.Buffer) {
+		field(b, "TypeName", strconv.Quote(e.TypeName))
+		field(b, "Description", strconv.Quote(e.Description))
+		field(b, "Open", opLiteral(e.Open))
+		b.WriteString("Attrs: ")
+		attrs(b, e.Attrs)
+		b.WriteString(",\n")
+	})
+}
+
+// emitOne renders a file with one constructor, GoName(typeName)+kind,
+// returning *engine.<kind> filled by body.
+func emitOne(pkg, typeName, kind, source string, body func(*bytes.Buffer)) ([]byte, error) {
+	var b bytes.Buffer
+	fmt.Fprintf(&b, "%s\n// Source: %s\n\n", Marker, source)
+	fmt.Fprintf(&b, "package %s\n\n", pkg)
+	b.WriteString("import \"github.com/RomansWorks/terraform-provider-telnyx/internal/engine\"\n\n")
+	name := GoName(typeName) + kind
+	fmt.Fprintf(&b, "// %s returns the %s descriptor of %s.\n", name, strings.ToLower(kind), typeName)
+	fmt.Fprintf(&b, "func %s() *engine.%s {\n\treturn &engine.%s{\n", name, kind, kind)
+	body(&b)
+	b.WriteString("}\n}\n")
+	out, err := format.Source(b.Bytes())
+	if err != nil {
+		return nil, fmt.Errorf("formatting %s: %w\n%s", typeName, err, b.String())
+	}
+	return out, nil
+}
+
 func field(b *bytes.Buffer, name, value string) {
 	fmt.Fprintf(b, "%s: %s,\n", name, value)
 }
@@ -190,6 +237,7 @@ func attr(b *bytes.Buffer, a *engine.Attr) {
 		{"Required", a.Required}, {"Optional", a.Optional}, {"Computed", a.Computed},
 		{"Sensitive", a.Sensitive}, {"ForceNew", a.ForceNew},
 		{"InCreate", a.InCreate}, {"InUpdate", a.InUpdate}, {"InResponse", a.InResponse}, {"Local", a.Local},
+		{"WriteOnly", a.WriteOnly},
 	}
 	for _, f := range flags {
 		if f.on {
@@ -204,6 +252,9 @@ func attr(b *bytes.Buffer, a *engine.Attr) {
 	}
 	if a.Deprecated != "" {
 		add("Deprecated", strconv.Quote(a.Deprecated))
+	}
+	if a.Version != "" {
+		add("Version", strconv.Quote(a.Version))
 	}
 	if a.Description != "" {
 		add("Description", strconv.Quote(a.Description))
@@ -220,33 +271,48 @@ func attr(b *bytes.Buffer, a *engine.Attr) {
 	b.WriteString("}")
 }
 
+// Generated is everything Run derives.
+type Generated struct {
+	Resources  []*engine.Resource
+	Lists      []*engine.List
+	Actions    []*engine.Action
+	Ephemerals []*engine.Ephemeral
+}
+
 // EmitAll renders the file listing every generated descriptor.
-func EmitAll(pkg string, rs []*engine.Resource, ls []*engine.List) ([]byte, error) {
-	names := make([]string, len(rs))
-	for i, r := range rs {
-		names[i] = GoName(r.TypeName)
-	}
-	sort.Strings(names)
-	lists := make([]string, len(ls))
-	for i, l := range ls {
-		lists[i] = GoName(l.TypeName) + "List"
-	}
-	sort.Strings(lists)
+func EmitAll(pkg string, gen *Generated) ([]byte, error) {
 	var b bytes.Buffer
 	fmt.Fprintf(&b, "%s\n\npackage %s\n\n", Marker, pkg)
 	b.WriteString("import \"github.com/RomansWorks/terraform-provider-telnyx/internal/engine\"\n\n")
-	b.WriteString("// All returns a fresh copy of every generated descriptor.\n")
-	b.WriteString("func All() []*engine.Resource {\n\treturn []*engine.Resource{\n")
-	for _, n := range names {
-		fmt.Fprintf(&b, "%s(),\n", n)
+	listing := func(comment, fn, typ, suffix string, typeNames []string) {
+		names := make([]string, len(typeNames))
+		for i, n := range typeNames {
+			names[i] = GoName(n) + suffix
+		}
+		sort.Strings(names)
+		fmt.Fprintf(&b, "// %s\nfunc %s() []*engine.%s {\n\treturn []*engine.%s{\n", comment, fn, typ, typ)
+		for _, n := range names {
+			fmt.Fprintf(&b, "%s(),\n", n)
+		}
+		b.WriteString("}\n}\n\n")
 	}
-	b.WriteString("}\n}\n\n")
-	b.WriteString("// Lists returns a fresh copy of every generated list descriptor.\n")
-	b.WriteString("func Lists() []*engine.List {\n\treturn []*engine.List{\n")
-	for _, n := range lists {
-		fmt.Fprintf(&b, "%s(),\n", n)
+	var rs, ls, as, es []string
+	for _, r := range gen.Resources {
+		rs = append(rs, r.TypeName)
 	}
-	b.WriteString("}\n}\n")
+	for _, l := range gen.Lists {
+		ls = append(ls, l.TypeName)
+	}
+	for _, a := range gen.Actions {
+		as = append(as, a.TypeName)
+	}
+	for _, e := range gen.Ephemerals {
+		es = append(es, e.TypeName)
+	}
+	listing("All returns a fresh copy of every generated descriptor.", "All", "Resource", "", rs)
+	listing("Lists returns a fresh copy of every generated list descriptor.", "Lists", "List", "List", ls)
+	listing("Actions returns a fresh copy of every generated action descriptor.", "Actions", "Action", "Action", as)
+	listing("Ephemerals returns a fresh copy of every generated ephemeral resource descriptor.", "Ephemerals", "Ephemeral", "Ephemeral", es)
 	return format.Source(b.Bytes())
 }
 
@@ -293,52 +359,73 @@ func Write(dir string, files map[string][]byte) error {
 
 // Run derives every override in overridesDir and writes the descriptors
 // into outDir as package pkg.
-func Run(g *Generator, overridesDir, outDir, pkg string) ([]*engine.Resource, []*engine.List, error) {
+func Run(g *Generator, overridesDir, outDir, pkg string) (*Generated, error) {
 	ovs, err := LoadOverrides(overridesDir)
 	if err != nil {
-		return nil, nil, err
+		return nil, err
 	}
 	files := map[string][]byte{}
-	add := func(name string, src []byte) error {
+	gen := &Generated{}
+	add := func(name string, src []byte, err error) error {
+		if err != nil {
+			return err
+		}
 		if _, dup := files[name]; dup {
 			return fmt.Errorf("two descriptors would be written to %s", name)
 		}
 		files[name] = src
 		return nil
 	}
-	var rs []*engine.Resource
-	var ls []*engine.List
+	base := func(typeName string) string { return strings.TrimSuffix(FileName(typeName), ".go") }
 	for _, ov := range ovs {
+		source := filepath.ToSlash(ov.file)
+		switch ov.Kind {
+		case "action":
+			a, err := g.DeriveAction(ov)
+			if err != nil {
+				return nil, err
+			}
+			src, err := EmitAction(pkg, a, source)
+			if err := add(base(a.TypeName)+"_action.go", src, err); err != nil {
+				return nil, err
+			}
+			gen.Actions = append(gen.Actions, a)
+			continue
+		case "ephemeral":
+			e, err := g.DeriveEphemeral(ov)
+			if err != nil {
+				return nil, err
+			}
+			src, err := EmitEphemeral(pkg, e, source)
+			if err := add(base(e.TypeName)+"_ephemeral.go", src, err); err != nil {
+				return nil, err
+			}
+			gen.Ephemerals = append(gen.Ephemerals, e)
+			continue
+		}
 		r, l, err := g.DeriveAll(ov)
 		if err != nil {
-			return nil, nil, err
+			return nil, err
 		}
-		source := filepath.ToSlash(ov.file)
 		if r != nil {
 			src, err := EmitResource(pkg, r, source)
-			if err != nil {
-				return nil, nil, err
+			if err := add(FileName(r.TypeName), src, err); err != nil {
+				return nil, err
 			}
-			if err := add(FileName(r.TypeName), src); err != nil {
-				return nil, nil, err
-			}
-			rs = append(rs, r)
+			gen.Resources = append(gen.Resources, r)
 		}
 		if l != nil {
 			src, err := EmitList(pkg, l, source)
-			if err != nil {
-				return nil, nil, err
+			if err := add(base(l.TypeName)+"_list.go", src, err); err != nil {
+				return nil, err
 			}
-			if err := add(strings.TrimSuffix(FileName(l.TypeName), ".go")+"_list.go", src); err != nil {
-				return nil, nil, err
-			}
-			ls = append(ls, l)
+			gen.Lists = append(gen.Lists, l)
 		}
 	}
-	all, err := EmitAll(pkg, rs, ls)
+	all, err := EmitAll(pkg, gen)
 	if err != nil {
-		return nil, nil, err
+		return nil, err
 	}
 	files["all.go"] = all
-	return rs, ls, Write(outDir, files)
+	return gen, Write(outDir, files)
 }

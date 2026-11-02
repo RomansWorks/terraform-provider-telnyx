@@ -23,9 +23,13 @@ type Override struct {
 	// Type is the Terraform type name, such as telnyx_ai_assistant.
 	Type        string `yaml:"type"`
 	Description string `yaml:"description"`
-	// Kind is empty for a resource, or "data_source" for a data source with
-	// no resource.
+	// Kind is empty for a resource, "data_source" for a data source with
+	// no resource, "action" for an action or "ephemeral" for an ephemeral
+	// resource.
 	Kind string `yaml:"kind"`
+	// Op is an action's operation; Open is an ephemeral resource's read.
+	Op   string `yaml:"op"`
+	Open string `yaml:"open"`
 
 	// Operations as "METHOD /path".
 	Create string `yaml:"create"`
@@ -55,10 +59,13 @@ type Override struct {
 	PathParams map[string]string `yaml:"path_params"`
 
 	// DataSource is true unless set to false.
-	DataSource    *bool      `yaml:"data_source"`
-	Timeouts      bool       `yaml:"timeouts"`
-	DeleteWarning string     `yaml:"delete_warning"`
-	ExactlyOne    [][]string `yaml:"exactly_one"`
+	DataSource *bool `yaml:"data_source"`
+	Timeouts   bool  `yaml:"timeouts"`
+	// ReleaseOnDestroy keeps the object in Telnyx on destroy unless the
+	// user sets release_on_destroy = true.
+	ReleaseOnDestroy bool       `yaml:"release_on_destroy"`
+	DeleteWarning    string     `yaml:"delete_warning"`
+	ExactlyOne       [][]string `yaml:"exactly_one"`
 
 	// Attributes adjusts derived attributes by JSON path ("a.b.c").
 	Attributes map[string]AttrOverride `yaml:"attributes"`
@@ -101,6 +108,9 @@ type AttrOverride struct {
 	// the spec does not list it there, so drift is detected. Returned
 	// attributes are optional and not computed.
 	Returned bool `yaml:"returned"`
+	// WriteOnly makes a secret request field <name>_wo, never stored, with
+	// <name>_wo_version to send it again.
+	WriteOnly bool `yaml:"write_only"`
 }
 
 // AddAttr is a local attribute.
@@ -170,9 +180,24 @@ func (o *Override) validate() error {
 	if o.Description == "" {
 		return fmt.Errorf("description is required")
 	}
-	ops := []string{o.Create, o.Read, o.Update, o.Delete, o.List}
+	ops := []string{o.Create, o.Read, o.Update, o.Delete, o.List, o.Op, o.Open}
+	resourceOnly := o.Create != "" || o.Update != "" || o.Delete != "" || o.ReadFrom != nil || len(o.Updates) > 0 ||
+		o.ReleaseOnDestroy || o.Timeouts || o.DataSource != nil || len(o.Add) > 0 || len(o.ExactlyOne) > 0 || o.DeleteWarning != ""
+	if o.Kind != "action" && o.Op != "" || o.Kind != "ephemeral" && o.Open != "" {
+		return fmt.Errorf("op is only for kind: action, and open only for kind: ephemeral")
+	}
 	switch o.Kind {
+	case "action", "ephemeral":
+		if o.Op == "" && o.Open == "" {
+			return fmt.Errorf("kind: action needs op, and kind: ephemeral needs open")
+		}
+		if resourceOnly || o.Read != "" || o.List != "" {
+			return fmt.Errorf("kind: %s takes only %s, path_params and attributes", o.Kind, map[string]string{"action": "op", "ephemeral": "open"}[o.Kind])
+		}
 	case "":
+		if o.ReleaseOnDestroy && o.Delete == "" {
+			return fmt.Errorf("release_on_destroy needs delete")
+		}
 		if o.Create == "" || o.Read == "" && o.ReadFrom == nil {
 			return fmt.Errorf("create, and read or read_from, are required")
 		}
@@ -183,11 +208,11 @@ func (o *Override) validate() error {
 		if o.Read == "" && o.List == "" {
 			return fmt.Errorf("a data_source needs read or list")
 		}
-		if o.Create != "" || o.Update != "" || o.Delete != "" || o.ReadFrom != nil || len(o.Updates) > 0 {
+		if resourceOnly {
 			return fmt.Errorf("a data_source has only read and list")
 		}
 	default:
-		return fmt.Errorf("kind %q must be empty or data_source", o.Kind)
+		return fmt.Errorf("kind %q must be empty, data_source, action or ephemeral", o.Kind)
 	}
 	if o.Paging != "" && o.Paging != "none" {
 		return fmt.Errorf("paging %q must be empty or none", o.Paging)

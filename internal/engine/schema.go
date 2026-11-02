@@ -79,7 +79,12 @@ func description(a *Attr) string {
 			d = strings.TrimSpace(d + " A JSON document; use `jsondecode()` to read it.")
 		}
 	}
-	if !a.InResponse && !a.Local && !a.Computed {
+	switch {
+	case a.WriteOnly && a.Version != "":
+		d = strings.TrimSpace(d + " Write-only: never stored in state. Change `" + a.Version + "` to send a new value.")
+	case a.WriteOnly:
+		d = strings.TrimSpace(d + " Write-only: never stored in state.")
+	case !a.InResponse && !a.Local && !a.Computed:
 		d = strings.TrimSpace(d + " The API does not return this value, so changes made outside Terraform are not detected.")
 	}
 	return d
@@ -102,7 +107,7 @@ func resourceAttr(a *Attr) schema.Attribute {
 		if a.ForceNew {
 			pm = append(pm, stringplanmodifier.RequiresReplace())
 		}
-		return schema.StringAttribute{Required: req, Optional: opt, Computed: comp, Sensitive: a.Sensitive, DeprecationMessage: a.Deprecated,
+		return schema.StringAttribute{Required: req, Optional: opt, Computed: comp, Sensitive: a.Sensitive, WriteOnly: a.WriteOnly, DeprecationMessage: a.Deprecated,
 			MarkdownDescription: desc, Validators: stringValidators, PlanModifiers: pm}
 	case KindInt:
 		var pm []planModifierInt64
@@ -112,7 +117,7 @@ func resourceAttr(a *Attr) schema.Attribute {
 		if a.ForceNew {
 			pm = append(pm, int64planmodifier.RequiresReplace())
 		}
-		return schema.Int64Attribute{Required: req, Optional: opt, Computed: comp, Sensitive: a.Sensitive, DeprecationMessage: a.Deprecated,
+		return schema.Int64Attribute{Required: req, Optional: opt, Computed: comp, Sensitive: a.Sensitive, WriteOnly: a.WriteOnly, DeprecationMessage: a.Deprecated,
 			MarkdownDescription: desc, PlanModifiers: pm}
 	case KindFloat:
 		var pm []planModifierFloat64
@@ -122,7 +127,7 @@ func resourceAttr(a *Attr) schema.Attribute {
 		if a.ForceNew {
 			pm = append(pm, float64planmodifier.RequiresReplace())
 		}
-		return schema.Float64Attribute{Required: req, Optional: opt, Computed: comp, Sensitive: a.Sensitive, DeprecationMessage: a.Deprecated,
+		return schema.Float64Attribute{Required: req, Optional: opt, Computed: comp, Sensitive: a.Sensitive, WriteOnly: a.WriteOnly, DeprecationMessage: a.Deprecated,
 			MarkdownDescription: desc, PlanModifiers: pm}
 	case KindBool:
 		var pm []planModifierBool
@@ -132,7 +137,7 @@ func resourceAttr(a *Attr) schema.Attribute {
 		if a.ForceNew {
 			pm = append(pm, boolplanmodifier.RequiresReplace())
 		}
-		return schema.BoolAttribute{Required: req, Optional: opt, Computed: comp, Sensitive: a.Sensitive, DeprecationMessage: a.Deprecated,
+		return schema.BoolAttribute{Required: req, Optional: opt, Computed: comp, Sensitive: a.Sensitive, WriteOnly: a.WriteOnly, DeprecationMessage: a.Deprecated,
 			MarkdownDescription: desc, PlanModifiers: pm}
 	case KindList:
 		var pm []planModifierList

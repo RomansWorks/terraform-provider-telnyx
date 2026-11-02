@@ -77,7 +77,7 @@ func (r *frameworkResource) ConfigValidators(context.Context) []resource.ConfigV
 
 func (r *frameworkResource) ModifyPlan(ctx context.Context, req resource.ModifyPlanRequest, resp *resource.ModifyPlanResponse) {
 	if req.Plan.Raw.IsNull() {
-		if r.d.Delete == nil && !req.State.Raw.IsNull() {
+		if !req.State.Raw.IsNull() && r.keeps(fields(req.State.Raw)) {
 			resp.Diagnostics.AddWarning("Object stays in Telnyx", r.deleteWarning(fields(req.State.Raw)))
 		}
 		return
@@ -103,14 +103,17 @@ func (r *frameworkResource) ModifyPlan(ctx context.Context, req resource.ModifyP
 
 func (r *frameworkResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
 	plan := fields(req.Plan.Raw)
+	// Requests carry the write-only values; state is built from plan,
+	// where they are null.
+	send := r.withWriteOnly(plan, fields(req.Config.Raw))
 	d := r.d
 
 	var obj Object
 	var err error
 	if d.Hooks.Create != nil {
-		obj, err = d.Hooks.Create(ctx, r.c, d, plan)
+		obj, err = d.Hooks.Create(ctx, r.c, d, send)
 	} else {
-		obj, err = r.send(ctx, d.Create, plan, "create", func(a *Attr) bool { return a.InCreate }, plan)
+		obj, err = r.send(ctx, d.Create, send, "create", func(a *Attr) bool { return a.InCreate }, send)
 	}
 	if err != nil {
 		resp.Diagnostics.AddError("Unable to create "+d.TypeName, err.Error())
@@ -149,18 +152,18 @@ func (r *frameworkResource) Create(ctx context.Context, req resource.CreateReque
 	// A PUT replaces the whole object, so it cannot carry them alone.
 	if d.Update != nil && d.Update.Method != http.MethodPut {
 		late := func(a *Attr) bool {
-			v := plan[a.Name]
+			v := send[a.Name]
 			return a.InUpdate && !a.InCreate && !a.Local && v.IsKnown() && !v.IsNull()
 		}
-		if body, err := objectToJSON(d.Attrs, plan, late); err == nil && len(body) > 0 {
-			if _, err := r.send(ctx, d.Update, plan, "update", late, vals); err != nil {
+		if body, err := objectToJSON(d.Attrs, send, late); err == nil && len(body) > 0 {
+			if _, err := r.send(ctx, d.Update, send, "update", late, vals); err != nil {
 				resp.Diagnostics.AddError("Unable to update "+d.TypeName+" after create", err.Error())
 				return
 			}
 		}
 	}
 
-	if err := r.extraUpdates(ctx, plan, nil, vals); err != nil {
+	if err := r.extraUpdates(ctx, send, nil, vals); err != nil {
 		resp.Diagnostics.AddError("Unable to update "+d.TypeName+" after create", err.Error())
 		return
 	}
@@ -215,11 +218,14 @@ func (r *frameworkResource) Update(ctx context.Context, req resource.UpdateReque
 		return
 	}
 
+	send := r.withWriteOnly(plan, fields(req.Config.Raw))
 	include := func(a *Attr) bool { return a.InUpdate }
 	if d.Update != nil && d.Update.Method != http.MethodPut {
 		include = func(a *Attr) bool {
-			p, s := plan[a.Name], state[a.Name]
-			return a.InUpdate && !p.Equal(s)
+			if a.WriteOnly {
+				return a.InUpdate && rotated(a, plan, state)
+			}
+			return a.InUpdate && !plan[a.Name].Equal(state[a.Name])
 		}
 	}
 	// The path comes from the state: ids do not change in place.
@@ -247,13 +253,13 @@ func (r *frameworkResource) Update(ctx context.Context, req resource.UpdateReque
 	var obj Object
 	var err error
 	if d.Update != nil && (d.Update.Method == http.MethodPut || r.changed(plan, state)) {
-		obj, err = r.sendBody(ctx, d.Update, plan, "update", include, pathVals, clearRemoved)
+		obj, err = r.sendBody(ctx, d.Update, send, "update", include, pathVals, clearRemoved)
 		if err != nil {
 			resp.Diagnostics.AddError("Unable to update "+d.TypeName, err.Error())
 			return
 		}
 	}
-	if err := r.extraUpdates(ctx, plan, state, pathVals); err != nil {
+	if err := r.extraUpdates(ctx, send, state, pathVals); err != nil {
 		resp.Diagnostics.AddError("Unable to update "+d.TypeName, err.Error())
 		return
 	}
@@ -277,11 +283,11 @@ func (r *frameworkResource) Update(ctx context.Context, req resource.UpdateReque
 
 func (r *frameworkResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
 	d := r.d
-	if d.Delete == nil {
-		resp.Diagnostics.AddWarning("Object stays in Telnyx", r.deleteWarning(fields(req.State.Raw)))
+	state := fields(req.State.Raw)
+	if r.keeps(state) {
+		resp.Diagnostics.AddWarning("Object stays in Telnyx", r.deleteWarning(state))
 		return
 	}
-	state := fields(req.State.Raw)
 	p, err := fillPath(d.Attrs, d.Delete.Path, state)
 	if err == nil {
 		_, err = r.c.Send(ctx, d.Delete.Method, p, nil, "", nil)
@@ -314,6 +320,10 @@ func (r *frameworkResource) deleteWarning(state Values) string {
 	if r.d.DeleteWarning != "" {
 		return r.d.DeleteWarning
 	}
+	if r.d.ReleaseOnDestroy {
+		return "This " + r.d.TypeName + " was removed from Terraform state but still exists in your Telnyx account, where it may still be billed. " +
+			"To release it, set " + ReleaseAttr + " = true and apply before destroying."
+	}
 	return "The Telnyx API cannot delete this " + r.d.TypeName + ". It was removed from Terraform state but still exists in your Telnyx account."
 }
 
@@ -322,11 +332,51 @@ func (r *frameworkResource) deleteWarning(state Values) string {
 // request is needed.
 func (r *frameworkResource) changed(plan, state Values) bool {
 	for _, a := range r.d.Attrs {
-		if a.InUpdate && !a.Local && !plan[a.Name].Equal(state[a.Name]) {
+		if a.InUpdate && !a.Local && (!a.WriteOnly && !plan[a.Name].Equal(state[a.Name]) || a.WriteOnly && rotated(a, plan, state)) {
 			return true
 		}
 	}
 	return false
+}
+
+// ReleaseAttr is the attribute that lets destroy delete an object the
+// provider keeps by default.
+const ReleaseAttr = "release_on_destroy"
+
+// keeps reports whether destroy leaves the object in Telnyx: there is no
+// delete, or the resource keeps it unless release_on_destroy is true.
+func (r *frameworkResource) keeps(state Values) bool {
+	if r.d.Delete == nil {
+		return true
+	}
+	if !r.d.ReleaseOnDestroy {
+		return false
+	}
+	var release bool
+	v := state[ReleaseAttr]
+	return !v.IsKnown() || v.IsNull() || v.As(&release) != nil || !release
+}
+
+// withWriteOnly returns plan with the write-only values taken from config.
+func (r *frameworkResource) withWriteOnly(plan, config Values) Values {
+	out := Values{}
+	for k, v := range plan {
+		out[k] = v
+	}
+	for _, a := range r.d.Attrs {
+		if a.WriteOnly {
+			if v, ok := config[a.Name]; ok {
+				out[a.Name] = v
+			}
+		}
+	}
+	return out
+}
+
+// rotated reports whether a write-only attribute's version changed, which
+// is the user's way of sending the value again.
+func rotated(a *Attr, plan, state Values) bool {
+	return a.Version != "" && !plan[a.Version].Equal(state[a.Version])
 }
 
 // extraUpdates sends the extra update operations whose attributes are set

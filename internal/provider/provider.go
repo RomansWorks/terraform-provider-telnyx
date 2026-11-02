@@ -8,7 +8,9 @@ import (
 	"os"
 	"strconv"
 
+	"github.com/hashicorp/terraform-plugin-framework/action"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
+	"github.com/hashicorp/terraform-plugin-framework/ephemeral"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/provider"
 	"github.com/hashicorp/terraform-plugin-framework/provider/schema"
@@ -20,7 +22,11 @@ import (
 	"github.com/RomansWorks/terraform-provider-telnyx/internal/provider/generated"
 )
 
-var _ provider.Provider = &TelnyxProvider{}
+var (
+	_ provider.Provider                       = &TelnyxProvider{}
+	_ provider.ProviderWithActions            = &TelnyxProvider{}
+	_ provider.ProviderWithEphemeralResources = &TelnyxProvider{}
+)
 
 // TelnyxProvider is the Telnyx Terraform provider.
 type TelnyxProvider struct {
@@ -108,6 +114,8 @@ func (p *TelnyxProvider) Configure(ctx context.Context, req provider.ConfigureRe
 	}
 	resp.DataSourceData = c
 	resp.ResourceData = c
+	resp.ActionData = c
+	resp.EphemeralResourceData = c
 }
 
 func (p *TelnyxProvider) Resources(ctx context.Context) []func() resource.Resource {
@@ -129,6 +137,22 @@ func (p *TelnyxProvider) DataSources(ctx context.Context) []func() datasource.Da
 	}
 	for _, l := range generated.Lists() {
 		out = append(out, engine.NewListDataSource(l))
+	}
+	return out
+}
+
+func (p *TelnyxProvider) Actions(context.Context) []func() action.Action {
+	var out []func() action.Action
+	for _, a := range generated.Actions() {
+		out = append(out, engine.NewAction(a))
+	}
+	return out
+}
+
+func (p *TelnyxProvider) EphemeralResources(context.Context) []func() ephemeral.EphemeralResource {
+	var out []func() ephemeral.EphemeralResource
+	for _, e := range generated.Ephemerals() {
+		out = append(out, engine.NewEphemeral(e))
 	}
 	return out
 }

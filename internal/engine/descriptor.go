@@ -69,6 +69,11 @@ type Attr struct {
 
 	// Deprecated, when set, is shown to users who configure the attribute.
 	Deprecated string
+
+	// WriteOnly attributes are read from configuration and never stored.
+	// Version names the attribute whose change sends the value again.
+	WriteOnly bool
+	Version   string
 }
 
 // Op is one API operation.
@@ -153,6 +158,9 @@ type Resource struct {
 	ReadFrom *ReadFrom
 	// Updates are further update operations for some attributes.
 	Updates []ExtraUpdate
+	// ReleaseOnDestroy keeps the object in Telnyx on destroy unless the
+	// release_on_destroy attribute is true.
+	ReleaseOnDestroy bool
 
 	Hooks Hooks
 }
@@ -192,6 +200,27 @@ type List struct {
 	Params []*Attr
 	// Items is the computed list attribute holding the objects.
 	Items *Attr
+}
+
+// Action describes a Terraform action: one operation sent when invoked.
+type Action struct {
+	TypeName    string
+	Description string
+	Op          *Op
+	// Attrs are the path parameters (Required, Local, with PathParams) and
+	// the request body fields.
+	Attrs []*Attr
+}
+
+// Ephemeral describes an ephemeral resource: one read whose result is never
+// stored.
+type Ephemeral struct {
+	TypeName    string
+	Description string
+	Open        *Op
+	// Attrs are the path parameters (Required, Local, with PathParams) and
+	// the response fields (Computed).
+	Attrs []*Attr
 }
 
 // Attr returns the top-level attribute with the given name, or nil.

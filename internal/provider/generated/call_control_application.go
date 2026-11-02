@@ -9,7 +9,7 @@ import "github.com/RomansWorks/terraform-provider-telnyx/internal/engine"
 func CallControlApplication() *engine.Resource {
 	return &engine.Resource{
 		TypeName:    "telnyx_call_control_application",
-		Description: "TODO Create a call control application",
+		Description: "A Call Control application, which sends call events to a webhook and takes call commands.",
 		Create:      &engine.Op{Method: "POST", Path: "/call_control_applications", Envelope: true},
 		Read:        &engine.Op{Method: "GET", Path: "/call_control_applications/{id}", Envelope: true},
 		Update:      &engine.Op{Method: "PATCH", Path: "/call_control_applications/{id}", Envelope: true},
@@ -41,7 +41,7 @@ func CallControlApplication() *engine.Resource {
 				}},
 			{Name: "record_type", JSON: "record_type", Kind: engine.KindString, Computed: true, InResponse: true},
 			{Name: "redact_dtmf_debug_logging", JSON: "redact_dtmf_debug_logging", Kind: engine.KindBool, Optional: true, Computed: true, InCreate: true, InUpdate: true, InResponse: true, Description: "When enabled, DTMF digits entered by users will be redacted in debug logs to protect PII data entered through IVR interactions."},
-			{Name: "tags", JSON: "tags", Kind: engine.KindList, Optional: true, Computed: true, InUpdate: true, InResponse: true, Description: "Tags assigned to the Call Control Application.", Elem: &engine.Attr{Kind: engine.KindString}},
+			{Name: "tags", JSON: "tags", Kind: engine.KindSet, Optional: true, Computed: true, InUpdate: true, InResponse: true, Description: "Tags assigned to the Call Control Application.", Elem: &engine.Attr{Kind: engine.KindString}},
 			{Name: "updated_at", JSON: "updated_at", Kind: engine.KindString, Computed: true, InResponse: true, Description: "ISO 8601 formatted date of when the resource was last updated"},
 			{Name: "webhook_api_version", JSON: "webhook_api_version", Kind: engine.KindString, Optional: true, Computed: true, InCreate: true, InUpdate: true, InResponse: true, Enum: []string{"1", "2"}, Description: "Determines which webhook format will be used, Telnyx API v1 or v2."},
 			{Name: "webhook_event_failover_url", JSON: "webhook_event_failover_url", Kind: engine.KindString, Optional: true, Computed: true, InCreate: true, InUpdate: true, InResponse: true, Description: "The failover URL where webhooks related to this connection will be sent if sending to the primary URL fails. Must include a scheme, such as `https`."},

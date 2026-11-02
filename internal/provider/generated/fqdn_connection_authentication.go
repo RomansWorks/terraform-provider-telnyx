@@ -9,7 +9,7 @@ import "github.com/RomansWorks/terraform-provider-telnyx/internal/engine"
 func FQDNConnectionAuthentication() *engine.Resource {
 	return &engine.Resource{
 		TypeName:    "telnyx_fqdn_connection_authentication",
-		Description: "TODO",
+		Description: "The authentication settings of an FQDN connection. Destroy removes them from Terraform state only.",
 		Create:      &engine.Op{Method: "PATCH", Path: "/fqdn_connections/{fqdn_connection_id}/fqdn_authentication", Envelope: true},
 		Read:        &engine.Op{Method: "GET", Path: "/fqdn_connections/{fqdn_connection_id}/fqdn_authentication", Envelope: true},
 		Update:      &engine.Op{Method: "PATCH", Path: "/fqdn_connections/{fqdn_connection_id}/fqdn_authentication", Envelope: true},
@@ -24,7 +24,7 @@ func FQDNConnectionAuthentication() *engine.Resource {
 			{Name: "id", JSON: "id", Kind: engine.KindString, Computed: true, InResponse: true, Description: "Identifies the resource."},
 			{Name: "ip_authentication_method", JSON: "ip_authentication_method", Kind: engine.KindString, Optional: true, Computed: true, InCreate: true, InUpdate: true, InResponse: true, Enum: []string{"p-charge-info", "token"}, Description: "The IP authentication method."},
 			{Name: "microsoft_teams_sbc", JSON: "microsoft_teams_sbc", Kind: engine.KindBool, Computed: true, InResponse: true, Description: "Whether the connection is a Microsoft Teams SBC."},
-			{Name: "password", JSON: "password", Kind: engine.KindString, Optional: true, Computed: true, InCreate: true, InUpdate: true, InResponse: true, Description: "The password for authentication. For primary accounts created on or after September 8, 2026, this password is returned as `********`. The password is returned in full on create, and on update only when that update changed the password. Accounts created before September 8, 2026 are unaffected."},
+			{Name: "password", JSON: "password", Kind: engine.KindString, Optional: true, Computed: true, Sensitive: true, InCreate: true, InUpdate: true, InResponse: true, Description: "The password for authentication. For primary accounts created on or after September 8, 2026, this password is returned as `********`. The password is returned in full on create, and on update only when that update changed the password. Accounts created before September 8, 2026 are unaffected."},
 			{Name: "record_type", JSON: "record_type", Kind: engine.KindString, Computed: true, InResponse: true, Description: "Identifies the type of the resource."},
 			{Name: "txt_name", JSON: "txt_name", Kind: engine.KindString, Optional: true, Computed: true, InCreate: true, InUpdate: true, InResponse: true, Description: "The TXT record name for Microsoft Teams SBC DNS verification."},
 			{Name: "txt_ttl", JSON: "txt_ttl", Kind: engine.KindInt, Optional: true, Computed: true, InCreate: true, InUpdate: true, InResponse: true, Description: "The TTL for the TXT record."},

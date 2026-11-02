@@ -9,7 +9,7 @@ import "github.com/RomansWorks/terraform-provider-telnyx/internal/engine"
 func NumberReservation() *engine.Resource {
 	return &engine.Resource{
 		TypeName:    "telnyx_number_reservation",
-		Description: "TODO Create a number reservation",
+		Description: "A reservation that holds phone numbers for you for a limited time before you order them.",
 		Create:      &engine.Op{Method: "POST", Path: "/number_reservations", Envelope: true},
 		Read:        &engine.Op{Method: "GET", Path: "/number_reservations/{number_reservation_id}", Envelope: true},
 		IDAttr:      "id",

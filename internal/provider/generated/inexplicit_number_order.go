@@ -9,7 +9,7 @@ import "github.com/RomansWorks/terraform-provider-telnyx/internal/engine"
 func InexplicitNumberOrder() *engine.Resource {
 	return &engine.Resource{
 		TypeName:    "telnyx_inexplicit_number_order",
-		Description: "TODO Create an inexplicit number order",
+		Description: "An order for phone numbers by criteria, such as a quantity in an area, instead of specific numbers. Orders cannot be cancelled through the API.",
 		Create:      &engine.Op{Method: "POST", Path: "/inexplicit_number_orders", Envelope: true},
 		Read:        &engine.Op{Method: "GET", Path: "/inexplicit_number_orders/{id}", Envelope: true},
 		IDAttr:      "id",

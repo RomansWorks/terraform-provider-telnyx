@@ -9,7 +9,7 @@ import "github.com/RomansWorks/terraform-provider-telnyx/internal/engine"
 func InboundVoiceChannelSettings() *engine.Resource {
 	return &engine.Resource{
 		TypeName:    "telnyx_inbound_voice_channel_settings",
-		Description: "TODO",
+		Description: "The number of inbound voice channels of the account in the US zone. There is one per account; destroy removes it from Terraform state only.",
 		Create:      &engine.Op{Method: "PATCH", Path: "/inbound_channels", Envelope: true},
 		Read:        &engine.Op{Method: "GET", Path: "/inbound_channels", Envelope: true},
 		Update:      &engine.Op{Method: "PATCH", Path: "/inbound_channels", Envelope: true},

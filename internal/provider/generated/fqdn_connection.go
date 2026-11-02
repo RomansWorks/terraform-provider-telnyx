@@ -9,7 +9,7 @@ import "github.com/RomansWorks/terraform-provider-telnyx/internal/engine"
 func FQDNConnection() *engine.Resource {
 	return &engine.Resource{
 		TypeName:    "telnyx_fqdn_connection",
-		Description: "TODO Create an FQDN connection",
+		Description: "A SIP connection that sends calls to fully qualified domain names.",
 		Create:      &engine.Op{Method: "POST", Path: "/fqdn_connections", Envelope: true},
 		Read:        &engine.Op{Method: "GET", Path: "/fqdn_connections/{id}", Envelope: true},
 		Update:      &engine.Op{Method: "PATCH", Path: "/fqdn_connections/{id}", Envelope: true},
@@ -81,7 +81,7 @@ func FQDNConnection() *engine.Resource {
 					{Name: "generate_ringback_tone", JSON: "generate_ringback_tone", Kind: engine.KindBool, Optional: true, Computed: true, InCreate: true, InUpdate: true, InResponse: true, Description: "Generate ringback tone through 183 session progress message with early media."},
 					{Name: "instant_ringback_enabled", JSON: "instant_ringback_enabled", Kind: engine.KindBool, Optional: true, Computed: true, InCreate: true, InUpdate: true, InResponse: true, Description: "When set, ringback will not wait for indication before sending ringback tone to calling party."},
 					{Name: "ip_authentication_method", JSON: "ip_authentication_method", Kind: engine.KindString, Optional: true, Computed: true, InCreate: true, InUpdate: true, InResponse: true, Enum: []string{"credential-authentication", "ip-authentication"}},
-					{Name: "ip_authentication_token", JSON: "ip_authentication_token", Kind: engine.KindString, Optional: true, Computed: true, InCreate: true, InUpdate: true, InResponse: true},
+					{Name: "ip_authentication_token", JSON: "ip_authentication_token", Kind: engine.KindString, Optional: true, Computed: true, Sensitive: true, InCreate: true, InUpdate: true, InResponse: true},
 					{Name: "localization", JSON: "localization", Kind: engine.KindString, Optional: true, Computed: true, InCreate: true, InUpdate: true, InResponse: true, Description: "A 2-character country code specifying the country whose national dialing rules should be used. For example, if set to `US` then any US number can be dialed without preprending +1 to the number. When left blank, Telnyx will try US and GB dialing rules, in that order, by default.\","},
 					{Name: "outbound_voice_profile_id", JSON: "outbound_voice_profile_id", Kind: engine.KindString, Optional: true, Computed: true, InCreate: true, InUpdate: true, InResponse: true, Description: "Identifies the associated outbound voice profile."},
 					{Name: "t38_reinvite_source", JSON: "t38_reinvite_source", Kind: engine.KindString, Optional: true, Computed: true, InCreate: true, InUpdate: true, InResponse: true, Enum: []string{"callee-passthru", "caller-passthru", "customer", "disabled", "passthru", "telnyx"}, Description: "This setting only affects connections with Fax-type Outbound Voice Profiles. The setting dictates whether or not Telnyx sends a t.38 reinvite. By default, Telnyx will send the re-invite. If set to `customer`, the caller is expected to send the t.38 reinvite."},
@@ -89,7 +89,7 @@ func FQDNConnection() *engine.Resource {
 					{Name: "timeout_1xx_secs", JSON: "timeout_1xx_secs", Kind: engine.KindInt, Optional: true, Computed: true, InCreate: true, InUpdate: true, InResponse: true, Description: "Time(sec) before aborting if connection is not made."},
 					{Name: "timeout_2xx_secs", JSON: "timeout_2xx_secs", Kind: engine.KindInt, Optional: true, Computed: true, InCreate: true, InUpdate: true, InResponse: true, Description: "Time(sec) before aborting if call is unanswered (min: 1, max: 600)."},
 				}},
-			{Name: "password", JSON: "password", Kind: engine.KindString, Computed: true, InResponse: true, Description: "The password for the FQDN connection. For primary accounts created on or after September 8, 2026, this password is returned as `********`. The password is returned in full on create, and on update only when that update changed the password. Accounts created before September 8, 2026 are unaffected."},
+			{Name: "password", JSON: "password", Kind: engine.KindString, Computed: true, Sensitive: true, InResponse: true, Description: "The password for the FQDN connection. For primary accounts created on or after September 8, 2026, this password is returned as `********`. The password is returned in full on create, and on update only when that update changed the password. Accounts created before September 8, 2026 are unaffected."},
 			{Name: "record_type", JSON: "record_type", Kind: engine.KindString, Computed: true, InResponse: true, Description: "Identifies the type of the resource."},
 			{Name: "rtcp_settings", JSON: "rtcp_settings", Kind: engine.KindObject, Optional: true, Computed: true, InCreate: true, InUpdate: true, InResponse: true,
 				Attrs: []*engine.Attr{
@@ -99,7 +99,7 @@ func FQDNConnection() *engine.Resource {
 				}},
 			{Name: "rtp_pass_codecs_on_stream_change", JSON: "rtp_pass_codecs_on_stream_change", Kind: engine.KindBool, Computed: true, InResponse: true, Description: "Defines if codecs should be passed on stream change."},
 			{Name: "send_normalized_timestamps", JSON: "send_normalized_timestamps", Kind: engine.KindBool, Computed: true, InResponse: true, Description: "Indicates whether normalized timestamps should be sent."},
-			{Name: "tags", JSON: "tags", Kind: engine.KindList, Optional: true, Computed: true, InCreate: true, InUpdate: true, InResponse: true, Description: "Tags associated with the connection.", Elem: &engine.Attr{Kind: engine.KindString}},
+			{Name: "tags", JSON: "tags", Kind: engine.KindSet, Optional: true, Computed: true, InCreate: true, InUpdate: true, InResponse: true, Description: "Tags associated with the connection.", Elem: &engine.Attr{Kind: engine.KindString}},
 			{Name: "third_party_control_enabled", JSON: "third_party_control_enabled", Kind: engine.KindBool, Computed: true, InResponse: true, Description: "Indicates whether third-party control is enabled."},
 			{Name: "transport_protocol", JSON: "transport_protocol", Kind: engine.KindString, Optional: true, Computed: true, InCreate: true, InUpdate: true, InResponse: true, Enum: []string{"TCP", "TLS", "UDP"}, Description: "One of UDP, TLS, or TCP. Applies only to connections with IP authentication or FQDN authentication."},
 			{Name: "txt_name", JSON: "txt_name", Kind: engine.KindString, Computed: true, InResponse: true, Description: "The name for the TXT record associated with the FQDN connection."},

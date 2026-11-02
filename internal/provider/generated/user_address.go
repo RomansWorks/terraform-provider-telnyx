@@ -9,7 +9,7 @@ import "github.com/RomansWorks/terraform-provider-telnyx/internal/engine"
 func UserAddress() *engine.Resource {
 	return &engine.Resource{
 		TypeName:    "telnyx_user_address",
-		Description: "TODO Creates a user address",
+		Description: "An address of a user, used for number orders and emergency services. The Telnyx API cannot change or delete user addresses.",
 		Create:      &engine.Op{Method: "POST", Path: "/user/addresses", Envelope: true},
 		Read:        &engine.Op{Method: "GET", Path: "/user/addresses/{id}", Envelope: true},
 		IDAttr:      "id",

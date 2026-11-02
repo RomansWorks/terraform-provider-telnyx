@@ -9,7 +9,7 @@ import "github.com/RomansWorks/terraform-provider-telnyx/internal/engine"
 func CustomStorageCredential() *engine.Resource {
 	return &engine.Resource{
 		TypeName:    "telnyx_custom_storage_credential",
-		Description: "TODO Create a custom storage credential",
+		Description: "Credentials for storing call recordings of a connection in your own AWS S3, Google Cloud Storage or Azure bucket.",
 		Create:      &engine.Op{Method: "POST", Path: "/custom_storage_credentials/{connection_id}", Envelope: true},
 		Read:        &engine.Op{Method: "GET", Path: "/custom_storage_credentials/{connection_id}", Envelope: true},
 		Update:      &engine.Op{Method: "PUT", Path: "/custom_storage_credentials/{connection_id}", Envelope: true},
@@ -19,7 +19,7 @@ func CustomStorageCredential() *engine.Resource {
 		DataSource:  true,
 		Attrs: []*engine.Attr{
 			{Name: "backend", JSON: "backend", Kind: engine.KindString, Required: true, InCreate: true, InUpdate: true, InResponse: true, Enum: []string{"azure", "gcs", "s3", "s3-generic"}},
-			{Name: "configuration", JSON: "configuration", Kind: engine.KindJSON, Required: true, InCreate: true, InUpdate: true, InResponse: true},
+			{Name: "configuration", JSON: "configuration", Kind: engine.KindJSON, Required: true, Sensitive: true, InCreate: true, InUpdate: true, InResponse: true},
 			{Name: "connection_id", Kind: engine.KindString, Required: true, ForceNew: true, Local: true, PathParams: []string{"connection_id"}, Description: "The connection id."},
 		},
 	}

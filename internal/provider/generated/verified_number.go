@@ -9,7 +9,7 @@ import "github.com/RomansWorks/terraform-provider-telnyx/internal/engine"
 func VerifiedNumber() *engine.Resource {
 	return &engine.Resource{
 		TypeName:    "telnyx_verified_number",
-		Description: "TODO Request phone number verification",
+		Description: "A phone number you verified ownership of, such as for caller id. Creating it sends a verification code by SMS or call.",
 		Create:      &engine.Op{Method: "POST", Path: "/verified_numbers", Envelope: false},
 		Read:        &engine.Op{Method: "GET", Path: "/verified_numbers/{phone_number}", Envelope: true},
 		Delete:      &engine.Op{Method: "DELETE", Path: "/verified_numbers/{phone_number}", Envelope: false},

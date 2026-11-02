@@ -128,6 +128,25 @@ func (g *Generator) responseSchema(op *operation) (map[string]any, bool) {
 	return nil, false
 }
 
+// textResponse reports whether the first 2xx response is a plain-text string.
+func (g *Generator) textResponse(op *operation) bool {
+	responses, _ := op.node["responses"].(map[string]any)
+	codes := make([]string, 0, len(responses))
+	for c := range responses {
+		codes = append(codes, c)
+	}
+	sort.Strings(codes)
+	for _, code := range codes {
+		if !strings.HasPrefix(code, "2") {
+			continue
+		}
+		content, _ := g.resolve(responses[code])["content"].(map[string]any)
+		c, ok := content["text/plain"].(map[string]any)
+		return ok && g.norm(c["schema"])["type"] == "string"
+	}
+	return false
+}
+
 // onlyEnvelopeKeys reports whether a response holds nothing but "data"
 // and envelope metadata such as "meta" or "links".
 func onlyEnvelopeKeys(props map[string]any) bool {
@@ -883,7 +902,11 @@ func (g *Generator) ids(r *engine.Resource, ov *Override, create *operation, oth
 		}
 		id = parents[i]
 		r.IDAttr = id.Name
-		r.Import = []string{id.Name}
+		// Importing needs every path parameter, parents first.
+		r.Import = nil
+		for _, p := range parents {
+			r.Import = append(r.Import, p.Name)
+		}
 		for _, op := range append(others, collection) {
 			if op == nil {
 				continue

@@ -67,6 +67,10 @@ type Attr struct {
 	// sometimes name the parameter differently.
 	PathParams []string
 
+	// Query names the query parameter this attribute fills when a data
+	// source reads the object. Unless Required, it is optional.
+	Query string
+
 	// Deprecated, when set, is shown to users who configure the attribute.
 	Deprecated string
 
@@ -82,6 +86,8 @@ type Op struct {
 	Path   string
 	// Envelope is true when the response wraps the object in "data".
 	Envelope bool
+	// Text says the response is plain text, decoded as one "value" field.
+	Text bool
 	// Paging says how a list operation pages; PageSize is the page size to
 	// ask for.
 	Paging   Paging
@@ -250,4 +256,9 @@ func (r *Resource) withFixedID(obj Object) Object {
 	}
 	out["id"] = r.FixedID
 	return out
+}
+
+// Path fills the {param} placeholders of p from vals, for hooks.
+func (r *Resource) Path(p string, vals Values) (string, error) {
+	return fillPath(r.Attrs, p, vals)
 }

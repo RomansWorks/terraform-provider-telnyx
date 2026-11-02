@@ -9,7 +9,7 @@ import "github.com/RomansWorks/terraform-provider-telnyx/internal/engine"
 func IPConnection() *engine.Resource {
 	return &engine.Resource{
 		TypeName:    "telnyx_ip_connection",
-		Description: "TODO Create an Ip connection",
+		Description: "A SIP connection that authenticates by source IP address.",
 		Create:      &engine.Op{Method: "POST", Path: "/ip_connections", Envelope: true},
 		Read:        &engine.Op{Method: "GET", Path: "/ip_connections/{id}", Envelope: true},
 		Update:      &engine.Op{Method: "PATCH", Path: "/ip_connections/{id}", Envelope: true},
@@ -75,7 +75,7 @@ func IPConnection() *engine.Resource {
 					{Name: "generate_ringback_tone", JSON: "generate_ringback_tone", Kind: engine.KindBool, Optional: true, Computed: true, InCreate: true, InUpdate: true, InResponse: true, Description: "Generate ringback tone through 183 session progress message with early media."},
 					{Name: "instant_ringback_enabled", JSON: "instant_ringback_enabled", Kind: engine.KindBool, Optional: true, Computed: true, InCreate: true, InUpdate: true, InResponse: true, Description: "When set, ringback will not wait for indication before sending ringback tone to calling party."},
 					{Name: "ip_authentication_method", JSON: "ip_authentication_method", Kind: engine.KindString, Optional: true, Computed: true, InCreate: true, InUpdate: true, InResponse: true, Enum: []string{"tech-prefixp-charge-info", "token"}},
-					{Name: "ip_authentication_token", JSON: "ip_authentication_token", Kind: engine.KindString, Optional: true, Computed: true, InCreate: true, InUpdate: true, InResponse: true},
+					{Name: "ip_authentication_token", JSON: "ip_authentication_token", Kind: engine.KindString, Optional: true, Computed: true, Sensitive: true, InCreate: true, InUpdate: true, InResponse: true},
 					{Name: "localization", JSON: "localization", Kind: engine.KindString, Optional: true, Computed: true, InCreate: true, InUpdate: true, InResponse: true, Description: "A 2-character country code specifying the country whose national dialing rules should be used. For example, if set to `US` then any US number can be dialed without preprending +1 to the number. When left blank, Telnyx will try US and GB dialing rules, in that order, by default."},
 					{Name: "outbound_voice_profile_id", JSON: "outbound_voice_profile_id", Kind: engine.KindString, Optional: true, Computed: true, InCreate: true, InUpdate: true, InResponse: true, Description: "Identifies the associated outbound voice profile."},
 					{Name: "t38_reinvite_source", JSON: "t38_reinvite_source", Kind: engine.KindString, Optional: true, Computed: true, InCreate: true, InUpdate: true, InResponse: true, Enum: []string{"callee-passthru", "caller-passthru", "customer", "disabled", "passthru", "telnyx"}, Description: "This setting only affects connections with Fax-type Outbound Voice Profiles. The setting dictates whether or not Telnyx sends a t.38 reinvite.<br/><br/> By default, Telnyx will send the re-invite. If set to `customer`, the caller is expected to send the t.38 reinvite."},
@@ -88,7 +88,7 @@ func IPConnection() *engine.Resource {
 					{Name: "port", JSON: "port", Kind: engine.KindString, Optional: true, Computed: true, InCreate: true, InUpdate: true, InResponse: true, Enum: []string{"rtcp-mux", "rtp+1"}, Description: "RTCP port by default is rtp+1, it can also be set to rtcp-mux"},
 					{Name: "report_frequency_secs", JSON: "report_frequency_secs", Kind: engine.KindInt, Optional: true, Computed: true, InCreate: true, InUpdate: true, InResponse: true, Description: "RTCP reports are sent to customers based on the frequency set. Frequency is in seconds and it can be set to values from 5 to 3000 seconds."},
 				}},
-			{Name: "tags", JSON: "tags", Kind: engine.KindList, Optional: true, Computed: true, InCreate: true, InUpdate: true, InResponse: true, Description: "Tags associated with the connection.", Elem: &engine.Attr{Kind: engine.KindString}},
+			{Name: "tags", JSON: "tags", Kind: engine.KindSet, Optional: true, Computed: true, InCreate: true, InUpdate: true, InResponse: true, Description: "Tags associated with the connection.", Elem: &engine.Attr{Kind: engine.KindString}},
 			{Name: "transport_protocol", JSON: "transport_protocol", Kind: engine.KindString, Optional: true, Computed: true, InCreate: true, InUpdate: true, InResponse: true, Enum: []string{"TCP", "TLS", "UDP"}, Description: "One of UDP, TLS, or TCP. Applies only to connections with IP authentication or FQDN authentication."},
 			{Name: "updated_at", JSON: "updated_at", Kind: engine.KindString, Computed: true, InResponse: true, Description: "ISO 8601 formatted date indicating when the resource was updated."},
 			{Name: "webhook_api_version", JSON: "webhook_api_version", Kind: engine.KindString, Optional: true, Computed: true, InCreate: true, InUpdate: true, InResponse: true, Enum: []string{"1", "2"}, Description: "Determines which webhook format will be used, Telnyx API v1 or v2."},

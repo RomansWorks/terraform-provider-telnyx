@@ -9,7 +9,7 @@ import "github.com/RomansWorks/terraform-provider-telnyx/internal/engine"
 func VoiceChannelZone() *engine.Resource {
 	return &engine.Resource{
 		TypeName:    "telnyx_voice_channel_zone",
-		Description: "TODO",
+		Description: "The number of voice channels in a non-US zone. Zones cannot be created or deleted; destroy removes it from Terraform state only.",
 		Create:      &engine.Op{Method: "PUT", Path: "/channel_zones/{channel_zone_id}", Envelope: false},
 		Update:      &engine.Op{Method: "PUT", Path: "/channel_zones/{channel_zone_id}", Envelope: false},
 		ReadFrom:    &engine.ReadFrom{Op: &engine.Op{Method: "GET", Path: "/channel_zones", Envelope: true, Paging: engine.PagingNumber, PageSize: 250}, Field: "", Key: "id"},

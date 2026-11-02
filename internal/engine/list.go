@@ -59,7 +59,7 @@ func (l *List) Schema() dschema.Schema {
 	attrs := map[string]dschema.Attribute{
 		maxItemsAttr: dschema.Int64Attribute{Optional: true,
 			MarkdownDescription: "Stop reading after this many items. By default every page is read."},
-		l.Items.Name: dataAttr(l.Items, false),
+		l.Items.Name: dataAttr(l.Items, false, false),
 	}
 	for _, a := range l.Params {
 		// Parameters are sent, never read back: no drift note.

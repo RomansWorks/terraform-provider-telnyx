@@ -9,7 +9,7 @@ import "github.com/RomansWorks/terraform-provider-telnyx/internal/engine"
 func PortingLoaConfiguration() *engine.Resource {
 	return &engine.Resource{
 		TypeName:    "telnyx_porting_loa_configuration",
-		Description: "TODO Create a LOA configuration",
+		Description: "A letter of authorization (LOA) template used for porting orders.",
 		Create:      &engine.Op{Method: "POST", Path: "/porting/loa_configurations", Envelope: true},
 		Read:        &engine.Op{Method: "GET", Path: "/porting/loa_configurations/{id}", Envelope: true},
 		Update:      &engine.Op{Method: "PATCH", Path: "/porting/loa_configurations/{id}", Envelope: true},

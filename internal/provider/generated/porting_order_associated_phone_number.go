@@ -9,7 +9,7 @@ import "github.com/RomansWorks/terraform-provider-telnyx/internal/engine"
 func PortingOrderAssociatedPhoneNumber() *engine.Resource {
 	return &engine.Resource{
 		TypeName:    "telnyx_porting_order_associated_phone_number",
-		Description: "TODO Create an associated phone number",
+		Description: "A phone number range associated with a porting order, and what to do with it when the order completes.",
 		Create:      &engine.Op{Method: "POST", Path: "/porting_orders/{porting_order_id}/associated_phone_numbers", Envelope: true},
 		Delete:      &engine.Op{Method: "DELETE", Path: "/porting_orders/{porting_order_id}/associated_phone_numbers/{id}", Envelope: false},
 		ReadFrom:    &engine.ReadFrom{Op: &engine.Op{Method: "GET", Path: "/porting_orders/{porting_order_id}/associated_phone_numbers", Envelope: true, Paging: engine.PagingNumber, PageSize: 250}, Field: "", Key: "id"},

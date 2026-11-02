@@ -9,7 +9,7 @@ import "github.com/RomansWorks/terraform-provider-telnyx/internal/engine"
 func PayConnector() *engine.Resource {
 	return &engine.Resource{
 		TypeName:    "telnyx_pay_connector",
-		Description: "TODO Create a Pay connector",
+		Description: "A Pay connector, which takes card payments during calls through your payment gateway.",
 		Create:      &engine.Op{Method: "POST", Path: "/pay_connectors", Envelope: true},
 		Read:        &engine.Op{Method: "GET", Path: "/pay_connectors/{name}", Envelope: true},
 		Update:      &engine.Op{Method: "PATCH", Path: "/pay_connectors/{name}", Envelope: true},

@@ -9,7 +9,7 @@ import "github.com/RomansWorks/terraform-provider-telnyx/internal/engine"
 func AdvancedNumberOrder() *engine.Resource {
 	return &engine.Resource{
 		TypeName:    "telnyx_advanced_number_order",
-		Description: "TODO Create Advanced Order",
+		Description: "An advanced order for phone numbers, by country, type and features. Orders cannot be cancelled through the API.",
 		Create:      &engine.Op{Method: "POST", Path: "/advanced_orders", Envelope: false},
 		Read:        &engine.Op{Method: "GET", Path: "/advanced_orders/{order_id}", Envelope: false},
 		IDAttr:      "id",
@@ -20,7 +20,7 @@ func AdvancedNumberOrder() *engine.Resource {
 			{Name: "comments", JSON: "comments", Kind: engine.KindString, Optional: true, Computed: true, ForceNew: true, InCreate: true, InResponse: true},
 			{Name: "country_code", JSON: "country_code", Kind: engine.KindString, Optional: true, Computed: true, ForceNew: true, InCreate: true, InResponse: true},
 			{Name: "customer_reference", JSON: "customer_reference", Kind: engine.KindString, Optional: true, Computed: true, ForceNew: true, InCreate: true, InResponse: true},
-			{Name: "features", JSON: "features", Kind: engine.KindList, Optional: true, Computed: true, ForceNew: true, InCreate: true, InResponse: true, Elem: &engine.Attr{Kind: engine.KindJSON}},
+			{Name: "features", JSON: "features", Kind: engine.KindSet, Optional: true, Computed: true, ForceNew: true, InCreate: true, InResponse: true, Elem: &engine.Attr{Kind: engine.KindJSON}},
 			{Name: "id", JSON: "id", Kind: engine.KindString, Computed: true, InResponse: true, PathParams: []string{"order_id"}, Description: "The object's id."},
 			{Name: "orders", JSON: "orders", Kind: engine.KindList, Computed: true, InResponse: true, Elem: &engine.Attr{Kind: engine.KindString}},
 			{Name: "phone_number_type", JSON: "phone_number_type", Kind: engine.KindString, Optional: true, Computed: true, ForceNew: true, InCreate: true, InResponse: true, Enum: []string{"landline", "local", "mobile", "national", "shared_cost", "toll_free"}},

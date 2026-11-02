@@ -207,7 +207,8 @@ func attrType(a *Attr) attrTypeT {
 func (r *Resource) DataSourceSchema() dschema.Schema {
 	attrs := map[string]dschema.Attribute{}
 	for _, a := range r.dataAttrs() {
-		attrs[a.Name] = dataAttr(a, slices.Contains(r.Import, a.Name))
+		required := slices.Contains(r.Import, a.Name) || a.Query != "" && a.Required
+		attrs[a.Name] = dataAttr(a, required, a.Query != "" && !required)
 	}
 	return dschema.Schema{MarkdownDescription: r.Description, Attributes: attrs}
 }
@@ -218,7 +219,7 @@ func (r *Resource) dataAttrs() []*Attr {
 	var out []*Attr
 	for _, a := range r.Attrs {
 		lookup := slices.Contains(r.Import, a.Name)
-		if !lookup && (a.Local || !a.InResponse) {
+		if !lookup && a.Query == "" && (a.Local || !a.InResponse) {
 			continue
 		}
 		out = append(out, a)
@@ -226,18 +227,20 @@ func (r *Resource) dataAttrs() []*Attr {
 	return out
 }
 
-func dataAttr(a *Attr, required bool) dschema.Attribute {
+// dataAttr builds a data source attribute: required, optional (and
+// computed) or computed only.
+func dataAttr(a *Attr, required, optional bool) dschema.Attribute {
 	desc := description(a)
 	comp := !required
 	switch a.Kind {
 	case KindString, KindJSON:
-		return dschema.StringAttribute{Required: required, Computed: comp, Sensitive: a.Sensitive, MarkdownDescription: desc}
+		return dschema.StringAttribute{Required: required, Optional: optional, Computed: comp, Sensitive: a.Sensitive, MarkdownDescription: desc}
 	case KindInt:
-		return dschema.Int64Attribute{Computed: comp, Required: required, Sensitive: a.Sensitive, MarkdownDescription: desc}
+		return dschema.Int64Attribute{Computed: comp, Required: required, Optional: optional, Sensitive: a.Sensitive, MarkdownDescription: desc}
 	case KindFloat:
-		return dschema.Float64Attribute{Computed: comp, Required: required, Sensitive: a.Sensitive, MarkdownDescription: desc}
+		return dschema.Float64Attribute{Computed: comp, Required: required, Optional: optional, Sensitive: a.Sensitive, MarkdownDescription: desc}
 	case KindBool:
-		return dschema.BoolAttribute{Computed: comp, Required: required, Sensitive: a.Sensitive, MarkdownDescription: desc}
+		return dschema.BoolAttribute{Computed: comp, Required: required, Optional: optional, Sensitive: a.Sensitive, MarkdownDescription: desc}
 	case KindList:
 		if a.Elem != nil {
 			return dschema.ListAttribute{ElementType: attrType(a.Elem), Computed: true, Sensitive: a.Sensitive, MarkdownDescription: desc}
@@ -259,7 +262,7 @@ func dataAttr(a *Attr, required bool) dschema.Attribute {
 func dataNested(attrs []*Attr) map[string]dschema.Attribute {
 	out := make(map[string]dschema.Attribute, len(attrs))
 	for _, a := range attrs {
-		out[a.Name] = dataAttr(a, false)
+		out[a.Name] = dataAttr(a, false, false)
 	}
 	return out
 }

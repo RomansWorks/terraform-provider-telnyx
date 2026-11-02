@@ -9,7 +9,7 @@ import "github.com/RomansWorks/terraform-provider-telnyx/internal/engine"
 func PhoneNumberVoicemail() *engine.Resource {
 	return &engine.Resource{
 		TypeName:    "telnyx_phone_number_voicemail",
-		Description: "TODO Create voicemail",
+		Description: "The voicemail of a phone number. Destroy removes it from Terraform state only.",
 		Create:      &engine.Op{Method: "POST", Path: "/phone_numbers/{phone_number_id}/voicemail", Envelope: true},
 		Read:        &engine.Op{Method: "GET", Path: "/phone_numbers/{phone_number_id}/voicemail", Envelope: true},
 		Update:      &engine.Op{Method: "PATCH", Path: "/phone_numbers/{phone_number_id}/voicemail", Envelope: true},
@@ -24,7 +24,7 @@ func PhoneNumberVoicemail() *engine.Resource {
 					{Name: "mode", JSON: "mode", Kind: engine.KindString, Optional: true, Computed: true, InCreate: true, InUpdate: true, InResponse: true, Enum: []string{"custom_greeting", "default"}, Description: "The greeting mode. `default` plays the standard system greeting. `custom_greeting` plays the audio referenced by `media_name`."},
 				}},
 			{Name: "phone_number_id", Kind: engine.KindString, Required: true, ForceNew: true, Local: true, PathParams: []string{"phone_number_id"}, Description: "The phone number id."},
-			{Name: "pin", JSON: "pin", Kind: engine.KindString, Optional: true, Computed: true, InCreate: true, InUpdate: true, InResponse: true, Description: "The pin used for the voicemail."},
+			{Name: "pin", JSON: "pin", Kind: engine.KindString, Optional: true, Computed: true, Sensitive: true, InCreate: true, InUpdate: true, InResponse: true, Description: "The pin used for the voicemail."},
 		},
 	}
 }

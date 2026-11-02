@@ -9,7 +9,7 @@ import "github.com/RomansWorks/terraform-provider-telnyx/internal/engine"
 func TexmlApplication() *engine.Resource {
 	return &engine.Resource{
 		TypeName:    "telnyx_texml_application",
-		Description: "TODO Creates a TeXML Application",
+		Description: "A TeXML application, which runs TeXML instructions from your webhook on calls.",
 		Create:      &engine.Op{Method: "POST", Path: "/texml_applications", Envelope: true},
 		Read:        &engine.Op{Method: "GET", Path: "/texml_applications/{id}", Envelope: true},
 		Update:      &engine.Op{Method: "PATCH", Path: "/texml_applications/{id}", Envelope: true},
@@ -42,7 +42,7 @@ func TexmlApplication() *engine.Resource {
 			{Name: "record_type", JSON: "record_type", Kind: engine.KindString, Computed: true, InResponse: true, Description: "Identifies the type of the resource."},
 			{Name: "status_callback", JSON: "status_callback", Kind: engine.KindString, Optional: true, Computed: true, InCreate: true, InUpdate: true, InResponse: true, Description: "URL for Telnyx to send requests to containing information about call progress events."},
 			{Name: "status_callback_method", JSON: "status_callback_method", Kind: engine.KindString, Optional: true, Computed: true, InCreate: true, InUpdate: true, InResponse: true, Enum: []string{"get", "post"}, Description: "HTTP request method Telnyx should use when requesting the status_callback URL."},
-			{Name: "tags", JSON: "tags", Kind: engine.KindList, Optional: true, Computed: true, InCreate: true, InUpdate: true, InResponse: true, Description: "Tags associated with the Texml Application.", Elem: &engine.Attr{Kind: engine.KindString}},
+			{Name: "tags", JSON: "tags", Kind: engine.KindSet, Optional: true, Computed: true, InCreate: true, InUpdate: true, InResponse: true, Description: "Tags associated with the Texml Application.", Elem: &engine.Attr{Kind: engine.KindString}},
 			{Name: "updated_at", JSON: "updated_at", Kind: engine.KindString, Computed: true, InResponse: true, Description: "ISO 8601 formatted date indicating when the resource was updated."},
 			{Name: "voice_fallback_url", JSON: "voice_fallback_url", Kind: engine.KindString, Optional: true, Computed: true, InCreate: true, InUpdate: true, InResponse: true, Description: "URL to which Telnyx will deliver your XML Translator webhooks if we get an error response from your voice_url."},
 			{Name: "voice_method", JSON: "voice_method", Kind: engine.KindString, Optional: true, Computed: true, InCreate: true, InUpdate: true, InResponse: true, Enum: []string{"get", "post"}, Description: "HTTP request method Telnyx will use to interact with your XML Translator webhooks. Either 'get' or 'post'."},

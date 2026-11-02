@@ -9,7 +9,7 @@ import "github.com/RomansWorks/terraform-provider-telnyx/internal/engine"
 func Address() *engine.Resource {
 	return &engine.Resource{
 		TypeName:    "telnyx_address",
-		Description: "TODO Creates an address",
+		Description: "A postal address used for emergency services and number orders. Addresses cannot be changed; a new value replaces the address.",
 		Create:      &engine.Op{Method: "POST", Path: "/addresses", Envelope: true},
 		Read:        &engine.Op{Method: "GET", Path: "/addresses/{id}", Envelope: true},
 		Delete:      &engine.Op{Method: "DELETE", Path: "/addresses/{id}", Envelope: false},

@@ -9,7 +9,7 @@ import "github.com/RomansWorks/terraform-provider-telnyx/internal/engine"
 func VerifyProfileMessageTemplate() *engine.Resource {
 	return &engine.Resource{
 		TypeName:    "telnyx_verify_profile_message_template",
-		Description: "TODO Create message template",
+		Description: "A message template for Verify codes. The Telnyx API cannot delete templates.",
 		Create:      &engine.Op{Method: "POST", Path: "/verify_profiles/templates", Envelope: true},
 		Update:      &engine.Op{Method: "PATCH", Path: "/verify_profiles/templates/{template_id}", Envelope: true},
 		ReadFrom:    &engine.ReadFrom{Op: &engine.Op{Method: "GET", Path: "/verify_profiles/templates", Envelope: true}, Field: "", Key: "id"},

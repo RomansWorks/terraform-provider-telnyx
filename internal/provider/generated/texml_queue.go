@@ -9,7 +9,7 @@ import "github.com/RomansWorks/terraform-provider-telnyx/internal/engine"
 func TexmlQueue() *engine.Resource {
 	return &engine.Resource{
 		TypeName:    "telnyx_texml_queue",
-		Description: "TODO Create a new queue",
+		Description: "A queue of TeXML calls in an account.",
 		Create:      &engine.Op{Method: "POST", Path: "/texml/Accounts/{account_sid}/Queues", Envelope: false},
 		Read:        &engine.Op{Method: "GET", Path: "/texml/Accounts/{account_sid}/Queues/{queue_sid}", Envelope: false},
 		Update:      &engine.Op{Method: "POST", Path: "/texml/Accounts/{account_sid}/Queues/{queue_sid}", Envelope: false},

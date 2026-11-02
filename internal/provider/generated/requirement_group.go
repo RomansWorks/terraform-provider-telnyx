@@ -9,7 +9,7 @@ import "github.com/RomansWorks/terraform-provider-telnyx/internal/engine"
 func RequirementGroup() *engine.Resource {
 	return &engine.Resource{
 		TypeName:    "telnyx_requirement_group",
-		Description: "TODO Create a new requirement group",
+		Description: "A group of answers to the regulatory requirements of phone numbers in a country.",
 		Create:      &engine.Op{Method: "POST", Path: "/requirement_groups", Envelope: false},
 		Read:        &engine.Op{Method: "GET", Path: "/requirement_groups/{id}", Envelope: false},
 		Update:      &engine.Op{Method: "PATCH", Path: "/requirement_groups/{id}", Envelope: false},

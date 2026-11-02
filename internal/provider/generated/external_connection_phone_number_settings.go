@@ -9,12 +9,12 @@ import "github.com/RomansWorks/terraform-provider-telnyx/internal/engine"
 func ExternalConnectionPhoneNumberSettings() *engine.Resource {
 	return &engine.Resource{
 		TypeName:    "telnyx_external_connection_phone_number_settings",
-		Description: "TODO",
+		Description: "The settings of a phone number on an external connection. Destroy removes them from Terraform state only.",
 		Create:      &engine.Op{Method: "PATCH", Path: "/external_connections/{id}/phone_numbers/{phone_number_id}", Envelope: true},
 		Read:        &engine.Op{Method: "GET", Path: "/external_connections/{id}/phone_numbers/{phone_number_id}", Envelope: true},
 		Update:      &engine.Op{Method: "PATCH", Path: "/external_connections/{id}/phone_numbers/{phone_number_id}", Envelope: true},
 		IDAttr:      "phone_number_id",
-		Import:      []string{"phone_number_id"},
+		Import:      []string{"external_connection_id", "phone_number_id"},
 		DataSource:  true,
 		Attrs: []*engine.Attr{
 			{Name: "acquired_capabilities", JSON: "acquired_capabilities", Kind: engine.KindList, Computed: true, InResponse: true, Elem: &engine.Attr{Kind: engine.KindString}},

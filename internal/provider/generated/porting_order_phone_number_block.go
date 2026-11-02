@@ -9,7 +9,7 @@ import "github.com/RomansWorks/terraform-provider-telnyx/internal/engine"
 func PortingOrderPhoneNumberBlock() *engine.Resource {
 	return &engine.Resource{
 		TypeName:    "telnyx_porting_order_phone_number_block",
-		Description: "TODO Create a phone number block",
+		Description: "A block of phone numbers in a porting order.",
 		Create:      &engine.Op{Method: "POST", Path: "/porting_orders/{porting_order_id}/phone_number_blocks", Envelope: true},
 		Delete:      &engine.Op{Method: "DELETE", Path: "/porting_orders/{porting_order_id}/phone_number_blocks/{id}", Envelope: false},
 		ReadFrom:    &engine.ReadFrom{Op: &engine.Op{Method: "GET", Path: "/porting_orders/{porting_order_id}/phone_number_blocks", Envelope: true, Paging: engine.PagingNumber, PageSize: 250}, Field: "", Key: "id"},

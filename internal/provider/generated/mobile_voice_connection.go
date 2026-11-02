@@ -9,7 +9,7 @@ import "github.com/RomansWorks/terraform-provider-telnyx/internal/engine"
 func MobileVoiceConnection() *engine.Resource {
 	return &engine.Resource{
 		TypeName:    "telnyx_mobile_voice_connection",
-		Description: "TODO Create a Mobile Voice Connection",
+		Description: "A connection for voice on Telnyx mobile SIM cards.",
 		Create:      &engine.Op{Method: "POST", Path: "/v2/mobile_voice_connections", Envelope: true},
 		Read:        &engine.Op{Method: "GET", Path: "/v2/mobile_voice_connections/{id}", Envelope: true},
 		Update:      &engine.Op{Method: "PATCH", Path: "/v2/mobile_voice_connections/{id}", Envelope: true},
@@ -32,7 +32,7 @@ func MobileVoiceConnection() *engine.Resource {
 					{Name: "outbound_voice_profile_id", JSON: "outbound_voice_profile_id", Kind: engine.KindString, Optional: true, Computed: true, InCreate: true, InUpdate: true, InResponse: true},
 				}},
 			{Name: "record_type", JSON: "record_type", Kind: engine.KindString, Computed: true, InResponse: true, Description: "Identifies the type of the resource."},
-			{Name: "tags", JSON: "tags", Kind: engine.KindList, Optional: true, Computed: true, InCreate: true, InUpdate: true, InResponse: true, Description: "A list of tags associated with the connection.", Elem: &engine.Attr{Kind: engine.KindString}},
+			{Name: "tags", JSON: "tags", Kind: engine.KindSet, Optional: true, Computed: true, InCreate: true, InUpdate: true, InResponse: true, Description: "A list of tags associated with the connection.", Elem: &engine.Attr{Kind: engine.KindString}},
 			{Name: "updated_at", JSON: "updated_at", Kind: engine.KindString, Computed: true, InResponse: true},
 			{Name: "webhook_api_version", JSON: "webhook_api_version", Kind: engine.KindString, Optional: true, Computed: true, InCreate: true, InUpdate: true, InResponse: true, Enum: []string{"1", "2"}, Description: "The API version for webhooks."},
 			{Name: "webhook_event_failover_url", JSON: "webhook_event_failover_url", Kind: engine.KindString, Optional: true, Computed: true, InCreate: true, InUpdate: true, InResponse: true, Description: "The failover URL where webhooks are sent."},

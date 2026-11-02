@@ -9,7 +9,7 @@ import "github.com/RomansWorks/terraform-provider-telnyx/internal/engine"
 func FaxApplication() *engine.Resource {
 	return &engine.Resource{
 		TypeName:    "telnyx_fax_application",
-		Description: "TODO Creates a Fax Application",
+		Description: "A fax application, which sends fax events to a webhook.",
 		Create:      &engine.Op{Method: "POST", Path: "/fax_applications", Envelope: true},
 		Read:        &engine.Op{Method: "GET", Path: "/fax_applications/{id}", Envelope: true},
 		Update:      &engine.Op{Method: "PATCH", Path: "/fax_applications/{id}", Envelope: true},
@@ -36,7 +36,7 @@ func FaxApplication() *engine.Resource {
 					{Name: "outbound_voice_profile_id", JSON: "outbound_voice_profile_id", Kind: engine.KindString, Optional: true, Computed: true, InCreate: true, InUpdate: true, InResponse: true, Description: "Identifies the associated outbound voice profile."},
 				}},
 			{Name: "record_type", JSON: "record_type", Kind: engine.KindString, Computed: true, InResponse: true, Description: "Identifies the type of the resource."},
-			{Name: "tags", JSON: "tags", Kind: engine.KindList, Optional: true, Computed: true, InCreate: true, InUpdate: true, InResponse: true, Description: "Tags associated with the Fax Application.", Elem: &engine.Attr{Kind: engine.KindString}},
+			{Name: "tags", JSON: "tags", Kind: engine.KindSet, Optional: true, Computed: true, InCreate: true, InUpdate: true, InResponse: true, Description: "Tags associated with the Fax Application.", Elem: &engine.Attr{Kind: engine.KindString}},
 			{Name: "updated_at", JSON: "updated_at", Kind: engine.KindString, Computed: true, InResponse: true, Description: "ISO 8601 formatted date indicating when the resource was updated."},
 			{Name: "webhook_event_failover_url", JSON: "webhook_event_failover_url", Kind: engine.KindString, Optional: true, Computed: true, InCreate: true, InUpdate: true, InResponse: true, Description: "The failover URL where webhooks related to this connection will be sent if sending to the primary URL fails. Must include a scheme, such as 'https'."},
 			{Name: "webhook_event_url", JSON: "webhook_event_url", Kind: engine.KindString, Required: true, InCreate: true, InUpdate: true, InResponse: true, Description: "The URL where webhooks related to this connection will be sent. Must include a scheme, such as 'https'."},

@@ -9,7 +9,7 @@ import "github.com/RomansWorks/terraform-provider-telnyx/internal/engine"
 func DialogflowConnection() *engine.Resource {
 	return &engine.Resource{
 		TypeName:    "telnyx_dialogflow_connection",
-		Description: "TODO Create a Dialogflow Connection",
+		Description: "The Google Dialogflow integration of a connection.",
 		Create:      &engine.Op{Method: "POST", Path: "/dialogflow_connections/{connection_id}", Envelope: true},
 		Read:        &engine.Op{Method: "GET", Path: "/dialogflow_connections/{connection_id}", Envelope: true},
 		Update:      &engine.Op{Method: "PUT", Path: "/dialogflow_connections/{connection_id}", Envelope: true},
@@ -24,7 +24,7 @@ func DialogflowConnection() *engine.Resource {
 			{Name: "environment", JSON: "environment", Kind: engine.KindString, Optional: true, Computed: true, InCreate: true, InUpdate: true, InResponse: true, Description: "Which Dialogflow environment will be used."},
 			{Name: "location", JSON: "location", Kind: engine.KindString, Optional: true, InCreate: true, InUpdate: true, Description: "The region of your agent is. (If you use Dialogflow CX, this param is required)"},
 			{Name: "record_type", JSON: "record_type", Kind: engine.KindString, Computed: true, InResponse: true},
-			{Name: "service_account", JSON: "service_account", Kind: engine.KindJSON, Required: true, InCreate: true, InUpdate: true, InResponse: true, Description: "The JSON map to connect your Dialoglow account."},
+			{Name: "service_account", JSON: "service_account", Kind: engine.KindJSON, Required: true, Sensitive: true, InCreate: true, InUpdate: true, InResponse: true, Description: "The JSON map to connect your Dialoglow account."},
 		},
 	}
 }

@@ -9,7 +9,7 @@ import "github.com/RomansWorks/terraform-provider-telnyx/internal/engine"
 func NumberBlockOrder() *engine.Resource {
 	return &engine.Resource{
 		TypeName:    "telnyx_number_block_order",
-		Description: "TODO Create a number block order",
+		Description: "An order for a contiguous block of phone numbers. Orders cannot be cancelled through the API.",
 		Create:      &engine.Op{Method: "POST", Path: "/number_block_orders", Envelope: true},
 		Read:        &engine.Op{Method: "GET", Path: "/number_block_orders/{number_block_order_id}", Envelope: true},
 		IDAttr:      "id",

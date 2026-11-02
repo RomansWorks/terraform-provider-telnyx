@@ -9,7 +9,7 @@ import "github.com/RomansWorks/terraform-provider-telnyx/internal/engine"
 func Queue() *engine.Resource {
 	return &engine.Resource{
 		TypeName:    "telnyx_queue",
-		Description: "TODO Create a queue",
+		Description: "A call queue for Call Control applications.",
 		Create:      &engine.Op{Method: "POST", Path: "/queues", Envelope: true},
 		Read:        &engine.Op{Method: "GET", Path: "/queues/{queue_name}", Envelope: true},
 		Update:      &engine.Op{Method: "POST", Path: "/queues/{queue_name}", Envelope: true},

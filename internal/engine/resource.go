@@ -467,7 +467,17 @@ func Get(ctx context.Context, c *client.Client, d *Resource, vals Values) (Objec
 	if err != nil {
 		return nil, err
 	}
-	out, err := c.Send(ctx, d.Read.Method, p, nil, "", nil)
+	var query url.Values
+	for _, a := range d.Attrs {
+		var s string
+		if v := vals[a.Name]; a.Query != "" && v.IsKnown() && !v.IsNull() && v.As(&s) == nil && s != "" {
+			if query == nil {
+				query = url.Values{}
+			}
+			query.Set(a.Query, s)
+		}
+	}
+	out, err := c.Send(ctx, d.Read.Method, p, query, "", nil)
 	if err != nil {
 		return nil, err
 	}

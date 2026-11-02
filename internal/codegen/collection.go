@@ -80,6 +80,27 @@ func (g *Generator) deriveData(ov *Override) (*engine.Resource, error) {
 		a.PathParams = append(a.PathParams, p)
 		r.Import = append(r.Import, name)
 	}
+	// Scalar query parameters narrow the lookup. A response field of the
+	// same name takes the input, so it is optional and computed.
+	for _, p := range g.params(read) {
+		if p.in != "query" || properties(p.schema) != nil {
+			continue
+		}
+		if t, _ := p.schema["type"].(string); t != "string" {
+			return nil, fmt.Errorf("%s: query parameter %s is a %s; only strings are supported", ov.Type, p.name, t)
+		}
+		name := snake(p.name)
+		a := r.Attr(name)
+		if a == nil {
+			a = &engine.Attr{Name: name, Kind: engine.KindString, Local: true, Description: p.desc}
+			if a.Description == "" {
+				a.Description = "Sent as the " + p.name + " query parameter."
+			}
+			r.Attrs = append(r.Attrs, a)
+		}
+		a.Query, a.Required = p.name, p.required
+		a.Enum = stringEnum(p.schema)
+	}
 	if err := checkUnused(ov, d); err != nil {
 		return nil, err
 	}
@@ -135,6 +156,8 @@ func (g *Generator) listItems(op *operation) (map[string]any, bool, error) {
 // param is one operation parameter.
 type param struct {
 	name, in string
+	required bool
+	desc     string
 	schema   map[string]any
 }
 
@@ -152,7 +175,9 @@ func (g *Generator) params(op *operation) []param {
 		if name == "" {
 			continue
 		}
-		out = append(out, param{name: name, in: in, schema: g.norm(p["schema"])})
+		req, _ := p["required"].(bool)
+		desc, _ := p["description"].(string)
+		out = append(out, param{name: name, in: in, required: req, desc: strings.TrimSpace(desc), schema: g.norm(p["schema"])})
 	}
 	return out
 }

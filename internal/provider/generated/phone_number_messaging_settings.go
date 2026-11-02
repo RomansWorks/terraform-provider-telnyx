@@ -9,7 +9,7 @@ import "github.com/RomansWorks/terraform-provider-telnyx/internal/engine"
 func PhoneNumberMessagingSettings() *engine.Resource {
 	return &engine.Resource{
 		TypeName:    "telnyx_phone_number_messaging_settings",
-		Description: "TODO",
+		Description: "The messaging settings of a phone number. Destroy removes them from Terraform state only.",
 		Create:      &engine.Op{Method: "PATCH", Path: "/phone_numbers/{id}/messaging", Envelope: true},
 		Read:        &engine.Op{Method: "GET", Path: "/phone_numbers/{id}/messaging", Envelope: true},
 		Update:      &engine.Op{Method: "PATCH", Path: "/phone_numbers/{id}/messaging", Envelope: true},
@@ -49,7 +49,7 @@ func PhoneNumberMessagingSettings() *engine.Resource {
 			{Name: "phone_number", JSON: "phone_number", Kind: engine.KindString, Computed: true, InResponse: true, Description: "+E.164 formatted phone number."},
 			{Name: "phone_number_id", Kind: engine.KindString, Required: true, ForceNew: true, Local: true, PathParams: []string{"id"}, Description: "The phone number id."},
 			{Name: "record_type", JSON: "record_type", Kind: engine.KindString, Computed: true, InResponse: true, Description: "Identifies the type of the resource."},
-			{Name: "tags", JSON: "tags", Kind: engine.KindList, Optional: true, Computed: true, InCreate: true, InUpdate: true, InResponse: true, Description: "Tags associated with this phone number.", Elem: &engine.Attr{Kind: engine.KindString}},
+			{Name: "tags", JSON: "tags", Kind: engine.KindSet, Optional: true, Computed: true, InCreate: true, InUpdate: true, InResponse: true, Description: "Tags associated with this phone number.", Elem: &engine.Attr{Kind: engine.KindString}},
 			{Name: "traffic_type", JSON: "traffic_type", Kind: engine.KindString, Computed: true, InResponse: true, Description: "The messaging traffic or use case for which the number is currently configured."},
 			{Name: "type", JSON: "type", Kind: engine.KindString, Computed: true, InResponse: true, Description: "The type of the phone number"},
 			{Name: "updated_at", JSON: "updated_at", Kind: engine.KindString, Computed: true, InResponse: true, Description: "ISO 8601 formatted date indicating when the resource was updated."},

@@ -9,7 +9,7 @@ import "github.com/RomansWorks/terraform-provider-telnyx/internal/engine"
 func ExternalConnection() *engine.Resource {
 	return &engine.Resource{
 		TypeName:    "telnyx_external_connection",
-		Description: "TODO Creates an External Connection",
+		Description: "An external connection, which brings voice from Microsoft Teams or another external platform to Telnyx numbers.",
 		Create:      &engine.Op{Method: "POST", Path: "/external_connections", Envelope: true},
 		Read:        &engine.Op{Method: "GET", Path: "/external_connections/{id}", Envelope: true},
 		Update:      &engine.Op{Method: "PATCH", Path: "/external_connections/{id}", Envelope: true},
@@ -34,7 +34,7 @@ func ExternalConnection() *engine.Resource {
 					{Name: "outbound_voice_profile_id", JSON: "outbound_voice_profile_id", Kind: engine.KindString, Optional: true, Computed: true, InCreate: true, InUpdate: true, InResponse: true, Description: "Identifies the associated outbound voice profile."},
 				}},
 			{Name: "record_type", JSON: "record_type", Kind: engine.KindString, Computed: true, InResponse: true, Description: "Identifies the type of the resource."},
-			{Name: "tags", JSON: "tags", Kind: engine.KindList, Optional: true, Computed: true, InCreate: true, InUpdate: true, InResponse: true, Description: "Tags associated with the connection.", Elem: &engine.Attr{Kind: engine.KindString}},
+			{Name: "tags", JSON: "tags", Kind: engine.KindSet, Optional: true, Computed: true, InCreate: true, InUpdate: true, InResponse: true, Description: "Tags associated with the connection.", Elem: &engine.Attr{Kind: engine.KindString}},
 			{Name: "updated_at", JSON: "updated_at", Kind: engine.KindString, Computed: true, InResponse: true, Description: "ISO 8601 formatted date indicating when the resource was updated."},
 			{Name: "webhook_api_version", JSON: "webhook_api_version", Kind: engine.KindString, Computed: true, InResponse: true, Description: "Determines which webhook format will be used, Telnyx API v1 or v2."},
 			{Name: "webhook_event_failover_url", JSON: "webhook_event_failover_url", Kind: engine.KindString, Optional: true, Computed: true, InCreate: true, InUpdate: true, InResponse: true, Description: "The failover URL where webhooks related to this connection will be sent if sending to the primary URL fails. Must include a scheme, such as 'https'."},

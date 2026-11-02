@@ -132,6 +132,9 @@ func opLiteral(o *engine.Op) string {
 	if o.Paging != engine.PagingNone {
 		s += fmt.Sprintf(", Paging: %s, PageSize: %d", pagingNames[o.Paging], o.PageSize)
 	}
+	if o.Text {
+		s += ", Text: true"
+	}
 	return s + "}"
 }
 
@@ -254,6 +257,9 @@ func attr(b *bytes.Buffer, a *engine.Attr) {
 	}
 	if len(a.PathParams) > 0 {
 		add("PathParams", quoteList(a.PathParams))
+	}
+	if a.Query != "" {
+		add("Query", strconv.Quote(a.Query))
 	}
 	if a.Deprecated != "" {
 		add("Deprecated", strconv.Quote(a.Deprecated))

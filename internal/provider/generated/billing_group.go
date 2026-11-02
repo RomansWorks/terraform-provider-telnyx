@@ -9,7 +9,7 @@ import "github.com/RomansWorks/terraform-provider-telnyx/internal/engine"
 func BillingGroup() *engine.Resource {
 	return &engine.Resource{
 		TypeName:    "telnyx_billing_group",
-		Description: "TODO Create a billing group",
+		Description: "A billing group, which groups phone numbers and other usage on invoices.",
 		Create:      &engine.Op{Method: "POST", Path: "/billing_groups", Envelope: true},
 		Read:        &engine.Op{Method: "GET", Path: "/billing_groups/{id}", Envelope: true},
 		Update:      &engine.Op{Method: "PATCH", Path: "/billing_groups/{id}", Envelope: true},

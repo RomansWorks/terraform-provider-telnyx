@@ -6,6 +6,7 @@ package engine
 import (
 	"context"
 	"fmt"
+	"strings"
 
 	"github.com/hashicorp/terraform-plugin-framework/ephemeral"
 	eschema "github.com/hashicorp/terraform-plugin-framework/ephemeral/schema"
@@ -103,7 +104,12 @@ func (r *frameworkEphemeral) Open(ctx context.Context, req ephemeral.OpenRequest
 		var out []byte
 		if out, err = r.c.Send(ctx, e.Open.Method, p, nil, "", nil); err == nil {
 			var obj Object
-			if obj, err = Decode(out, e.Open.Envelope); err == nil {
+			if e.Open.Text {
+				obj = Object{"value": strings.TrimSpace(string(out))}
+			} else {
+				obj, err = Decode(out, e.Open.Envelope)
+			}
+			if err == nil {
 				resp.Result.Raw, err = objectFromJSON(e.Attrs, obj, config, modeData)
 			}
 		}

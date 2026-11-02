@@ -9,7 +9,7 @@ import "github.com/RomansWorks/terraform-provider-telnyx/internal/engine"
 func DynamicEmergencyEndpoint() *engine.Resource {
 	return &engine.Resource{
 		TypeName:    "telnyx_dynamic_emergency_endpoint",
-		Description: "TODO Create a dynamic emergency endpoint.",
+		Description: "An endpoint for dynamic emergency calling, which links a callback number and caller name to a dynamic emergency address.",
 		Create:      &engine.Op{Method: "POST", Path: "/dynamic_emergency_endpoints", Envelope: true},
 		Read:        &engine.Op{Method: "GET", Path: "/dynamic_emergency_endpoints/{id}", Envelope: true},
 		Delete:      &engine.Op{Method: "DELETE", Path: "/dynamic_emergency_endpoints/{id}", Envelope: false},

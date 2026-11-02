@@ -9,7 +9,7 @@ import "github.com/RomansWorks/terraform-provider-telnyx/internal/engine"
 func VerifyProfile() *engine.Resource {
 	return &engine.Resource{
 		TypeName:    "telnyx_verify_profile",
-		Description: "TODO Create a Verify profile",
+		Description: "A Verify profile, which sets how verification codes are sent and checked.",
 		Create:      &engine.Op{Method: "POST", Path: "/verify_profiles", Envelope: true},
 		Read:        &engine.Op{Method: "GET", Path: "/verify_profiles/{verify_profile_id}", Envelope: true},
 		Update:      &engine.Op{Method: "PATCH", Path: "/verify_profiles/{verify_profile_id}", Envelope: true},

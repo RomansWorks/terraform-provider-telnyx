@@ -9,7 +9,7 @@ import "github.com/RomansWorks/terraform-provider-telnyx/internal/engine"
 func PhoneNumber() *engine.Resource {
 	return &engine.Resource{
 		TypeName:         "telnyx_phone_number",
-		Description:      "TODO",
+		Description:      "A phone number in your account. Create adopts a number you already own and manages its settings. Destroy keeps the number unless release_on_destroy is true.",
 		Create:           &engine.Op{Method: "PATCH", Path: "/phone_numbers/{id}", Envelope: true},
 		Read:             &engine.Op{Method: "GET", Path: "/phone_numbers/{id}", Envelope: true},
 		Update:           &engine.Op{Method: "PATCH", Path: "/phone_numbers/{id}", Envelope: true},
@@ -35,7 +35,7 @@ func PhoneNumber() *engine.Resource {
 			{Name: "emergency_address_id", JSON: "emergency_address_id", Kind: engine.KindString, Computed: true, InResponse: true, Description: "Identifies the emergency address associated with the phone number."},
 			{Name: "emergency_enabled", JSON: "emergency_enabled", Kind: engine.KindBool, Computed: true, InResponse: true, Description: "Indicates whether emergency services are enabled for this number."},
 			{Name: "emergency_status", JSON: "emergency_status", Kind: engine.KindString, Computed: true, InResponse: true, Description: "Indicates the status of the provisioning of emergency services for the phone number. This field contains information about activity that may be ongoing for a number where it either is being provisioned or deprovisioned but is not yet enabled/disabled."},
-			{Name: "external_pin", JSON: "external_pin", Kind: engine.KindString, Optional: true, Computed: true, InCreate: true, InUpdate: true, InResponse: true, Description: "If someone attempts to port your phone number away from Telnyx and your phone number has an external PIN set, Telnyx will attempt to verify that you provided the correct external PIN to the winning carrier. Note that not all carriers cooperate with this security mechanism."},
+			{Name: "external_pin", JSON: "external_pin", Kind: engine.KindString, Optional: true, Computed: true, Sensitive: true, InCreate: true, InUpdate: true, InResponse: true, Description: "If someone attempts to port your phone number away from Telnyx and your phone number has an external PIN set, Telnyx will attempt to verify that you provided the correct external PIN to the winning carrier. Note that not all carriers cooperate with this security mechanism."},
 			{Name: "hd_voice_enabled", JSON: "hd_voice_enabled", Kind: engine.KindBool, Optional: true, Computed: true, InCreate: true, InUpdate: true, InResponse: true, Description: "Indicates whether HD voice is enabled for this number."},
 			{Name: "id", JSON: "id", Kind: engine.KindString, Computed: true, InResponse: true, Description: "Identifies the resource."},
 			{Name: "inbound_call_screening", JSON: "inbound_call_screening", Kind: engine.KindString, Computed: true, InResponse: true, Description: "The inbound_call_screening setting is a phone number configuration option variable that allows users to configure their settings to block or flag fraudulent calls. It can be set to disabled, reject_calls, or flag_calls. This feature has an additional per-number monthly cost associated with it."},
@@ -51,7 +51,7 @@ func PhoneNumber() *engine.Resource {
 			{Name: "source_type", JSON: "source_type", Kind: engine.KindString, Computed: true, InResponse: true, Description: "Indicates if the phone number was purchased or ported in. For some numbers this information may not be available."},
 			{Name: "status", JSON: "status", Kind: engine.KindString, Computed: true, InResponse: true, Description: "The phone number's current status."},
 			{Name: "t38_fax_gateway_enabled", JSON: "t38_fax_gateway_enabled", Kind: engine.KindBool, Computed: true, InResponse: true, Description: "Indicates whether T38 Fax Gateway for inbound calls to this number."},
-			{Name: "tags", JSON: "tags", Kind: engine.KindList, Optional: true, Computed: true, InCreate: true, InUpdate: true, InResponse: true, Description: "A list of user-assigned tags to help manage the phone number.", Elem: &engine.Attr{Kind: engine.KindString}},
+			{Name: "tags", JSON: "tags", Kind: engine.KindSet, Optional: true, Computed: true, InCreate: true, InUpdate: true, InResponse: true, Description: "A list of user-assigned tags to help manage the phone number.", Elem: &engine.Attr{Kind: engine.KindString}},
 			{Name: "updated_at", JSON: "updated_at", Kind: engine.KindString, Computed: true, InResponse: true, Description: "ISO 8601 formatted date indicating when the resource was updated."},
 		},
 	}

@@ -9,7 +9,7 @@ import "github.com/RomansWorks/terraform-provider-telnyx/internal/engine"
 func SiprecConnector() *engine.Resource {
 	return &engine.Resource{
 		TypeName:    "telnyx_siprec_connector",
-		Description: "TODO Create a SIPREC connector",
+		Description: "A SIPREC connector, which sends call media to a SIP recording server.",
 		Create:      &engine.Op{Method: "POST", Path: "/siprec_connectors", Envelope: true},
 		Read:        &engine.Op{Method: "GET", Path: "/siprec_connectors/{connector_name}", Envelope: true},
 		Update:      &engine.Op{Method: "PUT", Path: "/siprec_connectors/{connector_name}", Envelope: true},

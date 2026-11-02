@@ -9,7 +9,7 @@ import "github.com/RomansWorks/terraform-provider-telnyx/internal/engine"
 func Document() *engine.Resource {
 	return &engine.Resource{
 		TypeName:    "telnyx_document",
-		Description: "TODO Upload a document",
+		Description: "A document uploaded to Telnyx, such as a letter of authorization or an invoice for porting, from a URL or base64 content.",
 		Create:      &engine.Op{Method: "POST", Path: "/documents", Envelope: true},
 		Read:        &engine.Op{Method: "GET", Path: "/documents/{id}", Envelope: true},
 		Update:      &engine.Op{Method: "PATCH", Path: "/documents/{id}", Envelope: true},
@@ -22,7 +22,7 @@ func Document() *engine.Resource {
 			{Name: "content_type", JSON: "content_type", Kind: engine.KindString, Computed: true, InResponse: true, Description: "The document's content_type."},
 			{Name: "created_at", JSON: "created_at", Kind: engine.KindString, Computed: true, InResponse: true, Description: "ISO 8601 formatted date-time indicating when the resource was created."},
 			{Name: "customer_reference", JSON: "customer_reference", Kind: engine.KindString, Optional: true, Computed: true, InCreate: true, InUpdate: true, InResponse: true, Description: "Optional reference string for customer tracking."},
-			{Name: "file", JSON: "file", Kind: engine.KindString, Optional: true, ForceNew: true, InCreate: true, Description: "Alternatively, instead of the URL you can provide the Base64 encoded contents of the file you are uploading."},
+			{Name: "file", JSON: "file", Kind: engine.KindString, Optional: true, Sensitive: true, ForceNew: true, InCreate: true, Description: "Alternatively, instead of the URL you can provide the Base64 encoded contents of the file you are uploading."},
 			{Name: "filename", JSON: "filename", Kind: engine.KindString, Optional: true, Computed: true, InCreate: true, InUpdate: true, InResponse: true, Description: "The filename of the document."},
 			{Name: "id", JSON: "id", Kind: engine.KindString, Computed: true, InResponse: true, PathParams: []string{"id"}, Description: "Identifies the resource."},
 			{Name: "record_type", JSON: "record_type", Kind: engine.KindString, Computed: true, InResponse: true, Description: "Identifies the type of the resource."},

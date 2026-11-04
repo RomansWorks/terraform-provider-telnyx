@@ -50,7 +50,8 @@
             "resemble",
             "xai",
             "humain",
-            "soniox"
+            "soniox",
+            "assemblyai"
           ],
           "type": "string"
         }
@@ -84,6 +85,64 @@
       }
     },
     "schemas": {
+      "AssemblyAIProviderParams": {
+        "description": "AssemblyAI provider-specific parameters. Every voice speaks all six supported languages; set `language` to the language of the text.",
+        "properties": {
+          "audio_format": {
+            "default": "mp3",
+            "description": "Audio output format.",
+            "enum": [
+              "mp3",
+              "wav",
+              "pcm_s16le",
+              "pcm_mulaw",
+              "pcm_alaw"
+            ],
+            "type": "string"
+          },
+          "language": {
+            "default": "en",
+            "description": "Two-letter ISO 639-1 code of the text. AssemblyAI does not detect the language.",
+            "enum": [
+              "en",
+              "es",
+              "de",
+              "fr",
+              "it",
+              "pt"
+            ],
+            "type": "string"
+          },
+          "model_id": {
+            "default": "assemblyai-tts-1",
+            "description": "AssemblyAI model.",
+            "enum": [
+              "assemblyai-tts-1"
+            ],
+            "type": "string"
+          },
+          "sample_rate": {
+            "description": "Audio sample rate in Hz. Defaults to 24000, or 8000 for `pcm_mulaw` and `pcm_alaw`.",
+            "enum": [
+              8000,
+              16000,
+              22050,
+              24000,
+              44100,
+              48000
+            ],
+            "type": "integer"
+          },
+          "voice_id": {
+            "description": "AssemblyAI voice from the [voices listing](https://developers.telnyx.com/api-reference/text-to-speech-commands/list-available-voices), for example `aai-jane`.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "voice_id"
+        ],
+        "type": "object"
+      },
       "AudioChunkFrame": {
         "description": "Server-to-client frame containing a base64-encoded audio chunk.",
         "properties": {
@@ -311,6 +370,9 @@
       "GenerateSpeechRequest": {
         "description": "Request body for generating speech from text.",
         "properties": {
+          "assemblyai": {
+            "$ref": "#/components/schemas/AssemblyAIProviderParams"
+          },
           "aws": {
             "$ref": "#/components/schemas/AwsProviderParams"
           },
@@ -355,7 +417,8 @@
               "resemble",
               "xai",
               "humain",
-              "soniox"
+              "soniox",
+              "assemblyai"
             ],
             "type": "string"
           },
@@ -844,7 +907,7 @@
   "paths": {
     "/text-to-speech/speech": {
       "get": {
-        "description": "Open a WebSocket connection to stream text and receive synthesized audio in real time. Authentication is provided via the standard `Authorization: Bearer \u003cAPI_KEY\u003e` header. Send JSON frames with text to synthesize; receive JSON frames containing base64-encoded audio chunks.\n\nSupported providers: `aws`, `telnyx`, `azure`, `minimax`, `resemble`, `elevenlabs`, `xai`, `humain`, `soniox`.\n\n**Connection flow:**\n1. Open WebSocket with query parameters specifying provider, voice, and model.\n2. Send an initial handshake message `{\"text\": \" \"}` (single space) with optional `voice_settings` to initialize the session.\n3. Send text messages as `{\"text\": \"Hello world\"}`.\n4. Receive audio chunks as JSON frames with base64-encoded audio.\n5. A final frame with `isFinal: true` indicates the end of audio for the current text.\n\nTo interrupt and restart synthesis mid-stream, send `{\"force\": true}` — the current worker is stopped and a new one is started.\n\n**Note:** The Telnyx `Ultra` model is not available over WebSocket. Use the HTTP POST `/text-to-speech/speech` endpoint instead.",
+        "description": "Open a WebSocket connection to stream text and receive synthesized audio in real time. Authentication is provided via the standard `Authorization: Bearer \u003cAPI_KEY\u003e` header. Send JSON frames with text to synthesize; receive JSON frames containing base64-encoded audio chunks.\n\nSupported providers: `aws`, `telnyx`, `azure`, `minimax`, `resemble`, `elevenlabs`, `xai`, `humain`, `soniox`, `assemblyai`.\n\n**Connection flow:**\n1. Open WebSocket with query parameters specifying provider, voice, and model.\n2. Send an initial handshake message `{\"text\": \" \"}` (single space) with optional `voice_settings` to initialize the session.\n3. Send text messages as `{\"text\": \"Hello world\"}`.\n4. Receive audio chunks as JSON frames with base64-encoded audio.\n5. A final frame with `isFinal: true` indicates the end of audio for the current text.\n\nTo interrupt and restart synthesis mid-stream, send `{\"force\": true}` — the current worker is stopped and a new one is started.\n\n**Note:** The Telnyx `Ultra` model is not available over WebSocket. Use the HTTP POST `/text-to-speech/speech` endpoint instead.",
         "operationId": "TextToSpeechOverWs",
         "parameters": [
           {
@@ -903,12 +966,18 @@
         ]
       },
       "post": {
-        "description": "Generate synthesized speech audio from text input. Returns audio in the requested format (binary audio stream, base64-encoded JSON, or an audio URL for later retrieval).\n\nAuthentication is provided via the standard `Authorization: Bearer \u003cAPI_KEY\u003e` header.\n\nThe `voice` parameter provides a convenient shorthand to specify provider, model, and voice in a single string (e.g. `Telnyx.Ultra.\u003cvoice_id\u003e`). Alternatively, specify `provider` explicitly along with provider-specific parameters.\n\nSupported providers: `aws`, `telnyx`, `azure`, `elevenlabs`, `minimax`, `resemble`, `xai`, `humain`, `soniox`.\n\nThe Telnyx `Ultra` model supports 44 languages with emotion control, speed adjustment, and volume control. Use the `telnyx` provider-specific parameters to configure these features.",
+        "description": "Generate synthesized speech audio from text input. Returns audio in the requested format (binary audio stream, base64-encoded JSON, or an audio URL for later retrieval).\n\nAuthentication is provided via the standard `Authorization: Bearer \u003cAPI_KEY\u003e` header.\n\nThe `voice` parameter provides a convenient shorthand to specify provider, model, and voice in a single string (e.g. `Telnyx.Ultra.\u003cvoice_id\u003e`). Alternatively, specify `provider` explicitly along with provider-specific parameters.\n\nSupported providers: `aws`, `telnyx`, `azure`, `elevenlabs`, `minimax`, `resemble`, `xai`, `humain`, `soniox`, `assemblyai`.\n\nThe Telnyx `Ultra` model supports 44 languages with emotion control, speed adjustment, and volume control. Use the `telnyx` provider-specific parameters to configure these features.",
         "operationId": "generateSpeech",
         "requestBody": {
           "content": {
             "application/json": {
               "example": {
+                "assemblyai": {
+                  "audio_format": "mp3",
+                  "language": "en",
+                  "model_id": "assemblyai-tts-1",
+                  "voice_id": "aai-jane"
+                },
                 "aws": {
                   "language_code": "string",
                   "lexicon_names": [
@@ -1070,7 +1139,8 @@
                 "resemble",
                 "xai",
                 "humain",
-                "soniox"
+                "soniox",
+                "assemblyai"
               ],
               "type": "string"
             }

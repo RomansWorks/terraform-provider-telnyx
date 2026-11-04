@@ -317,17 +317,19 @@ func TestCollectionShapes(t *testing.T) {
 func TestCollectionErrors(t *testing.T) {
 	g := fixture(t)
 	cases := map[string]string{
-		"unsupported paging":       "type: telnyx_x\nkind: data_source\ndescription: x\nlist: GET /cursor_things\n",
-		"read and read_from":       "type: telnyx_x\ndescription: x\ncreate: POST /secrets\nread: GET /widgets/{widget_id}\nread_from: {op: GET /secrets, key: id}\n",
-		"object elements, no key":  "type: telnyx_x\ndescription: x\ncreate: POST /secrets\nread_from: {op: GET /secrets}\n",
-		"plain values with key":    "type: telnyx_x\ndescription: x\ncreate: POST /gadgets/{gadget_id}/tags\nid: tag\nread_from: {op: \"GET /gadgets/{gadget_id}\", field: tags, key: id}\n",
-		"plain values, no id":      "type: telnyx_x\ndescription: x\ncreate: POST /gadgets/{gadget_id}/tags\nread_from: {op: \"GET /gadgets/{gadget_id}\", field: tags}\n",
-		"not an array field":       "type: telnyx_x\ndescription: x\ncreate: POST /gadgets/{gadget_id}/tags\nid: tag\nread_from: {op: \"GET /gadgets/{gadget_id}\", field: name}\n",
-		"update without body":      "type: telnyx_x\ndescription: x\ncreate: POST /gadgets\nread: GET /gadgets/{gadget_id}\nupdates: [{op: \"POST /gadgets/{gadget_id}/actions/remove_blocklist\"}]\n",
-		"data source with create":  "type: telnyx_x\nkind: data_source\ndescription: x\ncreate: POST /gadgets\nread: GET /gadgets/{gadget_id}\n",
-		"bad paging value":         "type: telnyx_x\nkind: data_source\ndescription: x\nlist: GET /regions\npaging: cursor\n",
-		"list_name without list":   "type: telnyx_x\ndescription: x\ncreate: POST /gadgets\nread: GET /gadgets/{gadget_id}\nlist_name: telnyx_xs\n",
-		"list not returning array": "type: telnyx_x\nkind: data_source\ndescription: x\nlist: GET /balance\n",
+		"unsupported paging":        "type: telnyx_x\nkind: data_source\ndescription: x\nlist: GET /offset_things\n",
+		"read and read_from":        "type: telnyx_x\ndescription: x\ncreate: POST /secrets\nread: GET /widgets/{widget_id}\nread_from: {op: GET /secrets, key: id}\n",
+		"object elements, no key":   "type: telnyx_x\ndescription: x\ncreate: POST /secrets\nread_from: {op: GET /secrets}\n",
+		"plain values with key":     "type: telnyx_x\ndescription: x\ncreate: POST /gadgets/{gadget_id}/tags\nid: tag\nread_from: {op: \"GET /gadgets/{gadget_id}\", field: tags, key: id}\n",
+		"plain values, no id":       "type: telnyx_x\ndescription: x\ncreate: POST /gadgets/{gadget_id}/tags\nread_from: {op: \"GET /gadgets/{gadget_id}\", field: tags}\n",
+		"not an array field":        "type: telnyx_x\ndescription: x\ncreate: POST /gadgets/{gadget_id}/tags\nid: tag\nread_from: {op: \"GET /gadgets/{gadget_id}\", field: name}\n",
+		"update without body":       "type: telnyx_x\ndescription: x\ncreate: POST /gadgets\nread: GET /gadgets/{gadget_id}\nupdates: [{op: \"POST /gadgets/{gadget_id}/actions/remove_blocklist\"}]\n",
+		"data source with create":   "type: telnyx_x\nkind: data_source\ndescription: x\ncreate: POST /gadgets\nread: GET /gadgets/{gadget_id}\n",
+		"bad paging value":          "type: telnyx_x\nkind: data_source\ndescription: x\nlist: GET /regions\npaging: cursor\n",
+		"list_name without list":    "type: telnyx_x\ndescription: x\ncreate: POST /gadgets\nread: GET /gadgets/{gadget_id}\nlist_name: telnyx_xs\n",
+		"singleton, id in response": "type: telnyx_x\ndescription: x\ncreate: POST /gadgets\nread: GET /gadgets/{gadget_id}\nsingleton: true\n",
+		"singleton with id":         "type: telnyx_x\ndescription: x\ncreate: PATCH /settings\nread: GET /settings\nsingleton: true\nid: name\n",
+		"list not returning array":  "type: telnyx_x\nkind: data_source\ndescription: x\nlist: GET /balance\n",
 	}
 	for name, body := range cases {
 		p := filepath.Join(t.TempDir(), "x.yaml")
@@ -347,13 +349,31 @@ func TestCollectionErrors(t *testing.T) {
 
 	// paging: none reads one page of a list the engine cannot page.
 	p := filepath.Join(t.TempDir(), "x.yaml")
-	_ = os.WriteFile(p, []byte("type: telnyx_x\nkind: data_source\ndescription: x\nlist: GET /cursor_things\npaging: none\n"), 0o644)
+	_ = os.WriteFile(p, []byte("type: telnyx_x\nkind: data_source\ndescription: x\nlist: GET /offset_things\npaging: none\n"), 0o644)
 	ov, err := LoadOverride(p)
 	if err != nil {
 		t.Fatal(err)
 	}
 	if _, l, err := g.DeriveAll(ov); err != nil || l.Op.Paging != engine.PagingNone {
 		t.Errorf("paging none: %+v %v", l, err)
+	}
+
+	// A singleton has a fixed id and no path parameters.
+	_ = os.WriteFile(p, []byte("type: telnyx_settings\ndescription: x\ncreate: PATCH /settings\nread: GET /settings\nupdate: PATCH /settings\nsingleton: true\n"), 0o644)
+	if ov, err = LoadOverride(p); err != nil {
+		t.Fatal(err)
+	}
+	if r, _, err := g.DeriveAll(ov); err != nil || r.FixedID != "settings" || r.IDAttr != "id" || !r.Attr("id").Computed || !r.Attr("channels").InCreate {
+		t.Errorf("singleton: %+v %v", r, err)
+	}
+
+	// page[after] without a page number pages by cursor.
+	_ = os.WriteFile(p, []byte("type: telnyx_x\nkind: data_source\ndescription: x\nlist: GET /cursor_things\n"), 0o644)
+	if ov, err = LoadOverride(p); err != nil {
+		t.Fatal(err)
+	}
+	if _, l, err := g.DeriveAll(ov); err != nil || l.Op.Paging != engine.PagingCursor {
+		t.Errorf("cursor paging: %+v %v", l, err)
 	}
 }
 

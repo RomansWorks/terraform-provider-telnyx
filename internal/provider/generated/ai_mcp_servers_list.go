@@ -17,7 +17,7 @@ func AIMCPServersList() *engine.List {
 		},
 		Items: &engine.Attr{Name: "ai_mcp_servers", JSON: "data", Kind: engine.KindList, Computed: true, InResponse: true, Description: "The objects, in the order the API returns them.",
 			Attrs: []*engine.Attr{
-				{Name: "allowed_tools", JSON: "allowed_tools", Kind: engine.KindList, Computed: true, InResponse: true, Elem: &engine.Attr{Kind: engine.KindString}},
+				{Name: "allowed_tools", JSON: "allowed_tools", Kind: engine.KindSet, Computed: true, InResponse: true, Elem: &engine.Attr{Kind: engine.KindString}},
 				{Name: "api_key_ref", JSON: "api_key_ref", Kind: engine.KindString, Computed: true, InResponse: true},
 				{Name: "created_at", JSON: "created_at", Kind: engine.KindString, Computed: true, InResponse: true},
 				{Name: "id", JSON: "id", Kind: engine.KindString, Computed: true, InResponse: true},

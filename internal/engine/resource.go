@@ -115,6 +115,10 @@ func (r *frameworkResource) Create(ctx context.Context, req resource.CreateReque
 	} else {
 		obj, err = r.send(ctx, d.Create, send, "create", func(a *Attr) bool { return a.InCreate }, send)
 	}
+	if err == nil {
+		// The create response is an API object like any read.
+		obj, err = r.afterRead(ctx, obj)
+	}
 	if err != nil {
 		resp.Diagnostics.AddError("Unable to create "+d.TypeName, err.Error())
 		return
@@ -441,13 +445,23 @@ func (r *frameworkResource) sendBody(ctx context.Context, op *Op, plan Values, n
 	if err != nil {
 		return nil, err
 	}
-	data, err := json.Marshal(body)
+	contentType := "application/json"
+	var data []byte
+	if op.Form {
+		contentType = "application/x-www-form-urlencoded"
+		data, err = formBody(body)
+	} else {
+		data, err = json.Marshal(body)
+	}
 	if err != nil {
 		return nil, err
 	}
-	out, err := r.c.Send(ctx, op.Method, p, nil, "application/json", data)
+	out, err := r.c.Send(ctx, op.Method, p, nil, contentType, data)
 	if err != nil {
 		return nil, err
+	}
+	if op.First {
+		return decodeOnly(out)
 	}
 	return Decode(out, op.Envelope)
 }
@@ -467,7 +481,17 @@ func Get(ctx context.Context, c *client.Client, d *Resource, vals Values) (Objec
 	if err != nil {
 		return nil, err
 	}
-	out, err := c.Send(ctx, d.Read.Method, p, nil, "", nil)
+	var query url.Values
+	for _, a := range d.Attrs {
+		var s string
+		if v := vals[a.Name]; a.Query != "" && v.IsKnown() && !v.IsNull() && v.As(&s) == nil && s != "" {
+			if query == nil {
+				query = url.Values{}
+			}
+			query.Set(a.Query, s)
+		}
+	}
+	out, err := c.Send(ctx, d.Read.Method, p, query, "", nil)
 	if err != nil {
 		return nil, err
 	}
@@ -484,7 +508,7 @@ func (r *frameworkResource) afterRead(ctx context.Context, obj Object) (Object, 
 // toState maps an API object to the full state value, carrying over the
 // timeouts block from prior.
 func (r *frameworkResource) toState(ctx context.Context, obj Object, prior Values, m mode, priorRaw tftypes.Value) (tftypes.Value, error) {
-	v, err := objectFromJSON(r.d.Attrs, obj, prior, m)
+	v, err := objectFromJSON(r.d.Attrs, r.d.withFixedID(obj), prior, m)
 	if err != nil {
 		return tftypes.Value{}, err
 	}

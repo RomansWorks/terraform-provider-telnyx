@@ -86,10 +86,41 @@ func (g *Generator) requestSchema(op *operation) map[string]any {
 	}
 	body := g.resolve(op.node["requestBody"])
 	content, _ := body["content"].(map[string]any)
-	for _, ct := range []string{"application/json", "multipart/form-data"} {
+	for _, ct := range []string{"application/json", "multipart/form-data", formType} {
 		if c, ok := content[ct].(map[string]any); ok {
 			return g.norm(c["schema"])
 		}
+	}
+	return nil
+}
+
+const formType = "application/x-www-form-urlencoded"
+
+// formBody reports whether an operation takes only a URL-encoded form.
+func (g *Generator) formBody(op *operation) bool {
+	if op == nil {
+		return false
+	}
+	content, _ := g.resolve(op.node["requestBody"])["content"].(map[string]any)
+	_, form := content[formType]
+	_, js := content["application/json"]
+	return form && !js
+}
+
+// checkBody fails when an operation has a request body the provider
+// cannot send.
+func (g *Generator) checkBody(op *operation) error {
+	if op == nil {
+		return nil
+	}
+	content, _ := g.resolve(op.node["requestBody"])["content"].(map[string]any)
+	if len(content) > 0 && g.requestSchema(op) == nil {
+		types := make([]string, 0, len(content))
+		for ct := range content {
+			types = append(types, ct)
+		}
+		sort.Strings(types)
+		return fmt.Errorf("%s %s: request body types %s are not supported", op.method, op.path, strings.Join(types, ", "))
 	}
 	return nil
 }
@@ -118,12 +149,65 @@ func (g *Generator) responseSchema(op *operation) (map[string]any, bool) {
 		}
 		s := g.norm(c["schema"])
 		props := properties(s)
-		if len(props) == 1 && props["data"] != nil {
-			return g.norm(props["data"]), true
+		if d := g.norm(props["data"]); d != nil && (d["type"] == "object" || properties(d) != nil) {
+			// Telnyx wraps objects in "data"; siblings such as meta,
+			// links or a repeated id are envelope, not the object.
+			return d, true
+		}
+		if d := g.norm(props["data"]); d != nil && d["type"] == "array" {
+			// A list of objects: the caller decides whether one element
+			// is the object (a create that takes a batch) or it is an error.
+			return g.norm(d["items"]), true
 		}
 		return s, false
 	}
 	return nil, false
+}
+
+// textResponse reports whether the first 2xx response is a plain-text string.
+func (g *Generator) textResponse(op *operation) bool {
+	responses, _ := op.node["responses"].(map[string]any)
+	codes := make([]string, 0, len(responses))
+	for c := range responses {
+		codes = append(codes, c)
+	}
+	sort.Strings(codes)
+	for _, code := range codes {
+		if !strings.HasPrefix(code, "2") {
+			continue
+		}
+		content, _ := g.resolve(responses[code])["content"].(map[string]any)
+		c, ok := content["text/plain"].(map[string]any)
+		return ok && g.norm(c["schema"])["type"] == "string"
+	}
+	return false
+}
+
+// dataList reports whether an operation's 2xx response wraps a list in
+// "data" rather than one object.
+func (g *Generator) dataList(op *operation) bool {
+	if op == nil {
+		return false
+	}
+	responses, _ := op.node["responses"].(map[string]any)
+	codes := make([]string, 0, len(responses))
+	for c := range responses {
+		codes = append(codes, c)
+	}
+	sort.Strings(codes)
+	for _, code := range codes {
+		if !strings.HasPrefix(code, "2") {
+			continue
+		}
+		content, _ := g.resolve(responses[code])["content"].(map[string]any)
+		c, ok := content["application/json"].(map[string]any)
+		if !ok {
+			continue
+		}
+		d := g.norm(properties(g.norm(c["schema"]))["data"])
+		return d != nil && d["type"] == "array"
+	}
+	return false
 }
 
 // norm resolves a schema and flattens allOf, nullable types and unions to a
@@ -196,6 +280,17 @@ func (g *Generator) norm(n any) map[string]any {
 				continue
 			}
 			out[k] = v
+		}
+	}
+	// An enum of strings without a type is a string.
+	if e, ok := out["enum"].([]any); ok && out["type"] == nil && len(e) > 0 {
+		str := true
+		for _, v := range e {
+			_, isStr := v.(string)
+			str = str && isStr
+		}
+		if str {
+			out["type"] = "string"
 		}
 	}
 	return out
@@ -388,7 +483,8 @@ func (d *deriver) attrs(src sources, depth int, parentComputed bool, prefix stri
 			InCreate:    inC,
 			InUpdate:    inU,
 			InResponse:  inR,
-			Sensitive:   aov.Sensitive,
+			Sensitive:   aov.Sensitive || aov.Masked,
+			Masked:      aov.Masked,
 			Description: describe(cs, aov),
 		}
 		if aov.Name != "" {
@@ -627,6 +723,14 @@ func (g *Generator) Derive(ov *Override) (*engine.Resource, error) {
 		if readSchema == nil {
 			return nil, fmt.Errorf("%s: %s has no JSON response schema", ov.Type, ov.Read)
 		}
+		if g.dataList(read) {
+			return nil, fmt.Errorf("%s: read %s returns a list; use list or read_from", ov.Type, ov.Read)
+		}
+	}
+	for _, op := range []*operation{create, update} {
+		if err := g.checkBody(op); err != nil {
+			return nil, fmt.Errorf("%s: %w", ov.Type, err)
+		}
 	}
 	_, createEnv := g.responseSchema(create)
 	src := sources{create: g.requestSchema(create), read: readSchema}
@@ -645,7 +749,7 @@ func (g *Generator) Derive(ov *Override) (*engine.Resource, error) {
 	r := &engine.Resource{
 		TypeName:      ov.Type,
 		Description:   ov.Description,
-		Create:        &engine.Op{Method: create.method, Path: create.path, Envelope: createEnv},
+		Create:        &engine.Op{Method: create.method, Path: create.path, Envelope: createEnv, First: g.dataList(create), Form: g.formBody(create)},
 		ReadFrom:      rf,
 		Attrs:         attrs,
 		ExactlyOne:    ov.ExactlyOne,
@@ -658,7 +762,7 @@ func (g *Generator) Derive(ov *Override) (*engine.Resource, error) {
 	}
 	if update != nil {
 		_, env := g.responseSchema(update)
-		r.Update = &engine.Op{Method: update.method, Path: update.path, Envelope: env}
+		r.Update = &engine.Op{Method: update.method, Path: update.path, Envelope: env, Form: g.formBody(update)}
 	}
 	if del != nil {
 		r.Delete = &engine.Op{Method: del.method, Path: del.path}
@@ -849,6 +953,20 @@ func (g *Generator) ids(r *engine.Resource, ov *Override, create *operation, oth
 	}
 
 	var id *engine.Attr
+	if ov.Singleton {
+		if len(createParams) > 0 {
+			return fmt.Errorf("singleton: %s has path parameters", create.path)
+		}
+		if r.Attr("id") != nil {
+			return fmt.Errorf("singleton: the response already has an id field")
+		}
+		r.FixedID = strings.TrimPrefix(r.TypeName, "telnyx_")
+		r.Attrs = append(r.Attrs, &engine.Attr{Name: "id", JSON: "id", Kind: engine.KindString, Computed: true, InResponse: true,
+			Description: "Always " + r.FixedID + ": there is one per account."})
+		r.IDAttr = "id"
+		r.Import = []string{"id"}
+		return nil
+	}
 	if ov.IDFromPath != "" {
 		i := slices.Index(createParams, ov.IDFromPath)
 		if i < 0 {
@@ -856,7 +974,11 @@ func (g *Generator) ids(r *engine.Resource, ov *Override, create *operation, oth
 		}
 		id = parents[i]
 		r.IDAttr = id.Name
-		r.Import = []string{id.Name}
+		// Importing needs every path parameter, parents first.
+		r.Import = nil
+		for _, p := range parents {
+			r.Import = append(r.Import, p.Name)
+		}
 		for _, op := range append(others, collection) {
 			if op == nil {
 				continue
@@ -894,6 +1016,13 @@ func (g *Generator) ids(r *engine.Resource, ov *Override, create *operation, oth
 		}
 		id.Required, id.Optional, id.Computed, id.ForceNew = true, false, false, true
 		id.InUpdate, id.InResponse = false, true
+		id.Kind = engine.KindString
+	} else if id.InCreate && field != "id" {
+		// The user names the object (an id override such as a name or a
+		// phone number): the field is sent on create, identifies
+		// the object, and a new value is a new object.
+		id.Required, id.Optional, id.Computed, id.ForceNew = true, false, false, true
+		id.InUpdate = false
 		id.Kind = engine.KindString
 	} else {
 		if other := r.Attr("id"); other != nil && other != id {

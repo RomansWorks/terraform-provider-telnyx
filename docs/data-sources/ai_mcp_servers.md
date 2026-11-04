@@ -34,7 +34,7 @@ data "telnyx_ai_mcp_servers" "all" {}
 
 Read-Only:
 
-- `allowed_tools` (List of String)
+- `allowed_tools` (Set of String)
 - `api_key_ref` (String)
 - `created_at` (String)
 - `id` (String)

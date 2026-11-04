@@ -29,6 +29,7 @@ func Each(ctx context.Context, c *client.Client, op *Op, path string, query url.
 	if size <= 0 {
 		size = DefaultPageSize
 	}
+	cursor := ""
 	for page := 1; page <= maxPages; page++ {
 		q := url.Values{}
 		for k, v := range query {
@@ -41,6 +42,11 @@ func Each(ctx context.Context, c *client.Client, op *Op, path string, query url.
 		case PagingFlat:
 			q.Set("page_number", strconv.Itoa(page))
 			q.Set("page_size", strconv.Itoa(size))
+		case PagingCursor:
+			q.Set("page[size]", strconv.Itoa(size))
+			if cursor != "" {
+				q.Set("page[after]", cursor)
+			}
 		}
 		out, err := c.Send(ctx, op.Method, path, q, "", nil)
 		if err != nil {
@@ -55,11 +61,42 @@ func Each(ctx context.Context, c *client.Client, op *Op, path string, query url.
 				return nil
 			}
 		}
+		if op.Paging == PagingCursor {
+			next := nextCursor(out)
+			if next == "" || next == cursor || len(items) == 0 {
+				return nil
+			}
+			cursor = next
+			continue
+		}
 		if op.Paging == PagingNone || len(items) == 0 || (total > 0 && page >= total) || (total == 0 && len(items) < size) {
 			return nil
 		}
 	}
 	return fmt.Errorf("%s %s: more than %d pages", op.Method, path, maxPages)
+}
+
+// nextCursor returns the cursor of the next page: meta.cursors.after or
+// meta.end_cursor, whichever the response carries. Empty means last page.
+func nextCursor(data []byte) string {
+	var body struct {
+		Meta struct {
+			Cursors struct {
+				After *string `json:"after"`
+			} `json:"cursors"`
+			EndCursor *string `json:"end_cursor"`
+		} `json:"meta"`
+	}
+	if json.Unmarshal(data, &body) != nil {
+		return ""
+	}
+	if body.Meta.Cursors.After != nil {
+		return *body.Meta.Cursors.After
+	}
+	if body.Meta.EndCursor != nil {
+		return *body.Meta.EndCursor
+	}
+	return ""
 }
 
 // decodeList decodes a list response: its data array and meta.total_pages

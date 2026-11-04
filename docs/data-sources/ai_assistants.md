@@ -64,7 +64,7 @@ Read-Only:
 - `post_conversation_settings` (Attributes) Configuration for post-conversation processing. When enabled, the assistant receives one additional LLM turn after the conversation ends, allowing it to execute final tool calls such as sending a summary or updating a record via webhook or function tools. Integration and MCP server tools are not available post-conversation; call-control tools (e.g. hangup, transfer) are also unavailable. Beta feature. (see [below for nested schema](#nestedatt--ai_assistants--post_conversation_settings))
 - `privacy_settings` (Attributes) (see [below for nested schema](#nestedatt--ai_assistants--privacy_settings))
 - `related_mission_ids` (List of String) IDs of missions related to this assistant.
-- `tags` (List of String) Tags associated with the assistant. Tags can also be managed with the assistant tag endpoints.
+- `tags` (Set of String) Tags associated with the assistant. Tags can also be managed with the assistant tag endpoints.
 - `telephony_settings` (Attributes) (see [below for nested schema](#nestedatt--ai_assistants--telephony_settings))
 - `tools` (Attributes List) Deprecated for new integrations. Inline tool definitions available to the assistant. Prefer `tool_ids` to attach shared tools created with the AI Tools endpoints. On update, a sent `tools` array fully replaces the assistant's inline tools; omit the field to leave them unchanged. Each tool type except `function`, `webhook`, and `client_side_tool` allows at most one instance per assistant, counted across inline `tools` and shared `tool_ids` combined. (see [below for nested schema](#nestedatt--ai_assistants--tools))
 - `transcription` (Attributes) (see [below for nested schema](#nestedatt--ai_assistants--transcription))

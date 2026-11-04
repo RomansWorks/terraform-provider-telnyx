@@ -34,7 +34,7 @@ func (g *Generator) DeriveAll(ov *Override) (*engine.Resource, *engine.List, err
 		desc = "Lists " + strings.ReplaceAll(strings.TrimPrefix(Plural(ov.Type), "telnyx_"), "_", " ") +
 			", with optional filters. Each item has the attributes of `" + ov.Type + "`."
 	}
-	l, err := g.DeriveList(ov.listName(), desc, ov.List, ov.Paging)
+	l, err := g.DeriveList(ov.listName(), desc, ov.List, ov.Paging, ov.itemSettings())
 	if err != nil {
 		return nil, nil, fmt.Errorf("%s: list: %w", ov.Type, err)
 	}
@@ -51,6 +51,9 @@ func (g *Generator) deriveData(ov *Override) (*engine.Resource, error) {
 	schema, env := g.responseSchema(read)
 	if schema == nil {
 		return nil, fmt.Errorf("%s: %s has no JSON response schema", ov.Type, ov.Read)
+	}
+	if g.dataList(read) {
+		return nil, fmt.Errorf("%s: read %s returns a list; use list", ov.Type, ov.Read)
 	}
 	d := &deriver{g: g, ov: ov, used: map[string]bool{}}
 	attrs, err := d.attrs(sources{read: schema}, 0, false, "")
@@ -79,6 +82,27 @@ func (g *Generator) deriveData(ov *Override) (*engine.Resource, error) {
 		a.Kind = engine.KindString
 		a.PathParams = append(a.PathParams, p)
 		r.Import = append(r.Import, name)
+	}
+	// Scalar query parameters narrow the lookup. A response field of the
+	// same name takes the input, so it is optional and computed.
+	for _, p := range g.params(read) {
+		if p.in != "query" || properties(p.schema) != nil {
+			continue
+		}
+		if t, _ := p.schema["type"].(string); t != "string" {
+			return nil, fmt.Errorf("%s: query parameter %s is a %s; only strings are supported", ov.Type, p.name, t)
+		}
+		name := snake(p.name)
+		a := r.Attr(name)
+		if a == nil {
+			a = &engine.Attr{Name: name, Kind: engine.KindString, Local: true, Description: p.desc}
+			if a.Description == "" {
+				a.Description = "Sent as the " + p.name + " query parameter."
+			}
+			r.Attrs = append(r.Attrs, a)
+		}
+		a.Query, a.Required = p.name, p.required
+		a.Enum = stringEnum(p.schema)
 	}
 	if err := checkUnused(ov, d); err != nil {
 		return nil, err
@@ -135,6 +159,8 @@ func (g *Generator) listItems(op *operation) (map[string]any, bool, error) {
 // param is one operation parameter.
 type param struct {
 	name, in string
+	required bool
+	desc     string
 	schema   map[string]any
 }
 
@@ -152,7 +178,9 @@ func (g *Generator) params(op *operation) []param {
 		if name == "" {
 			continue
 		}
-		out = append(out, param{name: name, in: in, schema: g.norm(p["schema"])})
+		req, _ := p["required"].(bool)
+		desc, _ := p["description"].(string)
+		out = append(out, param{name: name, in: in, required: req, desc: strings.TrimSpace(desc), schema: g.norm(p["schema"])})
 	}
 	return out
 }
@@ -163,12 +191,14 @@ var pagingParams = map[string]engine.Paging{
 	"page_number": engine.PagingFlat, "page_size": engine.PagingFlat,
 }
 
-// otherPaging are paging parameters the engine does not drive.
+// otherPaging are paging parameters the engine does not drive on their
+// own; page[after] is driven as a cursor when no page number is offered.
 var otherPaging = []string{"page[after]", "page[before]", "page[limit]", "page[snapshot]", "page_cursor",
 	"cursor", "limit", "offset", "recordsPerPage", "page"}
 
 // DeriveList derives a list data source from a list operation.
-func (g *Generator) DeriveList(name, description, key, pagingOverride string) (*engine.List, error) {
+// settings carries the resource's sensitive and set settings to the items.
+func (g *Generator) DeriveList(name, description, key, pagingOverride string, settings map[string]AttrOverride) (*engine.List, error) {
 	op, err := g.operation(key)
 	if err != nil {
 		return nil, err
@@ -222,7 +252,7 @@ func (g *Generator) DeriveList(name, description, key, pagingOverride string) (*
 
 	items := &engine.Attr{Name: strings.TrimPrefix(name, "telnyx_"), JSON: "data", Kind: engine.KindList,
 		Computed: true, InResponse: true, Description: "The objects, in the order the API returns them."}
-	ov := &Override{Type: name}
+	ov := &Override{Type: name, Attributes: settings}
 	d := &deriver{g: g, ov: ov, used: map[string]bool{}}
 	shape := item
 	t, _ := shape["type"].(string)
@@ -268,42 +298,48 @@ func (g *Generator) listOp(op *operation, pagingOverride string) (*engine.Op, er
 		}
 		return fmt.Errorf("paging parameter %s is not supported; set paging: none and page in a hook", name)
 	}
+	// Collect the paging parameters, with a deepObject "page" spelled out
+	// as page[number], page[size] and so on, and the maximum page sizes.
+	present := map[string]bool{}
+	sizes := map[string]int{}
 	for _, p := range g.params(op) {
 		if p.in != "query" {
 			continue
 		}
-		// A deepObject "page" with number and size is page[number]/page[size].
 		if p.name == "page" && properties(p.schema) != nil {
-			keys := make([]string, 0, len(properties(p.schema)))
-			for k := range properties(p.schema) {
-				keys = append(keys, k)
-			}
-			sort.Strings(keys)
-			for _, k := range keys {
+			for k, v := range properties(p.schema) {
 				full := "page[" + k + "]"
-				st, ok := pagingParams[full]
-				if !ok {
-					if err := unsupported(full); err != nil {
-						return nil, err
-					}
-					continue
-				}
-				paging = st
+				present[full] = true
 				if k == "size" {
-					size = maxOf(g.norm(properties(p.schema)[k]))
+					sizes[full] = maxOf(g.norm(v))
 				}
 			}
 			continue
 		}
-		if st, ok := pagingParams[p.name]; ok {
-			paging = st
+		if _, ok := pagingParams[p.name]; ok || contains(otherPaging, p.name) {
+			present[p.name] = true
 			if strings.Contains(p.name, "size") {
-				size = maxOf(p.schema)
+				sizes[p.name] = maxOf(p.schema)
 			}
-			continue
 		}
-		if contains(otherPaging, p.name) {
-			if err := unsupported(p.name); err != nil {
+	}
+	// Page numbers win over cursors when an operation offers both.
+	switch {
+	case present["page[number]"] || present["page[size]"] && !present["page[after]"]:
+		paging, size = engine.PagingNumber, sizes["page[size]"]
+	case present["page_number"] || present["page_size"]:
+		paging, size = engine.PagingFlat, sizes["page_size"]
+	case present["page[after]"]:
+		paging, size = engine.PagingCursor, sizes["page[size]"]
+	}
+	if paging == engine.PagingNone {
+		names := make([]string, 0, len(present))
+		for n := range present {
+			names = append(names, n)
+		}
+		sort.Strings(names)
+		for _, n := range names {
+			if err := unsupported(n); err != nil {
 				return nil, err
 			}
 		}

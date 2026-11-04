@@ -1,0 +1,1 @@
+terraform import telnyx_phone_number_voicemail.example <phone_number_id>

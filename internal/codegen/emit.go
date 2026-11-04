@@ -5,6 +5,7 @@ package codegen
 
 import (
 	"bytes"
+	"errors"
 	"fmt"
 	"go/format"
 	"os"
@@ -106,6 +107,9 @@ func EmitResource(pkg string, r *engine.Resource, source string) ([]byte, error)
 	if r.ReleaseOnDestroy {
 		field(&b, "ReleaseOnDestroy", "true")
 	}
+	if r.FixedID != "" {
+		field(&b, "FixedID", strconv.Quote(r.FixedID))
+	}
 	b.WriteString("Attrs: ")
 	attrs(&b, r.Attrs)
 	b.WriteString(",\n}\n}\n")
@@ -119,6 +123,7 @@ func EmitResource(pkg string, r *engine.Resource, source string) ([]byte, error)
 var pagingNames = map[engine.Paging]string{
 	engine.PagingNumber: "engine.PagingNumber",
 	engine.PagingFlat:   "engine.PagingFlat",
+	engine.PagingCursor: "engine.PagingCursor",
 }
 
 // opLiteral renders an operation as a Go literal.
@@ -126,6 +131,15 @@ func opLiteral(o *engine.Op) string {
 	s := fmt.Sprintf("&engine.Op{Method: %q, Path: %q, Envelope: %t", o.Method, o.Path, o.Envelope)
 	if o.Paging != engine.PagingNone {
 		s += fmt.Sprintf(", Paging: %s, PageSize: %d", pagingNames[o.Paging], o.PageSize)
+	}
+	if o.Text {
+		s += ", Text: true"
+	}
+	if o.First {
+		s += ", First: true"
+	}
+	if o.Form {
+		s += ", Form: true"
 	}
 	return s + "}"
 }
@@ -237,7 +251,7 @@ func attr(b *bytes.Buffer, a *engine.Attr) {
 		{"Required", a.Required}, {"Optional", a.Optional}, {"Computed", a.Computed},
 		{"Sensitive", a.Sensitive}, {"ForceNew", a.ForceNew},
 		{"InCreate", a.InCreate}, {"InUpdate", a.InUpdate}, {"InResponse", a.InResponse}, {"Local", a.Local},
-		{"WriteOnly", a.WriteOnly},
+		{"WriteOnly", a.WriteOnly}, {"Masked", a.Masked},
 	}
 	for _, f := range flags {
 		if f.on {
@@ -249,6 +263,9 @@ func attr(b *bytes.Buffer, a *engine.Attr) {
 	}
 	if len(a.PathParams) > 0 {
 		add("PathParams", quoteList(a.PathParams))
+	}
+	if a.Query != "" {
+		add("Query", strconv.Quote(a.Query))
 	}
 	if a.Deprecated != "" {
 		add("Deprecated", strconv.Quote(a.Deprecated))
@@ -360,12 +377,10 @@ func Write(dir string, files map[string][]byte) error {
 // Run derives every override in overridesDir and writes the descriptors
 // into outDir as package pkg.
 func Run(g *Generator, overridesDir, outDir, pkg string) (*Generated, error) {
-	ovs, err := LoadOverrides(overridesDir)
-	if err != nil {
-		return nil, err
-	}
+	ovs, loadErr := LoadOverrides(overridesDir)
 	files := map[string][]byte{}
 	gen := &Generated{}
+
 	add := func(name string, src []byte, err error) error {
 		if err != nil {
 			return err
@@ -377,50 +392,61 @@ func Run(g *Generator, overridesDir, outDir, pkg string) (*Generated, error) {
 		return nil
 	}
 	base := func(typeName string) string { return strings.TrimSuffix(FileName(typeName), ".go") }
-	for _, ov := range ovs {
+	one := func(ov *Override) error {
 		source := filepath.ToSlash(ov.file)
 		switch ov.Kind {
 		case "action":
 			a, err := g.DeriveAction(ov)
 			if err != nil {
-				return nil, err
+				return err
 			}
 			src, err := EmitAction(pkg, a, source)
 			if err := add(base(a.TypeName)+"_action.go", src, err); err != nil {
-				return nil, err
+				return err
 			}
 			gen.Actions = append(gen.Actions, a)
-			continue
+			return nil
 		case "ephemeral":
 			e, err := g.DeriveEphemeral(ov)
 			if err != nil {
-				return nil, err
+				return err
 			}
 			src, err := EmitEphemeral(pkg, e, source)
 			if err := add(base(e.TypeName)+"_ephemeral.go", src, err); err != nil {
-				return nil, err
+				return err
 			}
 			gen.Ephemerals = append(gen.Ephemerals, e)
-			continue
+			return nil
 		}
 		r, l, err := g.DeriveAll(ov)
 		if err != nil {
-			return nil, err
+			return err
 		}
 		if r != nil {
 			src, err := EmitResource(pkg, r, source)
 			if err := add(FileName(r.TypeName), src, err); err != nil {
-				return nil, err
+				return err
 			}
 			gen.Resources = append(gen.Resources, r)
 		}
 		if l != nil {
 			src, err := EmitList(pkg, l, source)
 			if err := add(base(l.TypeName)+"_list.go", src, err); err != nil {
-				return nil, err
+				return err
 			}
 			gen.Lists = append(gen.Lists, l)
 		}
+		return nil
+	}
+	// Every override is derived, so one run reports every broken override.
+	errs := []error{loadErr}
+	for _, ov := range ovs {
+		if err := one(ov); err != nil {
+			errs = append(errs, err)
+		}
+	}
+	if err := errors.Join(errs...); err != nil {
+		return nil, err
 	}
 	all, err := EmitAll(pkg, gen)
 	if err != nil {

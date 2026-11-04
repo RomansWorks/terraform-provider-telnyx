@@ -1,0 +1,1 @@
+terraform import telnyx_inbound_voice_channel_settings.example inbound_voice_channel_settings

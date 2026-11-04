@@ -55,7 +55,7 @@ func (r *frameworkDataSource) Read(ctx context.Context, req datasource.ReadReque
 		resp.Diagnostics.AddError("Unable to read "+r.d.TypeName, err.Error())
 		return
 	}
-	v, err := objectFromJSON(r.d.dataAttrs(), obj, config, modeData)
+	v, err := objectFromJSON(r.d.dataAttrs(), r.d.withFixedID(obj), config, modeData)
 	if err != nil {
 		resp.Diagnostics.AddError("Unable to read "+r.d.TypeName, err.Error())
 		return

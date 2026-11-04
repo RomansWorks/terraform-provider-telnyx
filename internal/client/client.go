@@ -174,7 +174,8 @@ func (c *Client) Send(ctx context.Context, method, path string, query url.Values
 			return nil, fmt.Errorf("telnyx: building request: %w", err)
 		}
 		req.Header.Set("Authorization", "Bearer "+c.apiKey)
-		req.Header.Set("Accept", "application/json")
+		// A few operations, such as minting a token, answer in plain text.
+		req.Header.Set("Accept", "application/json, text/plain;q=0.9")
 		if contentType != "" {
 			req.Header.Set("Content-Type", contentType)
 		}

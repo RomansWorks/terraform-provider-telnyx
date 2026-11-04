@@ -52,8 +52,18 @@ func (g *Generator) DeriveEphemeral(ov *Override) (*engine.Ephemeral, error) {
 		return nil, fmt.Errorf("%s: open: %w", ov.Type, err)
 	}
 	schema, env := g.responseSchema(op)
+	if g.dataList(op) {
+		return nil, fmt.Errorf("%s: %s returns a list", ov.Type, ov.Open)
+	}
+	text := false
+	if schema == nil && g.textResponse(op) {
+		// A plain-text answer, such as a token, is one string field.
+		schema = map[string]any{"type": "object", "properties": map[string]any{
+			"value": map[string]any{"type": "string", "readOnly": true, "description": "The value the API returned."}}}
+		text = true
+	}
 	if schema == nil {
-		return nil, fmt.Errorf("%s: %s has no JSON response schema", ov.Type, ov.Open)
+		return nil, fmt.Errorf("%s: %s has no JSON or plain-text response schema", ov.Type, ov.Open)
 	}
 	d := &deriver{g: g, ov: ov, used: map[string]bool{}}
 	attrs, err := d.attrs(sources{read: schema}, 0, false, "")
@@ -61,7 +71,7 @@ func (g *Generator) DeriveEphemeral(ov *Override) (*engine.Ephemeral, error) {
 		return nil, fmt.Errorf("%s: %w", ov.Type, err)
 	}
 	e := &engine.Ephemeral{TypeName: ov.Type, Description: ov.Description,
-		Open: &engine.Op{Method: op.method, Path: op.path, Envelope: env}, Attrs: attrs}
+		Open: &engine.Op{Method: op.method, Path: op.path, Envelope: env, Text: text}, Attrs: attrs}
 	if err := addPathParams(ov, op, &e.Attrs); err != nil {
 		return nil, fmt.Errorf("%s: %w", ov.Type, err)
 	}

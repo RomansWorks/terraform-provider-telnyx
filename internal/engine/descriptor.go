@@ -67,6 +67,14 @@ type Attr struct {
 	// sometimes name the parameter differently.
 	PathParams []string
 
+	// Masked attributes keep their state value when the API answers with
+	// asterisks, as Telnyx does for passwords after create.
+	Masked bool
+
+	// Query names the query parameter this attribute fills when a data
+	// source reads the object. Unless Required, it is optional.
+	Query string
+
 	// Deprecated, when set, is shown to users who configure the attribute.
 	Deprecated string
 
@@ -82,6 +90,13 @@ type Op struct {
 	Path   string
 	// Envelope is true when the response wraps the object in "data".
 	Envelope bool
+	// Text says the response is plain text, decoded as one "value" field.
+	Text bool
+	// First says the response's "data" is a list holding the one object,
+	// as when a create takes a batch.
+	First bool
+	// Form says the request body is a URL-encoded form of scalar fields.
+	Form bool
 	// Paging says how a list operation pages; PageSize is the page size to
 	// ask for.
 	Paging   Paging
@@ -101,6 +116,9 @@ const (
 	// PagingFlat sends page_number and page_size and stops at
 	// meta.total_pages.
 	PagingFlat
+	// PagingCursor sends page[size] and page[after] and follows
+	// meta.cursors.after or meta.end_cursor until it is empty.
+	PagingCursor
 )
 
 // ReadFrom reads an object that has no item read from a collection: the
@@ -161,6 +179,9 @@ type Resource struct {
 	// ReleaseOnDestroy keeps the object in Telnyx on destroy unless the
 	// release_on_destroy attribute is true.
 	ReleaseOnDestroy bool
+	// FixedID is the id of an object that exists once per account. The
+	// engine puts it into every response as "id".
+	FixedID string
 
 	Hooks Hooks
 }
@@ -231,4 +252,22 @@ func (r *Resource) Attr(name string) *Attr {
 		}
 	}
 	return nil
+}
+
+// withFixedID returns obj with "id" set to FixedID, when there is one.
+func (r *Resource) withFixedID(obj Object) Object {
+	if r.FixedID == "" {
+		return obj
+	}
+	out := make(Object, len(obj)+1)
+	for k, v := range obj {
+		out[k] = v
+	}
+	out["id"] = r.FixedID
+	return out
+}
+
+// Path fills the {param} placeholders of p from vals, for hooks.
+func (r *Resource) Path(p string, vals Values) (string, error) {
+	return fillPath(r.Attrs, p, vals)
 }

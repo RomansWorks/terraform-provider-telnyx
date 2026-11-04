@@ -42,11 +42,11 @@ func OutboundVoiceProfilesList() *engine.List {
 				{Name: "name", JSON: "name", Kind: engine.KindString, Computed: true, InResponse: true, Description: "A user-supplied name to help with organization."},
 				{Name: "record_type", JSON: "record_type", Kind: engine.KindString, Computed: true, InResponse: true, Description: "Identifies the type of the resource."},
 				{Name: "service_plan", JSON: "service_plan", Kind: engine.KindString, Computed: true, InResponse: true, Description: "Indicates the coverage of the termination regions."},
-				{Name: "tags", JSON: "tags", Kind: engine.KindList, Computed: true, InResponse: true, Elem: &engine.Attr{Kind: engine.KindString}},
+				{Name: "tags", JSON: "tags", Kind: engine.KindSet, Computed: true, InResponse: true, Elem: &engine.Attr{Kind: engine.KindString}},
 				{Name: "traffic_type", JSON: "traffic_type", Kind: engine.KindString, Computed: true, InResponse: true, Description: "Specifies the type of traffic allowed in this profile."},
 				{Name: "updated_at", JSON: "updated_at", Kind: engine.KindString, Computed: true, InResponse: true, Description: "ISO 8601 formatted date-time indicating when the resource was updated."},
 				{Name: "usage_payment_method", JSON: "usage_payment_method", Kind: engine.KindString, Computed: true, InResponse: true, Description: "Setting for how costs for outbound profile are calculated."},
-				{Name: "whitelisted_destinations", JSON: "whitelisted_destinations", Kind: engine.KindList, Computed: true, InResponse: true, Description: "The list of destinations you want to be able to call using this outbound voice profile formatted in alpha2.", Elem: &engine.Attr{Kind: engine.KindString}},
+				{Name: "whitelisted_destinations", JSON: "whitelisted_destinations", Kind: engine.KindSet, Computed: true, InResponse: true, Description: "The list of destinations you want to be able to call using this outbound voice profile formatted in alpha2.", Elem: &engine.Attr{Kind: engine.KindString}},
 			}},
 	}
 }

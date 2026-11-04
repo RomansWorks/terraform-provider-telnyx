@@ -1,0 +1,1 @@
+terraform import telnyx_verify_profile_message_template.example <id>

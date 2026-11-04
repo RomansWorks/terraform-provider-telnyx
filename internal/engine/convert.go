@@ -8,8 +8,10 @@ import (
 	"encoding/json"
 	"fmt"
 	"math/big"
+	"net/url"
 	"reflect"
 	"strconv"
+	"strings"
 
 	"github.com/hashicorp/terraform-plugin-go/tftypes"
 )
@@ -166,6 +168,10 @@ func objectFromJSON(attrs []*Attr, obj Object, prior map[string]tftypes.Value, m
 			continue
 		}
 		raw, inObj := obj[a.JSON]
+		if a.Masked && isMask(raw) {
+			vals[a.Name] = known(p)
+			continue
+		}
 		switch {
 		case m == modeApply && p.IsFullyKnown() && !p.IsNull():
 			vals[a.Name] = p
@@ -397,4 +403,46 @@ func Decode(data []byte, envelope bool) (Object, error) {
 		return inner, nil
 	}
 	return obj, nil
+}
+
+// decodeOnly decodes a {"data": [...]} response that must hold exactly one
+// object. More than one is an error that names the ids, so objects the API
+// created are not silently lost.
+func decodeOnly(data []byte) (Object, error) {
+	items, _, err := decodeList(data, true)
+	if err != nil {
+		return nil, err
+	}
+	if len(items) == 1 {
+		return items[0], nil
+	}
+	var ids []string
+	for _, it := range items {
+		ids = append(ids, fmt.Sprint(it["id"]))
+	}
+	return nil, fmt.Errorf("expected one object in the response, got %d (ids: %s); "+
+		"import the ones you want to manage", len(items), strings.Join(ids, ", "))
+}
+
+// formBody encodes a request body of scalar fields as a URL-encoded form.
+func formBody(body Object) ([]byte, error) {
+	form := url.Values{}
+	for k, v := range body {
+		switch v := v.(type) {
+		case nil:
+		case string:
+			form.Set(k, v)
+		case bool, json.Number, int, int64, float64:
+			form.Set(k, fmt.Sprint(v))
+		default:
+			return nil, fmt.Errorf("field %s cannot be sent in a form", k)
+		}
+	}
+	return []byte(form.Encode()), nil
+}
+
+// isMask reports whether an API value is a mask such as "********".
+func isMask(raw any) bool {
+	s, ok := raw.(string)
+	return ok && s != "" && strings.Trim(s, "*") == ""
 }

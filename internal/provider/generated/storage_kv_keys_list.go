@@ -12,7 +12,7 @@ func StorageKvKeysList() *engine.List {
 		Description: "Lists storage kv keys, with optional filters. Each item has the attributes of `telnyx_storage_kv_key`.",
 		Op:          &engine.Op{Method: "GET", Path: "/storage/kvs/{id}/keys", Envelope: true},
 		Params: []*engine.Attr{
-			{Name: "id", Kind: engine.KindString, Required: true, PathParams: []string{"id"}, Description: "The id id."},
+			{Name: "namespace_id", Kind: engine.KindString, Required: true, PathParams: []string{"id"}, Description: "The namespace id."},
 			{Name: "prefix", JSON: "prefix", Kind: engine.KindString, Optional: true},
 		},
 		Items: &engine.Attr{Name: "storage_kv_keys", JSON: "data", Kind: engine.KindList, Computed: true, InResponse: true, Description: "The objects, in the order the API returns them.",

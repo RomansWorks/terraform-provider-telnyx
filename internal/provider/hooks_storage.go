@@ -12,6 +12,9 @@ import (
 	"net/http"
 	"net/textproto"
 	"net/url"
+	"time"
+
+	"github.com/hashicorp/terraform-plugin-go/tftypes"
 
 	"github.com/RomansWorks/terraform-provider-telnyx/internal/client"
 	"github.com/RomansWorks/terraform-provider-telnyx/internal/engine"
@@ -87,5 +90,35 @@ var storageBucketSSLCertificateHooks = engine.Hooks{
 			return nil, err
 		}
 		return engine.Decode(out, r.Create.Envelope)
+	},
+}
+
+// storageProvisionPoll is how often a provisioning KV namespace or SQL
+// database is checked.
+var storageProvisionPoll = 2 * time.Second
+
+// KV namespaces and SQL databases are provisioned asynchronously, and their
+// keys and queries answer 409 until status is provision_ok, so create waits.
+var storageProvisionHooks = engine.Hooks{
+	Wait: func(ctx context.Context, c *client.Client, r *engine.Resource, obj engine.Object) (engine.Object, error) {
+		for {
+			switch status, _ := obj["status"].(string); status {
+			case "provision_ok", "":
+				return obj, nil
+			case "provision_failed", "deleting", "delete_failed":
+				return nil, fmt.Errorf("%s %v is %s; destroy it and create it again", r.TypeName, obj["id"], status)
+			}
+			select {
+			case <-ctx.Done():
+				return nil, fmt.Errorf("%s %v is still %v: %w", r.TypeName, obj["id"], obj["status"], ctx.Err())
+			case <-time.After(storageProvisionPoll):
+			}
+			id, _ := obj["id"].(string)
+			next, err := engine.Get(ctx, c, r, engine.Values{"id": tftypes.NewValue(tftypes.String, id)})
+			if err != nil {
+				return nil, err
+			}
+			obj = next
+		}
 	},
 }

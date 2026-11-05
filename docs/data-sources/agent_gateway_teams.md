@@ -17,7 +17,7 @@ Lists agent gateway teams, with optional filters. Each item has the attributes o
 
 ### Required
 
-- `instance_id` (String) The instance id.
+- `gateway_id` (String) The gateway id.
 
 ### Optional
 

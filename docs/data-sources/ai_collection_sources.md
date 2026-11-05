@@ -17,7 +17,7 @@ Lists ai collection sources, with optional filters. Each item has the attributes
 
 ### Required
 
-- `uuid` (String) The uuid id.
+- `collection_id` (String) The collection id.
 
 ### Optional
 

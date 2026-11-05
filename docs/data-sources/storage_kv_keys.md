@@ -24,7 +24,7 @@ data "telnyx_storage_kv_keys" "flags" {
 
 ### Required
 
-- `id` (String) The id id.
+- `namespace_id` (String) The namespace id.
 
 ### Optional
 

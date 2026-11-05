@@ -75,6 +75,17 @@ The 208f3fb sync added the Agent Gateway API and assigned it to this wave; its d
 - **Tool permissions** are one grant per key or team that `PUT` replaces. There is no delete, and the engine would only drop such objects from state, so the engine gains a generic `Delete` hook that also covers objects without a delete operation (wave 3 added the hook for objects with one). The hook writes `{"servers": []}`, which grants none.
 - Model lists, tool lists, forwarded headers, guardrail modes and a policy's guardrail additions and removals are sets.
 
+## Review fixes
+
+An independent review found these, all fixed here:
+- KV namespaces and SQL databases are provisioned asynchronously and their keys and queries answer 409 until `provision_ok`, so both wait on create, like the Agent Gateway.
+- A clone made from a voice design rejects `label`, `model_id` and `ref_text`, which the design create does not take (the API fills `label` from the design's prompt, which would replace the clone on every plan). Updates always send `name`, which the update request requires. A missing recording no longer fails the plan of an existing clone.
+- List data sources name their parent path parameter as the resource's `path_params` do (`namespace_id`, `gateway_id`, `collection_id`), which also renames three lists from earlier waves whose parameter was a bare `id`; nothing is released yet.
+- The AI gateway lists require `page[snapshot]` after page 1: the engine now sends back `meta.snapshot` and stops on `meta.has_more = false`. A short `results` page no longer ends a list whose `count` says more remain.
+- `create_only` searches every 2xx code the operation lists. Text reads reject values that are not UTF-8.
+
+Not changed: `voice_provider` accepts both `Telnyx` and `telnyx` as the spec's enum does; the acceptance run will show whether the API normalises the case.
+
 ## What is not covered
 
 - `GET`, `POST`, `PUT`, `DELETE /ai/missions/{mission_id}/knowledge-bases`, `/mcp-servers` and `/tools` have no request or response schema in the spec. There is nothing to derive attributes from; they return when Telnyx documents them.

@@ -12,7 +12,7 @@ The provider SHALL manage `telnyx_storage_kv_key`. Its `value` SHALL be sensitiv
 - **THEN** the next plan updates the key in place
 
 ### Requirement: KV namespaces
-The provider SHALL manage `telnyx_storage_kv_namespace`. A namespace has no update, so `name` SHALL force replacement. `data "telnyx_storage_kv_keys"` SHALL read one page of a namespace's keys, narrowed by `prefix` and `limit`.
+The provider SHALL manage `telnyx_storage_kv_namespace`. A namespace has no update, so `name` SHALL force replacement. `data "telnyx_storage_kv_keys"` SHALL read one page of a namespace's keys, narrowed by `prefix`.
 
 #### Scenario: Rename a namespace
 - **WHEN** a namespace's `name` changes
@@ -38,3 +38,10 @@ The provider SHALL manage `telnyx_storage_bucket_ssl_certificate`, identified by
 #### Scenario: Upload
 - **WHEN** a certificate is created for bucket `assets`
 - **THEN** `PUT /storage/buckets/assets/ssl_certificate` carries both PEM files and the next plan is empty
+
+### Requirement: Storage provisioning
+Create of `telnyx_storage_kv_namespace` and `telnyx_storage_sql_database` SHALL wait, within the `create` timeout, until `status` is `provision_ok`, because their keys and queries answer 409 before then. `provision_failed`, `deleting` and `delete_failed` SHALL fail the apply, leaving the object in state.
+
+#### Scenario: Namespace and key in one apply
+- **WHEN** a namespace answers `pending` and then `provision_ok`
+- **THEN** create returns after `provision_ok`, and a key in the same configuration is written after it

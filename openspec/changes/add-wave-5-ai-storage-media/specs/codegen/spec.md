@@ -42,6 +42,27 @@ A type whose name ends in `_test` SHALL be generated into a file ending in `_tes
 - **WHEN** `telnyx_ai_assistant_test` is generated
 - **THEN** it is in `ai_assistant_test_resource.go` and is part of the provider
 
+### Requirement: Parent names in list data sources
+A list data source's path parameters SHALL take the names the resource's `path_params` give them, except a rename to `id`, which names the item itself.
+
+#### Scenario: Keys of a namespace
+- **WHEN** `telnyx_storage_kv_key` maps path parameter `id` to `namespace_id`
+- **THEN** `data "telnyx_storage_kv_keys"` takes `namespace_id`
+
+### Requirement: Snapshot paging
+A `page[number]` list SHALL send the first page's `meta.snapshot` as `page[snapshot]` on later pages, and SHALL stop when `meta.has_more` is false.
+
+#### Scenario: AI gateway keys over two pages
+- **WHEN** page 1 of `GET /llm_token_gateway/token_keys` answers `meta.snapshot = "s1"` and `has_more = true`
+- **THEN** page 2 is requested with `page[snapshot]=s1`
+
+### Requirement: Text reads are UTF-8
+A text read SHALL fail with an error naming the operation when the response is not valid UTF-8, since Terraform strings cannot hold it.
+
+#### Scenario: Binary value
+- **WHEN** a KV key written outside Terraform holds bytes that are not UTF-8
+- **THEN** refresh fails naming `GET /storage/kvs/{id}/keys/{key}`
+
 ## MODIFIED Requirements
 
 ### Requirement: Values only create returns

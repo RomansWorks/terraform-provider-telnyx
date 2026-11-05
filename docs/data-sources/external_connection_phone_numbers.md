@@ -17,7 +17,7 @@ Lists external connection phone number settings, with optional filters. Each ite
 
 ### Required
 
-- `id` (String) The id id.
+- `external_connection_id` (String) The external connection id.
 
 ### Optional
 

@@ -15,10 +15,12 @@ import (
 	"net/http/httptest"
 	"os"
 	"path/filepath"
+	"regexp"
 	"slices"
 	"strings"
 	"sync"
 	"testing"
+	"time"
 
 	"github.com/hashicorp/terraform-plugin-framework/providerserver"
 	"github.com/hashicorp/terraform-plugin-go/tfprotov6"
@@ -108,6 +110,15 @@ provider "telnyx" {
   max_retries = 0
 }
 `, strings.TrimSuffix(s.url, "/v2"))
+}
+
+// sentTo is sent with the id of a resource in state filled into want.
+func (s *stubAPI) sentTo(name string, st *terraform.State, want string) error {
+	rs, ok := st.RootModule().Resources[name]
+	if !ok {
+		return fmt.Errorf("%s not in state", name)
+	}
+	return s.sent(fmt.Sprintf(want, rs.Primary.ID))
 }
 
 func (s *stubAPI) sent(want string) error {
@@ -470,13 +481,13 @@ func TestVoiceClone(t *testing.T) {
 	if err := os.WriteFile(audio, []byte("RIFF"), 0o600); err != nil {
 		t.Fatal(err)
 	}
-	cfg := func(name string) string {
+	cfgGender := func(name, gender string) string {
 		return api.config() + fmt.Sprintf(`
 resource "telnyx_voice_clone" "designed" {
   name            = %q
   voice_design_id = "d1"
   language        = "en"
-  gender          = "female"
+  gender          = %q
 }
 resource "telnyx_voice_clone" "recorded" {
   name       = "Me"
@@ -484,8 +495,9 @@ resource "telnyx_voice_clone" "recorded" {
   language   = "en"
   gender     = "male"
   ref_text   = "Hello there"
-}`, name, audio)
+}`, name, gender, audio)
 	}
+	cfg := func(name string) string { return cfgGender(name, "female") }
 	resource.UnitTest(t, resource.TestCase{
 		ProtoV6ProviderFactories: stubFactories(),
 		CheckDestroy: func(*terraform.State) error {
@@ -510,9 +522,28 @@ resource "telnyx_voice_clone" "recorded" {
 			},
 			{
 				Config: cfg("Narrator 2"),
-				Check: func(*terraform.State) error {
-					return api.sent(`PATCH /voice_clones/c1 {"name":"Narrator 2"}`)
+				Check: func(s *terraform.State) error {
+					return api.sentTo("telnyx_voice_clone.designed", s, `PATCH /voice_clones/%s {"name":"Narrator 2"}`)
 				},
+			},
+			{
+				// The update request requires name, even when it did not change.
+				Config: cfgGender("Narrator 2", "male"),
+				Check: func(s *terraform.State) error {
+					return api.sentTo("telnyx_voice_clone.designed", s, `PATCH /voice_clones/%s {"gender":"male","name":"Narrator 2"}`)
+				},
+			},
+			{
+				Config: api.config() + `
+resource "telnyx_voice_clone" "x" {
+  name            = "Bad"
+  voice_design_id = "d1"
+  language        = "en"
+  gender          = "female"
+  label           = "mine"
+}`,
+				PlanOnly:    true,
+				ExpectError: regexp.MustCompile(`Not allowed with voice_design_id`),
 			},
 		},
 	})
@@ -562,6 +593,43 @@ resource "telnyx_storage_bucket_ssl_certificate" "x" {
 					return api.sent(`PUT /storage/buckets/assets/ssl_certificate multipart certificate=file(certificate.pem,application/x-pem-file,"CERT") private_key=file(private_key.pem,application/x-pem-file,"KEY")`)
 				},
 			),
+		}},
+	})
+}
+
+// A KV namespace is created pending; create waits until it is provisioned.
+func TestStorageKVNamespaceWaits(t *testing.T) {
+	defer func(d time.Duration) { storageProvisionPoll = d }(storageProvisionPoll)
+	storageProvisionPoll = 10 * time.Millisecond
+	var ns map[string]any
+	reads := 0
+	api := newStub(t, func(r stubRequest) (int, string) {
+		switch {
+		case r.Method == http.MethodPost && r.path == "/storage/kvs":
+			_ = json.Unmarshal([]byte(r.body), &ns)
+			ns["id"], ns["status"] = "n1", "pending"
+			return http.StatusCreated, jsonOf(map[string]any{"data": ns})
+		case ns == nil:
+			return http.StatusNotFound, notFound
+		case r.Method == http.MethodGet && r.path == "/storage/kvs/n1":
+			if reads++; reads >= 2 {
+				ns["status"] = "provision_ok"
+			}
+			return http.StatusOK, jsonOf(map[string]any{"data": ns})
+		case r.Method == http.MethodDelete:
+			ns = nil
+			return http.StatusNoContent, ""
+		}
+		return http.StatusNotFound, notFound
+	})
+	resource.UnitTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: stubFactories(),
+		Steps: []resource.TestStep{{
+			Config: api.config() + `
+resource "telnyx_storage_kv_namespace" "x" {
+  name = "flags"
+}`,
+			Check: resource.TestCheckResourceAttr("telnyx_storage_kv_namespace.x", "status", "provision_ok"),
 		}},
 	})
 }

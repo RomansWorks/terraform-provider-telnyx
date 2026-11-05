@@ -17,7 +17,7 @@ The models an Agent Gateway serves.
 
 ### Required
 
-- `instance_id` (String) The instance id.
+- `gateway_id` (String) The gateway id.
 
 ### Optional
 

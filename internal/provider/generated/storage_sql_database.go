@@ -15,6 +15,7 @@ func StorageSqlDatabase() *engine.Resource {
 		Delete:      &engine.Op{Method: "DELETE", Path: "/storage/sqldbs/{id}", Envelope: false},
 		IDAttr:      "id",
 		Import:      []string{"id"},
+		Timeouts:    true,
 		DataSource:  true,
 		Attrs: []*engine.Attr{
 			{Name: "created_at", JSON: "created_at", Kind: engine.KindString, Computed: true, InResponse: true},

@@ -34,7 +34,7 @@ func (g *Generator) DeriveAll(ov *Override) (*engine.Resource, *engine.List, err
 		desc = "Lists " + strings.ReplaceAll(strings.TrimPrefix(Plural(ov.Type), "telnyx_"), "_", " ") +
 			", with optional filters. Each item has the attributes of `" + ov.Type + "`."
 	}
-	l, err := g.DeriveList(ov.listName(), desc, ov.List, ov.Paging, ov.itemSettings())
+	l, err := g.DeriveList(ov.listName(), desc, ov.List, ov.Paging, ov.itemSettings(), ov.PathParams)
 	if err != nil {
 		return nil, nil, fmt.Errorf("%s: list: %w", ov.Type, err)
 	}
@@ -215,7 +215,7 @@ var otherPaging = []string{"page[after]", "page[before]", "page[limit]", "page[s
 
 // DeriveList derives a list data source from a list operation.
 // settings carries the resource's sensitive and set settings to the items.
-func (g *Generator) DeriveList(name, description, key, pagingOverride string, settings map[string]AttrOverride) (*engine.List, error) {
+func (g *Generator) DeriveList(name, description, key, pagingOverride string, settings map[string]AttrOverride, pathParams map[string]string) (*engine.List, error) {
 	op, err := g.operation(key)
 	if err != nil {
 		return nil, err
@@ -246,8 +246,14 @@ func (g *Generator) DeriveList(name, description, key, pagingOverride string, se
 	for _, p := range g.params(op) {
 		switch {
 		case p.in == "path":
-			a := &engine.Attr{Name: snake(p.name), Kind: engine.KindString, Required: true, PathParams: []string{p.name},
-				Description: "The " + strings.ReplaceAll(strings.TrimSuffix(snake(p.name), "_id"), "_", " ") + " id."}
+			// The resource's path_params name the parent the same way here,
+			// except a rename to id, which is the item's own id.
+			name := snake(p.name)
+			if n, ok := pathParams[p.name]; ok && n != "id" {
+				name = n
+			}
+			a := &engine.Attr{Name: name, Kind: engine.KindString, Required: true, PathParams: []string{p.name},
+				Description: "The " + strings.ReplaceAll(strings.TrimSuffix(name, "_id"), "_", " ") + " id."}
 			if err := addParam(a, p.name); err != nil {
 				return nil, err
 			}

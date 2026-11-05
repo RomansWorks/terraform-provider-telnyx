@@ -152,6 +152,19 @@ func (g *Generator) responseSchema(op *operation) (map[string]any, bool) {
 	return g.responseSchemaWhere(op, func(string) bool { return true })
 }
 
+// successCodes returns the operation's 2xx response codes, lowest first.
+func successCodes(op *operation) []string {
+	responses, _ := op.node["responses"].(map[string]any)
+	var codes []string
+	for c := range responses {
+		if strings.HasPrefix(c, "2") {
+			codes = append(codes, c)
+		}
+	}
+	sort.Strings(codes)
+	return codes
+}
+
 // responseSchemaWhere is responseSchema over the 2xx codes keep accepts.
 func (g *Generator) responseSchemaWhere(op *operation, keep func(code string) bool) (map[string]any, bool) {
 	if op == nil {
@@ -963,7 +976,7 @@ func (g *Generator) withCreateOnly(ov *Override, read map[string]any, create *op
 		// A create can answer 200 for a replay without the value and 201
 		// with it, so look in every 2xx response, lowest code first.
 		var f any
-		for _, code := range []string{"200", "201", "202"} {
+		for _, code := range successCodes(create) {
 			resp, _ := g.responseSchemaWhere(create, func(c string) bool { return c == code })
 			if f = properties(resp)[n]; f != nil {
 				break

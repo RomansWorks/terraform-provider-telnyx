@@ -12,7 +12,7 @@ func AICollectionSourcesList() *engine.List {
 		Description: "Lists ai collection sources, with optional filters. Each item has the attributes of `telnyx_ai_collection_source`.",
 		Op:          &engine.Op{Method: "GET", Path: "/ai/collections/{uuid}/sources", Envelope: true},
 		Params: []*engine.Attr{
-			{Name: "uuid", Kind: engine.KindString, Required: true, PathParams: []string{"uuid"}, Description: "The uuid id."},
+			{Name: "collection_id", Kind: engine.KindString, Required: true, PathParams: []string{"uuid"}, Description: "The collection id."},
 		},
 		Items: &engine.Attr{Name: "ai_collection_sources", JSON: "data", Kind: engine.KindList, Computed: true, InResponse: true, Description: "The objects, in the order the API returns them.",
 			Attrs: []*engine.Attr{

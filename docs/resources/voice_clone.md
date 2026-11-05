@@ -33,6 +33,8 @@ resource "telnyx_voice_clone" "recorded" {
   audio_path = "${path.module}/founder.wav"
   language   = "en"
   gender     = "male"
+
+  voice_provider = "telnyx"
 }
 ```
 

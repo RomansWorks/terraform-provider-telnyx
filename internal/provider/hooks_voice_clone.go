@@ -7,7 +7,9 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
+	"io/fs"
 	"mime/multipart"
 	"net/http"
 	"net/textproto"
@@ -43,6 +45,19 @@ var voiceCloneDesignFields = []string{"name", "voice_design_id", "language", "ge
 var voiceCloneHooks = engine.Hooks{
 	ModifyPlan: func(_ context.Context, plan, state engine.Values) ([]string, diag.Diagnostics) {
 		var diags diag.Diagnostics
+		// The create from a design takes none of the recording's settings,
+		// and the API fills label from the design's prompt.
+		if v := plan["voice_design_id"]; !v.IsNull() {
+			for _, name := range []string{"label", "model_id", "ref_text"} {
+				if x, ok := plan[name]; ok && x.IsKnown() && !x.IsNull() && !stateHas(state, name, x) {
+					diags.AddAttributeError(pathRoot(name), "Not allowed with voice_design_id",
+						name+" applies only to a clone made from a recording (audio_path).")
+				}
+			}
+			if diags.HasError() {
+				return nil, diags
+			}
+		}
 		p := plan["audio_path"]
 		if !p.IsKnown() {
 			plan["audio_sha256"] = tftypes.NewValue(tftypes.String, tftypes.UnknownValue)
@@ -60,6 +75,14 @@ var voiceCloneHooks = engine.Hooks{
 			sum, err = fileSHA256(path)
 		}
 		if err != nil {
+			// An existing clone keeps its recording when the file is not on
+			// this machine, such as a plan run elsewhere.
+			if old, ok := state["audio_sha256"]; ok && !old.IsNull() && errors.Is(err, fs.ErrNotExist) {
+				plan["audio_sha256"] = old
+				diags.AddAttributeWarning(pathRoot("audio_path"), "Voice recording not found",
+					"The recording was not found, so a change to it cannot be detected: "+err.Error())
+				return nil, diags
+			}
 			diags.AddAttributeError(pathRoot("audio_path"), "Unable to read voice recording", err.Error())
 			return nil, diags
 		}
@@ -68,6 +91,15 @@ var voiceCloneHooks = engine.Hooks{
 			return []string{"audio_sha256"}, nil
 		}
 		return nil, nil
+	},
+	// The update request requires name, but the engine sends only what
+	// changed.
+	BeforeRequest: func(_ context.Context, op string, body engine.Object, plan engine.Values) error {
+		var name string
+		if op == "update" && plan["name"].IsKnown() && plan["name"].As(&name) == nil && name != "" {
+			body["name"] = name
+		}
+		return nil
 	},
 	Create: func(ctx context.Context, c *client.Client, r *engine.Resource, plan engine.Values) (engine.Object, error) {
 		if v := plan["voice_design_id"]; v.IsKnown() && !v.IsNull() {
@@ -160,4 +192,11 @@ func voiceCloneForm(r *engine.Resource, plan engine.Values) ([]byte, string, err
 		return nil, "", err
 	}
 	return buf.Bytes(), w.FormDataContentType(), nil
+}
+
+// stateHas says the value is the one already in state, which the API set
+// itself (such as label, filled from the design's prompt).
+func stateHas(state engine.Values, name string, v tftypes.Value) bool {
+	old, ok := state[name]
+	return ok && old.Equal(v)
 }

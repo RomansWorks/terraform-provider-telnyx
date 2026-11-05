@@ -29,7 +29,7 @@ func Each(ctx context.Context, c *client.Client, op *Op, path string, query url.
 	if size <= 0 {
 		size = DefaultPageSize
 	}
-	cursor := ""
+	cursor, snapshot := "", ""
 	read := 0
 	for page := 1; page <= maxPages; page++ {
 		q := url.Values{}
@@ -40,6 +40,9 @@ func Each(ctx context.Context, c *client.Client, op *Op, path string, query url.
 		case PagingNumber:
 			q.Set("page[number]", strconv.Itoa(page))
 			q.Set("page[size]", strconv.Itoa(size))
+			if snapshot != "" {
+				q.Set("page[snapshot]", snapshot)
+			}
 		case PagingFlat:
 			q.Set("page_number", strconv.Itoa(page))
 			q.Set("page_size", strconv.Itoa(size))
@@ -66,8 +69,13 @@ func Each(ctx context.Context, c *client.Client, op *Op, path string, query url.
 			var records int
 			items, records, err = decodeItems(out, field, count)
 			read += len(items)
-			if err == nil && records > 0 && read >= records {
-				total = page
+			if err == nil && records > 0 {
+				if read >= records {
+					total = page
+				} else {
+					// A short page is not the end while count says more remain.
+					total = page + 1
+				}
 			}
 		} else {
 			items, total, err = decodeList(out, op.Envelope)
@@ -88,11 +96,32 @@ func Each(ctx context.Context, c *client.Client, op *Op, path string, query url.
 			cursor = next
 			continue
 		}
+		next, more := pageMeta(out)
+		if more != nil && !*more {
+			return nil
+		}
+		snapshot = next
 		if op.Paging == PagingNone || len(items) == 0 || (total > 0 && page >= total) || (total == 0 && len(items) < size) {
 			return nil
 		}
 	}
 	return fmt.Errorf("%s %s: more than %d pages", op.Method, path, maxPages)
+}
+
+// pageMeta returns meta.snapshot, which pins later pages of a
+// page[number] list to the first page's results (the AI gateway's lists
+// require it after page 1), and meta.has_more when the response has it.
+func pageMeta(data []byte) (string, *bool) {
+	var body struct {
+		Meta struct {
+			Snapshot string `json:"snapshot"`
+			HasMore  *bool  `json:"has_more"`
+		} `json:"meta"`
+	}
+	if json.Unmarshal(data, &body) != nil {
+		return "", nil
+	}
+	return body.Meta.Snapshot, body.Meta.HasMore
 }
 
 // nextCursor returns the cursor of the next page: meta.cursors.after or

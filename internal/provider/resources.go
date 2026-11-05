@@ -31,6 +31,8 @@ var hooks = map[string]engine.Hooks{
 	"telnyx_spend_limit":                          spendLimitHooks,
 	"telnyx_storage_bucket_ssl_certificate":       storageBucketSSLCertificateHooks,
 	"telnyx_storage_kv_key":                       storageKVKeyHooks,
+	"telnyx_storage_kv_namespace":                 storageProvisionHooks,
+	"telnyx_storage_sql_database":                 storageProvisionHooks,
 	"telnyx_texml_queue":                          texmlQueueHooks,
 	"telnyx_voice_clone":                          voiceCloneHooks,
 }

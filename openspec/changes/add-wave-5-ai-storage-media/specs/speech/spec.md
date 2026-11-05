@@ -28,3 +28,14 @@ The provider SHALL manage `telnyx_voice_design` (`provider` as `voice_provider`;
 #### Scenario: Rename a design
 - **WHEN** a design's `name` changes
 - **THEN** the provider sends `PATCH /voice_designs/{id}` and the next plan is empty
+
+### Requirement: Voice clone settings by source
+`label`, `model_id` and `ref_text` describe a recording, so the plan SHALL reject them on a clone made from a voice design. Every update SHALL send `name`, which the update request requires. When the recording at `audio_path` is missing for an existing clone, the plan SHALL keep the stored `audio_sha256` and warn instead of failing.
+
+#### Scenario: Gender change
+- **WHEN** only `gender` changes on a clone named "Narrator"
+- **THEN** the provider sends `PATCH /voice_clones/{id}` with `{"gender":"male","name":"Narrator"}`
+
+#### Scenario: Label on a designed clone
+- **WHEN** a clone sets both `voice_design_id` and `label`
+- **THEN** the plan fails naming `label`

@@ -44,6 +44,58 @@ func TestEachResultsPaging(t *testing.T) {
 	}
 }
 
+// Later pages of a page[number] list carry meta.snapshot from the first,
+// and has_more false ends the list.
+func TestEachSnapshotPaging(t *testing.T) {
+	pages := map[string]string{
+		"1": `{"data":[{"id":"a"},{"id":"b"}],"meta":{"page_number":1,"page_size":2,"has_more":true,"snapshot":"s1"}}`,
+		"2": `{"data":[{"id":"c"},{"id":"d"}],"meta":{"page_number":2,"page_size":2,"has_more":false,"snapshot":"s1"}}`,
+	}
+	var queries []string
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		q := r.URL.Query()
+		queries = append(queries, q.Get("page[number]")+":"+q.Get("page[snapshot]"))
+		_, _ = w.Write([]byte(pages[q.Get("page[number]")]))
+	}))
+	t.Cleanup(srv.Close)
+	c, err := client.New(client.Config{APIKey: "test", BaseURL: srv.URL, MaxRetries: 0})
+	if err != nil {
+		t.Fatal(err)
+	}
+	op := &Op{Method: "GET", Path: "/keys", Envelope: true, Paging: PagingNumber, PageSize: 2}
+	var ids []string
+	if err := Each(context.Background(), c, op, "/keys", nil, func(o Object) bool {
+		ids = append(ids, scalarString(o["id"]))
+		return true
+	}); err != nil {
+		t.Fatal(err)
+	}
+	if strings.Join(ids, ",") != "a,b,c,d" || strings.Join(queries, "|") != "1:|2:s1" {
+		t.Errorf("ids %v, queries %v", ids, queries)
+	}
+}
+
+// A short results page is not the end while count says more remain.
+func TestEachResultsShortPage(t *testing.T) {
+	pages := map[string]string{
+		"1": `{"count":3,"results":[{"id":1}]}`,
+		"2": `{"count":3,"results":[{"id":2},{"id":3}]}`,
+	}
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		_, _ = w.Write([]byte(pages[r.URL.Query().Get("page")]))
+	}))
+	t.Cleanup(srv.Close)
+	c, err := client.New(client.Config{APIKey: "test", BaseURL: srv.URL, MaxRetries: 0})
+	if err != nil {
+		t.Fatal(err)
+	}
+	op := &Op{Method: "GET", Path: "/agents", Envelope: true, Results: true, Paging: PagingPage, PageSize: 2, SizeParam: "page_size"}
+	n := 0
+	if err := Each(context.Background(), c, op, "/agents", nil, func(Object) bool { n++; return true }); err != nil || n != 3 {
+		t.Errorf("read %d items: %v", n, err)
+	}
+}
+
 func TestDecodeItems(t *testing.T) {
 	items, total, err := decodeItems([]byte(`{"results":null,"count":0}`), "results", "count")
 	if err != nil || len(items) != 0 || total != 0 {

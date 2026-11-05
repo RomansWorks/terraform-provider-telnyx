@@ -12,7 +12,7 @@ func AgentGatewayKeysList() *engine.List {
 		Description: "Lists agent gateway keys, with optional filters. Each item has the attributes of `telnyx_agent_gateway_key`.",
 		Op:          &engine.Op{Method: "GET", Path: "/agent_gateways/{instance_id}/keys", Envelope: true},
 		Params: []*engine.Attr{
-			{Name: "instance_id", Kind: engine.KindString, Required: true, PathParams: []string{"instance_id"}, Description: "The instance id."},
+			{Name: "gateway_id", Kind: engine.KindString, Required: true, PathParams: []string{"instance_id"}, Description: "The gateway id."},
 			{Name: "team_id", JSON: "team_id", Kind: engine.KindString, Optional: true},
 		},
 		Items: &engine.Attr{Name: "agent_gateway_keys", JSON: "data", Kind: engine.KindList, Computed: true, InResponse: true, Description: "The objects, in the order the API returns them.",

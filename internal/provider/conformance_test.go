@@ -38,6 +38,8 @@ var conformanceSkip = map[string]string{
 	"telnyx_storage_bucket_ssl_certificate":           "uploads its certificate as a multipart form",
 	"telnyx_voice_clone":                              "creates from a voice design or a multipart upload",
 	"telnyx_agent_gateway":                            "waits until the gateway is ready",
+	"telnyx_storage_kv_namespace":                     "waits until the namespace is provisioned",
+	"telnyx_storage_sql_database":                     "waits until the database is provisioned",
 }
 
 // TestConformance runs every generated resource through create, an empty

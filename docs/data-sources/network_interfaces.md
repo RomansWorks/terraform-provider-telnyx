@@ -17,7 +17,7 @@ The interfaces of a network: WireGuard interfaces, gateways and other attachment
 
 ### Required
 
-- `id` (String) The id id.
+- `network_id` (String) The network id.
 
 ### Optional
 

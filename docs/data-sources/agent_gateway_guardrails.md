@@ -17,7 +17,7 @@ Lists agent gateway guardrails, with optional filters. Each item has the attribu
 
 ### Required
 
-- `instance_id` (String) The instance id.
+- `gateway_id` (String) The gateway id.
 
 ### Optional
 

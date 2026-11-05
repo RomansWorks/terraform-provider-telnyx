@@ -17,7 +17,7 @@ Lists agent gateway policy attachments, with optional filters. Each item has the
 
 ### Required
 
-- `instance_id` (String) The instance id.
+- `gateway_id` (String) The gateway id.
 
 ### Optional
 

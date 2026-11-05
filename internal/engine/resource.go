@@ -13,6 +13,7 @@ import (
 	"slices"
 	"strings"
 	"time"
+	"unicode/utf8"
 
 	"github.com/hashicorp/terraform-plugin-framework-timeouts/resource/timeouts"
 	"github.com/hashicorp/terraform-plugin-framework-validators/resourcevalidator"
@@ -531,6 +532,9 @@ func Get(ctx context.Context, c *client.Client, d *Resource, vals Values) (Objec
 	}
 	if d.Read.Text {
 		// The response is the value itself, byte for byte.
+		if !utf8.Valid(out) {
+			return nil, fmt.Errorf("%s %s returned a value that is not UTF-8 text, which Terraform cannot store", d.Read.Method, d.Read.Path)
+		}
 		return Object{"value": string(out)}, nil
 	}
 	return Decode(out, d.Read.Envelope)

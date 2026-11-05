@@ -1,0 +1,1140 @@
+{
+  "components": {
+    "schemas": {
+      "AgentGatewayTeam": {
+        "description": "A team on an instance: a model list, a budget, and rate limits that its keys share.",
+        "properties": {
+          "blocked": {
+            "description": "Whether the instance refuses every key in the team.",
+            "type": "boolean"
+          },
+          "budget_resets_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "When the team's spend next resets."
+          },
+          "budget_resets_every": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "How often the team's spend resets, such as `30d`."
+          },
+          "created_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "When the team was created."
+          },
+          "id": {
+            "description": "Identifies the team.",
+            "type": "string"
+          },
+          "max_budget": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "The most the team's keys may spend together, in USD, until the budget resets."
+          },
+          "models": {
+            "description": "The models the team's keys may use. Empty means every model the instance serves.",
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "A label for people. Names need not be unique."
+          },
+          "requests_per_minute": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "The most requests the team's keys may make per minute, together."
+          },
+          "spend": {
+            "description": "What the team's keys have spent since the budget last reset, in USD.",
+            "type": "number"
+          },
+          "tokens_per_minute": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "The most tokens the team's keys may use per minute, together."
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "models",
+          "max_budget",
+          "budget_resets_every",
+          "budget_resets_at",
+          "spend",
+          "created_at",
+          "blocked",
+          "requests_per_minute",
+          "tokens_per_minute"
+        ],
+        "type": "object"
+      },
+      "AgentGatewayTeamCreate": {
+        "additionalProperties": false,
+        "properties": {
+          "budget_resets_every": {
+            "anyOf": [
+              {
+                "examples": [
+                  "30d"
+                ],
+                "pattern": "^[1-9][0-9]{0,6}[smhd]$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "How often the spend resets: a number and a unit, `s`, `m`, `h`, or `d`."
+          },
+          "max_budget": {
+            "anyOf": [
+              {
+                "minimum": 0,
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "The most the team's keys may spend together, in USD."
+          },
+          "models": {
+            "anyOf": [
+              {
+                "items": {
+                  "maxLength": 200,
+                  "minLength": 1,
+                  "type": "string"
+                },
+                "maxItems": 100,
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "The models the team's keys may use. Leave it out to allow every model."
+          },
+          "name": {
+            "description": "A label for people.",
+            "maxLength": 100,
+            "minLength": 1,
+            "type": "string"
+          },
+          "requests_per_minute": {
+            "anyOf": [
+              {
+                "maximum": 2147483647,
+                "minimum": 1,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "The most requests the team's keys may make per minute, together."
+          },
+          "tokens_per_minute": {
+            "anyOf": [
+              {
+                "maximum": 2147483647,
+                "minimum": 1,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "The most tokens the team's keys may use per minute, together."
+          }
+        },
+        "required": [
+          "name"
+        ],
+        "type": "object"
+      },
+      "AgentGatewayTeamListResponse": {
+        "properties": {
+          "data": {
+            "items": {
+              "$ref": "#/components/schemas/AgentGatewayTeam"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "data"
+        ],
+        "type": "object"
+      },
+      "AgentGatewayTeamResponse": {
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/AgentGatewayTeam"
+          }
+        },
+        "required": [
+          "data"
+        ],
+        "type": "object"
+      },
+      "AgentGatewayTeamUpdate": {
+        "additionalProperties": false,
+        "description": "A field left out stays as it is; `null` clears it.",
+        "properties": {
+          "blocked": {
+            "description": "`true` makes the instance refuse every key in the team; `false` lets them through again.",
+            "type": "boolean"
+          },
+          "budget_resets_every": {
+            "anyOf": [
+              {
+                "examples": [
+                  "30d"
+                ],
+                "pattern": "^[1-9][0-9]{0,6}[smhd]$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "How often the spend resets."
+          },
+          "max_budget": {
+            "anyOf": [
+              {
+                "minimum": 0,
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "The most the team's keys may spend together, in USD."
+          },
+          "models": {
+            "description": "The models the team's keys may use. `[]` allows every model.",
+            "items": {
+              "maxLength": 200,
+              "minLength": 1,
+              "type": "string"
+            },
+            "maxItems": 100,
+            "type": "array"
+          },
+          "name": {
+            "description": "A label for people.",
+            "maxLength": 100,
+            "minLength": 1,
+            "type": "string"
+          },
+          "requests_per_minute": {
+            "anyOf": [
+              {
+                "maximum": 2147483647,
+                "minimum": 1,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "The most requests the team's keys may make per minute, together."
+          },
+          "tokens_per_minute": {
+            "anyOf": [
+              {
+                "maximum": 2147483647,
+                "minimum": 1,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "The most tokens the team's keys may use per minute, together."
+          }
+        },
+        "type": "object"
+      },
+      "TelnyxError": {
+        "properties": {
+          "code": {
+            "type": "string"
+          },
+          "detail": {
+            "type": "string"
+          },
+          "meta": {
+            "properties": {
+              "url": {
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
+          "source": {
+            "properties": {
+              "parameter": {
+                "type": "string"
+              },
+              "pointer": {
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
+          "title": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "TelnyxErrors": {
+        "properties": {
+          "errors": {
+            "items": {
+              "$ref": "#/components/schemas/TelnyxError"
+            },
+            "type": "array"
+          }
+        },
+        "type": "object"
+      }
+    },
+    "securitySchemes": {
+      "BearerAuth": {
+        "bearerFormat": "API key",
+        "description": "Telnyx API key supplied as `Authorization: Bearer \u003ctoken\u003e`. In production, auth may be validated by the API gateway and forwarded via Telnyx auth headers.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "Payment": {
+        "description": "Machine Payment Protocol credential used on paid retries, sent as `Authorization: Payment ...`. Obtained by paying a challenge returned in the `WWW-Authenticate` header of a 402 response. This is not a Telnyx API key; initial challenge requests use standard bearer authentication instead.",
+        "in": "header",
+        "name": "Authorization",
+        "type": "apiKey"
+      },
+      "agent-gateway_bearerAuth": {
+        "description": "Telnyx API key",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "agent-memory_bearerAuth": {
+        "description": "Telnyx API key",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "bearerAuth": {
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "branded-calling_bearerAuth": {
+        "description": "Telnyx API key. Generate one at https://portal.telnyx.com/#/app/api-keys.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "collections_bearerAuth": {
+        "description": "Telnyx API key. Collections and results are automatically scoped to the authenticated user's organization.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "number-reputation_bearerAuth": {
+        "description": "Telnyx API key. Generate one at https://portal.telnyx.com/#/app/api-keys.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "oauthClientAuth": {
+        "description": "OAuth 2.0 authentication for Telnyx API and MCP integrations",
+        "flows": {
+          "authorizationCode": {
+            "authorizationUrl": "https://api.telnyx.com/v2/oauth/authorize",
+            "refreshUrl": "https://api.telnyx.com/v2/oauth/token",
+            "scopes": {
+              "admin": "Administrative access to Telnyx resources"
+            },
+            "tokenUrl": "https://api.telnyx.com/v2/oauth/token"
+          },
+          "clientCredentials": {
+            "scopes": {
+              "admin": "Administrative access to Telnyx resources"
+            },
+            "tokenUrl": "https://api.telnyx.com/v2/oauth/token"
+          }
+        },
+        "type": "oauth2"
+      },
+      "outbound-voice-profiles_bearerAuth": {
+        "bearerFormat": "JWT",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "pay-connectors_bearerAuth": {
+        "description": "Telnyx API key, not the processor bearer token.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "pronunciation-dicts_bearerAuth": {
+        "description": "Telnyx API v2 key. Obtain from https://portal.telnyx.com",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "rcs-registration_bearerAuth": {
+        "bearerFormat": "API key",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "stored-payment-transactions_bearerAuth": {
+        "bearerFormat": "JWT",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "telnyxApiKey": {
+        "description": "Management-only Telnyx account credential.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "transcriptions-search_bearerAuth": {
+        "description": "Telnyx API key. Results are automatically scoped to the authenticated user's organization.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "web-search_bearerAuth": {
+        "description": "Telnyx API key",
+        "scheme": "bearer",
+        "type": "http"
+      }
+    }
+  },
+  "info": {
+    "contact": {
+      "email": "support@telnyx.com"
+    },
+    "description": "SIP trunking, SMS, MMS, Call Control and Telephony Data Services.",
+    "title": "Telnyx API",
+    "version": "2.0.0",
+    "x-endpoint-cost": "light",
+    "x-latency-category": "responsive"
+  },
+  "openapi": "3.1.0",
+  "paths": {
+    "/agent_gateways/{instance_id}/teams": {
+      "get": {
+        "description": "Lists the instance's teams. The instance must be `ready`; otherwise the request answers `409`.",
+        "operationId": "ListAgentGatewayTeams",
+        "parameters": [
+          {
+            "description": "The Agent Gateway's `id`.",
+            "example": "ecffdf4b-93ea-4a7b-8295-51dfd2077996",
+            "in": "path",
+            "name": "instance_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "data": [
+                    {
+                      "blocked": false,
+                      "budget_resets_at": "2026-11-20T19:35:00Z",
+                      "budget_resets_every": "30d",
+                      "created_at": "2026-10-21T19:35:00Z",
+                      "id": "0b6c5d4e-3f2a-4b1c-9d8e-7f6a5b4c3d2e",
+                      "max_budget": 50,
+                      "models": [
+                        "GLM-5.3-Flash",
+                        "Qwen3.8-27B-nothink"
+                      ],
+                      "name": "support",
+                      "requests_per_minute": 120,
+                      "spend": 0,
+                      "tokens_per_minute": null
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/AgentGatewayTeamListResponse"
+                }
+              }
+            },
+            "description": "The instance's teams"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "errors": [
+                    {
+                      "code": "10009",
+                      "detail": "The required authentication headers were either invalid or not included in the request.",
+                      "meta": {
+                        "url": "https://developers.telnyx.com/docs/overview/errors/10009"
+                      },
+                      "title": "Authentication failed"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/TelnyxErrors"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "errors": [
+                    {
+                      "code": "10005",
+                      "detail": "The requested resource or URL could not be found.",
+                      "meta": {
+                        "url": "https://developers.telnyx.com/docs/overview/errors/10005"
+                      },
+                      "title": "Resource not found"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/TelnyxErrors"
+                }
+              }
+            },
+            "description": "Not found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "errors": [
+                    {
+                      "code": "99901",
+                      "detail": "The instance is not ready; its engine is not running.",
+                      "title": "Instance not ready"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/TelnyxErrors"
+                }
+              }
+            },
+            "description": "The instance is not `ready`"
+          },
+          "502": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "errors": [
+                    {
+                      "code": "99903",
+                      "detail": "The instance's engine did not answer; try again shortly.",
+                      "title": "Engine unavailable"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/TelnyxErrors"
+                }
+              }
+            },
+            "description": "The instance's engine did not answer"
+          }
+        },
+        "summary": "List teams",
+        "tags": [
+          "Agent Gateway Teams"
+        ]
+      },
+      "post": {
+        "description": "Creates a team on the instance. A team is a model list, a budget, and rate limits that its keys share. Names need not be unique; the `id` identifies the team. The instance must be `ready`; otherwise the request answers `409`.",
+        "operationId": "CreateAgentGatewayTeam",
+        "parameters": [
+          {
+            "description": "The Agent Gateway's `id`.",
+            "example": "ecffdf4b-93ea-4a7b-8295-51dfd2077996",
+            "in": "path",
+            "name": "instance_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "examples": {
+                "team": {
+                  "summary": "A team with two models and a monthly budget",
+                  "value": {
+                    "budget_resets_every": "30d",
+                    "max_budget": 50,
+                    "models": [
+                      "GLM-5.3-Flash",
+                      "Qwen3.8-27B-nothink"
+                    ],
+                    "name": "support",
+                    "requests_per_minute": 120
+                  }
+                }
+              },
+              "schema": {
+                "$ref": "#/components/schemas/AgentGatewayTeamCreate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "data": {
+                    "blocked": false,
+                    "budget_resets_at": "2026-11-20T19:35:00Z",
+                    "budget_resets_every": "30d",
+                    "created_at": "2026-10-21T19:35:00Z",
+                    "id": "0b6c5d4e-3f2a-4b1c-9d8e-7f6a5b4c3d2e",
+                    "max_budget": 50,
+                    "models": [
+                      "GLM-5.3-Flash",
+                      "Qwen3.8-27B-nothink"
+                    ],
+                    "name": "support",
+                    "requests_per_minute": 120,
+                    "spend": 0,
+                    "tokens_per_minute": null
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/AgentGatewayTeamResponse"
+                }
+              }
+            },
+            "description": "The team"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "errors": [
+                    {
+                      "code": "10009",
+                      "detail": "The required authentication headers were either invalid or not included in the request.",
+                      "meta": {
+                        "url": "https://developers.telnyx.com/docs/overview/errors/10009"
+                      },
+                      "title": "Authentication failed"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/TelnyxErrors"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "errors": [
+                    {
+                      "code": "10005",
+                      "detail": "The requested resource or URL could not be found.",
+                      "meta": {
+                        "url": "https://developers.telnyx.com/docs/overview/errors/10005"
+                      },
+                      "title": "Resource not found"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/TelnyxErrors"
+                }
+              }
+            },
+            "description": "Not found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "errors": [
+                    {
+                      "code": "99901",
+                      "detail": "The instance is not ready; its engine is not running.",
+                      "title": "Instance not ready"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/TelnyxErrors"
+                }
+              }
+            },
+            "description": "The instance is not `ready`"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "errors": [
+                    {
+                      "code": "10004",
+                      "detail": "Field required",
+                      "meta": {
+                        "url": "https://developers.telnyx.com/docs/overview/errors/10004"
+                      },
+                      "source": {
+                        "pointer": "/name"
+                      },
+                      "title": "Missing required parameter"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/TelnyxErrors"
+                }
+              }
+            },
+            "description": "Invalid request body"
+          },
+          "502": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "errors": [
+                    {
+                      "code": "99903",
+                      "detail": "The instance's engine did not answer; try again shortly.",
+                      "title": "Engine unavailable"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/TelnyxErrors"
+                }
+              }
+            },
+            "description": "The instance's engine did not answer"
+          }
+        },
+        "summary": "Create a team",
+        "tags": [
+          "Agent Gateway Teams"
+        ]
+      }
+    },
+    "/agent_gateways/{instance_id}/teams/{team_id}": {
+      "delete": {
+        "description": "Deletes a team that has no keys and returns it. A team that still has keys answers `409`; delete or move its keys first. The instance must be `ready`; otherwise the request answers `409`.",
+        "operationId": "DeleteAgentGatewayTeam",
+        "parameters": [
+          {
+            "description": "The Agent Gateway's `id`.",
+            "example": "ecffdf4b-93ea-4a7b-8295-51dfd2077996",
+            "in": "path",
+            "name": "instance_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "description": "The team's `id`.",
+            "example": "0b6c5d4e-3f2a-4b1c-9d8e-7f6a5b4c3d2e",
+            "in": "path",
+            "name": "team_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "data": {
+                    "blocked": false,
+                    "budget_resets_at": "2026-11-20T19:35:00Z",
+                    "budget_resets_every": "30d",
+                    "created_at": "2026-10-21T19:35:00Z",
+                    "id": "0b6c5d4e-3f2a-4b1c-9d8e-7f6a5b4c3d2e",
+                    "max_budget": 50,
+                    "models": [
+                      "GLM-5.3-Flash",
+                      "Qwen3.8-27B-nothink"
+                    ],
+                    "name": "support",
+                    "requests_per_minute": 120,
+                    "spend": 0,
+                    "tokens_per_minute": null
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/AgentGatewayTeamResponse"
+                }
+              }
+            },
+            "description": "The deleted team"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "errors": [
+                    {
+                      "code": "10009",
+                      "detail": "The required authentication headers were either invalid or not included in the request.",
+                      "meta": {
+                        "url": "https://developers.telnyx.com/docs/overview/errors/10009"
+                      },
+                      "title": "Authentication failed"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/TelnyxErrors"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "errors": [
+                    {
+                      "code": "10005",
+                      "detail": "The requested resource or URL could not be found.",
+                      "meta": {
+                        "url": "https://developers.telnyx.com/docs/overview/errors/10005"
+                      },
+                      "title": "Resource not found"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/TelnyxErrors"
+                }
+              }
+            },
+            "description": "Not found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "errors": [
+                    {
+                      "code": "10021",
+                      "detail": "The resource can not be removed as it is still in use.",
+                      "meta": {
+                        "url": "https://developers.telnyx.com/docs/overview/errors/10021"
+                      },
+                      "title": "Resource in use"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/TelnyxErrors"
+                }
+              }
+            },
+            "description": "The team still has keys, or the instance is not `ready`"
+          },
+          "502": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "errors": [
+                    {
+                      "code": "99903",
+                      "detail": "The instance's engine did not answer; try again shortly.",
+                      "title": "Engine unavailable"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/TelnyxErrors"
+                }
+              }
+            },
+            "description": "The instance's engine did not answer"
+          }
+        },
+        "summary": "Delete a team",
+        "tags": [
+          "Agent Gateway Teams"
+        ]
+      },
+      "patch": {
+        "description": "Changes a team's settings. A field left out stays as it is, and `null` clears it. `models: []` lifts the model restriction. Setting `blocked` to `true` makes the instance refuse every key in the team with `401`. The instance must be `ready`; otherwise the request answers `409`.",
+        "operationId": "UpdateAgentGatewayTeam",
+        "parameters": [
+          {
+            "description": "The Agent Gateway's `id`.",
+            "example": "ecffdf4b-93ea-4a7b-8295-51dfd2077996",
+            "in": "path",
+            "name": "instance_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "description": "The team's `id`.",
+            "example": "0b6c5d4e-3f2a-4b1c-9d8e-7f6a5b4c3d2e",
+            "in": "path",
+            "name": "team_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "examples": {
+                "budget": {
+                  "summary": "Raise the budget",
+                  "value": {
+                    "max_budget": 100
+                  }
+                }
+              },
+              "schema": {
+                "$ref": "#/components/schemas/AgentGatewayTeamUpdate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "data": {
+                    "blocked": false,
+                    "budget_resets_at": "2026-11-20T19:35:00Z",
+                    "budget_resets_every": "30d",
+                    "created_at": "2026-10-21T19:35:00Z",
+                    "id": "0b6c5d4e-3f2a-4b1c-9d8e-7f6a5b4c3d2e",
+                    "max_budget": 100,
+                    "models": [
+                      "GLM-5.3-Flash",
+                      "Qwen3.8-27B-nothink"
+                    ],
+                    "name": "support",
+                    "requests_per_minute": 120,
+                    "spend": 0,
+                    "tokens_per_minute": null
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/AgentGatewayTeamResponse"
+                }
+              }
+            },
+            "description": "The updated team"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "errors": [
+                    {
+                      "code": "10009",
+                      "detail": "The required authentication headers were either invalid or not included in the request.",
+                      "meta": {
+                        "url": "https://developers.telnyx.com/docs/overview/errors/10009"
+                      },
+                      "title": "Authentication failed"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/TelnyxErrors"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "errors": [
+                    {
+                      "code": "10005",
+                      "detail": "The requested resource or URL could not be found.",
+                      "meta": {
+                        "url": "https://developers.telnyx.com/docs/overview/errors/10005"
+                      },
+                      "title": "Resource not found"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/TelnyxErrors"
+                }
+              }
+            },
+            "description": "Not found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "errors": [
+                    {
+                      "code": "99901",
+                      "detail": "The instance is not ready; its engine is not running.",
+                      "title": "Instance not ready"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/TelnyxErrors"
+                }
+              }
+            },
+            "description": "The instance is not `ready`"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "errors": [
+                    {
+                      "code": "10033",
+                      "detail": "Input should be greater than or equal to 0",
+                      "meta": {
+                        "url": "https://developers.telnyx.com/docs/overview/errors/10033"
+                      },
+                      "source": {
+                        "pointer": "/max_budget"
+                      },
+                      "title": "Value outside of range"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/TelnyxErrors"
+                }
+              }
+            },
+            "description": "Invalid request body"
+          },
+          "502": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "errors": [
+                    {
+                      "code": "99903",
+                      "detail": "The instance's engine did not answer; try again shortly.",
+                      "title": "Engine unavailable"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/TelnyxErrors"
+                }
+              }
+            },
+            "description": "The instance's engine did not answer"
+          }
+        },
+        "summary": "Update a team",
+        "tags": [
+          "Agent Gateway Teams"
+        ]
+      }
+    }
+  },
+  "security": [
+    {
+      "bearerAuth": []
+    }
+  ],
+  "servers": [
+    {
+      "description": "Version 2.0.0 of the Telnyx API",
+      "url": "https://api.telnyx.com/v2"
+    }
+  ]
+}

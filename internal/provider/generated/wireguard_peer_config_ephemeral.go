@@ -12,7 +12,7 @@ func WireguardPeerConfigEphemeral() *engine.Ephemeral {
 		Description: "The WireGuard configuration template of a peer, never stored in plan or state.",
 		Open:        &engine.Op{Method: "GET", Path: "/wireguard_peers/{id}/config", Envelope: false, Text: true},
 		Attrs: []*engine.Attr{
-			{Name: "value", JSON: "value", Kind: engine.KindString, Computed: true, InResponse: true, Description: "The value the API returned."},
+			{Name: "config", JSON: "value", Kind: engine.KindString, Computed: true, InResponse: true, Description: "The peer's WireGuard configuration file, with placeholders for values Telnyx does not store, such as the private key."},
 			{Name: "wireguard_peer_id", Kind: engine.KindString, Required: true, Local: true, PathParams: []string{"id"}, Description: "The wireguard peer id."},
 		},
 	}

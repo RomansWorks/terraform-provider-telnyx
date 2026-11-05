@@ -22,7 +22,7 @@ A virtual cross connect between a network and a cloud provider (AWS, Azure or Go
 ### Read-Only
 
 - `bandwidth_mbps` (Number) The desired throughput in Megabits per Second (Mbps) for your Virtual Cross Connect.<br /><br />The available bandwidths can be found using the /virtual_cross_connect_regions endpoint.
-- `bgp_asn` (Number) The Border Gateway Protocol (BGP) Autonomous System Number (ASN). If null, value will be assigned by Telnyx.
+- `bgp_asn` (Number) The Autonomous System Number of your side of the BGP session.
 - `cloud_provider` (String) The Virtual Private Cloud with which you would like to establish a cross connect. One of `aws`, `azure`, `gce`.
 - `cloud_provider_region` (String) The region where your Virtual Private Cloud hosts are located.<br /><br />The available regions can be found using the /virtual_cross_connect_regions endpoint.
 - `created_at` (String) ISO 8601 formatted date-time indicating when the resource was created.

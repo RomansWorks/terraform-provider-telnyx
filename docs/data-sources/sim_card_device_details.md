@@ -17,7 +17,7 @@ The device a SIM card is in, as last reported by the network.
 
 ### Required
 
-- `id` (String) The id.
+- `sim_card_id` (String) The sim card.
 
 ### Read-Only
 

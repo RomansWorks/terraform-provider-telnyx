@@ -27,7 +27,6 @@ A tunnel that lets a telnyx-edge process on your own host connect to Telnyx. The
 - `name` (String) A user specified name for the tunnel.
 - `record_type` (String) Identifies the type of the resource.
 - `status` (String) `inactive` when no tunnel process is connected, and `healthy` when one or more are. `degraded` (Preview, not reported yet) when a process is connected but fails to reach its destinations.
-- `tunnel_token` (String, Sensitive) The credential that a tunnel process presents with `telnyx-edge tunnel run --token`. Returned only by create and rotate_token. Telnyx stores only a hash of it.
 
 <a id="nestedatt--connections"></a>
 ### Nested Schema for `connections`

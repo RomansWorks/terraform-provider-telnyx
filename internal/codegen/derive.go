@@ -841,12 +841,21 @@ func (g *Generator) Derive(ov *Override) (*engine.Resource, error) {
 func (g *Generator) withCreateOnly(ov *Override, read map[string]any, create *operation) (map[string]any, error) {
 	var names []string
 	for p, a := range ov.Attributes {
-		if a.CreateOnly && properties(read)[p] == nil {
+		if !a.CreateOnly {
+			continue
+		}
+		if strings.Contains(p, ".") {
+			return nil, fmt.Errorf("create_only %s: create_only applies to top-level fields only", p)
+		}
+		if properties(read)[p] == nil {
 			names = append(names, p)
 		}
 	}
 	if len(names) == 0 {
 		return read, nil
+	}
+	if create == nil {
+		return nil, fmt.Errorf("create_only needs create")
 	}
 	sort.Strings(names)
 	resp, _ := g.responseSchema(create)

@@ -17,7 +17,7 @@ An order for physical SIM cards shipped to an address. Orders cannot be cancelle
 
 ### Required
 
-- `address_id` (String) Uniquely identifies the address for the order. The API does not return this value, so changes made outside Terraform are not detected.
+- `address_id` (String) Uniquely identifies the address for the order.
 - `quantity` (Number) The amount of SIM cards requested in the SIM card order.
 
 ### Read-Only

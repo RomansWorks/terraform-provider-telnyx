@@ -19,7 +19,7 @@ func VirtualCrossConnect() *engine.Resource {
 		DataSource:  true,
 		Attrs: []*engine.Attr{
 			{Name: "bandwidth_mbps", JSON: "bandwidth_mbps", Kind: engine.KindFloat, Optional: true, Computed: true, ForceNew: true, InCreate: true, InResponse: true, Description: "The desired throughput in Megabits per Second (Mbps) for your Virtual Cross Connect.<br /><br />The available bandwidths can be found using the /virtual_cross_connect_regions endpoint."},
-			{Name: "bgp_asn", JSON: "bgp_asn", Kind: engine.KindFloat, Required: true, ForceNew: true, InCreate: true, InResponse: true, Description: "The Border Gateway Protocol (BGP) Autonomous System Number (ASN). If null, value will be assigned by Telnyx."},
+			{Name: "bgp_asn", JSON: "bgp_asn", Kind: engine.KindFloat, Required: true, ForceNew: true, InCreate: true, InResponse: true, Description: "The Autonomous System Number of your side of the BGP session."},
 			{Name: "cloud_provider", JSON: "cloud_provider", Kind: engine.KindString, Required: true, ForceNew: true, InCreate: true, InResponse: true, Enum: []string{"aws", "azure", "gce"}, Description: "The Virtual Private Cloud with which you would like to establish a cross connect."},
 			{Name: "cloud_provider_region", JSON: "cloud_provider_region", Kind: engine.KindString, Required: true, ForceNew: true, InCreate: true, InResponse: true, Description: "The region where your Virtual Private Cloud hosts are located.<br /><br />The available regions can be found using the /virtual_cross_connect_regions endpoint."},
 			{Name: "created_at", JSON: "created_at", Kind: engine.KindString, Computed: true, InResponse: true, Description: "ISO 8601 formatted date-time indicating when the resource was created."},

@@ -21,6 +21,7 @@ An order for physical SIM cards shipped to an address. Orders cannot be cancelle
 
 ### Read-Only
 
+- `address_id` (String) Uniquely identifies the address for the order.
 - `cost` (Attributes) An object representing the total cost of the order. (see [below for nested schema](#nestedatt--cost))
 - `created_at` (String) ISO 8601 formatted date-time indicating when the resource was last created.
 - `order_address` (Attributes) An object representing the address information from when the order was submitted. (see [below for nested schema](#nestedatt--order_address))

@@ -75,6 +75,7 @@ func TestCreateOnly(t *testing.T) {
 	for name, attrs := range map[string]string{
 		"configurable": "  name: {create_only: true}\n",
 		"nowhere":      "  missing: {create_only: true}\n",
+		"nested":       "  status.value: {create_only: true}\n",
 	} {
 		g, ov := wave3(t, tunnelOverride+"attributes:\n"+attrs)
 		if _, err := g.Derive(ov); err == nil {

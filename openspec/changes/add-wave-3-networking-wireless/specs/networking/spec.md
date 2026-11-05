@@ -29,7 +29,7 @@ A virtual cross connect's `primary_bgp_key` and `secondary_bgp_key` SHALL be sen
 - **THEN** the provider sends `PATCH /tailscale_subnet_routers/{id}` with the new `auth_key`, and state holds no `auth_key_wo` value
 
 ### Requirement: WireGuard peer private key
-When a WireGuard peer is created without `public_key`, its `private_key` SHALL hold the private key Telnyx generated, as a sensitive value that refreshes never clear. After import it SHALL be null.
+When a WireGuard peer is created without `public_key`, its `private_key` SHALL hold the private key Telnyx generated, as a sensitive value that refreshes never clear. After import it SHALL be null. A change of `public_key` SHALL replace the peer.
 
 #### Scenario: Generated key pair
 - **WHEN** a peer without `public_key` is created and the response holds `private_key`

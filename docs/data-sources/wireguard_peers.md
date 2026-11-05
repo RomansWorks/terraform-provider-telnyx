@@ -32,7 +32,6 @@ Read-Only:
 - `created_at` (String) ISO 8601 formatted date-time indicating when the resource was created.
 - `id` (String) Identifies the resource.
 - `last_seen` (String) ISO 8601 formatted date-time indicating when peer sent traffic last time.
-- `private_key` (String, Sensitive) Your WireGuard `Interface.PrivateKey`.<br /><br />This attribute is only ever utlised if, on POST, you do NOT provide your own `public_key`. In which case, a new Public and Private key pair will be generated for you. When your `private_key` is returned, you must save this immediately as we do not save it within Telnyx. If you lose your Private Key, it can not be recovered.
 - `public_key` (String) The WireGuard `PublicKey`.<br /><br />If you do not provide a Public Key, a new Public and Private key pair will be generated for you.
 - `record_type` (String) Identifies the type of the resource.
 - `updated_at` (String) ISO 8601 formatted date-time indicating when the resource was updated.

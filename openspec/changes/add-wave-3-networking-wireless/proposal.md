@@ -30,6 +30,7 @@ This change covers no upstream range: it builds on the current pin.
 
 - `internal/engine`: `Attr.CreateOnly`.
 - `internal/codegen`: the attribute override key `create_only`; read-only request objects.
+- `internal/provider`: one hook (SIM card orders read `address_id` from `order_address`).
 - `generator/overrides`: 55 new override files. `internal/provider/generated`: regenerated.
 - `catalog/coverage.yaml`: unchanged; every wave 3 operation is implemented as triaged.
 - Docs and examples for the new resources; changelog entries.

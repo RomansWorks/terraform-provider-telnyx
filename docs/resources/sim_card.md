@@ -55,7 +55,6 @@ resource "telnyx_sim_card" "tracker" {
 - `ipv6` (String) The SIM's address in the currently connected network. This IPv6 address is usually obtained dynamically, so it may vary according to the location or new connections.
 - `live_data_session` (String) Indicates whether the device is actively connected to a network and able to run data.
 - `msisdn` (String) Mobile Station International Subscriber Directory Number (MSISDN) is a number used to identify a mobile phone number internationally. <br/> MSISDN is defined by the E.164 numbering plan. It includes a country code and a National Destination Code which identifies the subscriber's operator.
-- `pin_puk_codes` (Attributes, Sensitive) PIN and PUK codes for the SIM card. Only available when include_pin_puk_codes=true is set in the request. (see [below for nested schema](#nestedatt--pin_puk_codes))
 - `record_type` (String)
 - `resources_with_in_progress_actions` (List of String) List of resources with actions in progress.
 - `status` (Attributes) (see [below for nested schema](#nestedatt--status))
@@ -91,17 +90,6 @@ Read-Only:
 - `accuracy_unit` (String)
 - `latitude` (String)
 - `longitude` (String)
-
-
-<a id="nestedatt--pin_puk_codes"></a>
-### Nested Schema for `pin_puk_codes`
-
-Read-Only:
-
-- `pin1` (String) The primary Personal Identification Number (PIN) for the SIM card. This is a 4-digit code used to protect the SIM card from unauthorized use.
-- `pin2` (String) The secondary Personal Identification Number (PIN2) for the SIM card. This is a 4-digit code used for additional security features.
-- `puk1` (String) The primary Personal Unblocking Key (PUK1) for the SIM card. This is an 8-digit code used to unlock the SIM card if PIN1 is entered incorrectly multiple times.
-- `puk2` (String) The secondary Personal Unblocking Key (PUK2) for the SIM card. This is an 8-digit code used to unlock the SIM card if PIN2 is entered incorrectly multiple times.
 
 
 <a id="nestedatt--status"></a>

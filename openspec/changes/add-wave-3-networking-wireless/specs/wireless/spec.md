@@ -20,7 +20,7 @@ The provider SHALL manage `telnyx_sim_card`, a SIM card already on the account, 
 - **THEN** the SIM card is read and a matching configuration has an empty plan
 
 ### Requirement: SIM card attributes
-A SIM card's `tags` and `authorized_imeis` SHALL be sets, `pin_puk_codes` SHALL be sensitive, and `status` SHALL be computed: it changes only through SIM card actions.
+A SIM card's `tags` and `authorized_imeis` SHALL be sets, and `status` SHALL be computed: it changes only through SIM card actions. PIN and PUK codes SHALL not be exposed, because reads do not request them.
 
 #### Scenario: Reordered tags
 - **WHEN** the API returns a SIM card's tags in another order
@@ -39,6 +39,13 @@ The provider SHALL manage `telnyx_sim_card_order`. Orders cannot be cancelled: e
 #### Scenario: Destroy an order
 - **WHEN** a SIM card order is destroyed
 - **THEN** no request is sent and the order is removed from state with a warning
+
+### Requirement: Imported SIM card orders
+A SIM card order's `address_id` SHALL be read from the response's `order_address.id`, so that importing an order does not plan a replacement.
+
+#### Scenario: Import an order
+- **WHEN** `terraform import telnyx_sim_card_order.x <id>` runs for an order shipped to address `a1`
+- **THEN** `address_id` is `a1`, and a configuration with `address_id = "a1"` has an empty plan
 
 ### Requirement: Wireless policies
 The provider SHALL manage `telnyx_wireless_blocklist`, `telnyx_traffic_policy_profile` and `telnyx_sim_card_data_usage_notification`. A blocklist's `values`, and a traffic policy profile's `services`, `ip_ranges` and `domains`, SHALL be sets. A blocklist's `type` SHALL force replacement.

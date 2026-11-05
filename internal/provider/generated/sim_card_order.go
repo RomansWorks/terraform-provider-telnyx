@@ -16,7 +16,7 @@ func SimCardOrder() *engine.Resource {
 		Import:      []string{"id"},
 		DataSource:  true,
 		Attrs: []*engine.Attr{
-			{Name: "address_id", JSON: "address_id", Kind: engine.KindString, Required: true, ForceNew: true, InCreate: true, Description: "Uniquely identifies the address for the order."},
+			{Name: "address_id", JSON: "address_id", Kind: engine.KindString, Required: true, ForceNew: true, InCreate: true, InResponse: true, Description: "Uniquely identifies the address for the order."},
 			{Name: "cost", JSON: "cost", Kind: engine.KindObject, Computed: true, InResponse: true, Description: "An object representing the total cost of the order.",
 				Attrs: []*engine.Attr{
 					{Name: "amount", JSON: "amount", Kind: engine.KindString, Computed: true, InResponse: true, Description: "A string representing the cost amount."},

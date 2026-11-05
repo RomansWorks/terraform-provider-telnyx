@@ -1,6 +1,7 @@
 ## 1. Engine and generator
 
 - [x] 1.1 `create_only` attribute override: computed, sensitive, taken from the create response schema when read lacks it; engine keeps the state value on read; tests
+- [x] 1.1a Create carries create-only values through the read after create; lifecycle test with a fake API whose read omits the value
 - [x] 1.2 A request object whose fields are all read-only is computed; test; no existing resource changes
 
 ## 2. Wave 3 overrides
@@ -9,6 +10,7 @@
 - [x] 2.2 17 read-only data sources: Global IP allowed ports, health check types and protocols, network coverage, network interfaces, virtual cross connect coverage, traffic policy profile services, wireless blocklist values, wireless regions, SIM card group action(s), SIM card action(s), bulk SIM card action(s), SIM card device details and public IP
 - [x] 2.3 13 actions: `telnyx_esim_purchase`, `telnyx_tunnel_rotate_token`, `telnyx_sim_card_register`, SIM card bulk voice and public IP actions, SIM card enable, disable, standby, voice and public IP actions
 - [x] 2.4 Ephemeral `telnyx_wireguard_peer_config` and `telnyx_sim_card_activation_code`
+- [x] 2.5a Hook: SIM card orders read `address_id` from `order_address.id`; test
 - [x] 2.5 Secrets sensitive, create-only or write-only; unordered lists as sets; real descriptions
 
 ## 3. Tests, docs and release notes

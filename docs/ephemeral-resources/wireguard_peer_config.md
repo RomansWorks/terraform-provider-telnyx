@@ -28,4 +28,4 @@ ephemeral "telnyx_wireguard_peer_config" "laptop" {
 
 ### Read-Only
 
-- `value` (String, Sensitive) The value the API returned.
+- `config` (String, Sensitive) The peer's WireGuard configuration file, with placeholders for values Telnyx does not store, such as the private key.

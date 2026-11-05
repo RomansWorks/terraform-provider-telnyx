@@ -85,8 +85,9 @@ type Override struct {
 func (o *Override) itemSettings() map[string]AttrOverride {
 	out := map[string]AttrOverride{}
 	for p, a := range o.Attributes {
-		s := AttrOverride{Sensitive: a.Sensitive || a.Masked || a.WriteOnly || a.CreateOnly, Set: a.Set}
-		if s.Sensitive || s.Set {
+		// A list is read, which never holds a create-only value.
+		s := AttrOverride{Sensitive: a.Sensitive || a.Masked || a.WriteOnly, Set: a.Set, Skip: a.CreateOnly}
+		if s.Sensitive || s.Set || s.Skip {
 			out[p] = s
 		}
 	}

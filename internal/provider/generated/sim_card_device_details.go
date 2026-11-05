@@ -12,17 +12,17 @@ func SimCardDeviceDetails() *engine.Resource {
 		Description: "The device a SIM card is in, as last reported by the network.",
 		Read:        &engine.Op{Method: "GET", Path: "/sim_cards/{id}/device_details", Envelope: true},
 		IDAttr:      "",
-		Import:      []string{"id"},
+		Import:      []string{"sim_card_id"},
 		DataSource:  true,
 		NoResource:  true,
 		Attrs: []*engine.Attr{
 			{Name: "brand_name", JSON: "brand_name", Kind: engine.KindString, Computed: true, InResponse: true, Description: "Brand of the device where the SIM card is being used in."},
 			{Name: "device_type", JSON: "device_type", Kind: engine.KindString, Computed: true, InResponse: true, Description: "Type of the device where the SIM card is being used in."},
-			{Name: "id", Kind: engine.KindString, Local: true, PathParams: []string{"id"}, Description: "The id."},
 			{Name: "imei", JSON: "imei", Kind: engine.KindString, Computed: true, InResponse: true, Description: "IMEI of the device where the SIM card is being used in."},
 			{Name: "model_name", JSON: "model_name", Kind: engine.KindString, Computed: true, InResponse: true, Description: "Brand of the device where the SIM card is being used in."},
 			{Name: "operating_system", JSON: "operating_system", Kind: engine.KindString, Computed: true, InResponse: true, Description: "Operating system of the device where the SIM card is being used in."},
 			{Name: "record_type", JSON: "record_type", Kind: engine.KindString, Computed: true, InResponse: true},
+			{Name: "sim_card_id", Kind: engine.KindString, Local: true, PathParams: []string{"id"}, Description: "The sim card."},
 		},
 	}
 }

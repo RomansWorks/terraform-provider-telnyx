@@ -6,10 +6,13 @@ update: PATCH /ai/collections/{uuid}
 delete: DELETE /ai/collections/{uuid}
 list: GET /ai/collections
 id: uuid
-# Retrieval settings change through their own endpoint.
+# Retrieval settings change through their own endpoint, also straight
+# after create. The read hook copies settings.retrieval to retrieval.
 updates:
   - op: PATCH /ai/collections/{uuid}/settings
 attributes:
+  settings: {skip: true}
+  retrieval: {returned: true}
   # Sources are managed one by one with telnyx_ai_collection_source, which
   # can also remove them; the collection only reports them.
   sources: {computed: true}

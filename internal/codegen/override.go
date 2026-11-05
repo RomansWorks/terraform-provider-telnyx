@@ -135,9 +135,9 @@ type AttrOverride struct {
 	// Masked says the API answers with asterisks in place of the value
 	// after create; the value in state is kept. Masked implies sensitive.
 	Masked bool `yaml:"masked"`
-	// FromCreate says only the create response carries the field, such as
+	// CreateOnly says only the create response carries the field, such as
 	// a secret shown once. The value is kept in state afterwards.
-	FromCreate bool `yaml:"from_create"`
+	CreateOnly bool `yaml:"create_only"`
 }
 
 // AddAttr is a local attribute.

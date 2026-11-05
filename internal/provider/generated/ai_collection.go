@@ -26,19 +26,10 @@ func AICollection() *engine.Resource {
 			{Name: "id", JSON: "uuid", Kind: engine.KindString, Computed: true, InResponse: true, PathParams: []string{"uuid"}, Description: "The object's id."},
 			{Name: "name", JSON: "name", Kind: engine.KindString, Required: true, InCreate: true, InUpdate: true, InResponse: true, Description: "Human-readable collection name."},
 			{Name: "record_type", JSON: "record_type", Kind: engine.KindString, Computed: true, InResponse: true, Description: "Identifies the record type. Always `ai_collection`."},
-			{Name: "retrieval", JSON: "retrieval", Kind: engine.KindObject, Optional: true, Description: "How documents are retrieved when searching the collection.",
+			{Name: "retrieval", JSON: "retrieval", Kind: engine.KindObject, Optional: true, InResponse: true, Description: "How documents are retrieved when searching the collection.",
 				Attrs: []*engine.Attr{
-					{Name: "retrieval_type", JSON: "retrieval_type", Kind: engine.KindString, Optional: true, InUpdate: true, Enum: []string{"hybrid", "vector"}, Description: "Retrieval strategy. `vector` runs semantic similarity search; `hybrid` combines vector similarity with keyword matching; `keyword` runs lexical (BM25) matching. `keyword` is not accepted yet: setting it returns 422 `unsupported_retrieval_type`. A collection set to `hybrid` is accepted here but cannot be searched until hybrid execution ships."},
-					{Name: "top_k", JSON: "top_k", Kind: engine.KindInt, Optional: true, InUpdate: true, Description: "Number of top results to retrieve (1–50)."},
-				}},
-			{Name: "settings", JSON: "settings", Kind: engine.KindObject, Optional: true, Computed: true, ForceNew: true, InCreate: true, InResponse: true, Description: "Optional retrieval settings.",
-				Attrs: []*engine.Attr{
-					{Name: "record_type", JSON: "record_type", Kind: engine.KindString, Computed: true, InResponse: true, Description: "Identifies the record type. Always `ai_collection_settings`."},
-					{Name: "retrieval", JSON: "retrieval", Kind: engine.KindObject, Optional: true, Computed: true, InCreate: true, InResponse: true, Description: "How documents are retrieved when searching the collection.",
-						Attrs: []*engine.Attr{
-							{Name: "retrieval_type", JSON: "retrieval_type", Kind: engine.KindString, Optional: true, Computed: true, InCreate: true, InResponse: true, Enum: []string{"hybrid", "vector"}, Description: "Retrieval strategy. `vector` runs semantic similarity search; `hybrid` combines vector similarity with keyword matching; `keyword` runs lexical (BM25) matching. `keyword` is not accepted yet: setting it returns 422 `unsupported_retrieval_type`. A collection set to `hybrid` is accepted here but cannot be searched until hybrid execution ships."},
-							{Name: "top_k", JSON: "top_k", Kind: engine.KindInt, Optional: true, Computed: true, InCreate: true, InResponse: true, Description: "Number of top results to retrieve (1–50)."},
-						}},
+					{Name: "retrieval_type", JSON: "retrieval_type", Kind: engine.KindString, Optional: true, Computed: true, InUpdate: true, InResponse: true, Enum: []string{"hybrid", "vector"}, Description: "Retrieval strategy. `vector` runs semantic similarity search; `hybrid` combines vector similarity with keyword matching; `keyword` runs lexical (BM25) matching. `keyword` is not accepted yet: setting it returns 422 `unsupported_retrieval_type`. A collection set to `hybrid` is accepted here but cannot be searched until hybrid execution ships."},
+					{Name: "top_k", JSON: "top_k", Kind: engine.KindInt, Optional: true, Computed: true, InUpdate: true, InResponse: true, Description: "Number of top results to retrieve (1–50)."},
 				}},
 			{Name: "slug", JSON: "slug", Kind: engine.KindString, Optional: true, Computed: true, ForceNew: true, InCreate: true, InResponse: true, Description: "Optional slug (unique per organization). Derived from `name` when omitted."},
 			{Name: "sources", JSON: "sources", Kind: engine.KindList, Optional: true, Computed: true, ForceNew: true, InCreate: true, InResponse: true, Description: "Optional sources to attach at creation time.",

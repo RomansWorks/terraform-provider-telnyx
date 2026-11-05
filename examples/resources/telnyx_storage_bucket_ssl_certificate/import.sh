@@ -1,0 +1,1 @@
+terraform import telnyx_storage_bucket_ssl_certificate.example <bucket_name>

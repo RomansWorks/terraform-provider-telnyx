@@ -14,6 +14,7 @@ import (
 // cannot fully describe, by type name. See hooks_*.go.
 var hooks = map[string]engine.Hooks{
 	"telnyx_ai_avatar":                         aiAvatarHooks,
+	"telnyx_ai_collection":                     aiCollectionHooks,
 	"telnyx_ai_gateway_token_group":            aiGatewayHooks,
 	"telnyx_ai_gateway_token_key":              aiGatewayHooks,
 	"telnyx_ai_tool":                           aiToolHooks,

@@ -31,7 +31,7 @@ func overrideFrom(t *testing.T, body string) *Override {
 func TestFromCreate(t *testing.T) {
 	g := fixture(t)
 	base := "type: telnyx_token\ndescription: x\ncreate: POST /tokens\nread: \"GET /tokens/{id}\"\n"
-	r, err := g.Derive(overrideFrom(t, base+"attributes:\n  secret: {sensitive: true, from_create: true}\n"))
+	r, err := g.Derive(overrideFrom(t, base+"attributes:\n  secret: {sensitive: true, create_only: true}\n"))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -49,15 +49,15 @@ func TestFromCreate(t *testing.T) {
 	// Without the key, the field is not an attribute.
 	r, err = g.Derive(overrideFrom(t, base))
 	if err != nil || r.Attr("secret") != nil {
-		t.Errorf("secret without from_create: %v", err)
+		t.Errorf("secret without create_only: %v", err)
 	}
 
 	for name, attrs := range map[string]string{
-		"unknown field": "  nope: {from_create: true}\n",
-		"nested":        "  a.b: {from_create: true}\n",
-		"in the read":   "  name: {from_create: true}\n",
+		"unknown field": "  nope: {create_only: true}\n",
+		"nested":        "  a.b: {create_only: true}\n",
+		"in the read":   "  name: {create_only: true}\n",
 	} {
-		if _, err := g.Derive(overrideFrom(t, base+"attributes:\n"+attrs)); err == nil || !strings.Contains(err.Error(), "from_create") {
+		if _, err := g.Derive(overrideFrom(t, base+"attributes:\n"+attrs)); err == nil || !strings.Contains(err.Error(), "create_only") {
 			t.Errorf("%s: %v", name, err)
 		}
 	}

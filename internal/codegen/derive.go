@@ -1124,7 +1124,7 @@ func (g *Generator) ids(r *engine.Resource, ov *Override, create *operation, oth
 	return nil
 }
 
-// withCreateOnly adds the fields marked from_create, which only the create
+// withCreateOnly adds the fields marked create_only, which only the create
 // response carries, to the read schema. Any 2xx create response may carry
 // them: some operations also answer an idempotent replay without them. It
 // returns a copy and the names.
@@ -1132,11 +1132,11 @@ func (g *Generator) withCreateOnly(ov *Override, read map[string]any, create *op
 	names := map[string]bool{}
 	fields := map[string]any{}
 	for p, a := range ov.Attributes {
-		if !a.FromCreate {
+		if !a.CreateOnly {
 			continue
 		}
 		if strings.Contains(p, ".") {
-			return nil, nil, fmt.Errorf("%s: from_create applies to top-level fields only", p)
+			return nil, nil, fmt.Errorf("%s: create_only applies to top-level fields only", p)
 		}
 		var field any
 		for _, code := range []string{"200", "201", "202"} {
@@ -1147,11 +1147,11 @@ func (g *Generator) withCreateOnly(ov *Override, read map[string]any, create *op
 			}
 		}
 		if field == nil {
-			return nil, nil, fmt.Errorf("%s: from_create: the create response has no field %s", p, p)
+			return nil, nil, fmt.Errorf("%s: create_only: the create response has no field %s", p, p)
 		}
 		fields[p] = field
 		if properties(read)[p] != nil {
-			return nil, nil, fmt.Errorf("%s: from_create: the read response already has %s", p, p)
+			return nil, nil, fmt.Errorf("%s: create_only: the read response already has %s", p, p)
 		}
 		names[p] = true
 	}

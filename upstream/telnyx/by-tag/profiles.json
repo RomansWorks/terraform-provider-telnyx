@@ -165,7 +165,7 @@
             "type": "array"
           },
           "meta": {
-            "$ref": "#/components/schemas/PageMeta"
+            "$ref": "#/components/schemas/agent-memory_PageMeta"
           }
         },
         "required": [
@@ -322,39 +322,6 @@
           "object",
           "null"
         ]
-      },
-      "PageMeta": {
-        "description": "Where a listing's page sits in the whole.\n\nA page is a snapshot: the counts it reports and the order it is drawn in\nboth move as writes land, so paging through a busy namespace can repeat or\nmiss an entry at a page boundary.",
-        "properties": {
-          "page_number": {
-            "description": "The page returned, counting from 1.",
-            "title": "Page Number",
-            "type": "integer"
-          },
-          "page_size": {
-            "description": "How many results a page holds.",
-            "title": "Page Size",
-            "type": "integer"
-          },
-          "total_pages": {
-            "description": "Pages that can be requested; 0 when nothing matched. Page until `page_number` reaches it rather than until a page comes back short: a page can hold fewer than `page_size` results without being the last. Capped at the deepest page served, so on a very large listing it covers fewer results than `total_results`.",
-            "title": "Total Pages",
-            "type": "integer"
-          },
-          "total_results": {
-            "description": "Results the request matched, including any past the deepest page.",
-            "title": "Total Results",
-            "type": "integer"
-          }
-        },
-        "required": [
-          "page_number",
-          "page_size",
-          "total_pages",
-          "total_results"
-        ],
-        "title": "PageMeta",
-        "type": "object"
       },
       "PhoneNumberWithMessagingSettings": {
         "example": {
@@ -524,7 +491,7 @@
             "type": "array"
           },
           "meta": {
-            "$ref": "#/components/schemas/PageMeta"
+            "$ref": "#/components/schemas/agent-memory_PageMeta"
           }
         },
         "required": [
@@ -627,6 +594,9 @@
           },
           "source": {
             "properties": {
+              "parameter": {
+                "type": "string"
+              },
               "pointer": {
                 "type": "string"
               }
@@ -745,6 +715,39 @@
           "object",
           "null"
         ]
+      },
+      "agent-memory_PageMeta": {
+        "description": "Where a listing's page sits in the whole.\n\nA page is a snapshot: the counts it reports and the order it is drawn in\nboth move as writes land, so paging through a busy namespace can repeat or\nmiss an entry at a page boundary.",
+        "properties": {
+          "page_number": {
+            "description": "The page returned, counting from 1.",
+            "title": "Page Number",
+            "type": "integer"
+          },
+          "page_size": {
+            "description": "How many results a page holds.",
+            "title": "Page Size",
+            "type": "integer"
+          },
+          "total_pages": {
+            "description": "Pages that can be requested; 0 when nothing matched. Page until `page_number` reaches it rather than until a page comes back short: a page can hold fewer than `page_size` results without being the last. Capped at the deepest page served, so on a very large listing it covers fewer results than `total_results`.",
+            "title": "Total Pages",
+            "type": "integer"
+          },
+          "total_results": {
+            "description": "Results the request matched, including any past the deepest page.",
+            "title": "Total Results",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "page_number",
+          "page_size",
+          "total_pages",
+          "total_results"
+        ],
+        "title": "PageMeta",
+        "type": "object"
       },
       "messaging_CreateMessagingProfileRequest": {
         "example": {
@@ -1366,6 +1369,11 @@
         "in": "header",
         "name": "Authorization",
         "type": "apiKey"
+      },
+      "agent-gateway_bearerAuth": {
+        "description": "Telnyx API key",
+        "scheme": "bearer",
+        "type": "http"
       },
       "agent-memory_bearerAuth": {
         "description": "Telnyx API key",

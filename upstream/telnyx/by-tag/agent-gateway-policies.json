@@ -1,0 +1,1211 @@
+{
+  "components": {
+    "schemas": {
+      "AgentGatewayPolicy": {
+        "description": "A named set of guardrails.",
+        "properties": {
+          "base": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "A policy this one builds on, by name. The policy starts with the base's guardrails."
+          },
+          "created_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "When the policy's current version was created. An update creates a new version."
+          },
+          "description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "What the policy is for."
+          },
+          "guardrails": {
+            "$ref": "#/components/schemas/AgentGatewayPolicyGuardrails"
+          },
+          "model": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "A condition on the model, by name or regular expression. The policy's guardrails run only on requests for a matching model. `null` matches every model."
+          },
+          "name": {
+            "description": "A name, unique on the instance. A request names the policy in its `policies` field.",
+            "pattern": "^[A-Za-z0-9_.-]{1,100}$",
+            "type": "string"
+          },
+          "pipeline": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/AgentGatewayPolicyPipeline"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Ordered steps, in place of the guardrails running independently."
+          },
+          "updated_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "When the policy last changed."
+          }
+        },
+        "required": [
+          "name",
+          "description",
+          "base",
+          "guardrails",
+          "model",
+          "pipeline",
+          "created_at",
+          "updated_at"
+        ],
+        "type": "object"
+      },
+      "AgentGatewayPolicyCreate": {
+        "properties": {
+          "base": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "A policy this one builds on, by name. The policy starts with the base's guardrails."
+          },
+          "description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "What the policy is for."
+          },
+          "guardrails": {
+            "$ref": "#/components/schemas/AgentGatewayPolicyGuardrails"
+          },
+          "model": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "A condition on the model, by name or regular expression. The policy's guardrails run only on requests for a matching model. `null` matches every model."
+          },
+          "name": {
+            "description": "A name, unique on the instance. A request names the policy in its `policies` field.",
+            "pattern": "^[A-Za-z0-9_.-]{1,100}$",
+            "type": "string"
+          },
+          "pipeline": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/AgentGatewayPolicyPipeline"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Ordered steps, in place of the guardrails running independently."
+          }
+        },
+        "required": [
+          "name"
+        ],
+        "type": "object"
+      },
+      "AgentGatewayPolicyGuardrails": {
+        "description": "The guardrails a policy adds to its base's, and the ones it removes from them, by name.",
+        "properties": {
+          "add": {
+            "default": [],
+            "description": "Guardrails the policy runs in addition to its base's.",
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "remove": {
+            "default": [],
+            "description": "Guardrails from its base that the policy does not run.",
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          }
+        },
+        "type": "object"
+      },
+      "AgentGatewayPolicyListResponse": {
+        "properties": {
+          "data": {
+            "items": {
+              "$ref": "#/components/schemas/AgentGatewayPolicy"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "data"
+        ],
+        "type": "object"
+      },
+      "AgentGatewayPolicyPipeline": {
+        "description": "Ordered steps that run in place of the policy's guardrails running independently.",
+        "properties": {
+          "hook": {
+            "description": "`before_request` runs the steps on the request, and `after_request` on the model's response.",
+            "enum": [
+              "before_request",
+              "after_request"
+            ],
+            "type": "string"
+          },
+          "steps": {
+            "items": {
+              "$ref": "#/components/schemas/AgentGatewayPolicyStep"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "hook",
+          "steps"
+        ],
+        "type": "object"
+      },
+      "AgentGatewayPolicyResponse": {
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/AgentGatewayPolicy"
+          }
+        },
+        "required": [
+          "data"
+        ],
+        "type": "object"
+      },
+      "AgentGatewayPolicyStep": {
+        "description": "One pipeline step: a guardrail, and what happens when it passes, fails, or errors.",
+        "properties": {
+          "guardrail": {
+            "description": "A guardrail on the instance, by name.",
+            "pattern": "^[A-Za-z0-9_.-]{1,100}$",
+            "type": "string"
+          },
+          "message": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "The response that replaces the model's when an outcome is `respond`. Required with `respond`."
+          },
+          "on_error": {
+            "anyOf": [
+              {
+                "enum": [
+                  "next",
+                  "allow",
+                  "block",
+                  "respond"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "What happens when the guardrail errors. Left out, the same as `on_fail`."
+          },
+          "on_fail": {
+            "default": "block",
+            "description": "What happens when the guardrail fails.",
+            "enum": [
+              "next",
+              "allow",
+              "block",
+              "respond"
+            ],
+            "type": "string"
+          },
+          "on_pass": {
+            "default": "allow",
+            "description": "What happens when the guardrail passes. `next` goes on to the next step, `allow` allows the request, `block` blocks it, and `respond` answers with `message`.",
+            "enum": [
+              "next",
+              "allow",
+              "block",
+              "respond"
+            ],
+            "type": "string"
+          },
+          "pass_data": {
+            "default": false,
+            "description": "`true` hands the step's modified request, such as masked text, to the next step.",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "guardrail"
+        ],
+        "type": "object"
+      },
+      "AgentGatewayPolicyUpdate": {
+        "description": "A field left out stays as it is. `guardrails` and `pipeline` are replaced whole, and `model: null` removes the condition. The name cannot change.",
+        "properties": {
+          "base": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "A policy this one builds on, by name. The policy starts with the base's guardrails."
+          },
+          "description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "What the policy is for."
+          },
+          "guardrails": {
+            "$ref": "#/components/schemas/AgentGatewayPolicyGuardrails"
+          },
+          "model": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "A condition on the model, by name or regular expression. The policy's guardrails run only on requests for a matching model. `null` matches every model."
+          },
+          "pipeline": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/AgentGatewayPolicyPipeline"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Ordered steps, in place of the guardrails running independently."
+          }
+        },
+        "type": "object"
+      },
+      "TelnyxError": {
+        "properties": {
+          "code": {
+            "type": "string"
+          },
+          "detail": {
+            "type": "string"
+          },
+          "meta": {
+            "properties": {
+              "url": {
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
+          "source": {
+            "properties": {
+              "parameter": {
+                "type": "string"
+              },
+              "pointer": {
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
+          "title": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "TelnyxErrors": {
+        "properties": {
+          "errors": {
+            "items": {
+              "$ref": "#/components/schemas/TelnyxError"
+            },
+            "type": "array"
+          }
+        },
+        "type": "object"
+      }
+    },
+    "securitySchemes": {
+      "BearerAuth": {
+        "bearerFormat": "API key",
+        "description": "Telnyx API key supplied as `Authorization: Bearer \u003ctoken\u003e`. In production, auth may be validated by the API gateway and forwarded via Telnyx auth headers.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "Payment": {
+        "description": "Machine Payment Protocol credential used on paid retries, sent as `Authorization: Payment ...`. Obtained by paying a challenge returned in the `WWW-Authenticate` header of a 402 response. This is not a Telnyx API key; initial challenge requests use standard bearer authentication instead.",
+        "in": "header",
+        "name": "Authorization",
+        "type": "apiKey"
+      },
+      "agent-gateway_bearerAuth": {
+        "description": "Telnyx API key",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "agent-memory_bearerAuth": {
+        "description": "Telnyx API key",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "bearerAuth": {
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "branded-calling_bearerAuth": {
+        "description": "Telnyx API key. Generate one at https://portal.telnyx.com/#/app/api-keys.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "collections_bearerAuth": {
+        "description": "Telnyx API key. Collections and results are automatically scoped to the authenticated user's organization.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "number-reputation_bearerAuth": {
+        "description": "Telnyx API key. Generate one at https://portal.telnyx.com/#/app/api-keys.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "oauthClientAuth": {
+        "description": "OAuth 2.0 authentication for Telnyx API and MCP integrations",
+        "flows": {
+          "authorizationCode": {
+            "authorizationUrl": "https://api.telnyx.com/v2/oauth/authorize",
+            "refreshUrl": "https://api.telnyx.com/v2/oauth/token",
+            "scopes": {
+              "admin": "Administrative access to Telnyx resources"
+            },
+            "tokenUrl": "https://api.telnyx.com/v2/oauth/token"
+          },
+          "clientCredentials": {
+            "scopes": {
+              "admin": "Administrative access to Telnyx resources"
+            },
+            "tokenUrl": "https://api.telnyx.com/v2/oauth/token"
+          }
+        },
+        "type": "oauth2"
+      },
+      "outbound-voice-profiles_bearerAuth": {
+        "bearerFormat": "JWT",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "pay-connectors_bearerAuth": {
+        "description": "Telnyx API key, not the processor bearer token.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "pronunciation-dicts_bearerAuth": {
+        "description": "Telnyx API v2 key. Obtain from https://portal.telnyx.com",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "rcs-registration_bearerAuth": {
+        "bearerFormat": "API key",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "stored-payment-transactions_bearerAuth": {
+        "bearerFormat": "JWT",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "telnyxApiKey": {
+        "description": "Management-only Telnyx account credential.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "transcriptions-search_bearerAuth": {
+        "description": "Telnyx API key. Results are automatically scoped to the authenticated user's organization.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "web-search_bearerAuth": {
+        "description": "Telnyx API key",
+        "scheme": "bearer",
+        "type": "http"
+      }
+    }
+  },
+  "info": {
+    "contact": {
+      "email": "support@telnyx.com"
+    },
+    "description": "SIP trunking, SMS, MMS, Call Control and Telephony Data Services.",
+    "title": "Telnyx API",
+    "version": "2.0.0",
+    "x-endpoint-cost": "light",
+    "x-latency-category": "responsive"
+  },
+  "openapi": "3.1.0",
+  "paths": {
+    "/agent_gateways/{instance_id}/policies": {
+      "get": {
+        "description": "Lists the instance's policies, each in its current version.",
+        "operationId": "ListAgentGatewayPolicies",
+        "parameters": [
+          {
+            "description": "The Agent Gateway's `id`.",
+            "example": "32ce035d-3165-4031-b1a7-a7c0c259590a",
+            "in": "path",
+            "name": "instance_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "data": [
+                    {
+                      "base": null,
+                      "created_at": "2026-11-02T12:58:53.995000Z",
+                      "description": "Mask personal data",
+                      "guardrails": {
+                        "add": [
+                          "mask-pii"
+                        ],
+                        "remove": []
+                      },
+                      "model": null,
+                      "name": "baseline",
+                      "pipeline": null,
+                      "updated_at": "2026-11-02T12:58:53.995000Z"
+                    },
+                    {
+                      "base": "baseline",
+                      "created_at": "2026-11-02T12:58:54.285000Z",
+                      "description": null,
+                      "guardrails": {
+                        "add": [
+                          "no-forbidden"
+                        ],
+                        "remove": []
+                      },
+                      "model": "GLM-5.3.*",
+                      "name": "strict",
+                      "pipeline": null,
+                      "updated_at": "2026-11-02T12:58:54.285000Z"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/AgentGatewayPolicyListResponse"
+                }
+              }
+            },
+            "description": "The instance's policies"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "errors": [
+                    {
+                      "code": "10009",
+                      "detail": "The required authentication headers were either invalid or not included in the request.",
+                      "meta": {
+                        "url": "https://developers.telnyx.com/docs/overview/errors/10009"
+                      },
+                      "title": "Authentication failed"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/TelnyxErrors"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "errors": [
+                    {
+                      "code": "10005",
+                      "detail": "The requested resource or URL could not be found.",
+                      "meta": {
+                        "url": "https://developers.telnyx.com/docs/overview/errors/10005"
+                      },
+                      "title": "Resource not found"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/TelnyxErrors"
+                }
+              }
+            },
+            "description": "Not found"
+          }
+        },
+        "summary": "List policies",
+        "tags": [
+          "Agent Gateway Policies"
+        ]
+      },
+      "post": {
+        "description": "Creates a named set of guardrails. It applies from the next request on, to the requests that name it in `policies` and to those its [attachments](https://developers.telnyx.com/api-reference/agent-gateway-policy-attachments/attach-a-policy) match.",
+        "operationId": "CreateAgentGatewayPolicy",
+        "parameters": [
+          {
+            "description": "The Agent Gateway's `id`.",
+            "example": "32ce035d-3165-4031-b1a7-a7c0c259590a",
+            "in": "path",
+            "name": "instance_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "examples": {
+                "base": {
+                  "summary": "A base policy",
+                  "value": {
+                    "description": "Mask personal data",
+                    "guardrails": {
+                      "add": [
+                        "mask-pii"
+                      ]
+                    },
+                    "name": "baseline"
+                  }
+                },
+                "inherit": {
+                  "summary": "A policy that builds on it",
+                  "value": {
+                    "base": "baseline",
+                    "guardrails": {
+                      "add": [
+                        "no-forbidden"
+                      ]
+                    },
+                    "model": "GLM-5.3-Flash",
+                    "name": "strict"
+                  }
+                },
+                "pipeline": {
+                  "summary": "A pipeline",
+                  "value": {
+                    "name": "piped",
+                    "pipeline": {
+                      "hook": "before_request",
+                      "steps": [
+                        {
+                          "guardrail": "mask-pii",
+                          "on_fail": "block",
+                          "on_pass": "next"
+                        },
+                        {
+                          "guardrail": "no-forbidden",
+                          "message": "Not allowed.",
+                          "on_fail": "respond"
+                        }
+                      ]
+                    }
+                  }
+                }
+              },
+              "schema": {
+                "$ref": "#/components/schemas/AgentGatewayPolicyCreate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "data": {
+                    "base": null,
+                    "created_at": "2026-11-02T12:58:53.995000Z",
+                    "description": "Mask personal data",
+                    "guardrails": {
+                      "add": [
+                        "mask-pii"
+                      ],
+                      "remove": []
+                    },
+                    "model": null,
+                    "name": "baseline",
+                    "pipeline": null,
+                    "updated_at": "2026-11-02T12:58:53.995000Z"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/AgentGatewayPolicyResponse"
+                }
+              }
+            },
+            "description": "The created policy"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "errors": [
+                    {
+                      "code": "10013",
+                      "detail": "One of the associated fields does not exist.",
+                      "meta": {
+                        "url": "https://developers.telnyx.com/docs/overview/errors/10013"
+                      },
+                      "source": {
+                        "pointer": "/base"
+                      },
+                      "title": "Missing association"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/TelnyxErrors"
+                }
+              }
+            },
+            "description": "A name the instance already uses, or a base or guardrail it does not have"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "errors": [
+                    {
+                      "code": "10009",
+                      "detail": "The required authentication headers were either invalid or not included in the request.",
+                      "meta": {
+                        "url": "https://developers.telnyx.com/docs/overview/errors/10009"
+                      },
+                      "title": "Authentication failed"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/TelnyxErrors"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "errors": [
+                    {
+                      "code": "10005",
+                      "detail": "The requested resource or URL could not be found.",
+                      "meta": {
+                        "url": "https://developers.telnyx.com/docs/overview/errors/10005"
+                      },
+                      "title": "Resource not found"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/TelnyxErrors"
+                }
+              }
+            },
+            "description": "Not found"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "errors": [
+                    {
+                      "code": "10027",
+                      "detail": "String should match pattern '^[A-Za-z0-9_.-]{1,100}$'",
+                      "meta": {
+                        "url": "https://developers.telnyx.com/docs/overview/errors/10027"
+                      },
+                      "source": {
+                        "pointer": "/name"
+                      },
+                      "title": "Unprocessable Entity"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/TelnyxErrors"
+                }
+              }
+            },
+            "description": "An invalid name or pipeline"
+          }
+        },
+        "summary": "Create a policy",
+        "tags": [
+          "Agent Gateway Policies"
+        ]
+      }
+    },
+    "/agent_gateways/{instance_id}/policies/{name}": {
+      "delete": {
+        "description": "Deletes a policy and every version of it, and returns it as it was. A policy that an attachment names, or that another policy builds on, cannot be deleted.",
+        "operationId": "DeleteAgentGatewayPolicy",
+        "parameters": [
+          {
+            "description": "The Agent Gateway's `id`.",
+            "example": "32ce035d-3165-4031-b1a7-a7c0c259590a",
+            "in": "path",
+            "name": "instance_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "description": "The policy's `name`.",
+            "example": "strict",
+            "in": "path",
+            "name": "name",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "data": {
+                    "base": "baseline",
+                    "created_at": "2026-11-02T12:58:54.285000Z",
+                    "description": null,
+                    "guardrails": {
+                      "add": [
+                        "no-forbidden"
+                      ],
+                      "remove": []
+                    },
+                    "model": "GLM-5.3.*",
+                    "name": "strict",
+                    "pipeline": null,
+                    "updated_at": "2026-11-02T12:58:54.285000Z"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/AgentGatewayPolicyResponse"
+                }
+              }
+            },
+            "description": "The deleted policy"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "errors": [
+                    {
+                      "code": "10009",
+                      "detail": "The required authentication headers were either invalid or not included in the request.",
+                      "meta": {
+                        "url": "https://developers.telnyx.com/docs/overview/errors/10009"
+                      },
+                      "title": "Authentication failed"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/TelnyxErrors"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "errors": [
+                    {
+                      "code": "10005",
+                      "detail": "The requested resource or URL could not be found.",
+                      "meta": {
+                        "url": "https://developers.telnyx.com/docs/overview/errors/10005"
+                      },
+                      "title": "Resource not found"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/TelnyxErrors"
+                }
+              }
+            },
+            "description": "Not found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "errors": [
+                    {
+                      "code": "10021",
+                      "detail": "The resource can not be removed as it is still in use.",
+                      "meta": {
+                        "url": "https://developers.telnyx.com/docs/overview/errors/10021"
+                      },
+                      "title": "Resource in use"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/TelnyxErrors"
+                }
+              }
+            },
+            "description": "An attachment names the policy, or another policy builds on it"
+          }
+        },
+        "summary": "Delete a policy",
+        "tags": [
+          "Agent Gateway Policies"
+        ]
+      },
+      "get": {
+        "description": "Returns one policy, in its current version.",
+        "operationId": "RetrieveAgentGatewayPolicy",
+        "parameters": [
+          {
+            "description": "The Agent Gateway's `id`.",
+            "example": "32ce035d-3165-4031-b1a7-a7c0c259590a",
+            "in": "path",
+            "name": "instance_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "description": "The policy's `name`.",
+            "example": "strict",
+            "in": "path",
+            "name": "name",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "data": {
+                    "base": "baseline",
+                    "created_at": "2026-11-02T12:58:54.285000Z",
+                    "description": null,
+                    "guardrails": {
+                      "add": [
+                        "no-forbidden"
+                      ],
+                      "remove": []
+                    },
+                    "model": "GLM-5.3.*",
+                    "name": "strict",
+                    "pipeline": null,
+                    "updated_at": "2026-11-02T12:58:54.285000Z"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/AgentGatewayPolicyResponse"
+                }
+              }
+            },
+            "description": "The policy"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "errors": [
+                    {
+                      "code": "10009",
+                      "detail": "The required authentication headers were either invalid or not included in the request.",
+                      "meta": {
+                        "url": "https://developers.telnyx.com/docs/overview/errors/10009"
+                      },
+                      "title": "Authentication failed"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/TelnyxErrors"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "errors": [
+                    {
+                      "code": "10005",
+                      "detail": "The requested resource or URL could not be found.",
+                      "meta": {
+                        "url": "https://developers.telnyx.com/docs/overview/errors/10005"
+                      },
+                      "title": "Resource not found"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/TelnyxErrors"
+                }
+              }
+            },
+            "description": "Not found"
+          }
+        },
+        "summary": "Retrieve a policy",
+        "tags": [
+          "Agent Gateway Policies"
+        ]
+      },
+      "patch": {
+        "description": "Changes a policy, which publishes a new version of it. A field left out stays as it is; `guardrails` and `pipeline` are replaced whole, and `model: null` removes the condition.",
+        "operationId": "UpdateAgentGatewayPolicy",
+        "parameters": [
+          {
+            "description": "The Agent Gateway's `id`.",
+            "example": "32ce035d-3165-4031-b1a7-a7c0c259590a",
+            "in": "path",
+            "name": "instance_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "description": "The policy's `name`.",
+            "example": "strict",
+            "in": "path",
+            "name": "name",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "example": {
+                "description": "Baseline plus a word check"
+              },
+              "schema": {
+                "$ref": "#/components/schemas/AgentGatewayPolicyUpdate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "data": {
+                    "base": "baseline",
+                    "created_at": "2026-11-02T12:58:55.140000Z",
+                    "description": "Baseline plus a word check",
+                    "guardrails": {
+                      "add": [
+                        "no-forbidden"
+                      ],
+                      "remove": []
+                    },
+                    "model": "GLM-5.3.*",
+                    "name": "strict",
+                    "pipeline": null,
+                    "updated_at": "2026-11-02T12:58:55.178000Z"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/AgentGatewayPolicyResponse"
+                }
+              }
+            },
+            "description": "The updated policy"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "errors": [
+                    {
+                      "code": "10009",
+                      "detail": "The required authentication headers were either invalid or not included in the request.",
+                      "meta": {
+                        "url": "https://developers.telnyx.com/docs/overview/errors/10009"
+                      },
+                      "title": "Authentication failed"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/TelnyxErrors"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "errors": [
+                    {
+                      "code": "10005",
+                      "detail": "The requested resource or URL could not be found.",
+                      "meta": {
+                        "url": "https://developers.telnyx.com/docs/overview/errors/10005"
+                      },
+                      "title": "Resource not found"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/TelnyxErrors"
+                }
+              }
+            },
+            "description": "Not found"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "errors": [
+                    {
+                      "code": "10027",
+                      "detail": "Extra inputs are not permitted",
+                      "meta": {
+                        "url": "https://developers.telnyx.com/docs/overview/errors/10027"
+                      },
+                      "source": {
+                        "pointer": "/name"
+                      },
+                      "title": "Unprocessable Entity"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/TelnyxErrors"
+                }
+              }
+            },
+            "description": "A field the update cannot change"
+          }
+        },
+        "summary": "Update a policy",
+        "tags": [
+          "Agent Gateway Policies"
+        ]
+      }
+    }
+  },
+  "security": [
+    {
+      "bearerAuth": []
+    }
+  ],
+  "servers": [
+    {
+      "description": "Version 2.0.0 of the Telnyx API",
+      "url": "https://api.telnyx.com/v2"
+    }
+  ]
+}

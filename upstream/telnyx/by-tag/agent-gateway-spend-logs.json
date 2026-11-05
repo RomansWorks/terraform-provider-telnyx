@@ -1,0 +1,577 @@
+{
+  "components": {
+    "schemas": {
+      "AgentGatewaySpendLog": {
+        "description": "One request the instance served.",
+        "properties": {
+          "completion_tokens": {
+            "description": "Output tokens, reasoning included.",
+            "type": "integer"
+          },
+          "duration_ms": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "How long the request took, in milliseconds."
+          },
+          "ended_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "When the request ended."
+          },
+          "id": {
+            "description": "The request's ID.",
+            "type": "string"
+          },
+          "key_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "The key the request used."
+          },
+          "model": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "The Telnyx Inference model that answered, such as `zai-org/GLM-5.3-Flash`. For an MCP tool request, `MCP: ` and the tool's name."
+          },
+          "operation": {
+            "description": "The request type. `acompletion` is a chat completion, `aresponses` a response, `anthropic_messages` a message, `call_mcp_tool` an MCP tool request, and `list_mcp_tools` an MCP tool list.",
+            "type": "string"
+          },
+          "prompt_tokens": {
+            "description": "Input tokens.",
+            "type": "integer"
+          },
+          "spend": {
+            "description": "What the request cost, in USD, with its tokens at Telnyx Inference prices.",
+            "type": "number"
+          },
+          "started_at": {
+            "description": "When the request started.",
+            "format": "date-time",
+            "type": "string"
+          },
+          "status": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "`success` or `failure`."
+          },
+          "team_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "The key's team."
+          },
+          "total_tokens": {
+            "description": "Input and output tokens.",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "id",
+          "key_id",
+          "team_id",
+          "model",
+          "operation",
+          "status",
+          "spend",
+          "prompt_tokens",
+          "completion_tokens",
+          "total_tokens",
+          "started_at",
+          "ended_at",
+          "duration_ms"
+        ],
+        "type": "object"
+      },
+      "AgentGatewaySpendLogListResponse": {
+        "properties": {
+          "data": {
+            "items": {
+              "$ref": "#/components/schemas/AgentGatewaySpendLog"
+            },
+            "type": "array"
+          },
+          "meta": {
+            "$ref": "#/components/schemas/AgentGatewaySpendLogPageMeta"
+          }
+        },
+        "required": [
+          "data",
+          "meta"
+        ],
+        "type": "object"
+      },
+      "AgentGatewaySpendLogPageMeta": {
+        "properties": {
+          "page_number": {
+            "description": "The page returned, counting from 1.",
+            "type": "integer"
+          },
+          "page_size": {
+            "description": "Results per page.",
+            "type": "integer"
+          },
+          "total_pages": {
+            "description": "Pages that can be requested; 0 when nothing matched.",
+            "type": "integer"
+          },
+          "total_results": {
+            "description": "Results across every page.",
+            "type": "integer"
+          },
+          "total_results_capped": {
+            "description": "`true` when the window holds more than 10,000 rows. The two totals are then lower bounds: narrow the window, or page until a page comes back empty.",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "total_results",
+          "page_number",
+          "page_size",
+          "total_pages",
+          "total_results_capped"
+        ],
+        "type": "object"
+      },
+      "TelnyxError": {
+        "properties": {
+          "code": {
+            "type": "string"
+          },
+          "detail": {
+            "type": "string"
+          },
+          "meta": {
+            "properties": {
+              "url": {
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
+          "source": {
+            "properties": {
+              "parameter": {
+                "type": "string"
+              },
+              "pointer": {
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
+          "title": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "TelnyxErrors": {
+        "properties": {
+          "errors": {
+            "items": {
+              "$ref": "#/components/schemas/TelnyxError"
+            },
+            "type": "array"
+          }
+        },
+        "type": "object"
+      }
+    },
+    "securitySchemes": {
+      "BearerAuth": {
+        "bearerFormat": "API key",
+        "description": "Telnyx API key supplied as `Authorization: Bearer \u003ctoken\u003e`. In production, auth may be validated by the API gateway and forwarded via Telnyx auth headers.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "Payment": {
+        "description": "Machine Payment Protocol credential used on paid retries, sent as `Authorization: Payment ...`. Obtained by paying a challenge returned in the `WWW-Authenticate` header of a 402 response. This is not a Telnyx API key; initial challenge requests use standard bearer authentication instead.",
+        "in": "header",
+        "name": "Authorization",
+        "type": "apiKey"
+      },
+      "agent-gateway_bearerAuth": {
+        "description": "Telnyx API key",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "agent-memory_bearerAuth": {
+        "description": "Telnyx API key",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "bearerAuth": {
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "branded-calling_bearerAuth": {
+        "description": "Telnyx API key. Generate one at https://portal.telnyx.com/#/app/api-keys.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "collections_bearerAuth": {
+        "description": "Telnyx API key. Collections and results are automatically scoped to the authenticated user's organization.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "number-reputation_bearerAuth": {
+        "description": "Telnyx API key. Generate one at https://portal.telnyx.com/#/app/api-keys.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "oauthClientAuth": {
+        "description": "OAuth 2.0 authentication for Telnyx API and MCP integrations",
+        "flows": {
+          "authorizationCode": {
+            "authorizationUrl": "https://api.telnyx.com/v2/oauth/authorize",
+            "refreshUrl": "https://api.telnyx.com/v2/oauth/token",
+            "scopes": {
+              "admin": "Administrative access to Telnyx resources"
+            },
+            "tokenUrl": "https://api.telnyx.com/v2/oauth/token"
+          },
+          "clientCredentials": {
+            "scopes": {
+              "admin": "Administrative access to Telnyx resources"
+            },
+            "tokenUrl": "https://api.telnyx.com/v2/oauth/token"
+          }
+        },
+        "type": "oauth2"
+      },
+      "outbound-voice-profiles_bearerAuth": {
+        "bearerFormat": "JWT",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "pay-connectors_bearerAuth": {
+        "description": "Telnyx API key, not the processor bearer token.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "pronunciation-dicts_bearerAuth": {
+        "description": "Telnyx API v2 key. Obtain from https://portal.telnyx.com",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "rcs-registration_bearerAuth": {
+        "bearerFormat": "API key",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "stored-payment-transactions_bearerAuth": {
+        "bearerFormat": "JWT",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "telnyxApiKey": {
+        "description": "Management-only Telnyx account credential.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "transcriptions-search_bearerAuth": {
+        "description": "Telnyx API key. Results are automatically scoped to the authenticated user's organization.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "web-search_bearerAuth": {
+        "description": "Telnyx API key",
+        "scheme": "bearer",
+        "type": "http"
+      }
+    }
+  },
+  "info": {
+    "contact": {
+      "email": "support@telnyx.com"
+    },
+    "description": "SIP trunking, SMS, MMS, Call Control and Telephony Data Services.",
+    "title": "Telnyx API",
+    "version": "2.0.0",
+    "x-endpoint-cost": "light",
+    "x-latency-category": "responsive"
+  },
+  "openapi": "3.1.0",
+  "paths": {
+    "/agent_gateways/{instance_id}/spend_logs": {
+      "get": {
+        "description": "Lists the requests the instance served with its keys, newest first, one page at a time. The window defaults to the last 24 hours and spans at most 31 days. A row appears a few seconds after its request. The instance must be `ready`; otherwise the request answers `409`.",
+        "operationId": "ListAgentGatewaySpendLogs",
+        "parameters": [
+          {
+            "description": "The Agent Gateway's `id`.",
+            "example": "ecffdf4b-93ea-4a7b-8295-51dfd2077996",
+            "in": "path",
+            "name": "instance_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "description": "The page to return, counting from 1.",
+            "in": "query",
+            "name": "page[number]",
+            "required": false,
+            "schema": {
+              "default": 1,
+              "minimum": 1,
+              "type": "integer"
+            }
+          },
+          {
+            "description": "Results per page.",
+            "in": "query",
+            "name": "page[size]",
+            "required": false,
+            "schema": {
+              "default": 50,
+              "maximum": 100,
+              "minimum": 1,
+              "type": "integer"
+            }
+          },
+          {
+            "description": "The window's start, an RFC 3339 timestamp with an offset. Defaults to 24 hours before `end`.",
+            "example": "2026-10-21T00:00:00Z",
+            "in": "query",
+            "name": "start",
+            "required": false,
+            "schema": {
+              "format": "date-time",
+              "type": "string"
+            }
+          },
+          {
+            "description": "The window's end, an RFC 3339 timestamp with an offset. Defaults to now.",
+            "example": "2026-10-22T00:00:00Z",
+            "in": "query",
+            "name": "end",
+            "required": false,
+            "schema": {
+              "format": "date-time",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Only the requests made with this key.",
+            "in": "query",
+            "name": "key_id",
+            "required": false,
+            "schema": {
+              "pattern": "^[0-9a-f]{64}$",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Only the requests made with this team's keys.",
+            "in": "query",
+            "name": "team_id",
+            "required": false,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "data": [
+                    {
+                      "completion_tokens": 610,
+                      "duration_ms": 2765,
+                      "ended_at": "2026-10-21T19:41:04.879000Z",
+                      "id": "chatcmpl-1c0032cc-3d9f-439f-af62-b7f2b6623da4",
+                      "key_id": "5f1c3a0e9b7d4c2a8e6f0b1d3c5a7e9f2b4d6c8a0e1f3a5c7e9b1d3f5a7c9e0b",
+                      "model": "zai-org/GLM-5.3-Flash",
+                      "operation": "acompletion",
+                      "prompt_tokens": 22,
+                      "spend": 0.00027747,
+                      "started_at": "2026-10-21T19:41:02.114000Z",
+                      "status": "success",
+                      "team_id": "0b6c5d4e-3f2a-4b1c-9d8e-7f6a5b4c3d2e",
+                      "total_tokens": 632
+                    }
+                  ],
+                  "meta": {
+                    "page_number": 1,
+                    "page_size": 50,
+                    "total_pages": 1,
+                    "total_results": 1,
+                    "total_results_capped": false
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/AgentGatewaySpendLogListResponse"
+                }
+              }
+            },
+            "description": "One page of spend logs"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "errors": [
+                    {
+                      "code": "10033",
+                      "detail": "The value is outside of allowed range the start to 31 days after it",
+                      "meta": {
+                        "url": "https://developers.telnyx.com/docs/overview/errors/10033"
+                      },
+                      "source": {
+                        "parameter": "end"
+                      },
+                      "title": "Value outside of range"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/TelnyxErrors"
+                }
+              }
+            },
+            "description": "The window is longer than 31 days"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "errors": [
+                    {
+                      "code": "10009",
+                      "detail": "The required authentication headers were either invalid or not included in the request.",
+                      "meta": {
+                        "url": "https://developers.telnyx.com/docs/overview/errors/10009"
+                      },
+                      "title": "Authentication failed"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/TelnyxErrors"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "errors": [
+                    {
+                      "code": "10005",
+                      "detail": "The requested resource or URL could not be found.",
+                      "meta": {
+                        "url": "https://developers.telnyx.com/docs/overview/errors/10005"
+                      },
+                      "title": "Resource not found"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/TelnyxErrors"
+                }
+              }
+            },
+            "description": "Not found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "errors": [
+                    {
+                      "code": "99901",
+                      "detail": "The instance is not ready; its engine is not running.",
+                      "title": "Instance not ready"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/TelnyxErrors"
+                }
+              }
+            },
+            "description": "The instance is not `ready`"
+          },
+          "502": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "errors": [
+                    {
+                      "code": "99903",
+                      "detail": "The instance's engine did not answer; try again shortly.",
+                      "title": "Engine unavailable"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/TelnyxErrors"
+                }
+              }
+            },
+            "description": "The instance's engine did not answer"
+          }
+        },
+        "summary": "List spend logs",
+        "tags": [
+          "Agent Gateway Spend Logs"
+        ]
+      }
+    }
+  },
+  "security": [
+    {
+      "bearerAuth": []
+    }
+  ],
+  "servers": [
+    {
+      "description": "Version 2.0.0 of the Telnyx API",
+      "url": "https://api.telnyx.com/v2"
+    }
+  ]
+}

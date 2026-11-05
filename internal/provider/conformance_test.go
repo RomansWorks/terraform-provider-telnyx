@@ -31,6 +31,12 @@ var conformanceSkip = map[string]string{
 	"telnyx_ai_avatar":    "creates by multipart upload",
 	"telnyx_ai_tool":      "its settings must match its type",
 	"telnyx_number_order": "waits for the order to complete",
+	// Wave 5; each has its own test in wave5_test.go.
+	"telnyx_ai_assistant_tag":                         "is read from its assistant's tags",
+	"telnyx_ai_conversation_insight_group_assignment": "is read from its group's insights",
+	"telnyx_storage_kv_key":                           "writes and reads its value as a raw body",
+	"telnyx_storage_bucket_ssl_certificate":           "uploads its certificate as a multipart form",
+	"telnyx_voice_clone":                              "creates from a voice design or a multipart upload",
 }
 
 // TestConformance runs every generated resource through create, an empty

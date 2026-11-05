@@ -145,11 +145,17 @@ func opLiteral(o *engine.Op) string {
 	if o.Records {
 		s += ", Records: true"
 	}
+	if o.Results {
+		s += ", Results: true"
+	}
 	if o.Text {
 		s += ", Text: true"
 	}
 	if o.First {
 		s += ", First: true"
+	}
+	if o.Raw {
+		s += ", Raw: true"
 	}
 	if o.Form {
 		s += ", Form: true"
@@ -264,7 +270,7 @@ func attr(b *bytes.Buffer, a *engine.Attr) {
 		{"Required", a.Required}, {"Optional", a.Optional}, {"Computed", a.Computed},
 		{"Sensitive", a.Sensitive}, {"ForceNew", a.ForceNew},
 		{"InCreate", a.InCreate}, {"InUpdate", a.InUpdate}, {"InResponse", a.InResponse}, {"Local", a.Local},
-		{"WriteOnly", a.WriteOnly}, {"Masked", a.Masked},
+		{"WriteOnly", a.WriteOnly}, {"Masked", a.Masked}, {"CreateOnly", a.CreateOnly},
 	}
 	for _, f := range flags {
 		if f.on {
@@ -346,9 +352,14 @@ func EmitAll(pkg string, gen *Generated) ([]byte, error) {
 	return format.Source(b.Bytes())
 }
 
-// FileName returns the generated file name for a type.
+// FileName returns the generated file name for a type. Go would take a
+// name ending in _test.go for a test file, so such a type gets a suffix.
 func FileName(typeName string) string {
-	return strings.TrimPrefix(typeName, "telnyx_") + ".go"
+	base := strings.TrimPrefix(typeName, "telnyx_")
+	if strings.HasSuffix(base, "_test") {
+		base += "_resource"
+	}
+	return base + ".go"
 }
 
 // Write writes files into dir, leaving unchanged files untouched, and

@@ -70,6 +70,10 @@ type Override struct {
 	ReleaseOnDestroy bool       `yaml:"release_on_destroy"`
 	DeleteWarning    string     `yaml:"delete_warning"`
 	ExactlyOne       [][]string `yaml:"exactly_one"`
+	// MergeVariants merges union variants that are objects with fields of
+	// the same types, such as one request shape per provider, into one
+	// object instead of a JSON attribute.
+	MergeVariants bool `yaml:"merge_variants"`
 
 	// Attributes adjusts derived attributes by JSON path ("a.b.c").
 	Attributes map[string]AttrOverride `yaml:"attributes"`
@@ -131,6 +135,9 @@ type AttrOverride struct {
 	// Masked says the API answers with asterisks in place of the value
 	// after create; the value in state is kept. Masked implies sensitive.
 	Masked bool `yaml:"masked"`
+	// FromCreate says only the create response carries the field, such as
+	// a secret shown once. The value is kept in state afterwards.
+	FromCreate bool `yaml:"from_create"`
 }
 
 // AddAttr is a local attribute.

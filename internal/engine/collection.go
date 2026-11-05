@@ -58,9 +58,13 @@ func Each(ctx context.Context, c *client.Client, op *Op, path string, query url.
 		}
 		var items []Object
 		var total int
-		if op.Records {
+		if op.Records || op.Results {
+			field, count := "records", "totalRecords"
+			if op.Results {
+				field, count = "results", "count"
+			}
 			var records int
-			items, records, err = decodeRecords(out)
+			items, records, err = decodeItems(out, field, count)
 			read += len(items)
 			if err == nil && records > 0 && read >= records {
 				total = page
@@ -157,21 +161,28 @@ func decodeList(data []byte, envelope bool) ([]Object, int, error) {
 // decodeRecords decodes a list response that holds its items in "records"
 // and their count in "totalRecords" (0 when the response does not say).
 func decodeRecords(data []byte) ([]Object, int, error) {
-	var body struct {
-		Records      json.RawMessage `json:"records"`
-		TotalRecords json.Number     `json:"totalRecords"`
-	}
-	dec := json.NewDecoder(bytes.NewReader(data))
-	dec.UseNumber()
-	if err := dec.Decode(&body); err != nil {
+	return decodeItems(data, "records", "totalRecords")
+}
+
+// decodeItems decodes a list response that holds its items in field
+// ("records" or "results") and their count in count ("totalRecords" or
+// "count"; 0 when the response does not say).
+func decodeItems(data []byte, field, count string) ([]Object, int, error) {
+	var body map[string]json.RawMessage
+	if err := json.Unmarshal(data, &body); err != nil {
 		return nil, 0, fmt.Errorf("decoding list response: %w", err)
 	}
-	if len(body.Records) == 0 || string(body.Records) == "null" {
+	var total json.Number
+	if raw, ok := body[count]; ok {
+		_ = json.Unmarshal(raw, &total)
+	}
+	records := body[field]
+	if len(records) == 0 || string(records) == "null" {
 		return nil, 0, nil
 	}
-	items, _, err := decodeList(body.Records, false)
-	total, _ := strconv.Atoi(body.TotalRecords.String())
-	return items, total, err
+	items, _, err := decodeList(records, false)
+	n, _ := strconv.Atoi(total.String())
+	return items, n, err
 }
 
 // errNotInCollection is the not-found error of a read from a collection,

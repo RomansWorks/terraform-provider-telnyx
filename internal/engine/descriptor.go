@@ -71,6 +71,10 @@ type Attr struct {
 	// asterisks, as Telnyx does for passwords after create.
 	Masked bool
 
+	// CreateOnly attributes are only in the create response, such as a
+	// secret shown once; later reads keep the value in state.
+	CreateOnly bool
+
 	// Query names the query parameter this attribute fills when a data
 	// source reads the object. Unless Required, it is optional.
 	Query string
@@ -97,6 +101,9 @@ type Op struct {
 	First bool
 	// Form says the request body is a URL-encoded form of scalar fields.
 	Form bool
+	// Raw says the request body is raw bytes, which the resource's Send
+	// hook supplies.
+	Raw bool
 	// Paging says how a list operation pages; PageSize is the page size to
 	// ask for.
 	Paging   Paging
@@ -107,6 +114,9 @@ type Op struct {
 	// item count in "totalRecords", in place of "data" (the 10DLC and
 	// toll-free verification APIs).
 	Records bool
+	// Results says a list response holds its items in "results", with the
+	// item count in "count" (the AI test framework APIs).
+	Results bool
 }
 
 // Paging is a list operation's paging style.
@@ -211,6 +221,13 @@ type Hooks struct {
 	// Create replaces the generic create call, for example for an upload.
 	// It returns the created object as read would.
 	Create func(ctx context.Context, c *client.Client, r *Resource, plan Values) (Object, error)
+	// Send replaces the request of a create or update, for bodies the
+	// engine cannot build such as raw bytes. op is "create" or "update";
+	// it returns the response object, or nil when the response is empty.
+	Send func(ctx context.Context, c *client.Client, r *Resource, op string, plan, pathVals Values) (Object, error)
+	// Headers returns extra request headers for an "update" or "delete",
+	// such as an If-Match built from the object's version in state.
+	Headers func(op string, vals Values) map[string]string
 	// AfterRead can reshape an API object before it is mapped to attributes.
 	AfterRead func(ctx context.Context, obj Object) (Object, error)
 	// DeleteWarning replaces the descriptor's DeleteWarning, for example to

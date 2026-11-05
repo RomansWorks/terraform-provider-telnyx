@@ -36,6 +36,9 @@ var reserved = map[string]bool{
 // Generator derives descriptors from a spec.
 type Generator struct {
 	Spec *apisync.Spec
+	// mergeUnions is the merge_variants setting of the override being
+	// derived.
+	mergeUnions bool
 }
 
 type operation struct {
@@ -107,6 +110,23 @@ func (g *Generator) formBody(op *operation) bool {
 	return form && !js
 }
 
+const rawType = "application/octet-stream"
+
+// textSchema is the object a plain-text or raw response is read as.
+var textSchema = map[string]any{"type": "object", "properties": map[string]any{
+	"value": map[string]any{"type": "string", "description": "The value the API returned."}}}
+
+// rawBody reports whether an operation takes only raw bytes, which a
+// resource's Send hook supplies.
+func (g *Generator) rawBody(op *operation) bool {
+	if op == nil {
+		return false
+	}
+	content, _ := g.resolve(op.node["requestBody"])["content"].(map[string]any)
+	_, raw := content[rawType]
+	return raw && len(content) == 1
+}
+
 // checkBody fails when an operation has a request body the provider
 // cannot send.
 func (g *Generator) checkBody(op *operation) error {
@@ -114,7 +134,7 @@ func (g *Generator) checkBody(op *operation) error {
 		return nil
 	}
 	content, _ := g.resolve(op.node["requestBody"])["content"].(map[string]any)
-	if len(content) > 0 && g.requestSchema(op) == nil {
+	if len(content) > 0 && g.requestSchema(op) == nil && !g.rawBody(op) {
 		types := make([]string, 0, len(content))
 		for ct := range content {
 			types = append(types, ct)
@@ -128,6 +148,11 @@ func (g *Generator) checkBody(op *operation) error {
 // responseSchema returns the first 2xx JSON response schema and whether the
 // object is wrapped in "data".
 func (g *Generator) responseSchema(op *operation) (map[string]any, bool) {
+	return g.responseSchemaWhere(op, func(string) bool { return true })
+}
+
+// responseSchemaWhere is responseSchema over the 2xx codes keep accepts.
+func (g *Generator) responseSchemaWhere(op *operation, keep func(code string) bool) (map[string]any, bool) {
 	if op == nil {
 		return nil, false
 	}
@@ -138,7 +163,7 @@ func (g *Generator) responseSchema(op *operation) (map[string]any, bool) {
 	}
 	sort.Strings(codes)
 	for _, code := range codes {
-		if !strings.HasPrefix(code, "2") {
+		if !strings.HasPrefix(code, "2") || !keep(code) {
 			continue
 		}
 		r := g.resolve(responses[code])
@@ -178,6 +203,9 @@ func (g *Generator) textResponse(op *operation) bool {
 		}
 		content, _ := g.resolve(responses[code])["content"].(map[string]any)
 		c, ok := content["text/plain"].(map[string]any)
+		if !ok {
+			c, ok = content[rawType].(map[string]any)
+		}
 		return ok && g.norm(c["schema"])["type"] == "string"
 	}
 	return false
@@ -337,7 +365,10 @@ func (g *Generator) mergeVariants(vs []map[string]any) map[string]any {
 		tag := g.norm(p["type"])
 		values := enumValues(tag)
 		if len(values) != 1 {
-			return nil
+			if !g.mergeUnions {
+				return nil
+			}
+			return g.mergeSameShape(vs)
 		}
 		tags = append(tags, values[0])
 		for k, pv := range p {
@@ -696,6 +727,8 @@ func snake(s string) string {
 
 // Derive builds the descriptor for one override.
 func (g *Generator) Derive(ov *Override) (*engine.Resource, error) {
+	g.mergeUnions = ov.MergeVariants
+	defer func() { g.mergeUnions = false }()
 	ops := map[string]*operation{}
 	for name, key := range map[string]string{"create": ov.Create, "read": ov.Read, "update": ov.Update, "delete": ov.Delete} {
 		op, err := g.operation(key)
@@ -707,7 +740,7 @@ func (g *Generator) Derive(ov *Override) (*engine.Resource, error) {
 	create, read, update, del := ops["create"], ops["read"], ops["update"], ops["delete"]
 
 	var readSchema map[string]any
-	var readEnv bool
+	var readEnv, readText bool
 	var rf *engine.ReadFrom
 	var collection *operation
 	if ov.ReadFrom != nil {
@@ -720,6 +753,11 @@ func (g *Generator) Derive(ov *Override) (*engine.Resource, error) {
 		}
 	} else {
 		readSchema, readEnv = g.responseSchema(read)
+		if readSchema == nil && g.textResponse(read) {
+			// A read that answers with the raw value, such as a KV key,
+			// is one string field.
+			readSchema, readText = textSchema, true
+		}
 		if readSchema == nil {
 			return nil, fmt.Errorf("%s: %s has no JSON response schema", ov.Type, ov.Read)
 		}
@@ -733,6 +771,10 @@ func (g *Generator) Derive(ov *Override) (*engine.Resource, error) {
 		}
 	}
 	_, createEnv := g.responseSchema(create)
+	readSchema, fromCreate, err := g.withCreateOnly(ov, readSchema, create)
+	if err != nil {
+		return nil, fmt.Errorf("%s: %w", ov.Type, err)
+	}
 	src := sources{create: g.requestSchema(create), read: readSchema}
 	if update != nil {
 		src.update = g.requestSchema(update)
@@ -746,10 +788,15 @@ func (g *Generator) Derive(ov *Override) (*engine.Resource, error) {
 	if err != nil {
 		return nil, fmt.Errorf("%s: %w", ov.Type, err)
 	}
+	for _, a := range attrs {
+		if fromCreate[a.JSON] {
+			a.CreateOnly = true
+		}
+	}
 	r := &engine.Resource{
 		TypeName:      ov.Type,
 		Description:   ov.Description,
-		Create:        &engine.Op{Method: create.method, Path: create.path, Envelope: createEnv, First: g.dataList(create), Form: g.formBody(create)},
+		Create:        &engine.Op{Method: create.method, Path: create.path, Envelope: createEnv, First: g.dataList(create), Form: g.formBody(create), Raw: g.rawBody(create)},
 		ReadFrom:      rf,
 		Attrs:         attrs,
 		ExactlyOne:    ov.ExactlyOne,
@@ -758,11 +805,11 @@ func (g *Generator) Derive(ov *Override) (*engine.Resource, error) {
 		DataSource:    ov.dataSource() && read != nil,
 	}
 	if read != nil {
-		r.Read = &engine.Op{Method: read.method, Path: read.path, Envelope: readEnv}
+		r.Read = &engine.Op{Method: read.method, Path: read.path, Envelope: readEnv, Text: readText}
 	}
 	if update != nil {
 		_, env := g.responseSchema(update)
-		r.Update = &engine.Op{Method: update.method, Path: update.path, Envelope: env, Form: g.formBody(update)}
+		r.Update = &engine.Op{Method: update.method, Path: update.path, Envelope: env, Form: g.formBody(update), Raw: g.rawBody(update)}
 	}
 	if del != nil {
 		r.Delete = &engine.Op{Method: del.method, Path: del.path}
@@ -822,9 +869,11 @@ func (g *Generator) collection(ov *Override, op *operation) (map[string]any, *en
 			return nil, nil, err
 		}
 		rf.Op = o
-		if item, o.Envelope, o.Records, err = g.listItems(op); err != nil {
+		var field string
+		if item, o.Envelope, field, err = g.listItems(op); err != nil {
 			return nil, nil, err
 		}
+		o.Records, o.Results = field == "records", field == "results"
 	} else {
 		parent, env := g.responseSchema(op)
 		if parent == nil {
@@ -1073,4 +1122,122 @@ func (g *Generator) ids(r *engine.Resource, ov *Override, create *operation, oth
 	}
 	r.Import = append(r.Import, r.IDAttr)
 	return nil
+}
+
+// withCreateOnly adds the fields marked from_create, which only the create
+// response carries, to the read schema. Any 2xx create response may carry
+// them: some operations also answer an idempotent replay without them. It
+// returns a copy and the names.
+func (g *Generator) withCreateOnly(ov *Override, read map[string]any, create *operation) (map[string]any, map[string]bool, error) {
+	names := map[string]bool{}
+	fields := map[string]any{}
+	for p, a := range ov.Attributes {
+		if !a.FromCreate {
+			continue
+		}
+		if strings.Contains(p, ".") {
+			return nil, nil, fmt.Errorf("%s: from_create applies to top-level fields only", p)
+		}
+		var field any
+		for _, code := range []string{"200", "201", "202"} {
+			resp, _ := g.responseSchemaWhere(create, func(c string) bool { return c == code })
+			if f := properties(resp)[p]; f != nil {
+				field = f
+				break
+			}
+		}
+		if field == nil {
+			return nil, nil, fmt.Errorf("%s: from_create: the create response has no field %s", p, p)
+		}
+		fields[p] = field
+		if properties(read)[p] != nil {
+			return nil, nil, fmt.Errorf("%s: from_create: the read response already has %s", p, p)
+		}
+		names[p] = true
+	}
+	if len(names) == 0 {
+		return read, names, nil
+	}
+	props := map[string]any{}
+	for k, v := range properties(read) {
+		props[k] = v
+	}
+	for n, f := range fields {
+		props[n] = f
+	}
+	out := map[string]any{}
+	for k, v := range read {
+		out[k] = v
+	}
+	out["properties"] = props
+	return out, names, nil
+}
+
+// mergeSameShape merges object variants whose fields agree in type and
+// differ only in enum values, in which fields are required and in fields
+// some variants leave out, such as a provider choice that changes the
+// accepted models. Enums are joined unless a variant accepts any value,
+// and a field is required when every variant requires it.
+func (g *Generator) mergeSameShape(vs []map[string]any) map[string]any {
+	merged := map[string]map[string]any{}
+	open := map[string]bool{} // a variant takes the field without an enum
+	count := map[string]int{}
+	for _, v := range vs {
+		p := properties(v)
+		if p == nil {
+			return nil
+		}
+		for k, pv := range p {
+			b := g.norm(pv)
+			if b == nil || b["type"] == nil || b["type"] == "object" || b["type"] == "array" {
+				return nil
+			}
+			count[k]++
+			eb, hasEnum := b["enum"].([]any)
+			if !hasEnum {
+				open[k] = true
+			}
+			a, seen := merged[k]
+			if !seen {
+				c := map[string]any{}
+				for x, y := range b {
+					c[x] = y
+				}
+				merged[k] = c
+				continue
+			}
+			if a["type"] != b["type"] {
+				return nil
+			}
+			ea, _ := a["enum"].([]any)
+			all := append([]any{}, ea...)
+			for _, e := range eb {
+				dup := false
+				for _, x := range all {
+					dup = dup || x == e
+				}
+				if !dup {
+					all = append(all, e)
+				}
+			}
+			a["enum"] = all
+		}
+	}
+	props := map[string]any{}
+	var req []any
+	for k, a := range merged {
+		if open[k] {
+			delete(a, "enum")
+		}
+		props[k] = a
+		all := count[k] == len(vs)
+		for _, v := range vs {
+			all = all && required(v, k)
+		}
+		if all {
+			req = append(req, k)
+		}
+	}
+	sort.Slice(req, func(i, j int) bool { return req[i].(string) < req[j].(string) })
+	return map[string]any{"type": "object", "properties": props, "required": req}
 }

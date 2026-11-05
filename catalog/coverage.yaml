@@ -664,20 +664,17 @@ DELETE /ai/assistants/{assistant_id}/tags/{tag}:
     reviewed: true
     note: delete of telnyx_ai_assistant_tag (triage)
 GET /ai/assistants/{assistant_id}/texml:
-    bucket: data_source
-    terraform: telnyx_ai_assistant_texml
+    bucket: out_of_scope
     reviewed: true
-    note: read-only
+    note: returns a bare TeXML string, not data Terraform can use
 PUT /ai/assistants/{assistant_id}/tools/{tool_id}:
-    bucket: resource
-    terraform: telnyx_ai_assistant_tool_attachment
+    bucket: out_of_scope
     reviewed: true
-    note: create of telnyx_ai_assistant_tool_attachment (triage)
+    note: attach shared tools with tool_ids on telnyx_ai_assistant; the API returns no attachment to read back
 DELETE /ai/assistants/{assistant_id}/tools/{tool_id}:
-    bucket: resource
-    terraform: telnyx_ai_assistant_tool_attachment
+    bucket: out_of_scope
     reviewed: true
-    note: delete of telnyx_ai_assistant_tool_attachment (triage)
+    note: attach shared tools with tool_ids on telnyx_ai_assistant; the API returns no attachment to read back
 POST /ai/assistants/{assistant_id}/tools/{tool_id}/test:
     bucket: out_of_scope
     reviewed: true
@@ -786,24 +783,23 @@ DELETE /ai/collections/{uuid}:
     reviewed: true
     note: delete of telnyx_ai_collection (catalog collection)
 GET /ai/collections/{uuid}/settings:
-    bucket: resource
-    terraform: telnyx_ai_collection_settings
+    bucket: out_of_scope
     reviewed: true
-    note: read of telnyx_ai_collection_settings (catalog singleton)
+    note: telnyx_ai_collection reads its settings with the collection
 PUT /ai/collections/{uuid}/settings:
     bucket: out_of_scope
     reviewed: true
     note: alternative update; telnyx_ai_collection_settings uses PATCH /ai/collections/{uuid}/settings
 PATCH /ai/collections/{uuid}/settings:
     bucket: resource
-    terraform: telnyx_ai_collection_settings
+    terraform: telnyx_ai_collection
     reviewed: true
-    note: update of telnyx_ai_collection_settings (catalog singleton)
+    note: update of telnyx_ai_collection (its settings)
 GET /ai/collections/{uuid}/sources:
     bucket: data_source
     terraform: telnyx_ai_collection_sources
     reviewed: true
-    note: list of telnyx_ai_collection_source
+    note: list of telnyx_ai_collection_source; also how the resource is read
 POST /ai/collections/{uuid}/sources:
     bucket: resource
     terraform: telnyx_ai_collection_source
@@ -911,9 +907,9 @@ GET /ai/conversations/{conversation_id}/conversations-insights:
     reviewed: true
     note: 'runtime: conversation data'
 DELETE /ai/conversations/{conversation_id}/conversations-insights/{insight_id}:
-    bucket: action
-    reviewed: false
-    note: 'auto: non-lifecycle mutation'
+    bucket: out_of_scope
+    reviewed: true
+    note: 'runtime: conversation data'
 POST /ai/conversations/{conversation_id}/message:
     bucket: out_of_scope
     reviewed: true
@@ -1029,7 +1025,7 @@ GET /ai/memory/namespaces:
     bucket: data_source
     terraform: telnyx_ai_memory_namespaces
     reviewed: true
-    note: list of telnyx_ai_memory_namespace
+    note: list of telnyx_ai_memory_namespace; also how the resource is read
 POST /ai/memory/namespaces:
     bucket: resource
     terraform: telnyx_ai_memory_namespace
@@ -1102,7 +1098,7 @@ PATCH /ai/memory/namespaces/{namespace}/settings:
     bucket: resource
     terraform: telnyx_ai_memory_namespace_settings
     reviewed: true
-    note: update of telnyx_ai_memory_namespace_settings (catalog singleton)
+    note: create and update of telnyx_ai_memory_namespace_settings
 GET /ai/missions:
     bucket: data_source
     terraform: telnyx_ai_missions
@@ -1142,55 +1138,45 @@ POST /ai/missions/{mission_id}/clone:
     reviewed: true
     note: one-shot operation
 GET /ai/missions/{mission_id}/knowledge-bases:
-    bucket: data_source
-    terraform: telnyx_ai_mission_knowledge_bases
+    bucket: out_of_scope
     reviewed: true
-    note: list of telnyx_ai_mission_knowledge_base
+    note: the spec gives no request or response schema for mission knowledge bases, MCP servers and tools
 POST /ai/missions/{mission_id}/knowledge-bases:
-    bucket: resource
-    terraform: telnyx_ai_mission_knowledge_base
+    bucket: out_of_scope
     reviewed: true
-    note: create of telnyx_ai_mission_knowledge_base (catalog collection)
+    note: the spec gives no request or response schema for mission knowledge bases, MCP servers and tools
 GET /ai/missions/{mission_id}/knowledge-bases/{knowledge_base_id}:
-    bucket: resource
-    terraform: telnyx_ai_mission_knowledge_base
+    bucket: out_of_scope
     reviewed: true
-    note: read of telnyx_ai_mission_knowledge_base (catalog collection)
+    note: the spec gives no request or response schema for mission knowledge bases, MCP servers and tools
 PUT /ai/missions/{mission_id}/knowledge-bases/{knowledge_base_id}:
-    bucket: resource
-    terraform: telnyx_ai_mission_knowledge_base
+    bucket: out_of_scope
     reviewed: true
-    note: update of telnyx_ai_mission_knowledge_base (catalog collection)
+    note: the spec gives no request or response schema for mission knowledge bases, MCP servers and tools
 DELETE /ai/missions/{mission_id}/knowledge-bases/{knowledge_base_id}:
-    bucket: resource
-    terraform: telnyx_ai_mission_knowledge_base
+    bucket: out_of_scope
     reviewed: true
-    note: delete of telnyx_ai_mission_knowledge_base (catalog collection)
+    note: the spec gives no request or response schema for mission knowledge bases, MCP servers and tools
 GET /ai/missions/{mission_id}/mcp-servers:
-    bucket: data_source
-    terraform: telnyx_ai_mission_mcp_servers
+    bucket: out_of_scope
     reviewed: true
-    note: list of telnyx_ai_mission_mcp_server
+    note: the spec gives no request or response schema for mission knowledge bases, MCP servers and tools
 POST /ai/missions/{mission_id}/mcp-servers:
-    bucket: resource
-    terraform: telnyx_ai_mission_mcp_server
+    bucket: out_of_scope
     reviewed: true
-    note: create of telnyx_ai_mission_mcp_server (catalog collection)
+    note: the spec gives no request or response schema for mission knowledge bases, MCP servers and tools
 GET /ai/missions/{mission_id}/mcp-servers/{mcp_server_id}:
-    bucket: resource
-    terraform: telnyx_ai_mission_mcp_server
+    bucket: out_of_scope
     reviewed: true
-    note: read of telnyx_ai_mission_mcp_server (catalog collection)
+    note: the spec gives no request or response schema for mission knowledge bases, MCP servers and tools
 PUT /ai/missions/{mission_id}/mcp-servers/{mcp_server_id}:
-    bucket: resource
-    terraform: telnyx_ai_mission_mcp_server
+    bucket: out_of_scope
     reviewed: true
-    note: update of telnyx_ai_mission_mcp_server (catalog collection)
+    note: the spec gives no request or response schema for mission knowledge bases, MCP servers and tools
 DELETE /ai/missions/{mission_id}/mcp-servers/{mcp_server_id}:
-    bucket: resource
-    terraform: telnyx_ai_mission_mcp_server
+    bucket: out_of_scope
     reviewed: true
-    note: delete of telnyx_ai_mission_mcp_server (catalog collection)
+    note: the spec gives no request or response schema for mission knowledge bases, MCP servers and tools
 GET /ai/missions/{mission_id}/runs:
     bucket: out_of_scope
     reviewed: true
@@ -1264,30 +1250,25 @@ DELETE /ai/missions/{mission_id}/runs/{run_id}/telnyx-agents/{telnyx_agent_id}:
     reviewed: true
     note: 'runtime: mission execution'
 GET /ai/missions/{mission_id}/tools:
-    bucket: data_source
-    terraform: telnyx_ai_mission_tools
+    bucket: out_of_scope
     reviewed: true
-    note: list of telnyx_ai_mission_tool
+    note: the spec gives no request or response schema for mission knowledge bases, MCP servers and tools
 POST /ai/missions/{mission_id}/tools:
-    bucket: resource
-    terraform: telnyx_ai_mission_tool
+    bucket: out_of_scope
     reviewed: true
-    note: create of telnyx_ai_mission_tool (catalog collection)
+    note: the spec gives no request or response schema for mission knowledge bases, MCP servers and tools
 GET /ai/missions/{mission_id}/tools/{tool_id}:
-    bucket: resource
-    terraform: telnyx_ai_mission_tool
+    bucket: out_of_scope
     reviewed: true
-    note: read of telnyx_ai_mission_tool (catalog collection)
+    note: the spec gives no request or response schema for mission knowledge bases, MCP servers and tools
 PUT /ai/missions/{mission_id}/tools/{tool_id}:
-    bucket: resource
-    terraform: telnyx_ai_mission_tool
+    bucket: out_of_scope
     reviewed: true
-    note: update of telnyx_ai_mission_tool (catalog collection)
+    note: the spec gives no request or response schema for mission knowledge bases, MCP servers and tools
 DELETE /ai/missions/{mission_id}/tools/{tool_id}:
-    bucket: resource
-    terraform: telnyx_ai_mission_tool
+    bucket: out_of_scope
     reviewed: true
-    note: delete of telnyx_ai_mission_tool (catalog collection)
+    note: the spec gives no request or response schema for mission knowledge bases, MCP servers and tools
 GET /ai/models:
     bucket: out_of_scope
     reviewed: true
@@ -1381,10 +1362,9 @@ POST /ai/tests/test_framework/v1/metrics:
     reviewed: true
     note: create of telnyx_ai_test_metric (catalog collection)
 POST /ai/tests/test_framework/v1/metrics/bulk_create:
-    bucket: action
-    terraform: telnyx_ai_test_metric_bulk_create
+    bucket: out_of_scope
     reviewed: true
-    note: one-shot operation
+    note: creates metrics Terraform would not track; declare each as telnyx_ai_test_metric
 POST /ai/tests/test_framework/v1/metrics/generate_metrics:
     bucket: out_of_scope
     reviewed: true
@@ -3350,7 +3330,7 @@ GET /integration_secrets:
     bucket: data_source
     terraform: telnyx_integration_secrets
     reviewed: true
-    note: list of telnyx_integration_secret
+    note: list of telnyx_integration_secret; also how the resource is read
 POST /integration_secrets:
     bucket: resource
     terraform: telnyx_integration_secret
@@ -3764,7 +3744,7 @@ PATCH /managed_accounts/{id}/update_global_channel_limit:
     note: update (global channel limit) of telnyx_managed_account (triage)
 GET /media:
     bucket: data_source
-    terraform: telnyx_medias
+    terraform: telnyx_media_files
     reviewed: true
     note: list of telnyx_media
 POST /media:
@@ -6748,17 +6728,17 @@ GET /voice_clones:
     bucket: data_source
     terraform: telnyx_voice_clones
     reviewed: true
-    note: list of telnyx_voice_clone
+    note: list of telnyx_voice_clone; also how the resource is read
 POST /voice_clones:
     bucket: resource
     terraform: telnyx_voice_clone
     reviewed: true
-    note: create of telnyx_voice_clone (triage)
+    note: create of telnyx_voice_clone from a voice design (create hook)
 POST /voice_clones/from_upload:
-    bucket: action
-    terraform: telnyx_voice_clone_from_upload
+    bucket: resource
+    terraform: telnyx_voice_clone
     reviewed: true
-    note: one-shot operation
+    note: create of telnyx_voice_clone from a recording
 PATCH /voice_clones/{id}:
     bucket: resource
     terraform: telnyx_voice_clone

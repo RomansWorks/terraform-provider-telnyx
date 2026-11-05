@@ -119,6 +119,7 @@ func (r *frameworkResource) Create(ctx context.Context, req resource.CreateReque
 		// The create response is an API object like any read.
 		obj, err = r.afterRead(ctx, obj)
 	}
+	created := obj
 	if err != nil {
 		resp.Diagnostics.AddError("Unable to create "+d.TypeName, err.Error())
 		return
@@ -183,6 +184,7 @@ func (r *frameworkResource) Create(ctx context.Context, req resource.CreateReque
 		resp.Diagnostics.AddError("Unable to read "+d.TypeName, err.Error())
 		return
 	}
+	obj = withCreated(d.Attrs, obj, created)
 	st, err := r.toState(ctx, obj, plan, modeApply, req.Plan.Raw)
 	if err != nil {
 		resp.Diagnostics.AddError("Unable to read "+d.TypeName, err.Error())
@@ -294,7 +296,7 @@ func (r *frameworkResource) Delete(ctx context.Context, req resource.DeleteReque
 	}
 	p, err := fillPath(d.Attrs, d.Delete.Path, state)
 	if err == nil {
-		_, err = r.c.Send(ctx, d.Delete.Method, p, nil, "", nil)
+		_, err = r.c.Send(r.withHeaders(ctx, "delete", state), d.Delete.Method, p, nil, "", nil)
 	}
 	if err != nil && !client.IsNotFound(err) {
 		resp.Diagnostics.AddError("Unable to delete "+d.TypeName, err.Error())
@@ -429,6 +431,12 @@ func (r *frameworkResource) send(ctx context.Context, op *Op, plan Values, name 
 
 // sendBody is send with a function that can adjust the body before hooks run.
 func (r *frameworkResource) sendBody(ctx context.Context, op *Op, plan Values, name string, include func(*Attr) bool, pathVals Values, adjust func(Object)) (Object, error) {
+	if r.d.Hooks.Send != nil && (op == r.d.Create || op == r.d.Update) {
+		return r.d.Hooks.Send(ctx, r.c, r.d, name, plan, pathVals)
+	}
+	if op.Raw {
+		return nil, fmt.Errorf("%s %s takes a raw body, which needs a Send hook; this is a provider bug", op.Method, op.Path)
+	}
 	body, err := objectToJSON(r.d.Attrs, plan, include)
 	if err != nil {
 		return nil, err
@@ -456,7 +464,7 @@ func (r *frameworkResource) sendBody(ctx context.Context, op *Op, plan Values, n
 	if err != nil {
 		return nil, err
 	}
-	out, err := r.c.Send(ctx, op.Method, p, nil, contentType, data)
+	out, err := r.c.Send(r.withHeaders(ctx, name, pathVals), op.Method, p, nil, contentType, data)
 	if err != nil {
 		return nil, err
 	}
@@ -483,8 +491,15 @@ func Get(ctx context.Context, c *client.Client, d *Resource, vals Values) (Objec
 	}
 	var query url.Values
 	for _, a := range d.Attrs {
-		var s string
-		if v := vals[a.Name]; a.Query != "" && v.IsKnown() && !v.IsNull() && v.As(&s) == nil && s != "" {
+		v := vals[a.Name]
+		if a.Query == "" || !v.IsKnown() || v.IsNull() {
+			continue
+		}
+		raw, ok, err := toJSON(a, v)
+		if err != nil {
+			return nil, fmt.Errorf("%s: %w", a.Name, err)
+		}
+		if s := scalarString(raw); ok && s != "" {
 			if query == nil {
 				query = url.Values{}
 			}
@@ -494,6 +509,10 @@ func Get(ctx context.Context, c *client.Client, d *Resource, vals Values) (Objec
 	out, err := c.Send(ctx, d.Read.Method, p, query, "", nil)
 	if err != nil {
 		return nil, err
+	}
+	if d.Read.Text {
+		// The response is the value itself, byte for byte.
+		return Object{"value": string(out)}, nil
 	}
 	return Decode(out, d.Read.Envelope)
 }
@@ -567,4 +586,41 @@ func fields(v tftypes.Value) Values {
 		return Values{}
 	}
 	return f
+}
+
+// withCreated copies the fields only the create response carries into obj,
+// the object read after create.
+func withCreated(attrs []*Attr, obj, created Object) Object {
+	var out Object
+	for _, a := range attrs {
+		if !a.CreateOnly {
+			continue
+		}
+		v, ok := created[a.JSON]
+		if _, has := obj[a.JSON]; has || !ok {
+			continue
+		}
+		if out == nil {
+			out = make(Object, len(obj)+1)
+			for k, x := range obj {
+				out[k] = x
+			}
+		}
+		out[a.JSON] = v
+	}
+	if out == nil {
+		return obj
+	}
+	return out
+}
+
+// withHeaders adds the request headers the Headers hook asks for.
+func (r *frameworkResource) withHeaders(ctx context.Context, op string, vals Values) context.Context {
+	if r.d.Hooks.Headers == nil {
+		return ctx
+	}
+	for k, v := range r.d.Hooks.Headers(op, vals) {
+		ctx = client.WithHeader(ctx, k, v)
+	}
+	return ctx
 }

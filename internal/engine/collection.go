@@ -30,6 +30,7 @@ func Each(ctx context.Context, c *client.Client, op *Op, path string, query url.
 		size = DefaultPageSize
 	}
 	cursor := ""
+	read := 0
 	for page := 1; page <= maxPages; page++ {
 		q := url.Values{}
 		for k, v := range query {
@@ -42,6 +43,9 @@ func Each(ctx context.Context, c *client.Client, op *Op, path string, query url.
 		case PagingFlat:
 			q.Set("page_number", strconv.Itoa(page))
 			q.Set("page_size", strconv.Itoa(size))
+		case PagingPage:
+			q.Set("page", strconv.Itoa(page))
+			q.Set(op.SizeParam, strconv.Itoa(size))
 		case PagingCursor:
 			q.Set("page[size]", strconv.Itoa(size))
 			if cursor != "" {
@@ -52,7 +56,18 @@ func Each(ctx context.Context, c *client.Client, op *Op, path string, query url.
 		if err != nil {
 			return err
 		}
-		items, total, err := decodeList(out, op.Envelope)
+		var items []Object
+		var total int
+		if op.Records {
+			var records int
+			items, records, err = decodeRecords(out)
+			read += len(items)
+			if err == nil && records > 0 && read >= records {
+				total = page
+			}
+		} else {
+			items, total, err = decodeList(out, op.Envelope)
+		}
 		if err != nil {
 			return err
 		}
@@ -137,6 +152,26 @@ func decodeList(data []byte, envelope bool) ([]Object, int, error) {
 	}
 	total, _ := strconv.Atoi(body.Meta.TotalPages.String())
 	return items, total, nil
+}
+
+// decodeRecords decodes a list response that holds its items in "records"
+// and their count in "totalRecords" (0 when the response does not say).
+func decodeRecords(data []byte) ([]Object, int, error) {
+	var body struct {
+		Records      json.RawMessage `json:"records"`
+		TotalRecords json.Number     `json:"totalRecords"`
+	}
+	dec := json.NewDecoder(bytes.NewReader(data))
+	dec.UseNumber()
+	if err := dec.Decode(&body); err != nil {
+		return nil, 0, fmt.Errorf("decoding list response: %w", err)
+	}
+	if len(body.Records) == 0 || string(body.Records) == "null" {
+		return nil, 0, nil
+	}
+	items, _, err := decodeList(body.Records, false)
+	total, _ := strconv.Atoi(body.TotalRecords.String())
+	return items, total, err
 }
 
 // errNotInCollection is the not-found error of a read from a collection,

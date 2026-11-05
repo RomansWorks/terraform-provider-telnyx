@@ -822,7 +822,7 @@ func (g *Generator) collection(ov *Override, op *operation) (map[string]any, *en
 			return nil, nil, err
 		}
 		rf.Op = o
-		if item, o.Envelope, err = g.listItems(op); err != nil {
+		if item, o.Envelope, o.Records, err = g.listItems(op); err != nil {
 			return nil, nil, err
 		}
 	} else {

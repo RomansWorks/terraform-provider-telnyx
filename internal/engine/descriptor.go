@@ -101,6 +101,12 @@ type Op struct {
 	// ask for.
 	Paging   Paging
 	PageSize int
+	// SizeParam is the page size query parameter of PagingPage.
+	SizeParam string
+	// Records says a list response holds its items in "records", with the
+	// item count in "totalRecords", in place of "data" (the 10DLC and
+	// toll-free verification APIs).
+	Records bool
 }
 
 // Paging is a list operation's paging style.
@@ -119,6 +125,9 @@ const (
 	// PagingCursor sends page[size] and page[after] and follows
 	// meta.cursors.after or meta.end_cursor until it is empty.
 	PagingCursor
+	// PagingPage sends page and the size parameter named by Op.SizeParam,
+	// and stops at a short page or when totalRecords items have been read.
+	PagingPage
 )
 
 // ReadFrom reads an object that has no item read from a collection: the

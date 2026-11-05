@@ -225,7 +225,15 @@ func (g *Generator) DeriveList(name, description, key, pagingOverride string, se
 			return fmt.Errorf("query parameters %s and %s both map to %s", prev, from, a.Name)
 		}
 		if reserved[a.Name] || a.Name == "max_items" {
-			return fmt.Errorf("query parameter %s maps to reserved name %s", from, a.Name)
+			// A filter named like a Terraform meta-argument (provider,
+			// count) takes the suffix _filter; it is still sent as from.
+			if len(a.PathParams) > 0 {
+				return fmt.Errorf("path parameter %s maps to reserved name %s", from, a.Name)
+			}
+			a.Name += "_filter"
+			if prev, ok := seen[a.Name]; ok {
+				return fmt.Errorf("query parameters %s and %s both map to %s", prev, from, a.Name)
+			}
 		}
 		seen[a.Name] = from
 		l.Params = append(l.Params, a)

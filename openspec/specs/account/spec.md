@@ -1,7 +1,7 @@
 # account Specification
 
 ## Purpose
-TBD - created by archiving change add-wave-6-account. Update Purpose after archive.
+Manages the Telnyx account itself: sign-in and API access, billing settings and spend limits, managed accounts, the user profile, and the enterprise identity behind Branded Calling and phone number reputation.
 
 ## Requirements
 

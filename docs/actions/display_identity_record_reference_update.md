@@ -18,8 +18,8 @@ Changes one reference of a DIR, named by its type and slot.
 ### Required
 
 - `dir_id` (String) The dir id.
-- `ref_type` (String) The ref type id.
-- `slot` (String) The slot id.
+- `ref_type` (String) The ref type.
+- `slot` (String) The slot.
 
 ### Optional
 

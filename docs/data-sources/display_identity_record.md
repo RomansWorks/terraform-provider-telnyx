@@ -24,7 +24,6 @@ A Display Identity Record (DIR) for Branded Calling: the name, logo and call rea
 
 - `authorizer_email` (String) Contact email of the authorizer. Telnyx may send verification or infringement-notice email here; use a monitored mailbox.
 - `authorizer_name` (String) Name of the person at your enterprise who is authorizing this DIR registration. Must be a real individual (used for audit and trademark-claim contests).
-- `call_reasons` (List of String) 1–10 reasons your business calls customers. Validate phrasing against `POST /call_reasons/validate`.
 - `certify_brand_is_accurate` (Boolean) Certification that the DIR information is accurate. Must be `true` for the DIR to be submitted for vetting.
 - `certify_ip_ownership` (Boolean) Must be `true`. Confirms ownership of any logos/trademarks shown.
 - `certify_no_shaft_content` (Boolean) Must be `true`. Confirms this DIR is not used for SHAFT content (Sex, Hate, Alcohol, Firearms, Tobacco) where prohibited.

@@ -163,9 +163,14 @@ func (c *Client) Do(ctx context.Context, method, path string, query url.Values, 
 // *Error. Retries follow the same rules as Do.
 func (c *Client) Send(ctx context.Context, method, path string, query url.Values, contentType string, body []byte) ([]byte, error) {
 	u := *c.baseURL
+	// A few spec paths repeat the version (/v2/mobile_phone_numbers) that
+	// the base URL already ends with.
+	if base := strings.TrimRight(c.baseURL.Path, "/"); strings.HasSuffix(base, "/v2") && strings.HasPrefix(path, "/v2/") {
+		path = strings.TrimPrefix(path, "/v2")
+	}
 	// path is already escaped (fillPath escapes parameter values): keep
 	// it as sent, so %2B and %2F are not escaped a second time.
-	raw := c.baseURL.EscapedPath() + "/" + strings.TrimLeft(path, "/")
+	raw := strings.TrimRight(c.baseURL.EscapedPath(), "/") + "/" + strings.TrimLeft(path, "/")
 	if p, err := url.PathUnescape(raw); err == nil {
 		u.Path, u.RawPath = p, raw
 	} else {

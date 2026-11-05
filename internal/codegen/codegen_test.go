@@ -240,6 +240,8 @@ func TestGoName(t *testing.T) {
 		"telnyx_ai_assistant":                "AIAssistant",
 		"telnyx_ai_mcp_server":               "AIMCPServer",
 		"telnyx_phone_number_voice_settings": "PhoneNumberVoiceSettings",
+		"telnyx_10dlc_brand":                 "TenDLCBrand",
+		"telnyx_5g_thing":                    "N5gThing",
 	} {
 		if got := GoName(in); got != want {
 			t.Errorf("GoName(%s) = %s", in, got)
@@ -374,6 +376,27 @@ func TestCollectionErrors(t *testing.T) {
 	}
 	if _, l, err := g.DeriveAll(ov); err != nil || l.Op.Paging != engine.PagingCursor {
 		t.Errorf("cursor paging: %+v %v", l, err)
+	}
+
+	// Items in records, paged by page and recordsPerPage.
+	_ = os.WriteFile(p, []byte("type: telnyx_x\nkind: data_source\ndescription: x\nlist: GET /record_things\n"), 0o644)
+	if ov, err = LoadOverride(p); err != nil {
+		t.Fatal(err)
+	}
+	if _, l, err := g.DeriveAll(ov); err != nil || l.Op.Paging != engine.PagingPage || l.Op.SizeParam != "recordsPerPage" ||
+		l.Op.PageSize != 50 || !l.Op.Records || !l.Op.Envelope || l.Items.Attrs[0].Name != "brand_id" {
+		t.Errorf("records paging: %+v %v", l, err)
+	}
+}
+
+func TestItemsName(t *testing.T) {
+	for in, want := range map[string]string{
+		"telnyx_billing_groups": "billing_groups",
+		"telnyx_10dlc_brands":   "brands",
+	} {
+		if got := itemsName(in); got != want {
+			t.Errorf("itemsName(%s) = %s", in, got)
+		}
 	}
 }
 

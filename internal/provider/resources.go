@@ -18,12 +18,14 @@ var hooks = map[string]engine.Hooks{
 	"telnyx_display_identity_record":              displayIdentityRecordHooks,
 	"telnyx_display_identity_record_phone_number": displayIdentityRecordPhoneNumberHooks,
 	"telnyx_enterprise_reputation_number":         enterpriseReputationNumberHooks,
+	"telnyx_inexplicit_number_order":              inexplicitNumberOrderHooks,
 	"telnyx_number_order":                         numberOrderHooks,
 	"telnyx_porting_order":                        portingOrderHooks,
 	"telnyx_porting_order_additional_document":    portingOrderAdditionalDocumentHooks,
 	"telnyx_sim_card_order":                       simCardOrderHooks,
 	"telnyx_spend_limit":                          spendLimitHooks,
 	"telnyx_texml_queue":                          texmlQueueHooks,
+	"telnyx_whatsapp_message_template":            whatsappMessageTemplateHooks,
 }
 
 // descriptors returns every generated resource with its hooks attached.

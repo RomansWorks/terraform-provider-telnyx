@@ -17,7 +17,7 @@ The activation jobs of a porting order.
 
 ### Required
 
-- `id` (String) The id id.
+- `id` (String) The id of the object whose items are listed.
 
 ### Optional
 

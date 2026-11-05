@@ -17,5 +17,5 @@ Submits the code sent to a phone number to finish its verification.
 
 ### Required
 
-- `phone_number` (String) The phone number id.
+- `phone_number` (String) The phone number.
 - `verification_code` (String)

@@ -1,0 +1,1 @@
+terraform import telnyx_messaging_profile.support <messaging_profile_id>

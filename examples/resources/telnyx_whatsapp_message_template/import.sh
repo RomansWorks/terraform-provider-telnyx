@@ -1,0 +1,1 @@
+terraform import telnyx_whatsapp_message_template.shipped <template_id>

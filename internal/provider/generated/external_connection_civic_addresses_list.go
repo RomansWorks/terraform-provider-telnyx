@@ -13,7 +13,7 @@ func ExternalConnectionCivicAddressesList() *engine.List {
 		Op:          &engine.Op{Method: "GET", Path: "/external_connections/{id}/civic_addresses", Envelope: true},
 		Params: []*engine.Attr{
 			{Name: "filter_country", JSON: "filter[country]", Kind: engine.KindList, Optional: true, Description: "The country (or countries) to filter addresses by.", Elem: &engine.Attr{Kind: engine.KindString}},
-			{Name: "id", Kind: engine.KindString, Required: true, PathParams: []string{"id"}, Description: "The id id."},
+			{Name: "id", Kind: engine.KindString, Required: true, PathParams: []string{"id"}, Description: "The id of the object whose items are listed."},
 		},
 		Items: &engine.Attr{Name: "external_connection_civic_addresses", JSON: "data", Kind: engine.KindList, Computed: true, InResponse: true, Description: "The objects, in the order the API returns them.",
 			Attrs: []*engine.Attr{

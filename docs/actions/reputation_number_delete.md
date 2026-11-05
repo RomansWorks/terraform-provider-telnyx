@@ -17,4 +17,4 @@ Removes a phone number from reputation monitoring, without naming its enterprise
 
 ### Required
 
-- `phone_number` (String) The phone number id.
+- `phone_number` (String) The phone number.

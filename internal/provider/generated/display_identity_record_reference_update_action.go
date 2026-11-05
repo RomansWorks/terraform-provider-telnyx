@@ -18,9 +18,9 @@ func DisplayIdentityRecordReferenceUpdateAction() *engine.Action {
 			{Name: "job_title", JSON: "job_title", Kind: engine.KindString, Optional: true, InCreate: true, Description: "The reference contact's job title, for example CFO or Owner."},
 			{Name: "organization", JSON: "organization", Kind: engine.KindString, Optional: true, InCreate: true, Description: "The name of the organization the reference contact works for."},
 			{Name: "phone_e164", JSON: "phone_e164", Kind: engine.KindString, Optional: true, InCreate: true, Description: "The reference's phone number in E.164 format, for example +14155550123. We call this number during their local business hours."},
-			{Name: "ref_type", Kind: engine.KindString, Required: true, Local: true, PathParams: []string{"ref_type"}, Description: "The ref type id."},
+			{Name: "ref_type", Kind: engine.KindString, Required: true, Local: true, PathParams: []string{"ref_type"}, Description: "The ref type."},
 			{Name: "relationship_to_registrant", JSON: "relationship_to_registrant", Kind: engine.KindString, Optional: true, InCreate: true, Description: "How the reference contact is related to the registering business."},
-			{Name: "slot", Kind: engine.KindString, Required: true, Local: true, PathParams: []string{"slot"}, Description: "The slot id."},
+			{Name: "slot", Kind: engine.KindString, Required: true, Local: true, PathParams: []string{"slot"}, Description: "The slot."},
 			{Name: "timezone", JSON: "timezone", Kind: engine.KindString, Optional: true, InCreate: true, Description: "The reference's IANA time zone, for example America/New_York. We only call during their local 8am to 9pm hours, which is why we need it."},
 		},
 	}

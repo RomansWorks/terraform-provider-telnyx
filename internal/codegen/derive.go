@@ -1391,6 +1391,6 @@ func (g *Generator) mergeSameShape(vs []map[string]any) map[string]any {
 			req = append(req, k)
 		}
 	}
-	sort.Slice(req, func(i, j int) bool { return req[i].(string) < req[j].(string) })
+	sort.Slice(req, func(i, j int) bool { return fmt.Sprint(req[i]) < fmt.Sprint(req[j]) })
 	return map[string]any{"type": "object", "properties": props, "required": req}
 }

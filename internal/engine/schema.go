@@ -6,10 +6,13 @@ package engine
 import (
 	"context"
 	"fmt"
+	"regexp"
 	"slices"
 	"strings"
 
 	"github.com/hashicorp/terraform-plugin-framework-timeouts/resource/timeouts"
+	"github.com/hashicorp/terraform-plugin-framework-validators/listvalidator"
+	"github.com/hashicorp/terraform-plugin-framework-validators/setvalidator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	dschema "github.com/hashicorp/terraform-plugin-framework/datasource/schema"
@@ -98,6 +101,9 @@ func resourceAttr(a *Attr) schema.Attribute {
 	if len(a.Enum) > 0 && (a.Kind == KindString) {
 		stringValidators = append(stringValidators, stringvalidator.OneOf(a.Enum...))
 	}
+	if a.Lowercase && a.Kind == KindString {
+		stringValidators = append(stringValidators, lowercase)
+	}
 	keep := comp // keep computed values stable across plans
 	switch a.Kind {
 	case KindString, KindJSON:
@@ -159,8 +165,12 @@ func resourceAttr(a *Attr) schema.Attribute {
 			}, replaceDesc, replaceDesc))
 		}
 		if a.Elem != nil {
+			var v []validator.List
+			if a.Lowercase && a.Elem.Kind == KindString {
+				v = append(v, listvalidator.ValueStringsAre(lowercase))
+			}
 			return schema.ListAttribute{ElementType: attrType(a.Elem), Required: req, Optional: opt, Computed: comp,
-				Sensitive: a.Sensitive, DeprecationMessage: a.Deprecated, MarkdownDescription: desc, PlanModifiers: pm}
+				Sensitive: a.Sensitive, DeprecationMessage: a.Deprecated, MarkdownDescription: desc, PlanModifiers: pm, Validators: v}
 		}
 		return schema.ListNestedAttribute{NestedObject: schema.NestedAttributeObject{Attributes: nested(a.Attrs)},
 			Required: req, Optional: opt, Computed: comp, Sensitive: a.Sensitive, DeprecationMessage: a.Deprecated, MarkdownDescription: desc, PlanModifiers: pm}
@@ -175,8 +185,12 @@ func resourceAttr(a *Attr) schema.Attribute {
 			}, replaceDesc, replaceDesc))
 		}
 		if a.Elem != nil {
+			var v []validator.Set
+			if a.Lowercase && a.Elem.Kind == KindString {
+				v = append(v, setvalidator.ValueStringsAre(lowercase))
+			}
 			return schema.SetAttribute{ElementType: attrType(a.Elem), Required: req, Optional: opt, Computed: comp,
-				Sensitive: a.Sensitive, DeprecationMessage: a.Deprecated, MarkdownDescription: desc, PlanModifiers: pm}
+				Sensitive: a.Sensitive, DeprecationMessage: a.Deprecated, MarkdownDescription: desc, PlanModifiers: pm, Validators: v}
 		}
 		return schema.SetNestedAttribute{NestedObject: schema.NestedAttributeObject{Attributes: nested(a.Attrs)},
 			Required: req, Optional: opt, Computed: comp, Sensitive: a.Sensitive, DeprecationMessage: a.Deprecated, MarkdownDescription: desc, PlanModifiers: pm}
@@ -305,3 +319,8 @@ func dataNested(attrs []*Attr) map[string]dschema.Attribute {
 	}
 	return out
 }
+
+// lowercase accepts strings that are lowercase and have no surrounding
+// spaces: the form in which the API stores email addresses.
+var lowercase = stringvalidator.RegexMatches(regexp.MustCompile(`^([^A-Z\s]([^A-Z]*[^A-Z\s])?)?$`),
+	"must be lowercase without leading or trailing spaces, as Telnyx stores it")

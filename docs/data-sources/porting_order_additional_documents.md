@@ -17,7 +17,7 @@ Lists porting order additional documents, with optional filters. Each item has t
 
 ### Required
 
-- `id` (String) The id id.
+- `porting_order_id` (String) The porting order id.
 
 ### Optional
 

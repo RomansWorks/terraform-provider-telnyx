@@ -45,3 +45,24 @@ Type names whose first segment starts with a digit, such as `telnyx_10dlc_brand`
 #### Scenario: 10DLC list
 - **WHEN** `data "telnyx_10dlc_campaigns" "all" {}` is read
 - **THEN** the campaigns are in `campaigns`
+
+### Requirement: Free-form read responses
+A data source whose read response is a map without fixed fields SHALL expose the whole response as one computed JSON attribute named `values`.
+
+#### Scenario: Campaign operation status
+- **WHEN** `data "telnyx_10dlc_campaign_operation_status" "x" { campaign_id = "c1" }` is read and the API answers with one entry per carrier
+- **THEN** `values` holds that map as JSON
+
+### Requirement: Versioned spec paths
+A spec path that starts with `/v2/` SHALL be sent once under the base URL's `/v2`, not as `/v2/v2/...`.
+
+#### Scenario: Mobile phone numbers
+- **WHEN** `telnyx_mobile_phone_number` reads `GET /v2/mobile_phone_numbers/{id}` with the default base URL
+- **THEN** the request goes to `https://api.telnyx.com/v2/mobile_phone_numbers/{id}`
+
+### Requirement: Attribute names from camelCase
+JSON field names SHALL become snake_case attribute names, with a run of capitals as one word: `webhookURL` is `webhook_url` and `isTMobileRegistered` is `is_t_mobile_registered`. Path parameter renames (`path_params`) SHALL apply to list data sources too.
+
+#### Scenario: Webhook URL
+- **WHEN** a 10DLC brand's `webhookURL` is derived
+- **THEN** the attribute is `webhook_url`, on the resource and on `telnyx_10dlc_brands`

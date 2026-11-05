@@ -1,0 +1,1 @@
+terraform import telnyx_sim_card_data_usage_notification.example <id>

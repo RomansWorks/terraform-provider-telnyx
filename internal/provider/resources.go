@@ -18,6 +18,7 @@ var hooks = map[string]engine.Hooks{
 	"telnyx_number_order":                      numberOrderHooks,
 	"telnyx_porting_order":                     portingOrderHooks,
 	"telnyx_porting_order_additional_document": portingOrderAdditionalDocumentHooks,
+	"telnyx_sim_card_order":                    simCardOrderHooks,
 	"telnyx_texml_queue":                       texmlQueueHooks,
 	"telnyx_inexplicit_number_order":           inexplicitNumberOrderHooks,
 	"telnyx_whatsapp_message_template":         whatsappMessageTemplateHooks,

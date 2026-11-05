@@ -98,6 +98,11 @@ func (g *Generator) deriveData(ov *Override) (*engine.Resource, error) {
 		if p.in != "query" || properties(p.schema) != nil {
 			continue
 		}
+		if ov.Attributes[p.name].Skip {
+			// The override leaves this query parameter unset.
+			d.used[p.name] = true
+			continue
+		}
 		if t, _ := p.schema["type"].(string); t != "string" {
 			return nil, fmt.Errorf("%s: query parameter %s is a %s; only strings are supported", ov.Type, p.name, t)
 		}

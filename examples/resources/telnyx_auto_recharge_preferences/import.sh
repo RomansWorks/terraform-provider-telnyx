@@ -1,0 +1,1 @@
+terraform import telnyx_auto_recharge_preferences.example auto_recharge_preferences

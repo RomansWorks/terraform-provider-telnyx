@@ -168,7 +168,14 @@ func (c *Client) Send(ctx context.Context, method, path string, query url.Values
 	if base := strings.TrimRight(c.baseURL.Path, "/"); strings.HasSuffix(base, "/v2") && strings.HasPrefix(path, "/v2/") {
 		path = strings.TrimPrefix(path, "/v2")
 	}
-	u.Path = strings.TrimRight(c.baseURL.Path, "/") + "/" + strings.TrimLeft(path, "/")
+	// path is already escaped (fillPath escapes parameter values): keep
+	// it as sent, so %2B and %2F are not escaped a second time.
+	raw := strings.TrimRight(c.baseURL.EscapedPath(), "/") + "/" + strings.TrimLeft(path, "/")
+	if p, err := url.PathUnescape(raw); err == nil {
+		u.Path, u.RawPath = p, raw
+	} else {
+		u.Path, u.RawPath = raw, ""
+	}
 	if len(query) > 0 {
 		u.RawQuery = query.Encode()
 	}

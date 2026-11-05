@@ -76,7 +76,11 @@ func EmitResource(pkg string, r *engine.Resource, source string) ([]byte, error)
 		}
 	}
 	if rf := r.ReadFrom; rf != nil {
-		field(&b, "ReadFrom", fmt.Sprintf("&engine.ReadFrom{Op: %s, Field: %q, Key: %q}", opLiteral(rf.Op), rf.Field, rf.Key))
+		m := ""
+		if len(rf.Match) > 0 {
+			m = ", Match: " + quoteList(rf.Match)
+		}
+		field(&b, "ReadFrom", fmt.Sprintf("&engine.ReadFrom{Op: %s, Field: %q, Key: %q%s}", opLiteral(rf.Op), rf.Field, rf.Key, m))
 	}
 	if len(r.Updates) > 0 {
 		b.WriteString("Updates: []engine.ExtraUpdate{\n")
@@ -156,6 +160,9 @@ func opLiteral(o *engine.Op) string {
 	}
 	if o.Whole != "" {
 		s += fmt.Sprintf(", Whole: %q", o.Whole)
+	}
+	if len(o.Query) > 0 {
+		s += ", Query: " + quoteList(o.Query)
 	}
 	return s + "}"
 }

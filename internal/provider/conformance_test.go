@@ -364,6 +364,11 @@ func (a *descriptorAPI) create(w http.ResponseWriter, rt route, body map[string]
 	for k, v := range body {
 		obj[k] = v
 	}
+	// Phone numbers added in batches answer with one object per number.
+	if nums, ok := body["phone_numbers"].([]any); ok && len(nums) == 1 && d.Attr("phone_numbers") == nil {
+		delete(obj, "phone_numbers")
+		obj["phone_number"] = nums[0]
+	}
 	// The object's id: the path parameter of a settings object, or a new
 	// value for objects that have their own id.
 	id := "obj-1"

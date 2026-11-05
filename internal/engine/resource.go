@@ -183,7 +183,17 @@ func (r *frameworkResource) Create(ctx context.Context, req resource.CreateReque
 		resp.Diagnostics.AddError("Unable to read "+d.TypeName, err.Error())
 		return
 	}
-	st, err := r.toState(ctx, obj, plan, modeApply, req.Plan.Raw)
+	// Values returned only by create come from the create response.
+	prior := Values{}
+	for k, v := range plan {
+		prior[k] = v
+	}
+	for _, a := range d.Attrs {
+		if a.Once {
+			prior[a.Name] = vals[a.Name]
+		}
+	}
+	st, err := r.toState(ctx, obj, prior, modeApply, req.Plan.Raw)
 	if err != nil {
 		resp.Diagnostics.AddError("Unable to read "+d.TypeName, err.Error())
 		return
@@ -194,12 +204,13 @@ func (r *frameworkResource) Create(ctx context.Context, req resource.CreateReque
 func (r *frameworkResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
 	state := fields(req.State.Raw)
 	obj, err := r.get(ctx, state)
+	if err == nil {
+		// A read hook can report the object gone with a not-found error.
+		obj, err = r.afterRead(ctx, obj)
+	}
 	if client.IsNotFound(err) {
 		resp.State.RemoveResource(ctx)
 		return
-	}
-	if err == nil {
-		obj, err = r.afterRead(ctx, obj)
 	}
 	if err != nil {
 		resp.Diagnostics.AddError("Unable to read "+r.d.TypeName, err.Error())
@@ -292,9 +303,15 @@ func (r *frameworkResource) Delete(ctx context.Context, req resource.DeleteReque
 		resp.Diagnostics.AddWarning("Object stays in Telnyx", r.deleteWarning(state))
 		return
 	}
-	p, err := fillPath(d.Attrs, d.Delete.Path, state)
-	if err == nil {
-		_, err = r.c.Send(ctx, d.Delete.Method, p, nil, "", nil)
+	var err error
+	if d.Hooks.Delete != nil {
+		err = d.Hooks.Delete(ctx, r.c, d, state)
+	} else {
+		var p string
+		p, err = fillPath(d.Attrs, d.Delete.Path, state)
+		if err == nil {
+			_, err = r.c.Send(ctx, d.Delete.Method, p, opQuery(d.Attrs, d.Delete, state), "", nil)
+		}
 	}
 	if err != nil && !client.IsNotFound(err) {
 		resp.Diagnostics.AddError("Unable to delete "+d.TypeName, err.Error())
@@ -456,7 +473,7 @@ func (r *frameworkResource) sendBody(ctx context.Context, op *Op, plan Values, n
 	if err != nil {
 		return nil, err
 	}
-	out, err := r.c.Send(ctx, op.Method, p, nil, contentType, data)
+	out, err := r.c.Send(ctx, op.Method, p, opQuery(r.d.Attrs, op, pathVals), contentType, data)
 	if err != nil {
 		return nil, err
 	}
@@ -523,6 +540,24 @@ func (r *frameworkResource) toState(ctx context.Context, obj Object, prior Value
 		f[timeoutsAttr] = tftypes.NewValue(typ.AttributeTypes[timeoutsAttr], nil)
 	}
 	return tftypes.NewValue(typ, map[string]tftypes.Value(f)), nil
+}
+
+// opQuery returns the query parameters op takes from attributes: the set
+// values of the attributes named in op.Query. Nil when there are none.
+func opQuery(attrs []*Attr, op *Op, vals Values) url.Values {
+	var q url.Values
+	for _, a := range attrs {
+		var s string
+		v := vals[a.Name]
+		if !slices.Contains(op.Query, a.JSON) || !v.IsKnown() || v.IsNull() || v.As(&s) != nil || s == "" {
+			continue
+		}
+		if q == nil {
+			q = url.Values{}
+		}
+		q.Set(a.JSON, s)
+	}
+	return q
 }
 
 // fillPath substitutes {param} placeholders from the attributes that carry

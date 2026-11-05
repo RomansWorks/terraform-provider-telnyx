@@ -49,6 +49,9 @@ type Override struct {
 	ReadFrom *ReadFromOverride `yaml:"read_from"`
 	// Updates are further operations that each set some attributes.
 	Updates []UpdateOverride `yaml:"updates"`
+	// Query names top-level attributes that update and delete operations
+	// also take as query parameters of the same name.
+	Query []string `yaml:"query"`
 
 	// ID is the response field holding the object's id. Default "id".
 	ID string `yaml:"id"`
@@ -85,7 +88,7 @@ type Override struct {
 func (o *Override) itemSettings() map[string]AttrOverride {
 	out := map[string]AttrOverride{}
 	for p, a := range o.Attributes {
-		s := AttrOverride{Sensitive: a.Sensitive || a.Masked || a.WriteOnly, Set: a.Set}
+		s := AttrOverride{Sensitive: a.Sensitive || a.Masked || a.WriteOnly || a.Once, Set: a.Set}
 		if s.Sensitive || s.Set {
 			out[p] = s
 		}
@@ -102,6 +105,9 @@ type ReadFromOverride struct {
 	// Key is the element field matched against the id; empty when the
 	// elements are plain values.
 	Key string `yaml:"key"`
+	// Match names further attributes the element must match; they are
+	// required, force replacement and follow the id in the import id.
+	Match []string `yaml:"match"`
 }
 
 // UpdateOverride is an extra update operation and its optional clear.
@@ -131,6 +137,10 @@ type AttrOverride struct {
 	// Masked says the API answers with asterisks in place of the value
 	// after create; the value in state is kept. Masked implies sensitive.
 	Masked bool `yaml:"masked"`
+	// Once says the API returns the value only in the create response,
+	// such as a client secret; the value in state is kept. Once implies
+	// sensitive.
+	Once bool `yaml:"once"`
 }
 
 // AddAttr is a local attribute.

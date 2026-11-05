@@ -21,8 +21,8 @@ func AgentGatewayPoliciesList() *engine.List {
 				{Name: "description", JSON: "description", Kind: engine.KindString, Computed: true, InResponse: true, Description: "What the policy is for."},
 				{Name: "guardrails", JSON: "guardrails", Kind: engine.KindObject, Computed: true, InResponse: true, Description: "The guardrails a policy adds to its base's, and the ones it removes from them, by name.",
 					Attrs: []*engine.Attr{
-						{Name: "add", JSON: "add", Kind: engine.KindList, Computed: true, InResponse: true, Description: "Guardrails the policy runs in addition to its base's.", Elem: &engine.Attr{Kind: engine.KindString}},
-						{Name: "remove", JSON: "remove", Kind: engine.KindList, Computed: true, InResponse: true, Description: "Guardrails from its base that the policy does not run.", Elem: &engine.Attr{Kind: engine.KindString}},
+						{Name: "add", JSON: "add", Kind: engine.KindSet, Computed: true, InResponse: true, Description: "Guardrails the policy runs in addition to its base's.", Elem: &engine.Attr{Kind: engine.KindString}},
+						{Name: "remove", JSON: "remove", Kind: engine.KindSet, Computed: true, InResponse: true, Description: "Guardrails from its base that the policy does not run.", Elem: &engine.Attr{Kind: engine.KindString}},
 					}},
 				{Name: "model", JSON: "model", Kind: engine.KindString, Computed: true, InResponse: true, Description: "A condition on the model, by name or regular expression. The policy's guardrails run only on requests for a matching model. `null` matches every model."},
 				{Name: "name", JSON: "name", Kind: engine.KindString, Computed: true, InResponse: true, Description: "A name, unique on the instance. A request names the policy in its `policies` field."},

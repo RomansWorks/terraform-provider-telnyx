@@ -22,7 +22,7 @@ func AgentGatewayTeamsList() *engine.List {
 				{Name: "created_at", JSON: "created_at", Kind: engine.KindString, Computed: true, InResponse: true, Description: "When the team was created."},
 				{Name: "id", JSON: "id", Kind: engine.KindString, Computed: true, InResponse: true, Description: "Identifies the team."},
 				{Name: "max_budget", JSON: "max_budget", Kind: engine.KindFloat, Computed: true, InResponse: true, Description: "The most the team's keys may spend together, in USD, until the budget resets."},
-				{Name: "models", JSON: "models", Kind: engine.KindList, Computed: true, InResponse: true, Description: "The models the team's keys may use. Empty means every model the instance serves.", Elem: &engine.Attr{Kind: engine.KindString}},
+				{Name: "models", JSON: "models", Kind: engine.KindSet, Computed: true, InResponse: true, Description: "The models the team's keys may use. Empty means every model the instance serves.", Elem: &engine.Attr{Kind: engine.KindString}},
 				{Name: "name", JSON: "name", Kind: engine.KindString, Computed: true, InResponse: true, Description: "A label for people. Names need not be unique."},
 				{Name: "requests_per_minute", JSON: "requests_per_minute", Kind: engine.KindInt, Computed: true, InResponse: true, Description: "The most requests the team's keys may make per minute, together."},
 				{Name: "spend", JSON: "spend", Kind: engine.KindFloat, Computed: true, InResponse: true, Description: "What the team's keys have spent since the budget last reset, in USD."},

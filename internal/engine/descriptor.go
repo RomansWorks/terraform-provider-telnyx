@@ -71,8 +71,8 @@ type Attr struct {
 	// asterisks, as Telnyx does for passwords after create.
 	Masked bool
 
-	// CreateOnly attributes are only in the create response, such as a
-	// secret shown once; later reads keep the value in state.
+	// CreateOnly attributes are returned only by create (a token Telnyx
+	// keeps only a hash of). Reads never overwrite the value in state.
 	CreateOnly bool
 
 	// Query names the query parameter this attribute fills when a data
@@ -117,6 +117,9 @@ type Op struct {
 	// Results says a list response holds its items in "results", with the
 	// item count in "count" (the AI test framework APIs).
 	Results bool
+	// Query names attributes sent as query parameters of this operation,
+	// keyed by their JSON name, when they are set.
+	Query []string
 }
 
 // Paging is a list operation's paging style.
@@ -150,6 +153,9 @@ type ReadFrom struct {
 	// Key is the element field that holds the id; empty means the elements
 	// are plain values and the value is the id.
 	Key string
+	// Match names further attributes whose values the element's fields
+	// must equal, for objects identified by more than one field.
+	Match []string
 }
 
 // ExtraUpdate is an operation, besides the main update, that sets some
@@ -229,12 +235,14 @@ type Hooks struct {
 	// such as an If-Match built from the object's version in state.
 	Headers func(op string, vals Values) map[string]string
 	// AfterRead can reshape an API object before it is mapped to attributes.
+	// A not-found error (client.Error with status 404) on a resource read
+	// means the object is gone.
 	AfterRead func(ctx context.Context, obj Object) (Object, error)
 	// DeleteWarning replaces the descriptor's DeleteWarning, for example to
 	// name what stays in Telnyx.
 	DeleteWarning func(state Values) string
-	// Delete, when set, replaces the delete request, for objects such as
-	// grants that are destroyed by writing an empty value.
+	// Delete replaces the generic delete call, for example when the API
+	// takes the object in a request body. A not-found error is ignored.
 	Delete func(ctx context.Context, c *client.Client, r *Resource, state Values) error
 	// Wait is called after create until the object is ready.
 	Wait func(ctx context.Context, c *client.Client, r *Resource, obj Object) (Object, error)

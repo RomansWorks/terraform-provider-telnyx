@@ -56,22 +56,3 @@ func TestDecodeItems(t *testing.T) {
 }
 
 // Fields only the create response carries are kept for the state built
-// from the read after create; fields the read has win.
-func TestWithCreated(t *testing.T) {
-	attrs := []*Attr{
-		{Name: "token", JSON: "token", Kind: KindString, CreateOnly: true},
-		{Name: "name", JSON: "name", Kind: KindString},
-		{Name: "missing", JSON: "missing", Kind: KindString, CreateOnly: true},
-	}
-	read := Object{"name": "b"}
-	out := withCreated(attrs, read, Object{"token": "secret", "name": "a"})
-	if out["token"] != "secret" || out["name"] != "b" || len(out) != 2 {
-		t.Errorf("merged: %v", out)
-	}
-	if _, ok := read["token"]; ok {
-		t.Error("the read object was modified")
-	}
-	if got := withCreated(attrs, read, Object{}); len(got) != 1 {
-		t.Errorf("nothing to add: %v", got)
-	}
-}

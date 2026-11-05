@@ -1,0 +1,1 @@
+terraform import telnyx_user_profile.example user_profile

@@ -55,7 +55,6 @@ func TestFromCreate(t *testing.T) {
 	for name, attrs := range map[string]string{
 		"unknown field": "  nope: {create_only: true}\n",
 		"nested":        "  a.b: {create_only: true}\n",
-		"in the read":   "  name: {create_only: true}\n",
 	} {
 		if _, err := g.Derive(overrideFrom(t, base+"attributes:\n"+attrs)); err == nil || !strings.Contains(err.Error(), "create_only") {
 			t.Errorf("%s: %v", name, err)

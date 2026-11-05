@@ -19,7 +19,7 @@ func AgentGatewayPolicyAttachmentsList() *engine.List {
 				{Name: "created_at", JSON: "created_at", Kind: engine.KindString, Computed: true, InResponse: true, Description: "When the attachment was created."},
 				{Name: "default", JSON: "default", Kind: engine.KindBool, Computed: true, InResponse: true, Description: "`true` applies the policy only to the requests no other attachment matches."},
 				{Name: "id", JSON: "id", Kind: engine.KindString, Computed: true, InResponse: true, Description: "The attachment's ID."},
-				{Name: "models", JSON: "models", Kind: engine.KindList, Computed: true, InResponse: true, Description: "The models whose requests the policy applies to, by name. A name can use `*` as a wildcard. Empty applies the policy to every request.", Elem: &engine.Attr{Kind: engine.KindString}},
+				{Name: "models", JSON: "models", Kind: engine.KindSet, Computed: true, InResponse: true, Description: "The models whose requests the policy applies to, by name. A name can use `*` as a wildcard. Empty applies the policy to every request.", Elem: &engine.Attr{Kind: engine.KindString}},
 				{Name: "policy", JSON: "policy", Kind: engine.KindString, Computed: true, InResponse: true, Description: "The policy to apply, by name."},
 				{Name: "priority", JSON: "priority", Kind: engine.KindInt, Computed: true, InResponse: true, Description: "An attachment with a priority applies before the others."},
 				{Name: "updated_at", JSON: "updated_at", Kind: engine.KindString, Computed: true, InResponse: true, Description: "When the attachment last changed."},

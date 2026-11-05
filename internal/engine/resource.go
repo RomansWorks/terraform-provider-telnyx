@@ -7,6 +7,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"maps"
 	"net/http"
 	"net/url"
 	"slices"
@@ -119,7 +120,6 @@ func (r *frameworkResource) Create(ctx context.Context, req resource.CreateReque
 		// The create response is an API object like any read.
 		obj, err = r.afterRead(ctx, obj)
 	}
-	created := obj
 	if err != nil {
 		resp.Diagnostics.AddError("Unable to create "+d.TypeName, err.Error())
 		return
@@ -184,8 +184,14 @@ func (r *frameworkResource) Create(ctx context.Context, req resource.CreateReque
 		resp.Diagnostics.AddError("Unable to read "+d.TypeName, err.Error())
 		return
 	}
-	obj = withCreated(d.Attrs, obj, created)
-	st, err := r.toState(ctx, obj, plan, modeApply, req.Plan.Raw)
+	// Values only the create response holds are gone from the read.
+	final := maps.Clone(plan)
+	for _, a := range d.Attrs {
+		if a.CreateOnly {
+			final[a.Name] = vals[a.Name]
+		}
+	}
+	st, err := r.toState(ctx, obj, final, modeApply, req.Plan.Raw)
 	if err != nil {
 		resp.Diagnostics.AddError("Unable to read "+d.TypeName, err.Error())
 		return
@@ -196,12 +202,13 @@ func (r *frameworkResource) Create(ctx context.Context, req resource.CreateReque
 func (r *frameworkResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
 	state := fields(req.State.Raw)
 	obj, err := r.get(ctx, state)
+	if err == nil {
+		// A read hook can report the object gone with a not-found error.
+		obj, err = r.afterRead(ctx, obj)
+	}
 	if client.IsNotFound(err) {
 		resp.State.RemoveResource(ctx)
 		return
-	}
-	if err == nil {
-		obj, err = r.afterRead(ctx, obj)
 	}
 	if err != nil {
 		resp.Diagnostics.AddError("Unable to read "+r.d.TypeName, err.Error())
@@ -219,10 +226,8 @@ func (r *frameworkResource) Update(ctx context.Context, req resource.UpdateReque
 	plan := fields(req.Plan.Raw)
 	state := fields(req.State.Raw)
 	d := r.d
-	if d.Update == nil && len(d.Updates) == 0 {
-		resp.Diagnostics.AddError("Update not supported", d.TypeName+" cannot be updated in place; this is a provider bug.")
-		return
-	}
+	// Without update operations, an update only fills values the API does
+	// not return, such as after import: nothing is sent.
 
 	send := r.withWriteOnly(plan, fields(req.Config.Raw))
 	include := func(a *Attr) bool { return a.InUpdate }
@@ -290,19 +295,19 @@ func (r *frameworkResource) Update(ctx context.Context, req resource.UpdateReque
 func (r *frameworkResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
 	d := r.d
 	state := fields(req.State.Raw)
-	if d.Hooks.Delete != nil {
-		if err := d.Hooks.Delete(ctx, r.c, d, state); err != nil && !client.IsNotFound(err) {
-			resp.Diagnostics.AddError("Unable to delete "+d.TypeName, err.Error())
-		}
-		return
-	}
 	if r.keeps(state) {
 		resp.Diagnostics.AddWarning("Object stays in Telnyx", r.deleteWarning(state))
 		return
 	}
-	p, err := fillPath(d.Attrs, d.Delete.Path, state)
-	if err == nil {
-		_, err = r.c.Send(r.withHeaders(ctx, "delete", state), d.Delete.Method, p, nil, "", nil)
+	var err error
+	if d.Hooks.Delete != nil {
+		err = d.Hooks.Delete(ctx, r.c, d, state)
+	} else {
+		var p string
+		p, err = fillPath(d.Attrs, d.Delete.Path, state)
+		if err == nil {
+			_, err = r.c.Send(r.withHeaders(ctx, "delete", state), d.Delete.Method, p, opQuery(d.Attrs, d.Delete, state), "", nil)
+		}
 	}
 	if err != nil && !client.IsNotFound(err) {
 		resp.Diagnostics.AddError("Unable to delete "+d.TypeName, err.Error())
@@ -323,6 +328,9 @@ func (r *frameworkResource) ImportState(ctx context.Context, req resource.Import
 		}
 		resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root(n), types.StringValue(parts[i]))...)
 	}
+	// Values the API does not return stay null; setting them in
+	// configuration afterwards must not replace the object.
+	resp.Diagnostics.Append(resp.Private.SetKey(ctx, importedKey, []byte("true"))...)
 }
 
 func (r *frameworkResource) deleteWarning(state Values) string {
@@ -359,7 +367,8 @@ const ReleaseAttr = "release_on_destroy"
 // delete, or the resource keeps it unless release_on_destroy is true.
 func (r *frameworkResource) keeps(state Values) bool {
 	if r.d.Delete == nil {
-		return true
+		// A Delete hook can destroy what has no delete operation.
+		return r.d.Hooks.Delete == nil
 	}
 	if !r.d.ReleaseOnDestroy {
 		return false
@@ -398,6 +407,10 @@ func (r *frameworkResource) extraUpdates(ctx context.Context, plan, state Values
 	for _, u := range r.d.Updates {
 		var set, changed bool
 		for _, n := range u.Attrs {
+			if a := r.d.Attr(n); state == nil && a != nil && a.InCreate {
+				// Create already sent it.
+				continue
+			}
 			p := plan[n]
 			if p.IsKnown() && !p.IsNull() {
 				set = true
@@ -470,7 +483,7 @@ func (r *frameworkResource) sendBody(ctx context.Context, op *Op, plan Values, n
 	if err != nil {
 		return nil, err
 	}
-	out, err := r.c.Send(r.withHeaders(ctx, name, pathVals), op.Method, p, nil, contentType, data)
+	out, err := r.c.Send(r.withHeaders(ctx, name, pathVals), op.Method, p, opQuery(r.d.Attrs, op, pathVals), contentType, data)
 	if err != nil {
 		return nil, err
 	}
@@ -550,6 +563,24 @@ func (r *frameworkResource) toState(ctx context.Context, obj Object, prior Value
 	return tftypes.NewValue(typ, map[string]tftypes.Value(f)), nil
 }
 
+// opQuery returns the query parameters op takes from attributes: the set
+// values of the attributes named in op.Query. Nil when there are none.
+func opQuery(attrs []*Attr, op *Op, vals Values) url.Values {
+	var q url.Values
+	for _, a := range attrs {
+		var s string
+		v := vals[a.Name]
+		if !slices.Contains(op.Query, a.JSON) || !v.IsKnown() || v.IsNull() || v.As(&s) != nil || s == "" {
+			continue
+		}
+		if q == nil {
+			q = url.Values{}
+		}
+		q.Set(a.JSON, s)
+	}
+	return q
+}
+
 // fillPath substitutes {param} placeholders from the attributes that carry
 // those path parameters.
 func fillPath(attrs []*Attr, p string, vals Values) (string, error) {
@@ -580,7 +611,9 @@ func fillPath(attrs []*Attr, p string, vals Values) (string, error) {
 			return "", fmt.Errorf("%s is not known", attr.Name)
 		}
 		b.WriteString(p[:i])
-		b.WriteString(url.PathEscape(s))
+		// "+" is valid in a path but some servers read it as a space:
+		// Telnyx asks for E.164 numbers as %2B.
+		b.WriteString(strings.ReplaceAll(url.PathEscape(s), "+", "%2B"))
 		p = p[i+j+1:]
 	}
 }
@@ -592,32 +625,6 @@ func fields(v tftypes.Value) Values {
 		return Values{}
 	}
 	return f
-}
-
-// withCreated copies the fields only the create response carries into obj,
-// the object read after create.
-func withCreated(attrs []*Attr, obj, created Object) Object {
-	var out Object
-	for _, a := range attrs {
-		if !a.CreateOnly {
-			continue
-		}
-		v, ok := created[a.JSON]
-		if _, has := obj[a.JSON]; has || !ok {
-			continue
-		}
-		if out == nil {
-			out = make(Object, len(obj)+1)
-			for k, x := range obj {
-				out[k] = x
-			}
-		}
-		out[a.JSON] = v
-	}
-	if out == nil {
-		return obj
-	}
-	return out
 }
 
 // withHeaders adds the request headers the Headers hook asks for.

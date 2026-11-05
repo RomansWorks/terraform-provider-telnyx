@@ -37,7 +37,6 @@ A token key of the AI gateway, which applications call LLMs with under the limit
 - `resets_at` (String)
 - `rpm_limit` (Number) Stored key limit; set to the maximum when the key was written without one (on a blocked key, null is kept until the key is unblocked).
 - `spend` (Number) USD, decimal precision at most 6 places; parse exactly to integer micro-USD, never binary float accounting.
-- `token` (String, Sensitive)
 - `token_group_id` (String)
 - `token_user_id` (String)
 - `tpm_limit` (Number) Stored key limit; set to the maximum when the key was written without one (on a blocked key, null is kept until the key is unblocked).

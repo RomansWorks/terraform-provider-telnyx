@@ -89,6 +89,11 @@ func (g *Generator) deriveData(ov *Override) (*engine.Resource, error) {
 		if p.in != "query" || properties(p.schema) != nil {
 			continue
 		}
+		if ov.Attributes[p.name].Skip {
+			// The override leaves this query parameter unset.
+			d.used[p.name] = true
+			continue
+		}
 		kinds := map[string]engine.Kind{"string": engine.KindString, "boolean": engine.KindBool, "integer": engine.KindInt}
 		t, _ := p.schema["type"].(string)
 		kind, ok := kinds[t]

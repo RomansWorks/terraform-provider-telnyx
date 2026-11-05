@@ -8,7 +8,7 @@ The AI gateway, CloudFS and others declare a required `Idempotency-Key` header; 
 
 ## Secrets shown once
 
-`POST /llm_token_gateway/token_keys` returns the key's `token`, and `POST /storage/cloudfs` its `meta_token`; reads never return them. Attributes come from the read schema, so these fields were lost. `attributes.<field>.create_only: true` adds the field from any 2xx create response (the token key's `200` is an idempotent replay without the token, so all codes are searched). The attribute is computed and `CreateOnly`: the engine copies it from the create response into the state built from the read after create, and later reads keep the state value because the field is absent. Import cannot recover it.
+`POST /llm_token_gateway/token_keys` returns the key's `token`, and `POST /storage/cloudfs` its `meta_token`; reads never return them. Attributes come from the read schema, so these fields were lost. `attributes.<field>.create_only: true` adds the field from any 2xx create response (the token key's `200` is an idempotent replay without the token, so all codes are searched). The attribute is computed and `CreateOnly`. Wave 3 built the same key for tunnel tokens and merged first, so this change uses its implementation (the engine keeps the create response's value through every read) and adds only the search over every 2xx create response.
 
 ## Raw bodies
 
@@ -65,6 +65,16 @@ Integration secret `token` and `password` and the migration source's `provider_a
 
 Actions return nothing to Terraform. `telnyx_ai_assistant_clone`, `telnyx_ai_mission_clone` and `telnyx_ai_assistant_import` stay actions as the triage decided: the copies are deliberate one-offs, and their descriptions say to import them to manage them. The test metric bulk create moves to `out_of_scope`: `telnyx_ai_test_metric` manages metrics one by one, and a bulk create would leave objects Terraform does not track.
 
+## Agent Gateway
+
+The 208f3fb sync added the Agent Gateway API and assigned it to this wave; its design records the resource plan, which this change follows.
+
+- **`telnyx_agent_gateway`** has no update, so every argument forces replacement. It is created `pending`, and its sub-objects answer 409 until it is `ready`, so a `Wait` hook polls it every 10 seconds within the `create` timeout (10 minutes by default; the `timeouts` block raises it). `failed` and `deleting` end the wait with an error; the engine has already saved the id, so the gateway stays in state and the next apply replaces it.
+- **Sub-objects** without a single-item read (APIs, guardrails, keys, MCP servers, teams, policy attachments) are read from their gateway's list with `read_from`. Policies have a read by name.
+- **Secrets.** The key's value is only in the create response: `key` is `create_only`, as for the AI gateway's token keys. Responses show only the `type` of an API's or MCP server's outbound `auth`, and leave the provider secrets out of a guardrail's `settings`, so both are write-only (`auth_wo`, `settings_wo`) with a version to send them again. That gives up drift detection of guardrail settings, but a sensitive JSON value compared against a response without its secrets would plan a change on every run. `static_headers` are returned, and sensitive because they often carry credentials. An ephemeral key resource, as the sync design suggested, can follow; it would need the API to return the value from a read.
+- **Tool permissions** are one grant per key or team that `PUT` replaces. There is no delete, and the engine would only drop such objects from state, so the engine gains a generic `Delete` hook that also covers objects without a delete operation (wave 3 added the hook for objects with one). The hook writes `{"servers": []}`, which grants none.
+- Model lists, tool lists, forwarded headers, guardrail modes and a policy's guardrail additions and removals are sets.
+
 ## What is not covered
 
 - `GET`, `POST`, `PUT`, `DELETE /ai/missions/{mission_id}/knowledge-bases`, `/mcp-servers` and `/tools` have no request or response schema in the spec. There is nothing to derive attributes from; they return when Telnyx documents them.
@@ -72,8 +82,7 @@ Actions return nothing to Terraform. `telnyx_ai_assistant_clone`, `telnyx_ai_mis
 - `GET /ai/assistants/{assistant_id}/texml` returns a bare TeXML string.
 - `DELETE /ai/conversations/{conversation_id}/conversations-insights/{insight_id}` deletes runtime conversation data.
 - Storage buckets: the spec has no operation that creates one; they are created through Telnyx's S3-compatible API. Roman decided (2026-11-05) that the provider documents the AWS provider for buckets instead of hand-writing a resource over the S3 API: a guide and an example show `aws_s3_bucket` pointed at Telnyx's S3 endpoint, and this provider manages the bucket's SSL certificate.
-- Agent Gateway, added to wave 5 by the 208f3fb sync, follows once that sync merges.
 
 ## Testing
 
-The conformance test runs every generated resource except five that the descriptor-driven fake cannot play: the assistant tag and insight assignment (read from a parent), the KV key (raw bodies), the bucket SSL certificate and voice clones (multipart). Each has its own test against a stub API in `internal/provider/wave5_test.go`, which also checks the gateway's `Idempotency-Key` and `If-Match` handling and that the token survives refresh. The client, engine and generator features have unit tests. Acceptance tests against a real account come in step 4.
+The conformance test runs every generated resource except six that the descriptor-driven fake cannot play: the assistant tag and insight assignment (read from a parent), the KV key (raw bodies), the bucket SSL certificate and voice clones (multipart), and the Agent Gateway (waits for ready). Each has its own test against a stub API in `internal/provider/wave5_test.go`, or in `internal/provider/agent_gateway_test.go` (waiting for ready, a failed start, and tool permissions destroyed by an empty grant). They also check the AI gateway's `Idempotency-Key` and `If-Match` handling and that the token survives refresh. The client, engine and generator features have unit tests. Acceptance tests against a real account come in step 4.

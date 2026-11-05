@@ -23,7 +23,6 @@ A CloudFS filesystem, a POSIX filesystem backed by Telnyx Storage.
 
 - `created_at` (String)
 - `error` (String) Explanation of the most recent failed lifecycle action. Present only when the filesystem is in a `failed` state.
-- `meta_token` (String, Sensitive) Metadata access token, in cleartext. Returned only by create and rotate-meta-token and not retrievable afterwards — store it securely.
 - `meta_url` (String) PostgreSQL connection URL for the filesystem's metadata database, without the credential. Combine it with your stored metadata token, or issue a new token with rotate-meta-token.
 - `name` (String) Filesystem name, unique within your organization. Names are trimmed and lowercased; after normalization they may contain lowercase letters, numbers, `.`, `_`, and `-` only.
 - `record_type` (String)

@@ -329,7 +329,7 @@ func TestCollectionErrors(t *testing.T) {
 		"data source with create":   "type: telnyx_x\nkind: data_source\ndescription: x\ncreate: POST /gadgets\nread: GET /gadgets/{gadget_id}\n",
 		"bad paging value":          "type: telnyx_x\nkind: data_source\ndescription: x\nlist: GET /regions\npaging: cursor\n",
 		"list_name without list":    "type: telnyx_x\ndescription: x\ncreate: POST /gadgets\nread: GET /gadgets/{gadget_id}\nlist_name: telnyx_xs\n",
-		"singleton, id in response": "type: telnyx_x\ndescription: x\ncreate: POST /gadgets\nread: GET /gadgets/{gadget_id}\nsingleton: true\n",
+		"singleton with parameters": "type: telnyx_x\ndescription: x\ncreate: POST /gadgets/{gadget_id}/tags\nread: GET /gadgets/{gadget_id}\nsingleton: true\n",
 		"singleton with id":         "type: telnyx_x\ndescription: x\ncreate: PATCH /settings\nread: GET /settings\nsingleton: true\nid: name\n",
 		"list not returning array":  "type: telnyx_x\nkind: data_source\ndescription: x\nlist: GET /balance\n",
 	}

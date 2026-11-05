@@ -1,12 +1,5 @@
 ## ADDED Requirements
 
-### Requirement: Values only the create response holds
-An override attribute with `create_only: true` SHALL name a top-level field that a 2xx create response holds and the read response does not. It SHALL be a computed attribute filled from the create response and kept in state by later reads. A field that no create response holds, a nested field, or a field the read response already holds SHALL be a generation error.
-
-#### Scenario: Key shown once
-- **WHEN** a `telnyx_ai_gateway_token_key` is created and the create response holds `token`
-- **THEN** `token` is in state, stays there after refresh, and the next plan is empty
-
 ### Requirement: Raw bodies
 A request body of `application/octet-stream` alone SHALL NOT be a generation error; the operation SHALL be marked raw, and sending it without a `Send` hook SHALL fail. A read that answers with plain text or raw bytes SHALL be read as one `value` attribute holding the body unchanged.
 
@@ -48,3 +41,33 @@ A type whose name ends in `_test` SHALL be generated into a file ending in `_tes
 #### Scenario: Assistant tests
 - **WHEN** `telnyx_ai_assistant_test` is generated
 - **THEN** it is in `ai_assistant_test_resource.go` and is part of the provider
+
+## MODIFIED Requirements
+
+### Requirement: Values only create returns
+An attribute override MAY set `create_only: true` for a top-level response field that no request takes. The attribute SHALL be computed and sensitive. When the read response schema lacks the field, the generator SHALL take it from the create response schemas, looking at every 2xx response from the lowest code up (a create can answer 200 for a replay without the value and 201 with it), and SHALL fail when none lists it. The engine SHALL fill the value from the create response and SHALL keep the value in state on every read.
+
+#### Scenario: Token only create returns
+- **WHEN** `telnyx_tunnel` is created and `POST /tunnels` answers with `tunnel_token`
+- **THEN** `tunnel_token` is in state, shown as sensitive
+- **WHEN** the tunnel refreshes and `GET /tunnels/{id}` has no `tunnel_token`
+- **THEN** the value in state is unchanged and the plan is empty
+
+#### Scenario: Read answers null
+- **WHEN** a WireGuard peer refreshes and `GET /wireguard_peers/{id}` answers `"private_key": null`
+- **THEN** the private key from create stays in state
+
+#### Scenario: Value only in the 201 response
+- **WHEN** `POST /llm_token_gateway/token_keys` answers 200 without `token` and 201 with it
+- **THEN** `telnyx_ai_gateway_token_key` has a sensitive computed `token` taken from the 201 schema
+
+### Requirement: Objects without delete
+When the API offers no delete for an object and the resource has no `Delete` hook, destroy SHALL remove it from state and warn that the object still exists in Telnyx. A `Delete` hook SHALL destroy such an object, for example by writing an empty grant.
+
+#### Scenario: Destroy without delete
+- **WHEN** a resource with no delete operation is destroyed
+- **THEN** no API call is made, the object leaves state, and a warning names it
+
+#### Scenario: Destroy by a Delete hook
+- **WHEN** `telnyx_agent_gateway_key_tool_permissions` is destroyed
+- **THEN** the provider sends `PUT .../tool_permissions` with `{"servers":[]}` and no warning

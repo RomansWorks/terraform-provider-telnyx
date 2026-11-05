@@ -16,19 +16,19 @@ func AgentGatewayApisList() *engine.List {
 		},
 		Items: &engine.Attr{Name: "agent_gateway_apis", JSON: "data", Kind: engine.KindList, Computed: true, InResponse: true, Description: "The objects, in the order the API returns them.",
 			Attrs: []*engine.Attr{
-				{Name: "auth", JSON: "auth", Kind: engine.KindObject, Computed: true, InResponse: true, Description: "The server's outbound authentication method. Credentials are never returned.",
+				{Name: "auth", JSON: "auth", Kind: engine.KindObject, Computed: true, Sensitive: true, InResponse: true, Description: "The server's outbound authentication method. Credentials are never returned.",
 					Attrs: []*engine.Attr{
 						{Name: "type", JSON: "type", Kind: engine.KindString, Computed: true, InResponse: true, Description: "The method's `type`."},
 					}},
 				{Name: "base_url", JSON: "base_url", Kind: engine.KindString, Computed: true, InResponse: true, Description: "Where the gateway sends the API's requests. `null` takes the description's first `servers` entry."},
 				{Name: "created_at", JSON: "created_at", Kind: engine.KindString, Computed: true, InResponse: true},
-				{Name: "forwarded_headers", JSON: "forwarded_headers", Kind: engine.KindList, Computed: true, InResponse: true, Description: "Headers copied from the agent's request, by name.", Elem: &engine.Attr{Kind: engine.KindString}},
+				{Name: "forwarded_headers", JSON: "forwarded_headers", Kind: engine.KindSet, Computed: true, InResponse: true, Description: "Headers copied from the agent's request, by name.", Elem: &engine.Attr{Kind: engine.KindString}},
 				{Name: "id", JSON: "id", Kind: engine.KindString, Computed: true, InResponse: true, Description: "Identifies the API."},
 				{Name: "name", JSON: "name", Kind: engine.KindString, Computed: true, InResponse: true, Description: "A name for the API, unique on the instance across MCP servers and APIs, regardless of case. Letters, digits, `_`, and `.`. The gateway prefixes the API's tools with it and a hyphen."},
 				{Name: "open_to_every_key", JSON: "open_to_every_key", Kind: engine.KindBool, Computed: true, InResponse: true, Description: "`true` lets every key on the instance use the server, granted or not."},
 				{Name: "spec_url", JSON: "spec_url", Kind: engine.KindString, Computed: true, InResponse: true, Description: "The URL of the API's OpenAPI description."},
-				{Name: "static_headers", JSON: "static_headers", Kind: engine.KindJSON, Computed: true, InResponse: true, Description: "Headers sent on every request."},
-				{Name: "tools", JSON: "tools", Kind: engine.KindList, Computed: true, InResponse: true, Description: "The operations the API exposes as tools, by tool name. `[]` exposes every operation.", Elem: &engine.Attr{Kind: engine.KindString}},
+				{Name: "static_headers", JSON: "static_headers", Kind: engine.KindJSON, Computed: true, Sensitive: true, InResponse: true, Description: "Headers sent on every request."},
+				{Name: "tools", JSON: "tools", Kind: engine.KindSet, Computed: true, InResponse: true, Description: "The operations the API exposes as tools, by tool name. `[]` exposes every operation.", Elem: &engine.Attr{Kind: engine.KindString}},
 				{Name: "updated_at", JSON: "updated_at", Kind: engine.KindString, Computed: true, InResponse: true},
 			}},
 	}

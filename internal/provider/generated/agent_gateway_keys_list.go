@@ -25,7 +25,7 @@ func AgentGatewayKeysList() *engine.List {
 				{Name: "id", JSON: "id", Kind: engine.KindString, Computed: true, InResponse: true, Description: "Identifies the key. It is a 64-character hash the instance stores in place of the key's value."},
 				{Name: "max_budget", JSON: "max_budget", Kind: engine.KindFloat, Computed: true, InResponse: true, Description: "The most the key may spend, in USD, until its budget resets."},
 				{Name: "max_parallel_requests", JSON: "max_parallel_requests", Kind: engine.KindInt, Computed: true, InResponse: true, Description: "The most requests the key may have in flight at once."},
-				{Name: "models", JSON: "models", Kind: engine.KindList, Computed: true, InResponse: true, Description: "The models the key may use. Empty means every model the instance serves.", Elem: &engine.Attr{Kind: engine.KindString}},
+				{Name: "models", JSON: "models", Kind: engine.KindSet, Computed: true, InResponse: true, Description: "The models the key may use. Empty means every model the instance serves.", Elem: &engine.Attr{Kind: engine.KindString}},
 				{Name: "name", JSON: "name", Kind: engine.KindString, Computed: true, InResponse: true, Description: "A label for people; `null` when none was given."},
 				{Name: "requests_per_minute", JSON: "requests_per_minute", Kind: engine.KindInt, Computed: true, InResponse: true, Description: "The most requests the key may make per minute."},
 				{Name: "spend", JSON: "spend", Kind: engine.KindFloat, Computed: true, InResponse: true, Description: "What the key has spent since its budget last reset, in USD."},

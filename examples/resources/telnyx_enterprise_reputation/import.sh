@@ -1,0 +1,1 @@
+terraform import telnyx_enterprise_reputation.example <enterprise_id>

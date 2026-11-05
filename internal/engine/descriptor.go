@@ -192,6 +192,9 @@ type Resource struct {
 	// FixedID is the id of an object that exists once per account. The
 	// engine puts it into every response as "id".
 	FixedID string
+	// ForceDestroy names boolean query parameters of the delete operation
+	// that destroy sets to true when the force_destroy attribute is true.
+	ForceDestroy []string
 
 	Hooks Hooks
 }

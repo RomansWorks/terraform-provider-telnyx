@@ -17,6 +17,8 @@ var hooks = map[string]engine.Hooks{
 	"telnyx_ai_tool":                              aiToolHooks,
 	"telnyx_display_identity_record":              displayIdentityRecordHooks,
 	"telnyx_display_identity_record_phone_number": displayIdentityRecordPhoneNumberHooks,
+	"telnyx_email_domain":                         emailDomainHooks,
+	"telnyx_email_inbox":                          emailInboxHooks,
 	"telnyx_enterprise_reputation_number":         enterpriseReputationNumberHooks,
 	"telnyx_number_order":                         numberOrderHooks,
 	"telnyx_porting_order":                        portingOrderHooks,

@@ -114,6 +114,9 @@ func EmitResource(pkg string, r *engine.Resource, source string) ([]byte, error)
 	if r.FixedID != "" {
 		field(&b, "FixedID", strconv.Quote(r.FixedID))
 	}
+	if len(r.ForceDestroy) > 0 {
+		field(&b, "ForceDestroy", quoteList(r.ForceDestroy))
+	}
 	b.WriteString("Attrs: ")
 	attrs(&b, r.Attrs)
 	b.WriteString(",\n}\n}\n")

@@ -860,6 +860,9 @@ func (g *Generator) Derive(ov *Override) (*engine.Resource, error) {
 			Description: "Whether destroy deletes the object in Telnyx. By default destroy only removes it from Terraform state. " +
 				"Destroy uses the value in state, so set it to true and apply before destroying."})
 	}
+	if err := g.forceDestroy(r, ov, del); err != nil {
+		return nil, fmt.Errorf("%s: %w", ov.Type, err)
+	}
 	extra, err := g.extraUpdates(r, ov, d, readSchema)
 	if err != nil {
 		return nil, fmt.Errorf("%s: %w", ov.Type, err)
@@ -1264,4 +1267,40 @@ func (g *Generator) queryParams(r *engine.Resource, ov *Override) error {
 		}
 	}
 	return nil
+}
+
+// forceDestroy adds the local force_destroy attribute when the override
+// names delete query parameters for it. Each must be a boolean query
+// parameter of the delete operation.
+func (g *Generator) forceDestroy(r *engine.Resource, ov *Override, del *operation) error {
+	if len(ov.ForceDestroy) == 0 {
+		return nil
+	}
+	if r.Attr(engine.ForceDestroyAttr) != nil {
+		return fmt.Errorf("the API already has a field named %s; rename it", engine.ForceDestroyAttr)
+	}
+	bools := map[string]bool{}
+	for _, p := range g.params(del) {
+		if p.in == "query" && p.schema["type"] == "boolean" {
+			bools[p.name] = true
+		}
+	}
+	for _, name := range ov.ForceDestroy {
+		if !bools[name] {
+			return fmt.Errorf("force_destroy: %s is not a boolean query parameter of %s %s", name, del.method, del.path)
+		}
+	}
+	r.ForceDestroy = ov.ForceDestroy
+	r.Attrs = append(r.Attrs, &engine.Attr{Name: engine.ForceDestroyAttr, Kind: engine.KindBool, Optional: true, Local: true,
+		Description: "Whether destroy forces the deletion (sends " + forceQuery(ov.ForceDestroy) + "), for example of an object that is in use. " +
+			"Destroy uses the value in state, so set it to true and apply before destroying."})
+	return nil
+}
+
+func forceQuery(params []string) string {
+	parts := make([]string, len(params))
+	for i, p := range params {
+		parts[i] = "`" + p + "=true`"
+	}
+	return strings.Join(parts, " and ")
 }

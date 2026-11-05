@@ -21,7 +21,7 @@ This change covers no upstream range: it builds on the current pin.
   - Attributes of an extra update with no `clear` operation are optional and computed.
   - Hooks: `Delete` replaces the generic delete; a not-found error from `AfterRead` means the object is gone.
   - A data-source-only lookup can leave out a query parameter with `attributes.<param>.skip`.
-- **Wave 6 resources, data sources and actions**, generated from overrides. The list is in `tasks.md`.
+- **Wave 6 resources, data sources, actions and the ephemeral `telnyx_telephony_credential_token_material`** (the key material to mint telephony credential tokens locally, never stored in state), generated from overrides. The list is in `tasks.md`.
 - **Hooks** for DIR call reasons (sent as strings, returned as objects), DIR and reputation phone numbers (one number per resource, sent as a list of one; DIR numbers deleted by body) and spend limits (the request always carries the limit; an entry without a limit is gone).
 - **Coverage.** Three LOA renders that answer with a PDF move to `out_of_scope`.
 
@@ -31,13 +31,13 @@ This change covers no upstream range: it builds on the current pin.
 - `codegen`: objects identified by several fields, query parameters on update and delete, boolean-tagged unions, collection operations, response fields that name the object, values returned once, singletons with their own id, extra updates without a clear, delete hooks and gone objects, skipped query lookups.
 
 ### New Capabilities
-- `account`: authentication providers, auto recharge, the user profile, OAuth clients, managed accounts, spend limits, enterprises, Display Identity Records and phone number reputation.
+- `account`: telephony credential token material, authentication providers, auto recharge, the user profile, OAuth clients, managed accounts, spend limits, enterprises, Display Identity Records and phone number reputation.
 
 ## Impact
 
 - `internal/engine`: `Op.Query`, `ReadFrom.Match`, `Attr.Once`, `Hooks.Delete`; read hooks may report an object gone.
 - `internal/codegen`: override keys `query`, `read_from.match`, `attributes.<f>.once`; union merging, collection operations, singleton ids, extra updates without a clear.
-- `generator/overrides`: 43 new override files. `internal/provider/generated`: regenerated, no existing descriptor changes.
+- `generator/overrides`: 44 new override files. `internal/provider/generated`: regenerated, no existing descriptor changes.
 - `internal/provider`: four hook files and conformance test support for batches of phone numbers.
 - `catalog/coverage.yaml`: three entries move to `out_of_scope`.
 - Docs and examples for the new resources; a changelog entry.

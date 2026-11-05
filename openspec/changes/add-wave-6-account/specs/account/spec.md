@@ -7,6 +7,13 @@ The provider SHALL manage `telnyx_authentication_provider` (SAML single sign-on)
 - **WHEN** a `telnyx_oauth_client` with `client_type = "confidential"` is created
 - **THEN** `client_secret` is set in state and marked sensitive, and the next plan is empty
 
+### Requirement: Telephony credential token material
+The provider SHALL offer `telnyx_telephony_credential_token_material` as an ephemeral resource reading `GET /telephony_credentials/{id}/token_material`. `kid`, `tel_token` and `signing_secret` SHALL never be stored in state or plan, and `tel_token` and `signing_secret` SHALL be sensitive.
+
+#### Scenario: Pass to a token service
+- **WHEN** a configuration opens the ephemeral resource and passes `signing_secret` to a write-only attribute
+- **THEN** the secret appears in neither the plan nor the state
+
 ### Requirement: Account settings
 The provider SHALL manage `telnyx_auto_recharge_preferences` and `telnyx_user_profile` as objects that exist once per account (per user for the profile). Destroy SHALL remove them from state and warn.
 

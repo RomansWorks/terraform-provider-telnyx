@@ -221,5 +221,6 @@ func Actions() []*engine.Action {
 func Ephemerals() []*engine.Ephemeral {
 	return []*engine.Ephemeral{
 		TelephonyCredentialTokenEphemeral(),
+		TelephonyCredentialTokenMaterialEphemeral(),
 	}
 }

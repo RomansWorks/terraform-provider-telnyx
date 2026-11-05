@@ -13,7 +13,7 @@ This change covers the Telnyx email product area and no upstream range: it build
   - A list response whose schema is a `oneOf` or `anyOf` of page shapes reads its items from the first variant with a `data` array.
   - `lowercase: true` on an attribute rejects values (or set and list elements) that are not lowercase or have surrounding spaces, because the API stores them normalised and every plan would show a change.
   - Soft-deleted objects (a status that says deleted) are reported as not found by a read hook, which removes them from state.
-  - A resource without an update operation stores a change of its local attributes (`force_destroy`, `release_on_destroy`) without a request, instead of failing.
+  - A resource without an update operation stores a change of its local attributes (`force_destroy`, `release_on_destroy`) without a request (already so on main since wave 6; wave 4 tests it with `force_destroy`).
 - **Wave 4 resources, data sources and actions**, generated from overrides. The list is in `tasks.md`.
 - **Read hooks** for `telnyx_email_inbox` (username from the address) and `telnyx_email_domain` (`inbound_enabled` from `inbound.enabled`), so both detect drift and import; and for `telnyx_email_suppression` (status `removed`) and `telnyx_email_dedicated_ip` (status `released`), which the API soft-deletes.
 - **Coverage.** Three operations move to `out_of_scope`: `PATCH /email/dedicated_ips/{id}` (one imperative change per request; pool membership and warm-up have their own resource and actions), and the suppression CSV import and its status (`POST /email_blocks/import`, `GET /email_blocks/import/{id}`).

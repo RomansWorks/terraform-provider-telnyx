@@ -28,7 +28,7 @@ Telnyx trims and lowercases email addresses, inbox usernames and sender filter e
 
 ## Local-only changes
 
-A resource without an update operation forces replacement for every API attribute, but `force_destroy` (and `release_on_destroy`) are local and change in place. Update used to fail as a provider bug; it now stores the plan without a request when only local attributes changed.
+A resource without an update operation forces replacement for every API attribute, but `force_destroy` (and `release_on_destroy`) are local and change in place. Main already stores such an update without a request (wave 6); wave 4 adds the requirement and a test that `force_destroy` set on a membership is stored and used on destroy.
 
 ## Resources
 

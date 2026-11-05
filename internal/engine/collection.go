@@ -29,7 +29,8 @@ func Each(ctx context.Context, c *client.Client, op *Op, path string, query url.
 	if size <= 0 {
 		size = DefaultPageSize
 	}
-	cursor := ""
+	cursor, snapshot := "", ""
+	read := 0
 	for page := 1; page <= maxPages; page++ {
 		q := url.Values{}
 		for k, v := range query {
@@ -39,9 +40,15 @@ func Each(ctx context.Context, c *client.Client, op *Op, path string, query url.
 		case PagingNumber:
 			q.Set("page[number]", strconv.Itoa(page))
 			q.Set("page[size]", strconv.Itoa(size))
+			if snapshot != "" {
+				q.Set("page[snapshot]", snapshot)
+			}
 		case PagingFlat:
 			q.Set("page_number", strconv.Itoa(page))
 			q.Set("page_size", strconv.Itoa(size))
+		case PagingPage:
+			q.Set("page", strconv.Itoa(page))
+			q.Set(op.SizeParam, strconv.Itoa(size))
 		case PagingCursor:
 			q.Set("page[size]", strconv.Itoa(size))
 			if cursor != "" {
@@ -52,7 +59,27 @@ func Each(ctx context.Context, c *client.Client, op *Op, path string, query url.
 		if err != nil {
 			return err
 		}
-		items, total, err := decodeList(out, op.Envelope)
+		var items []Object
+		var total int
+		if op.Records || op.Results {
+			field, count := "records", "totalRecords"
+			if op.Results {
+				field, count = "results", "count"
+			}
+			var records int
+			items, records, err = decodeItems(out, field, count)
+			read += len(items)
+			if err == nil && records > 0 {
+				if read >= records {
+					total = page
+				} else {
+					// A short page is not the end while count says more remain.
+					total = page + 1
+				}
+			}
+		} else {
+			items, total, err = decodeList(out, op.Envelope)
+		}
 		if err != nil {
 			return err
 		}
@@ -69,11 +96,32 @@ func Each(ctx context.Context, c *client.Client, op *Op, path string, query url.
 			cursor = next
 			continue
 		}
+		next, more := pageMeta(out)
+		if more != nil && !*more {
+			return nil
+		}
+		snapshot = next
 		if op.Paging == PagingNone || len(items) == 0 || (total > 0 && page >= total) || (total == 0 && len(items) < size) {
 			return nil
 		}
 	}
 	return fmt.Errorf("%s %s: more than %d pages", op.Method, path, maxPages)
+}
+
+// pageMeta returns meta.snapshot, which pins later pages of a
+// page[number] list to the first page's results (the AI gateway's lists
+// require it after page 1), and meta.has_more when the response has it.
+func pageMeta(data []byte) (string, *bool) {
+	var body struct {
+		Meta struct {
+			Snapshot string `json:"snapshot"`
+			HasMore  *bool  `json:"has_more"`
+		} `json:"meta"`
+	}
+	if json.Unmarshal(data, &body) != nil {
+		return "", nil
+	}
+	return body.Meta.Snapshot, body.Meta.HasMore
 }
 
 // nextCursor returns the cursor of the next page: meta.cursors.after or
@@ -137,6 +185,33 @@ func decodeList(data []byte, envelope bool) ([]Object, int, error) {
 	}
 	total, _ := strconv.Atoi(body.Meta.TotalPages.String())
 	return items, total, nil
+}
+
+// decodeRecords decodes a list response that holds its items in "records"
+// and their count in "totalRecords" (0 when the response does not say).
+func decodeRecords(data []byte) ([]Object, int, error) {
+	return decodeItems(data, "records", "totalRecords")
+}
+
+// decodeItems decodes a list response that holds its items in field
+// ("records" or "results") and their count in count ("totalRecords" or
+// "count"; 0 when the response does not say).
+func decodeItems(data []byte, field, count string) ([]Object, int, error) {
+	var body map[string]json.RawMessage
+	if err := json.Unmarshal(data, &body); err != nil {
+		return nil, 0, fmt.Errorf("decoding list response: %w", err)
+	}
+	var total json.Number
+	if raw, ok := body[count]; ok {
+		_ = json.Unmarshal(raw, &total)
+	}
+	records := body[field]
+	if len(records) == 0 || string(records) == "null" {
+		return nil, 0, nil
+	}
+	items, _, err := decodeList(records, false)
+	n, _ := strconv.Atoi(total.String())
+	return items, n, err
 }
 
 // errNotInCollection is the not-found error of a read from a collection,

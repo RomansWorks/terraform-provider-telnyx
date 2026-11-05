@@ -1,0 +1,19 @@
+type: telnyx_storage_kv_key
+description: A key and its value in a KV namespace.
+create: PUT /storage/kvs/{id}/keys/{key}
+read: GET /storage/kvs/{id}/keys/{key}
+update: PUT /storage/kvs/{id}/keys/{key}
+delete: DELETE /storage/kvs/{id}/keys/{key}
+list: GET /storage/kvs/{id}/keys
+paging: none
+id_from_path: key
+path_params:
+  id: namespace_id
+attributes:
+  # The Send hook stores the value as the request body.
+  value: {required: true, sensitive: true, description: "The value, stored as UTF-8 text."}
+add:
+  - name: ttl_secs
+    kind: int
+    optional: true
+    description: Seconds until the key expires and is removed. Sent when the value is written; by default the key never expires.

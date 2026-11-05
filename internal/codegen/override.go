@@ -73,6 +73,10 @@ type Override struct {
 	ReleaseOnDestroy bool       `yaml:"release_on_destroy"`
 	DeleteWarning    string     `yaml:"delete_warning"`
 	ExactlyOne       [][]string `yaml:"exactly_one"`
+	// MergeVariants merges union variants that are objects with fields of
+	// the same types, such as one request shape per provider, into one
+	// object instead of a JSON attribute.
+	MergeVariants bool `yaml:"merge_variants"`
 
 	// Attributes adjusts derived attributes by JSON path ("a.b.c").
 	Attributes map[string]AttrOverride `yaml:"attributes"`

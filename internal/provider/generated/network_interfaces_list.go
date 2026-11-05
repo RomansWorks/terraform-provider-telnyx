@@ -15,7 +15,7 @@ func NetworkInterfacesList() *engine.List {
 			{Name: "filter_name", JSON: "filter[name]", Kind: engine.KindString, Optional: true, Description: "The interface name to filter on."},
 			{Name: "filter_status", JSON: "filter[status]", Kind: engine.KindString, Optional: true, Enum: []string{"created", "deleting", "provisioned", "provisioning"}, Description: "The current status of the interface deployment."},
 			{Name: "filter_type", JSON: "filter[type]", Kind: engine.KindString, Optional: true, Description: "The interface type to filter on."},
-			{Name: "id", Kind: engine.KindString, Required: true, PathParams: []string{"id"}, Description: "The id id."},
+			{Name: "network_id", Kind: engine.KindString, Required: true, PathParams: []string{"id"}, Description: "The network id."},
 		},
 		Items: &engine.Attr{Name: "network_interfaces", JSON: "data", Kind: engine.KindList, Computed: true, InResponse: true, Description: "The objects, in the order the API returns them.",
 			Attrs: []*engine.Attr{

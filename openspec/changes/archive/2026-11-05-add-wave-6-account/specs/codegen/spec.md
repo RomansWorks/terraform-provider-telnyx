@@ -1,7 +1,7 @@
 ## MODIFIED Requirements
 
 ### Requirement: Extra update endpoints
-A resource override MAY list `updates`, each an operation that sets some attributes, with an optional `clear` operation. The attributes of an update operation SHALL be configurable without forcing replacement. The engine SHALL call an update operation after create when its attributes are set, and on update only when they changed. It SHALL call `clear` instead when they were all removed. Attributes of an update without `clear` that the API returns SHALL be optional and computed, so that a server default does not show as a change, unless create requires them. After create, an update operation SHALL NOT be called for attributes the create request sent.
+A resource override MAY list `updates`, each an operation that sets some attributes, with an optional `clear` operation. The attributes of an update operation SHALL be configurable without forcing replacement. The engine SHALL call an update operation after create when its attributes are set, and on update only when they changed. It SHALL call `clear` instead when they were all removed.
 
 #### Scenario: Change one setting
 - **WHEN** only `wireless_blocklist_id` of a `telnyx_sim_card_group` changes
@@ -11,11 +11,15 @@ A resource override MAY list `updates`, each an operation that sets some attribu
 - **WHEN** `wireless_blocklist_id` is removed from configuration
 - **THEN** the engine calls `POST /sim_card_groups/{id}/actions/remove_wireless_blocklist`
 
+## ADDED Requirements
+
+### Requirement: Extra updates without a clear
+Attributes of an update without `clear` that the API returns SHALL be optional and computed unless create requires them. After create, an update operation SHALL NOT be called for attributes the create request sent.
+
 #### Scenario: Server default without a clear
 - **WHEN** a `telnyx_enterprise_reputation` is created without `check_frequency` and the API answers `business_daily`
 - **THEN** `check_frequency` is `business_daily` in state and the next plan is empty
 
-## ADDED Requirements
 
 ### Requirement: Objects identified by several fields
 A `read_from` override MAY list `match`: further attributes whose values the collection element's fields SHALL equal, besides the key. Match attributes SHALL be required and force replacement, and the import id SHALL be the id followed by them, separated by `/`. Generation SHALL fail when a match attribute does not exist.

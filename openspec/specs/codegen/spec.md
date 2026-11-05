@@ -121,7 +121,7 @@ A resource whose override sets `read_from` SHALL read itself by finding the elem
 - **THEN** the resource stays in state, and when `tags` no longer contains it, the resource is removed from state
 
 ### Requirement: Extra update endpoints
-A resource override MAY list `updates`, each an operation that sets some attributes, with an optional `clear` operation. The attributes of an update operation SHALL be configurable without forcing replacement. The engine SHALL call an update operation after create when its attributes are set, and on update only when they changed. It SHALL call `clear` instead when they were all removed. Attributes of an update without `clear` that the API returns SHALL be optional and computed, so that a server default does not show as a change, unless create requires them. After create, an update operation SHALL NOT be called for attributes the create request sent.
+A resource override MAY list `updates`, each an operation that sets some attributes, with an optional `clear` operation. The attributes of an update operation SHALL be configurable without forcing replacement. The engine SHALL call an update operation after create when its attributes are set, and on update only when they changed. It SHALL call `clear` instead when they were all removed.
 
 #### Scenario: Change one setting
 - **WHEN** only `wireless_blocklist_id` of a `telnyx_sim_card_group` changes
@@ -130,10 +130,6 @@ A resource override MAY list `updates`, each an operation that sets some attribu
 #### Scenario: Remove a setting
 - **WHEN** `wireless_blocklist_id` is removed from configuration
 - **THEN** the engine calls `POST /sim_card_groups/{id}/actions/remove_wireless_blocklist`
-
-#### Scenario: Server default without a clear
-- **WHEN** a `telnyx_enterprise_reputation` is created without `check_frequency` and the API answers `business_daily`
-- **THEN** `check_frequency` is `business_daily` in state and the next plan is empty
 
 ### Requirement: Actions
 An override with `kind: action` SHALL produce a Terraform action whose configuration holds the operation's path parameters (Required) and request body fields. Invoking it SHALL send the operation once with the fields that are set, and an API error SHALL fail the action.
@@ -257,3 +253,10 @@ Path parameter values SHALL be percent-encoded, with `+` sent as `%2B`, and the 
 #### Scenario: Phone number in a path
 - **WHEN** `telnyx_enterprise_reputation_number` for `+13125550100` is read
 - **THEN** the request path ends in `/reputation/numbers/%2B13125550100`
+
+### Requirement: Extra updates without a clear
+Attributes of an update without `clear` that the API returns SHALL be optional and computed unless create requires them. After create, an update operation SHALL NOT be called for attributes the create request sent.
+
+#### Scenario: Server default without a clear
+- **WHEN** a `telnyx_enterprise_reputation` is created without `check_frequency` and the API answers `business_daily`
+- **THEN** `check_frequency` is `business_daily` in state and the next plan is empty

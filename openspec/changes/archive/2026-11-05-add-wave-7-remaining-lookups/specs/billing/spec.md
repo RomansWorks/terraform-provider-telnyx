@@ -8,7 +8,7 @@ The provider SHALL offer read-only data sources for the account balance (`telnyx
 - **THEN** the provider sends `GET /balance` and exposes the response fields
 
 ### Requirement: Charges
-The provider SHALL offer `telnyx_charges_summary` and `telnyx_charges_breakdown`, which take the period as lookup attributes, required where the API requires them.
+The provider SHALL offer `telnyx_charges_summary` and `telnyx_charges_breakdown`, which take the period as lookup attributes, required where the API requires them. `telnyx_charges_breakdown` SHALL not offer the `format` parameter and SHALL read JSON.
 
 #### Scenario: Charges for a period
 - **WHEN** `data "telnyx_charges_summary" "s" { start_date = "2026-10-01" end_date = "2026-11-01" }` is read

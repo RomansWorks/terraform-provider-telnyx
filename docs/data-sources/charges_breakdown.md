@@ -3,12 +3,12 @@
 page_title: "telnyx_charges_breakdown Data Source - telnyx"
 subcategory: ""
 description: |-
-  The monthly charges of the account's phone numbers for a period of up to 31 days, by number and service. Leave format unset or set it to json: the provider cannot read csv.
+  The monthly charges of the account's phone numbers for a period of up to 31 days, by number and service.
 ---
 
 # telnyx_charges_breakdown (Data Source)
 
-The monthly charges of the account's phone numbers for a period of up to 31 days, by number and service. Leave `format` unset or set it to `json`: the provider cannot read `csv`.
+The monthly charges of the account's phone numbers for a period of up to 31 days, by number and service.
 
 
 
@@ -22,7 +22,6 @@ The monthly charges of the account's phone numbers for a period of up to 31 days
 ### Optional
 
 - `end_date` (String) End date of the breakdown period
-- `format` (String) Response format One of `csv`, `json`.
 
 ### Read-Only
 

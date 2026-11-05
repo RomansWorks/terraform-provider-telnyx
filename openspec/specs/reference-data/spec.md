@@ -17,7 +17,7 @@ The provider SHALL offer read-only data sources for regions (`telnyx_regions`), 
 - **THEN** the provider pages through `GET /pricing/products/voice` and lists the entries
 
 ### Requirement: Catalogs
-The provider SHALL offer read-only data sources for requirement types and requirements (`telnyx_requirement_types`, `telnyx_requirement_type`, `telnyx_requirements`), mobile network operators, noise suppression engines, speech-to-text providers and call reasons. The speech-to-text provider filter SHALL be `provider_filter`.
+The provider SHALL offer read-only data sources for requirement types and requirements (`telnyx_requirement_types`, `telnyx_requirement_type`, `telnyx_requirements`, `telnyx_requirement`), mobile network operators, noise suppression engines, speech-to-text providers and call reasons. The speech-to-text provider filter SHALL be `provider_filter`.
 
 #### Scenario: Speech-to-text providers
 - **WHEN** `data "telnyx_speech_to_text_providers" "d" { provider_filter = "deepgram" }` is read

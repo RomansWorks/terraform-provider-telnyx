@@ -1,7 +1,7 @@
 ## ADDED Requirements
 
 ### Requirement: Account lookups
-The provider SHALL offer read-only data sources for connections of every type (`telnyx_connection`, `telnyx_connections`, `telnyx_connection_count`), organization users (`telnyx_organization_users`), Terms of Service (`telnyx_terms_of_service_info`, `telnyx_terms_of_service_status`, `telnyx_terms_of_service_agreement(s)`), user tags (`telnyx_user_tags`), over-the-air SIM updates (`telnyx_ota_update(s)`) and compute actor types (`telnyx_compute_actor`).
+The provider SHALL offer read-only data sources for connections of every type (`telnyx_connection`, `telnyx_connections`, `telnyx_connection_count`), organization users (`telnyx_organization_user`, `telnyx_organization_users`), Terms of Service (`telnyx_terms_of_service_info`, `telnyx_terms_of_service_status`, `telnyx_terms_of_service_agreement(s)`), user tags (`telnyx_user_tags`), over-the-air SIM updates (`telnyx_ota_update(s)`) and compute actor types (`telnyx_compute_actor`).
 
 #### Scenario: Any connection
 - **WHEN** `data "telnyx_connection" "c" { id = "c1" }` is read for an IP connection

@@ -9,7 +9,7 @@ import "github.com/RomansWorks/terraform-provider-telnyx/internal/engine"
 func ChargesBreakdown() *engine.Resource {
 	return &engine.Resource{
 		TypeName:    "telnyx_charges_breakdown",
-		Description: "The monthly charges of the account's phone numbers for a period of up to 31 days, by number and service. Leave `format` unset or set it to `json`: the provider cannot read `csv`.",
+		Description: "The monthly charges of the account's phone numbers for a period of up to 31 days, by number and service.",
 		Read:        &engine.Op{Method: "GET", Path: "/charges_breakdown", Envelope: true},
 		IDAttr:      "",
 		Import:      []string{},
@@ -18,7 +18,6 @@ func ChargesBreakdown() *engine.Resource {
 		Attrs: []*engine.Attr{
 			{Name: "currency", JSON: "currency", Kind: engine.KindString, Computed: true, InResponse: true, Description: "Currency code"},
 			{Name: "end_date", JSON: "end_date", Kind: engine.KindString, Computed: true, InResponse: true, Query: "end_date", Description: "End date of the breakdown period"},
-			{Name: "format", Kind: engine.KindString, Local: true, Enum: []string{"csv", "json"}, Query: "format", Description: "Response format"},
 			{Name: "results", JSON: "results", Kind: engine.KindList, Computed: true, InResponse: true, Description: "List of phone number charge breakdowns",
 				Attrs: []*engine.Attr{
 					{Name: "charge_type", JSON: "charge_type", Kind: engine.KindString, Computed: true, InResponse: true, Description: "Type of charge for the number"},

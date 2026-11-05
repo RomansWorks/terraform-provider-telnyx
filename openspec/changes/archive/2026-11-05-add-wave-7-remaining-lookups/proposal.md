@@ -9,9 +9,9 @@ This change covers no upstream range: it builds on the current pin.
 ## What Changes
 
 - **Generator.** A list filter named like a Terraform meta-argument (`provider`, `count`) takes the suffix `_filter`, and is still sent under its own name. Before, it was a generation error.
-- **52 data sources and 18 actions**, generated from overrides. The list is in `tasks.md`.
+- **54 data sources and 18 actions**, generated from overrides. The list is in `tasks.md`.
 - **Left to other waves.** `telnyx_bulk_sim_card_action(s)` and `telnyx_wireless_regions` are built by wave 3, and `telnyx_telephony_credential_token_material` by wave 6.
-- **Waiting on wave 5.** `telnyx_organization_user` and `telnyx_requirement` take a boolean and an integer query parameter. Wave 5 teaches data-source lookups those types; both data sources are added once it merges, so the two waves do not change the same lines.
+- **Unsupported lookup parameters are skipped.** `telnyx_organization_user` leaves out `include_groups` (a boolean), `telnyx_requirement` leaves out `version` (an integer, so the current version is read) and `telnyx_charges_breakdown` leaves out `format` (`csv` is not JSON), with the `skip` key wave 6 added.
 
 ## Capabilities
 
@@ -28,6 +28,6 @@ This change covers no upstream range: it builds on the current pin.
 ## Impact
 
 - `internal/codegen`: the reserved-name rule for list filters, with a test.
-- `generator/overrides`: 70 new override files. `internal/provider/generated`: regenerated.
+- `generator/overrides`: 72 new override files. `internal/provider/generated`: regenerated.
 - Docs and examples; a changelog entry.
 - No change to existing resources.

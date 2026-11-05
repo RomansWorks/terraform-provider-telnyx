@@ -6,7 +6,7 @@ Every object in this wave is generated from an override without hooks. None is a
 
 An override with `read` makes a data source for one object; `list` makes a list data source with filters, paging and `max_items`. The generator decides which fits from the response: a `data` array is a list. Some reads have no path parameter (`GET /balance`, `GET /connections/count`, `GET /charges_summary`, `GET /terms_of_service/status`): they are single-object data sources whose query parameters are lookup attributes, so `telnyx_charges_summary` requires `start_date` and `end_date`.
 
-Single-object reads take only scalar query parameters. `GET /user_tags` also takes `filter[starts_with]`, which the data source does not offer; users filter the returned tags in configuration. `GET /charges_breakdown` takes `format`; `csv` returns a file the provider cannot read, which the description says.
+Single-object reads take only scalar query parameters. `GET /user_tags` also takes `filter[starts_with]`, which the data source does not offer; users filter the returned tags in configuration. `GET /charges_breakdown` takes `format`; `csv` returns a file the provider cannot read, so the override skips the parameter and the API answers in JSON. `GET /organizations/users/{id}` takes the boolean `include_groups` and `GET /requirements/{id}` the integer `version`; single-object lookups take only strings, so both are skipped: the user is read without groups and the requirement at its current version.
 
 ## Reserved filter names
 
@@ -24,7 +24,6 @@ The actions send their operation once, as the actions from step 2 do. Path param
 
 - `GET /bulk_sim_card_actions`, `GET /bulk_sim_card_actions/{id}` and `GET /wireless/regions`: wave 3, which owns SIM cards and wireless.
 - `GET /telephony_credentials/{id}/token_material`: wave 6.
-- `GET /organizations/users/{id}` (boolean `include_groups`) and `GET /requirements/{id}` (integer `version`): wave 5 adds boolean and integer lookup parameters to the generator. The two overrides follow in a later change once it merges; until then the coverage entries stay `data_source` and unimplemented.
 
 ## Testing
 

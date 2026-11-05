@@ -29,6 +29,7 @@ resource "telnyx_email_unsubscribe_group" "newsletter" {
 ### Optional
 
 - `description` (String) What the group's mail is about.
+- `force_destroy` (Boolean) Whether destroy forces the deletion (sends `force=true`), for example of an object that is in use. Destroy uses the value in state, so set it to true and apply before destroying.
 
 ### Read-Only
 

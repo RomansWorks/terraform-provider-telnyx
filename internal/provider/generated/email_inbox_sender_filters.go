@@ -17,8 +17,8 @@ func EmailInboxSenderFilters() *engine.Resource {
 		Import:      []string{"inbox_id"},
 		DataSource:  true,
 		Attrs: []*engine.Attr{
-			{Name: "allowlist", JSON: "allowlist", Kind: engine.KindSet, Optional: true, Computed: true, InCreate: true, InUpdate: true, InResponse: true, Elem: &engine.Attr{Kind: engine.KindString}},
-			{Name: "blocklist", JSON: "blocklist", Kind: engine.KindSet, Optional: true, Computed: true, InCreate: true, InUpdate: true, InResponse: true, Elem: &engine.Attr{Kind: engine.KindString}},
+			{Name: "allowlist", JSON: "allowlist", Kind: engine.KindSet, Optional: true, Computed: true, InCreate: true, InUpdate: true, InResponse: true, Lowercase: true, Description: "Senders whose mail is accepted: `user@domain` or `@domain`, in lowercase. Set `[]` to clear; removing the attribute keeps the current list.", Elem: &engine.Attr{Kind: engine.KindString}},
+			{Name: "blocklist", JSON: "blocklist", Kind: engine.KindSet, Optional: true, Computed: true, InCreate: true, InUpdate: true, InResponse: true, Lowercase: true, Description: "Senders whose mail is rejected: `user@domain` or `@domain`, in lowercase. Set `[]` to clear; removing the attribute keeps the current list.", Elem: &engine.Attr{Kind: engine.KindString}},
 			{Name: "inbox_id", Kind: engine.KindString, Required: true, ForceNew: true, Local: true, PathParams: []string{"inbox_id"}, Description: "The inbox id."},
 			{Name: "record_type", JSON: "record_type", Kind: engine.KindString, Computed: true, InResponse: true},
 		},

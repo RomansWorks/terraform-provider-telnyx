@@ -20,7 +20,7 @@ func EmailSuppression() *engine.Resource {
 			{Name: "created_at", JSON: "created_at", Kind: engine.KindString, Computed: true, InResponse: true},
 			{Name: "domain_id", JSON: "domain_id", Kind: engine.KindString, Optional: true, Computed: true, ForceNew: true, InCreate: true, InResponse: true, Description: "Blocks only mail from this email domain. Not set blocks mail from the whole account."},
 			{Name: "expires_at", JSON: "expires_at", Kind: engine.KindString, Optional: true, Computed: true, ForceNew: true, InCreate: true, InResponse: true, Description: "Optional expiration time. An active row stops matching send-time suppression checks as soon as `expires_at <= now()`. A maintenance worker later transitions the row to `status: expired` and appends an `expired` audit event (normally within 15 minutes)."},
-			{Name: "from", JSON: "from", Kind: engine.KindString, Optional: true, Computed: true, ForceNew: true, InCreate: true, InResponse: true, Description: "Blocks only mail from this sender address. Not set blocks mail from any sender."},
+			{Name: "from", JSON: "from", Kind: engine.KindString, Optional: true, Computed: true, ForceNew: true, InCreate: true, InResponse: true, Lowercase: true, Description: "Blocks only mail from this sender address, in lowercase. Not set blocks mail from any sender."},
 			{Name: "group_id", JSON: "group_id", Kind: engine.KindString, Computed: true, InResponse: true, Description: "`null` ⇒ global; set ⇒ group-scoped opt-out."},
 			{Name: "id", JSON: "id", Kind: engine.KindString, Computed: true, InResponse: true, PathParams: []string{"id"}, Description: "The object's id."},
 			{Name: "reason", JSON: "reason", Kind: engine.KindString, Computed: true, InResponse: true},
@@ -28,7 +28,7 @@ func EmailSuppression() *engine.Resource {
 			{Name: "scope", JSON: "scope", Kind: engine.KindString, Computed: true, InResponse: true, Description: "Derived server-side from `domain_id`/`from`; never trusted from the caller."},
 			{Name: "source", JSON: "source", Kind: engine.KindString, Computed: true, InResponse: true},
 			{Name: "status", JSON: "status", Kind: engine.KindString, Computed: true, InResponse: true},
-			{Name: "to", JSON: "to", Kind: engine.KindString, Required: true, ForceNew: true, InCreate: true, InResponse: true, Description: "The recipient address to block."},
+			{Name: "to", JSON: "to", Kind: engine.KindString, Required: true, ForceNew: true, InCreate: true, InResponse: true, Lowercase: true, Description: "The recipient address to block, in lowercase."},
 			{Name: "updated_at", JSON: "updated_at", Kind: engine.KindString, Computed: true, InResponse: true},
 		},
 	}

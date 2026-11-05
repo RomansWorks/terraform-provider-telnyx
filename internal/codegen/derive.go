@@ -557,6 +557,7 @@ func (d *deriver) attrs(src sources, depth int, parentComputed bool, prefix stri
 			Sensitive:   aov.Sensitive || aov.Masked || aov.CreateOnly,
 			Masked:      aov.Masked,
 			CreateOnly:  aov.CreateOnly,
+			Lowercase:   aov.Lowercase,
 			Description: describe(cs, aov),
 		}
 		if aov.Name != "" {
@@ -1280,9 +1281,16 @@ func (g *Generator) forceDestroy(r *engine.Resource, ov *Override, del *operatio
 		return fmt.Errorf("the API already has a field named %s; rename it", engine.ForceDestroyAttr)
 	}
 	bools := map[string]bool{}
-	for _, p := range g.params(del) {
-		if p.in == "query" && p.schema["type"] == "boolean" {
-			bools[p.name] = true
+	var raw []any
+	if item, ok := g.Spec.Paths()[del.path].(map[string]any); ok {
+		raw = append(raw, asSlice(item["parameters"])...)
+	}
+	raw = append(raw, asSlice(del.node["parameters"])...)
+	for _, r := range raw {
+		p := g.resolve(r)
+		name, _ := p["name"].(string)
+		if p["in"] == "query" && g.takesBool(p["schema"]) {
+			bools[name] = true
 		}
 	}
 	for _, name := range ov.ForceDestroy {
@@ -1303,4 +1311,21 @@ func forceQuery(params []string) string {
 		parts[i] = "`" + p + "=true`"
 	}
 	return strings.Join(parts, " and ")
+}
+
+// takesBool reports whether a parameter schema is a boolean, or a union
+// with a boolean variant (Telnyx also accepts the strings "true"/"false").
+func (g *Generator) takesBool(schema any) bool {
+	s := g.resolve(schema)
+	if s["type"] == "boolean" {
+		return true
+	}
+	for _, key := range []string{"oneOf", "anyOf"} {
+		for _, v := range asSlice(s[key]) {
+			if g.resolve(v)["type"] == "boolean" {
+				return true
+			}
+		}
+	}
+	return false
 }

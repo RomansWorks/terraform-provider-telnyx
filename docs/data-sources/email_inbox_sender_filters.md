@@ -21,6 +21,6 @@ The sender allowlist and blocklist of an email inbox. Terraform manages both lis
 
 ### Read-Only
 
-- `allowlist` (Set of String)
-- `blocklist` (Set of String)
+- `allowlist` (Set of String) Senders whose mail is accepted: `user@domain` or `@domain`, in lowercase. Set `[]` to clear; removing the attribute keeps the current list.
+- `blocklist` (Set of String) Senders whose mail is rejected: `user@domain` or `@domain`, in lowercase. Set `[]` to clear; removing the attribute keeps the current list.
 - `record_type` (String)

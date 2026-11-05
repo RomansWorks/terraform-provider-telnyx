@@ -7,6 +7,7 @@ import (
 	"context"
 	"testing"
 
+	"github.com/RomansWorks/terraform-provider-telnyx/internal/client"
 	"github.com/RomansWorks/terraform-provider-telnyx/internal/engine"
 )
 
@@ -35,5 +36,22 @@ func TestEmailDomainInboundEnabled(t *testing.T) {
 	obj, _ = emailDomainHooks.AfterRead(context.Background(), engine.Object{"id": "d1"})
 	if _, ok := obj["inbound_enabled"]; ok {
 		t.Errorf("inbound_enabled without inbound: %v", obj)
+	}
+}
+
+func TestEmailSoftDeletes(t *testing.T) {
+	for name, h := range map[string]struct {
+		hooks  engine.Hooks
+		status string
+	}{
+		"suppression":  {emailSuppressionHooks, "removed"},
+		"dedicated ip": {emailDedicatedIPHooks, "released"},
+	} {
+		if _, err := h.hooks.AfterRead(context.Background(), engine.Object{"status": h.status}); !client.IsNotFound(err) {
+			t.Errorf("%s %s: want not found, got %v", name, h.status, err)
+		}
+		if obj, err := h.hooks.AfterRead(context.Background(), engine.Object{"status": "active"}); err != nil || obj["status"] != "active" {
+			t.Errorf("%s active: %v %v", name, obj, err)
+		}
 	}
 }

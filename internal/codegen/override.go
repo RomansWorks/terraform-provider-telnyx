@@ -146,6 +146,10 @@ type AttrOverride struct {
 	// reads keep the value in state. The field may be missing from the
 	// read response.
 	CreateOnly bool `yaml:"create_only"`
+	// Lowercase says the API trims and lowercases the value (or, for a
+	// list or set of strings, each element); configuration must already
+	// be in that form, or every plan would show a change.
+	Lowercase bool `yaml:"lowercase"`
 }
 
 // AddAttr is a local attribute.

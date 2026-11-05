@@ -20,7 +20,7 @@ The provider SHALL manage `telnyx_email_domain` and its child `telnyx_email_doma
 - **THEN** the webhook `w1` of domain `d1` is in state
 
 ### Requirement: Email inboxes
-The provider SHALL manage `telnyx_email_inbox`; a change SHALL replace it, and destroy SHALL soft-delete it with `DELETE /email_inboxes/{id}`. `username` SHALL be read from the local part of the inbox's `address`, and SHALL be computed when not set.
+The provider SHALL manage `telnyx_email_inbox`; a change SHALL replace it, and destroy SHALL soft-delete it with `DELETE /email_inboxes/{id}`. `username` SHALL be read from the local part of the inbox's `address`, SHALL be lowercase, and SHALL be computed when not set.
 
 #### Scenario: Generated username
 - **WHEN** an inbox is created without `username` and the API answers with `address = "x7k2@inbound.example.com"`
@@ -31,7 +31,7 @@ The provider SHALL manage `telnyx_email_inbox`; a change SHALL replace it, and d
 - **THEN** the plan is empty
 
 ### Requirement: Inbox sender filters
-`telnyx_email_inbox_sender_filters` SHALL manage an inbox's allowlist and blocklist as sets, replaced as a whole with `PUT /email_inboxes/{inbox_id}/filters`, and SHALL import by `inbox_id`. The API cannot delete them: destroy SHALL remove them from state and warn.
+`telnyx_email_inbox_sender_filters` SHALL manage an inbox's allowlist and blocklist as sets of lowercase entries, replaced as a whole with `PUT /email_inboxes/{inbox_id}/filters`, and SHALL import by `inbox_id`. The API cannot delete them: destroy SHALL remove them from state and warn.
 
 #### Scenario: Change the blocklist
 - **WHEN** an address is added to `blocklist`
@@ -48,6 +48,13 @@ The provider SHALL manage `telnyx_email_dedicated_ip` (purchase on create, relea
 - **WHEN** `action "telnyx_email_dedicated_ip_start_warmup" "x" { config { id = "ip1" } }` is invoked
 - **THEN** the provider sends `POST /email/dedicated_ips/ip1/actions/start_warmup` once
 
+### Requirement: Released dedicated IPs
+A dedicated IP whose status is `released` SHALL be treated as deleted outside Terraform.
+
+#### Scenario: IP released outside Terraform
+- **WHEN** `GET /email/dedicated_ips/{id}` answers with `status = "released"`
+- **THEN** the IP leaves state and the next plan proposes to purchase one again
+
 ### Requirement: IP pool membership
 `telnyx_email_ip_pool_ip` SHALL be read from its pool's `ips`, identified by `dedicated_ip_id`, and import as `<pool_id>/<dedicated_ip_id>`. A new `weight` SHALL replace it. Destroy SHALL take the IP out of the pool and keep the dedicated IP.
 
@@ -63,19 +70,26 @@ The provider SHALL manage `telnyx_email_dedicated_ip` (purchase on create, relea
 - **WHEN** the last membership of a pool, with `force_destroy = true` in state, is destroyed
 - **THEN** the provider sends `DELETE /email/ip_pools/{id}/ips/{ip_id}?drain=true&force=true` and keeps the dedicated IP
 
-### Requirement: Templates, suppressions and unsubscribe groups
-The provider SHALL manage `telnyx_email_template`, `telnyx_email_suppression`, `telnyx_email_unsubscribe_group` and `telnyx_email_unsubscribe_group_suppression`. Suppressions have no update: a change SHALL replace them. A group suppression SHALL be identified by its recipient address `to`, sent as the `{email}` path parameter on delete, read from the group's suppression list, and import as `<group_id>/<to>`.
+### Requirement: Templates and suppressions
+The provider SHALL manage `telnyx_email_template` and `telnyx_email_suppression`. Suppressions have no update: a change SHALL replace them. A suppression whose status is `removed` SHALL be treated as deleted outside Terraform. Recipient and sender addresses SHALL be lowercase.
 
 #### Scenario: Update a template
 - **WHEN** the `html_body` of a template changes
 - **THEN** the provider sends `PATCH /email_templates/{id}` and keeps the template
+
+#### Scenario: Suppression removed outside Terraform
+- **WHEN** a suppression is removed in the portal and `GET /email_blocks/{id}` answers with `status = "removed"`
+- **THEN** the next plan proposes to create it again
+
+### Requirement: Unsubscribe groups
+The provider SHALL manage `telnyx_email_unsubscribe_group` and `telnyx_email_unsubscribe_group_suppression`. `force_destroy = true` SHALL delete a group that has suppressions, with `force=true`. A group suppression SHALL be identified by its lowercase recipient address `to`, sent as the `{email}` path parameter on delete, read from the group's suppression list, and import as `<group_id>/<to>`.
 
 #### Scenario: Unsubscribe a recipient
 - **WHEN** a `telnyx_email_unsubscribe_group_suppression` with `group_id = "g1"` and `to = "a@example.com"` is destroyed
 - **THEN** the provider sends `DELETE /email_unsubscribe_groups/g1/suppressions/a@example.com`
 
 ### Requirement: Email lookups and actions
-The provider SHALL offer the lists of the email resources, `telnyx_email_domain_dns_records` and `telnyx_email_domain_health` as data sources, and `telnyx_email_domain_verify` and `telnyx_email_domain_rotate_dkim` as actions.
+The provider SHALL offer a data source of the same name for each email resource that has a read, the lists of the email resources, `telnyx_email_domain_dns_records` and `telnyx_email_domain_health` as data sources, and `telnyx_email_domain_verify` and `telnyx_email_domain_rotate_dkim` as actions.
 
 #### Scenario: DNS records to publish
 - **WHEN** `data "telnyx_email_domain_dns_records" "d" { domain_id = telnyx_email_domain.d.id }` is read

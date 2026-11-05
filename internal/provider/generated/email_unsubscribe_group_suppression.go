@@ -27,7 +27,7 @@ func EmailUnsubscribeGroupSuppression() *engine.Resource {
 			{Name: "scope", JSON: "scope", Kind: engine.KindString, Computed: true, InResponse: true, Description: "Derived server-side from `domain_id`/`from`; never trusted from the caller."},
 			{Name: "source", JSON: "source", Kind: engine.KindString, Computed: true, InResponse: true},
 			{Name: "status", JSON: "status", Kind: engine.KindString, Computed: true, InResponse: true},
-			{Name: "to", JSON: "to", Kind: engine.KindString, Required: true, ForceNew: true, InCreate: true, InResponse: true, PathParams: []string{"email"}, Description: "The recipient's email address."},
+			{Name: "to", JSON: "to", Kind: engine.KindString, Required: true, ForceNew: true, InCreate: true, InResponse: true, Lowercase: true, PathParams: []string{"email"}, Description: "The recipient's email address, in lowercase."},
 			{Name: "updated_at", JSON: "updated_at", Kind: engine.KindString, Computed: true, InResponse: true},
 		},
 	}

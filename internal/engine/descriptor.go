@@ -75,6 +75,10 @@ type Attr struct {
 	// keeps only a hash of). Reads never overwrite the value in state.
 	CreateOnly bool
 
+	// Lowercase strings (or the string elements of a list or set) must be
+	// lowercase without surrounding spaces, because the API stores them so.
+	Lowercase bool
+
 	// Query names the query parameter this attribute fills when a data
 	// source reads the object. Unless Required, it is optional.
 	Query string
@@ -289,3 +293,4 @@ func (r *Resource) withFixedID(obj Object) Object {
 func (r *Resource) Path(p string, vals Values) (string, error) {
 	return fillPath(r.Attrs, p, vals)
 }
+

@@ -25,7 +25,7 @@ resource "telnyx_email_unsubscribe_group_suppression" "someone" {
 ### Required
 
 - `group_id` (String) The unsubscribe group.
-- `to` (String) The recipient's email address.
+- `to` (String) The recipient's email address, in lowercase.
 
 ### Read-Only
 

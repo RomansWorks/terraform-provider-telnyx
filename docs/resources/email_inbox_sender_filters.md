@@ -15,7 +15,7 @@ The sender allowlist and blocklist of an email inbox. Terraform manages both lis
 ```terraform
 resource "telnyx_email_inbox_sender_filters" "support" {
   inbox_id  = telnyx_email_inbox.support.id
-  allowlist = ["partner.example.com"]
+  allowlist = ["@partner.example.com"]
   blocklist = ["spam@example.net"]
 }
 ```
@@ -29,8 +29,8 @@ resource "telnyx_email_inbox_sender_filters" "support" {
 
 ### Optional
 
-- `allowlist` (Set of String)
-- `blocklist` (Set of String)
+- `allowlist` (Set of String) Senders whose mail is accepted: `user@domain` or `@domain`, in lowercase. Set `[]` to clear; removing the attribute keeps the current list.
+- `blocklist` (Set of String) Senders whose mail is rejected: `user@domain` or `@domain`, in lowercase. Set `[]` to clear; removing the attribute keeps the current list.
 
 ### Read-Only
 

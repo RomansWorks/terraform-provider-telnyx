@@ -30,7 +30,7 @@ resource "telnyx_email_inbox_sender_filters" "support" {
 ### Optional
 
 - `domain_id` (String) Account-owned, inbound-enabled domain UUID. The account's shared inbound subdomain is allocated when omitted.
-- `username` (String) The local part of the address, before the `@`. Telnyx lowercases it, so use lowercase. Generated when not set.
+- `username` (String) The local part of the address, before the `@`, in lowercase. Generated when not set.
 
 ### Read-Only
 

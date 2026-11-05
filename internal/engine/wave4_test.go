@@ -4,13 +4,16 @@
 package engine
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 	"net/http/httptest"
+	"regexp"
 	"sync"
 	"testing"
 
 	rtest "github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/plancheck"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 
 	"github.com/RomansWorks/terraform-provider-telnyx/internal/client"
@@ -83,4 +86,73 @@ func TestForceDestroy(t *testing.T) {
 			})
 		})
 	}
+}
+
+// TestForceDestroyWithoutUpdate sets force_destroy on a resource that has
+// no update operation: the change is stored without a request.
+func TestForceDestroyWithoutUpdate(t *testing.T) {
+	api, c := newFakeAPI(t)
+	d := pool()
+	d.Update = nil
+	d.Attrs[1].InUpdate = false
+	d.Attrs[1].ForceNew = true
+	rtest.UnitTest(t, rtest.TestCase{
+		ProtoV6ProviderFactories: factories(c, d),
+		Steps: []rtest.TestStep{
+			{Config: `resource "telnyx_pool" "p" { name = "p" }`},
+			{
+				Config: "resource \"telnyx_pool\" \"p\" {\n  name = \"p\"\n  force_destroy = true\n}",
+				ConfigPlanChecks: rtest.ConfigPlanChecks{PreApply: []plancheck.PlanCheck{
+					plancheck.ExpectResourceAction("telnyx_pool.p", plancheck.ResourceActionUpdate),
+				}},
+				Check: func(*terraform.State) error {
+					if api.has("PATCH") || api.has("PUT") {
+						return fmt.Errorf("no update request expected: %v", api.log())
+					}
+					return nil
+				},
+			},
+		},
+	})
+}
+
+// TestReadGone removes an object from state when the read hook reports it
+// soft-deleted with a not-found error.
+func TestReadGone(t *testing.T) {
+	_, c := newFakeAPI(t)
+	d := pool()
+	gone := false
+	d.Hooks.AfterRead = func(_ context.Context, obj Object) (Object, error) {
+		if gone {
+			return nil, &client.Error{StatusCode: http.StatusNotFound}
+		}
+		return obj, nil
+	}
+	rtest.UnitTest(t, rtest.TestCase{
+		ProtoV6ProviderFactories: factories(c, d),
+		Steps: []rtest.TestStep{
+			{Config: `resource "telnyx_pool" "p" { name = "p" }`},
+			{
+				PreConfig:          func() { gone = true },
+				Config:             `resource "telnyx_pool" "p" { name = "p" }`,
+				PlanOnly:           true,
+				ExpectNonEmptyPlan: true,
+			},
+			{PreConfig: func() { gone = false }, Config: `resource "telnyx_pool" "p" { name = "p" }`},
+		},
+	})
+}
+
+func TestLowercase(t *testing.T) {
+	d := pool()
+	d.Attrs[1].Lowercase = true
+	_, c := newFakeAPI(t)
+	rtest.UnitTest(t, rtest.TestCase{
+		ProtoV6ProviderFactories: factories(c, d),
+		Steps: []rtest.TestStep{
+			{Config: `resource "telnyx_pool" "p" { name = "Mixed@Example.com" }`, ExpectError: regexp.MustCompile(`must be lowercase`)},
+			{Config: `resource "telnyx_pool" "p" { name = " a@example.com" }`, ExpectError: regexp.MustCompile(`must be lowercase`)},
+			{Config: `resource "telnyx_pool" "p" { name = "a.b+c@example.com" }`},
+		},
+	})
 }

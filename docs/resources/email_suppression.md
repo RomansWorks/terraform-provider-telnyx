@@ -24,13 +24,13 @@ resource "telnyx_email_suppression" "complainer" {
 
 ### Required
 
-- `to` (String) The recipient address to block.
+- `to` (String) The recipient address to block, in lowercase.
 
 ### Optional
 
 - `domain_id` (String) Blocks only mail from this email domain. Not set blocks mail from the whole account.
 - `expires_at` (String) Optional expiration time. An active row stops matching send-time suppression checks as soon as `expires_at <= now()`. A maintenance worker later transitions the row to `status: expired` and appends an `expired` audit event (normally within 15 minutes).
-- `from` (String) Blocks only mail from this sender address. Not set blocks mail from any sender.
+- `from` (String) Blocks only mail from this sender address, in lowercase. Not set blocks mail from any sender.
 
 ### Read-Only
 

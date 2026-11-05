@@ -29,4 +29,4 @@ An inbox that receives email on an inbound-enabled domain, or on the account's s
 - `settings` (String) A JSON document; use `jsondecode()` to read it.
 - `status` (String)
 - `updated_at` (String)
-- `username` (String) The local part of the address, before the `@`. Telnyx lowercases it, so use lowercase. Generated when not set.
+- `username` (String) The local part of the address, before the `@`, in lowercase. Generated when not set.

@@ -26,7 +26,7 @@ func EmailInbox() *engine.Resource {
 			{Name: "settings", JSON: "settings", Kind: engine.KindJSON, Computed: true, InResponse: true},
 			{Name: "status", JSON: "status", Kind: engine.KindString, Computed: true, InResponse: true},
 			{Name: "updated_at", JSON: "updated_at", Kind: engine.KindString, Computed: true, InResponse: true},
-			{Name: "username", JSON: "username", Kind: engine.KindString, Optional: true, Computed: true, ForceNew: true, InCreate: true, InResponse: true, Description: "The local part of the address, before the `@`. Telnyx lowercases it, so use lowercase. Generated when not set."},
+			{Name: "username", JSON: "username", Kind: engine.KindString, Optional: true, Computed: true, ForceNew: true, InCreate: true, InResponse: true, Lowercase: true, Description: "The local part of the address, before the `@`, in lowercase. Generated when not set."},
 		},
 	}
 }

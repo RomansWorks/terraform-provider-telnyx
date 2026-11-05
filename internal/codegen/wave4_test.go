@@ -28,7 +28,7 @@ func loadInline(t *testing.T, body string) (*Override, error) {
 // of page shapes.
 func TestWave4Shapes(t *testing.T) {
 	g := fixture(t)
-	ov, err := loadInline(t, poolOverride+"force_destroy: [force, drain]\n")
+	ov, err := loadInline(t, poolOverride+"force_destroy: [force, drain, cascade]\n")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -36,11 +36,12 @@ func TestWave4Shapes(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if strings.Join(r.ForceDestroy, ",") != "force,drain" {
+	// cascade is a $ref'd parameter that takes a boolean or a string.
+	if strings.Join(r.ForceDestroy, ",") != "force,drain,cascade" {
 		t.Errorf("ForceDestroy: %v", r.ForceDestroy)
 	}
 	if a := r.Attr(engine.ForceDestroyAttr); a == nil || !a.Local || !a.Optional || a.Computed || a.ForceNew || a.Kind != engine.KindBool ||
-		!strings.Contains(a.Description, "`force=true` and `drain=true`") {
+		!strings.Contains(a.Description, "`force=true` and `drain=true` and `cascade=true`") {
 		t.Errorf("force_destroy: %+v", a)
 	}
 	// GET /pools answers with oneOf a page-number and a cursor shape.

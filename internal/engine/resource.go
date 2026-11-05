@@ -290,6 +290,12 @@ func (r *frameworkResource) Update(ctx context.Context, req resource.UpdateReque
 func (r *frameworkResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
 	d := r.d
 	state := fields(req.State.Raw)
+	if d.Hooks.Delete != nil {
+		if err := d.Hooks.Delete(ctx, r.c, d, state); err != nil && !client.IsNotFound(err) {
+			resp.Diagnostics.AddError("Unable to delete "+d.TypeName, err.Error())
+		}
+		return
+	}
 	if r.keeps(state) {
 		resp.Diagnostics.AddWarning("Object stays in Telnyx", r.deleteWarning(state))
 		return

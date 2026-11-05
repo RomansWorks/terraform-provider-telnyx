@@ -37,6 +37,7 @@ var conformanceSkip = map[string]string{
 	"telnyx_storage_kv_key":                           "writes and reads its value as a raw body",
 	"telnyx_storage_bucket_ssl_certificate":           "uploads its certificate as a multipart form",
 	"telnyx_voice_clone":                              "creates from a voice design or a multipart upload",
+	"telnyx_agent_gateway":                            "waits until the gateway is ready",
 }
 
 // TestConformance runs every generated resource through create, an empty

@@ -13,18 +13,21 @@ import (
 // hooks holds the hand-written behaviour of resources whose API the spec
 // cannot fully describe, by type name. See hooks_*.go.
 var hooks = map[string]engine.Hooks{
-	"telnyx_ai_avatar":                         aiAvatarHooks,
-	"telnyx_ai_collection":                     aiCollectionHooks,
-	"telnyx_ai_gateway_token_group":            aiGatewayHooks,
-	"telnyx_ai_gateway_token_key":              aiGatewayHooks,
-	"telnyx_ai_tool":                           aiToolHooks,
-	"telnyx_number_order":                      numberOrderHooks,
-	"telnyx_porting_order":                     portingOrderHooks,
-	"telnyx_porting_order_additional_document": portingOrderAdditionalDocumentHooks,
-	"telnyx_storage_bucket_ssl_certificate":    storageBucketSSLCertificateHooks,
-	"telnyx_storage_kv_key":                    storageKVKeyHooks,
-	"telnyx_texml_queue":                       texmlQueueHooks,
-	"telnyx_voice_clone":                       voiceCloneHooks,
+	"telnyx_ai_avatar":                           aiAvatarHooks,
+	"telnyx_ai_collection":                       aiCollectionHooks,
+	"telnyx_ai_gateway_token_group":              aiGatewayHooks,
+	"telnyx_ai_gateway_token_key":                aiGatewayHooks,
+	"telnyx_ai_tool":                             aiToolHooks,
+	"telnyx_number_order":                        numberOrderHooks,
+	"telnyx_agent_gateway":                       agentGatewayHooks,
+	"telnyx_agent_gateway_key_tool_permissions":  agentGatewayToolPermissionsHooks,
+	"telnyx_agent_gateway_team_tool_permissions": agentGatewayToolPermissionsHooks,
+	"telnyx_porting_order":                       portingOrderHooks,
+	"telnyx_porting_order_additional_document":   portingOrderAdditionalDocumentHooks,
+	"telnyx_storage_bucket_ssl_certificate":      storageBucketSSLCertificateHooks,
+	"telnyx_storage_kv_key":                      storageKVKeyHooks,
+	"telnyx_texml_queue":                         texmlQueueHooks,
+	"telnyx_voice_clone":                         voiceCloneHooks,
 }
 
 // descriptors returns every generated resource with its hooks attached.

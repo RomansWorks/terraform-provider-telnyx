@@ -233,6 +233,9 @@ type Hooks struct {
 	// DeleteWarning replaces the descriptor's DeleteWarning, for example to
 	// name what stays in Telnyx.
 	DeleteWarning func(state Values) string
+	// Delete, when set, replaces the delete request, for objects such as
+	// grants that are destroyed by writing an empty value.
+	Delete func(ctx context.Context, c *client.Client, r *Resource, state Values) error
 	// Wait is called after create until the object is ready.
 	Wait func(ctx context.Context, c *client.Client, r *Resource, obj Object) (Object, error)
 }

@@ -341,7 +341,14 @@ func (a *descriptorAPI) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 				items = append(items, a.obj)
 			}
 			w.Header().Set("Content-Type", "application/json")
-			_ = json.NewEncoder(w).Encode(map[string]any{"data": items, "meta": map[string]any{"total_pages": 1}})
+			switch {
+			case rt.op.Records:
+				_ = json.NewEncoder(w).Encode(map[string]any{"records": items, "page": 1, "totalRecords": len(items)})
+			case !rt.op.Envelope:
+				_ = json.NewEncoder(w).Encode(items)
+			default:
+				_ = json.NewEncoder(w).Encode(map[string]any{"data": items, "meta": map[string]any{"total_pages": 1}})
+			}
 		case "delete":
 			a.obj, a.deleted = nil, true
 			w.WriteHeader(http.StatusNoContent)

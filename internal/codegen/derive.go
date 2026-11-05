@@ -228,6 +228,18 @@ func (g *Generator) norm(n any) map[string]any {
 		for _, p := range parts {
 			ps := g.norm(p)
 			for k, v := range properties(ps) {
+				// A later part that narrows a property (a const on an enum)
+				// refines it rather than replacing it.
+				if prev := g.norm(props[k]); prev != nil {
+					merged := map[string]any{}
+					for pk, pv := range prev {
+						merged[pk] = pv
+					}
+					for nk, nv := range g.norm(v) {
+						merged[nk] = nv
+					}
+					v = merged
+				}
 				props[k] = v
 			}
 			req = append(req, asSlice(ps["required"])...)
@@ -282,7 +294,10 @@ func (g *Generator) norm(n any) map[string]any {
 			out[k] = v
 		}
 	}
-	// An enum of strings without a type is a string.
+	// An enum or const of strings without a type is a string.
+	if _, ok := out["const"].(string); ok && out["type"] == nil {
+		out["type"] = "string"
+	}
 	if e, ok := out["enum"].([]any); ok && out["type"] == nil && len(e) > 0 {
 		str := true
 		for _, v := range e {
@@ -406,7 +421,28 @@ func (s sources) child(name string, g *Generator) sources {
 		}
 		return c
 	}
-	return sources{create: pick(s.create, true), update: pick(s.update, true), read: pick(s.read, false)}
+	out := sources{create: pick(s.create, true), update: pick(s.update, true), read: pick(s.read, false)}
+	// A response object the spec leaves free-form, or a map whose entries
+	// the spec gives no fields for, echoes what was sent.
+	if out.read == nil && s.read != nil && properties(s.read) == nil && s.read["type"] == "object" {
+		ap := s.read["additionalProperties"]
+		if m, ok := ap.(map[string]any); ok {
+			if entry := g.norm(m); properties(entry) != nil {
+				out.read = entry
+				return out
+			}
+		} else if ap != nil && ap != true {
+			return out
+		}
+		out.read = out.create
+		if out.read == nil {
+			out.read = out.update
+		}
+		if out.read != nil && out.read["writeOnly"] == true {
+			out.read = nil
+		}
+	}
+	return out
 }
 
 func (s sources) items(g *Generator) sources {
@@ -644,6 +680,9 @@ func stringEnum(schemas ...map[string]any) []string {
 			continue
 		}
 		e, ok := s["enum"].([]any)
+		if c, isConst := s["const"]; isConst {
+			e, ok = []any{c}, true
+		}
 		if !ok {
 			return nil // a request without an enum accepts any value
 		}

@@ -256,7 +256,7 @@ func (g *Generator) DeriveList(name, description, key, pagingOverride string, se
 	}
 	sort.SliceStable(l.Params, func(i, j int) bool { return l.Params[i].Name < l.Params[j].Name })
 
-	items := &engine.Attr{Name: strings.TrimPrefix(name, "telnyx_"), JSON: "data", Kind: engine.KindList,
+	items := &engine.Attr{Name: itemsName(name), JSON: "data", Kind: engine.KindList,
 		Computed: true, InResponse: true, Description: "The objects, in the order the API returns them."}
 	ov := &Override{Type: name, Attributes: settings}
 	d := &deriver{g: g, ov: ov, used: map[string]bool{}}
@@ -283,6 +283,20 @@ func (g *Generator) DeriveList(name, description, key, pagingOverride string, se
 	}
 	l.Items = items
 	return l, nil
+}
+
+// itemsName is the name of a list data source's items attribute: the type
+// name without telnyx_, and without a leading segment that starts with a
+// digit (telnyx_10dlc_brands lists brands), since attribute names must start
+// with a letter.
+func itemsName(typeName string) string {
+	n := strings.TrimPrefix(typeName, "telnyx_")
+	if n != "" && n[0] >= '0' && n[0] <= '9' {
+		if i := strings.IndexByte(n, '_'); i > 0 {
+			n = n[i+1:]
+		}
+	}
+	return n
 }
 
 // isPaging reports whether a query parameter pages: the engine sends it,

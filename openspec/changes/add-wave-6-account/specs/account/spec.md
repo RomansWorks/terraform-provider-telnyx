@@ -22,7 +22,7 @@ The provider SHALL manage `telnyx_auto_recharge_preferences` and `telnyx_user_pr
 - **THEN** `PATCH /payment/auto_recharge_prefs` is sent and the next plan is empty
 
 ### Requirement: Spend limits
-The provider SHALL manage `telnyx_spend_limit` per product and period, with exactly one of `amount` and `unlimited = true` sent on every create and update. Destroy SHALL remove the limit with `DELETE /spend_limits/{product}?period=<period>`. An entry without a limit SHALL read as gone. Limits of single API keys are not managed.
+The provider SHALL manage `telnyx_spend_limit` per product and period, with exactly one of `amount` and `unlimited = true` sent on every create and update. Destroy SHALL remove the limit with `DELETE /spend_limits/{product}?period=<period>`, with the configured `reason`. A limit changed outside Terraform SHALL show as a change. An entry without a limit SHALL read as gone. Limits of single API keys are not managed.
 
 #### Scenario: Change the reason only
 - **WHEN** only `reason` of a limit with `amount = 50` changes
@@ -51,7 +51,7 @@ The provider SHALL manage `telnyx_enterprise`, `telnyx_display_identity_record` 
 - **THEN** `DELETE /dir/{dir_id}/phone_numbers` is sent with `{"phone_numbers": ["+13125550100"]}`
 
 ### Requirement: Phone number reputation
-The provider SHALL manage `telnyx_enterprise_reputation`, identified by its enterprise, with `check_frequency` and `webhook_url` set through their own update operations, and `telnyx_enterprise_reputation_number`, identified by its phone number. Refresh, remediation, ownership confirmation, external verification and LOA replacement SHALL be actions; their results are read with data sources.
+The provider SHALL manage `telnyx_enterprise_reputation`, identified by its enterprise, with `check_frequency`, `webhook_url` and `loa_document_id` updated in place through their own update operations, and `telnyx_enterprise_reputation_number`, identified by its phone number. Refresh, remediation, ownership confirmation and external verification SHALL be actions; their results are read with data sources.
 
 #### Scenario: Change the frequency
 - **WHEN** only `check_frequency` changes

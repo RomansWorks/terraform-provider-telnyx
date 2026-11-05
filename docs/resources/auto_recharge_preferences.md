@@ -30,8 +30,8 @@ resource "telnyx_auto_recharge_preferences" "this" {
 - `enabled` (Boolean) Whether auto recharge is enabled.
 - `invoice_enabled` (Boolean)
 - `preference` (String) The payment preference for auto recharge. One of `ach`, `credit_paypal`.
-- `recharge_amount` (String) The amount to recharge the account, the actual recharge amount will be the amount necessary to reach the threshold amount plus the recharge amount.
-- `threshold_amount` (String) The threshold amount at which the account will be recharged.
+- `recharge_amount` (String) The amount, in the account currency, Telnyx charges when it recharges. Write it with two decimals, such as `100.00`.
+- `threshold_amount` (String) The balance, in the account currency, below which Telnyx recharges. Write it as the API returns it, with two decimals, such as `20.00`.
 
 ### Read-Only
 

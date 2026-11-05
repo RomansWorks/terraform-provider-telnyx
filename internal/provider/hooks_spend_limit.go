@@ -18,14 +18,31 @@ import (
 // changes, and refuses a null for the one not used.
 //
 // The list also has an entry for every product and period without a limit
-// (limit null): such an entry means the limit is gone.
+// (limit null): such an entry means the limit is gone. Reads take amount
+// and unlimited from limit.
 var spendLimitHooks = engine.Hooks{
 	AfterRead: func(_ context.Context, obj engine.Object) (engine.Object, error) {
-		if limit, ok := obj["limit"]; ok && limit == nil {
+		limit, ok := obj["limit"]
+		if ok && limit == nil {
 			return nil, &client.Error{Method: http.MethodGet, Path: "/spend_limits", StatusCode: http.StatusNotFound,
 				Body: "no limit is set for this product and period"}
 		}
-		return obj, nil
+		// The request's amount and unlimited come back inside limit; copy
+		// them so a change made elsewhere shows as drift.
+		l, _ := limit.(map[string]any)
+		if l == nil {
+			return obj, nil
+		}
+		out := make(engine.Object, len(obj)+2)
+		for k, v := range obj {
+			out[k] = v
+		}
+		if l["unlimited"] == true {
+			out["unlimited"] = true
+		} else if a, ok := l["amount"]; ok && a != nil {
+			out["amount"] = a
+		}
+		return out, nil
 	},
 	BeforeRequest: func(_ context.Context, op string, body engine.Object, plan engine.Values) error {
 		delete(body, "amount")

@@ -22,9 +22,9 @@ func AutoRechargePreferences() *engine.Resource {
 			{Name: "id", JSON: "id", Kind: engine.KindString, Computed: true, InResponse: true, Description: "Always auto_recharge_preferences: there is one per account."},
 			{Name: "invoice_enabled", JSON: "invoice_enabled", Kind: engine.KindBool, Optional: true, Computed: true, InCreate: true, InUpdate: true, InResponse: true},
 			{Name: "preference", JSON: "preference", Kind: engine.KindString, Optional: true, Computed: true, InCreate: true, InUpdate: true, InResponse: true, Enum: []string{"ach", "credit_paypal"}, Description: "The payment preference for auto recharge."},
-			{Name: "recharge_amount", JSON: "recharge_amount", Kind: engine.KindString, Optional: true, Computed: true, InCreate: true, InUpdate: true, InResponse: true, Description: "The amount to recharge the account, the actual recharge amount will be the amount necessary to reach the threshold amount plus the recharge amount."},
+			{Name: "recharge_amount", JSON: "recharge_amount", Kind: engine.KindString, Optional: true, Computed: true, InCreate: true, InUpdate: true, InResponse: true, Description: "The amount, in the account currency, Telnyx charges when it recharges. Write it with two decimals, such as `100.00`."},
 			{Name: "record_type", JSON: "record_type", Kind: engine.KindString, Computed: true, InResponse: true, Description: "The record type."},
-			{Name: "threshold_amount", JSON: "threshold_amount", Kind: engine.KindString, Optional: true, Computed: true, InCreate: true, InUpdate: true, InResponse: true, Description: "The threshold amount at which the account will be recharged."},
+			{Name: "threshold_amount", JSON: "threshold_amount", Kind: engine.KindString, Optional: true, Computed: true, InCreate: true, InUpdate: true, InResponse: true, Description: "The balance, in the account currency, below which Telnyx recharges. Write it as the API returns it, with two decimals, such as `20.00`."},
 		},
 	}
 }

@@ -21,6 +21,6 @@ The account's automatic balance top-up: when the balance falls below a threshold
 - `id` (String) Always auto_recharge_preferences: there is one per account.
 - `invoice_enabled` (Boolean)
 - `preference` (String) The payment preference for auto recharge. One of `ach`, `credit_paypal`.
-- `recharge_amount` (String) The amount to recharge the account, the actual recharge amount will be the amount necessary to reach the threshold amount plus the recharge amount.
+- `recharge_amount` (String) The amount, in the account currency, Telnyx charges when it recharges. Write it with two decimals, such as `100.00`.
 - `record_type` (String) The record type.
-- `threshold_amount` (String) The threshold amount at which the account will be recharged.
+- `threshold_amount` (String) The balance, in the account currency, below which Telnyx recharges. Write it as the API returns it, with two decimals, such as `20.00`.

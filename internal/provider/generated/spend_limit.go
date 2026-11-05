@@ -12,12 +12,12 @@ func SpendLimit() *engine.Resource {
 		Description: "A spending cap for one product and period (daily or monthly). Set amount, or unlimited = true for explicitly no cap. When spend reaches the cap Telnyx blocks the product until the period ends. Destroy removes the limit; products with a default limit return to it.",
 		Create:      &engine.Op{Method: "POST", Path: "/spend_limits", Envelope: true},
 		Update:      &engine.Op{Method: "PATCH", Path: "/spend_limits/{product}", Envelope: true, Query: []string{"period"}},
-		Delete:      &engine.Op{Method: "DELETE", Path: "/spend_limits/{product}", Envelope: false, Query: []string{"period"}},
+		Delete:      &engine.Op{Method: "DELETE", Path: "/spend_limits/{product}", Envelope: false, Query: []string{"period", "reason"}},
 		ReadFrom:    &engine.ReadFrom{Op: &engine.Op{Method: "GET", Path: "/spend_limits", Envelope: true}, Field: "", Key: "product", Match: []string{"period"}},
 		IDAttr:      "product",
 		Import:      []string{"product", "period"},
 		Attrs: []*engine.Attr{
-			{Name: "amount", JSON: "amount", Kind: engine.KindFloat, Optional: true, InCreate: true, InUpdate: true, Description: "Limit in USD. `0` blocks at the first cent of spend."},
+			{Name: "amount", JSON: "amount", Kind: engine.KindFloat, Optional: true, InCreate: true, InUpdate: true, InResponse: true, Description: "Limit in USD. `0` blocks at the first cent of spend."},
 			{Name: "block", JSON: "block", Kind: engine.KindObject, Computed: true, InResponse: true, Description: "The active block of the period. `null` when the period is not blocked.",
 				Attrs: []*engine.Attr{
 					{Name: "blocked_until", JSON: "blocked_until", Kind: engine.KindString, Computed: true, InResponse: true, Description: "Exclusive end of the block: it is lifted at 00:00 UTC on this date at the latest."},
@@ -75,7 +75,7 @@ func SpendLimit() *engine.Resource {
 			{Name: "record_type", JSON: "record_type", Kind: engine.KindString, Computed: true, InResponse: true, Description: "Identifies the type of the resource."},
 			{Name: "spend_error", JSON: "spend_error", Kind: engine.KindString, Computed: true, InResponse: true, Description: "Set when `spend_usd` is `null`."},
 			{Name: "spend_usd", JSON: "spend_usd", Kind: engine.KindString, Computed: true, InResponse: true, Description: "Spend in USD so far in the period, as a decimal string. It can lag actual usage by about a minute. `null` when it could not be read."},
-			{Name: "unlimited", JSON: "unlimited", Kind: engine.KindBool, Optional: true, InCreate: true, InUpdate: true, Description: "Optional; only `false` is allowed together with `amount`."},
+			{Name: "unlimited", JSON: "unlimited", Kind: engine.KindBool, Optional: true, InCreate: true, InUpdate: true, InResponse: true, Description: "Optional; only `false` is allowed together with `amount`."},
 		},
 	}
 }

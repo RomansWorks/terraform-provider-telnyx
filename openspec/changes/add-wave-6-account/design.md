@@ -44,6 +44,14 @@ A response field the override makes required now names the object like a create 
 
 Attributes set by an extra update are optional and never computed, so that removing one runs the clear operation. When there is no clear operation, nothing could run, and a server default (the reputation `check_frequency`) would show as a change forever. Those attributes are now optional and computed: the API's value is kept until the user sets one.
 
+## Review fixes
+
+- **Values the API does not return, after import.** A managed account's `business_name` and `password`, or a DIR phone number's `documents`, are sent on create and never returned, and they force replacement. After import they are null, so setting them in configuration would replace the object, which for a managed account means a second account the API cannot delete. Import now marks the state as imported (private state), and a change from null of a value the API does not return then updates the state instead of replacing. A resource without update operations accepts such an update without sending anything.
+- **Phone numbers in paths.** `url.PathEscape` keeps `+`, which some servers read as a space; Telnyx asks for `%2B`. Path parameters now escape `+`, and the client keeps an escaped path as it is instead of escaping `%` again.
+- **Reputation LOA.** Replacing the LOA document is an update of `telnyx_enterprise_reputation` (`PATCH /enterprises/{id}/reputation/loa`), not an action: as an action, the next plan would have destroyed monitoring to restore the old document id. An extra update now skips attributes the create request already sent, and an attribute create requires stays required.
+- **Spend limit drift.** The read hook copies `limit.amount` (and `limit.unlimited` when true) to the top level, so a limit changed elsewhere shows as a change. Delete also sends the configured `reason`.
+- **Match attributes** are strings only, as import fills them as strings.
+
 ## Resources
 
 | Resource | Notes |
@@ -57,15 +65,16 @@ Attributes set by an extra update are optional and never computed, so that remov
 | `telnyx_enterprise` | Replaced with PUT. |
 | `telnyx_display_identity_record` | Created under an enterprise, read by its own id; imports as `<enterprise_id>/<id>`. Call reasons are strings; a read hook flattens the objects the API returns. |
 | `telnyx_display_identity_record_phone_number` | One number per resource. |
-| `telnyx_enterprise_reputation` | Identified by the enterprise; frequency and webhook through their own update operations. |
+| `telnyx_enterprise_reputation` | Identified by the enterprise; frequency, webhook and LOA document through their own update operations. |
 | `telnyx_enterprise_reputation_number` | One number per resource. |
 
-The DIR workflow (submit, references, email verification, infringement update), branded calling activation, reputation LOA replacement, ownership confirmation, refresh and remediation are actions. Lists and read-only lookups are data sources; `telnyx_account_reputation_number` leaves out the `fresh` query parameter, because a fresh lookup is billed on every refresh.
+The DIR workflow (submit, references, email verification, infringement update), branded calling activation, ownership confirmation, refresh and remediation are actions. Lists and read-only lookups are data sources; `telnyx_account_reputation_number` leaves out the `fresh` query parameter, because a fresh lookup is billed on every refresh.
 
 ## What is not covered
 
 - `POST /dir/{dir_id}/loa`, `POST /dir/{dir_id}/bpo_loa` and `POST /enterprises/{enterprise_id}/reputation/loa` render a PDF to sign and upload. Not data Terraform can use: `out_of_scope`.
 - API key spend limits, as above.
+- `webhook_url` of reputation monitoring cannot be cleared by removing it: the webhook update has no clear operation, so the value is kept. Set another URL to change it.
 - Terraform actions return no values: the remediation and external verification submissions are actions, and their status is read with the matching data sources.
 
 ## Testing

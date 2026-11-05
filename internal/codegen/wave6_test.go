@@ -135,3 +135,44 @@ func TestOnce(t *testing.T) {
 		t.Errorf("secret %+v", s)
 	}
 }
+
+// An extra update without a clear keeps the API's value (computed); an
+// attribute create requires stays required.
+func TestExtraUpdateWithoutClear(t *testing.T) {
+	r, err := deriveYAML(t, `type: telnyx_gadget
+description: x
+create: POST /gadgets
+read: GET /gadgets/{gadget_id}
+delete: DELETE /gadgets/{gadget_id}
+updates:
+  - op: POST /gadgets/{gadget_id}/actions/set_blocklist
+`)
+	if err != nil {
+		t.Fatal(err)
+	}
+	b := r.Attr("blocklist_id")
+	if b == nil || !b.Optional || !b.Computed || b.Required {
+		t.Errorf("blocklist_id %+v", b)
+	}
+}
+
+func TestOnceErrors(t *testing.T) {
+	if _, err := deriveYAML(t, "type: telnyx_key\ndescription: x\ncreate: POST /keys\nread: GET /keys/{id}\nattributes:\n  name: {once: true}\n"); err == nil {
+		t.Error("once on a request field: want an error")
+	}
+}
+
+// A data-source lookup can leave out a query parameter it cannot express.
+func TestSkippedQueryLookup(t *testing.T) {
+	body := "type: telnyx_lookup\nkind: data_source\ndescription: x\nread: GET /lookups/{number}\n"
+	if _, err := deriveYAML(t, body); err == nil {
+		t.Error("boolean query parameter: want an error")
+	}
+	r, err := deriveYAML(t, body+"attributes:\n  fresh: {skip: true}\n")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if r.Attr("fresh") != nil || r.Attr("number") == nil {
+		t.Errorf("attrs %+v", r.Attrs)
+	}
+}

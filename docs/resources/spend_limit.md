@@ -32,9 +32,9 @@ resource "telnyx_spend_limit" "voice_daily" {
 
 ### Optional
 
-- `amount` (Number) Limit in USD. `0` blocks at the first cent of spend. The API does not return this value, so changes made outside Terraform are not detected.
+- `amount` (Number) Limit in USD. `0` blocks at the first cent of spend.
 - `reason` (String) Why the limit is set or changed, kept for audit. The API does not return this value, so changes made outside Terraform are not detected.
-- `unlimited` (Boolean) Optional; only `false` is allowed together with `amount`. The API does not return this value, so changes made outside Terraform are not detected.
+- `unlimited` (Boolean) Optional; only `false` is allowed together with `amount`.
 
 ### Read-Only
 

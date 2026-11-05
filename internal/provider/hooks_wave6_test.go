@@ -111,3 +111,14 @@ func TestSpendLimitGone(t *testing.T) {
 		t.Errorf("limit set: %v %v", out, err)
 	}
 }
+
+func TestSpendLimitReadsLimit(t *testing.T) {
+	out, err := spendLimitHooks.AfterRead(context.Background(), engine.Object{"limit": map[string]any{"amount": "50.00", "unlimited": false}})
+	if err != nil || out["amount"] != "50.00" || out["unlimited"] != nil {
+		t.Errorf("amount: %v %v", out, err)
+	}
+	out, err = spendLimitHooks.AfterRead(context.Background(), engine.Object{"limit": map[string]any{"amount": nil, "unlimited": true}})
+	if err != nil || out["unlimited"] != true || out["amount"] != nil {
+		t.Errorf("unlimited: %v %v", out, err)
+	}
+}

@@ -10,12 +10,15 @@
 - [x] 1.8 Extra-update attributes without a clear operation are optional and computed
 - [x] 1.9 `Hooks.Delete`; a not-found error from a read hook removes the object from state
 - [x] 1.10 Data-source query lookups can skip a parameter
+- [x] 1.11 After import, setting a value the API does not return updates instead of replacing; tests
+- [x] 1.12 `+` in path parameters is sent as `%2B`, and the client does not escape a path twice; tests
+- [x] 1.13 Extra updates skip attributes create sent; required create attributes stay required
 
 ## 2. Wave 6 overrides
 
 - [x] 2.1 11 resources: `telnyx_authentication_provider`, `telnyx_auto_recharge_preferences`, `telnyx_user_profile`, `telnyx_oauth_client`, `telnyx_managed_account`, `telnyx_spend_limit`, `telnyx_enterprise`, `telnyx_display_identity_record`, `telnyx_display_identity_record_phone_number`, `telnyx_enterprise_reputation`, `telnyx_enterprise_reputation_number`
 - [x] 2.2 Their 8 list data sources and 15 read-only data sources, including `telnyx_enterprise_display_identity_records`
-- [x] 2.3 17 actions: the DIR workflow, branded calling, reputation LOA replacement, ownership confirmation, refresh, remediation, email verification, managed account enable and disable, reputation number removal
+- [x] 2.3 16 actions: the DIR workflow, branded calling, ownership confirmation, refresh, remediation, email verification, managed account enable and disable, reputation number removal
 - [x] 2.4 Ephemeral `telnyx_telephony_credential_token_material` (signing key material, never stored)
 - [x] 2.5 Hooks: DIR call reasons, DIR and reputation phone numbers, spend limits
 - [x] 2.6 Coverage: three LOA renders (PDF) move to `out_of_scope`

@@ -16,6 +16,7 @@ func EnterpriseReputation() *engine.Resource {
 		Updates: []engine.ExtraUpdate{
 			{Op: &engine.Op{Method: "PATCH", Path: "/enterprises/{enterprise_id}/reputation/frequency", Envelope: true}, Attrs: []string{"check_frequency"}},
 			{Op: &engine.Op{Method: "PATCH", Path: "/enterprises/{enterprise_id}/reputation/webhook", Envelope: true}, Attrs: []string{"webhook_url"}},
+			{Op: &engine.Op{Method: "PATCH", Path: "/enterprises/{enterprise_id}/reputation/loa", Envelope: true}, Attrs: []string{"loa_document_id"}},
 		},
 		IDAttr:     "enterprise_id",
 		Import:     []string{"enterprise_id"},
@@ -25,7 +26,7 @@ func EnterpriseReputation() *engine.Resource {
 			{Name: "created_at", JSON: "created_at", Kind: engine.KindString, Computed: true, InResponse: true},
 			{Name: "enterprise_id", JSON: "enterprise_id", Kind: engine.KindString, Required: true, ForceNew: true, InResponse: true, PathParams: []string{"enterprise_id"}, Description: "The enterprise id."},
 			{Name: "external_verification_status", JSON: "external_verification_status", Kind: engine.KindString, Computed: true, InResponse: true, Description: "Review state of the enterprise's ownership proof for numbers hosted with another provider. `null` when no proof was submitted."},
-			{Name: "loa_document_id", JSON: "loa_document_id", Kind: engine.KindString, Required: true, ForceNew: true, InCreate: true, InResponse: true, Description: "Id of the signed LOA document."},
+			{Name: "loa_document_id", JSON: "loa_document_id", Kind: engine.KindString, Required: true, InCreate: true, InResponse: true, Description: "Id of the signed LOA document."},
 			{Name: "loa_status", JSON: "loa_status", Kind: engine.KindString, Computed: true, InResponse: true, Description: "Customer-facing Letter-of-Authorization verification state. `approved` is required (alongside reputation status) before phone numbers can be added."},
 			{Name: "rejection_reasons", JSON: "rejection_reasons", Kind: engine.KindList, Computed: true, InResponse: true, Description: "Populated when `status` is `rejected`.", Elem: &engine.Attr{Kind: engine.KindString}},
 			{Name: "status", JSON: "status", Kind: engine.KindString, Computed: true, InResponse: true, Description: "Lifecycle status of the enterprise's Phone Number Reputation activation."},

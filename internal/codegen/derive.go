@@ -544,6 +544,11 @@ func (d *deriver) attrs(src sources, depth int, parentComputed bool, prefix stri
 			Once:        aov.Once,
 			Description: describe(cs, aov),
 		}
+		if aov.Once {
+			if configurable || !inR {
+				return nil, fmt.Errorf("%s: once applies to response fields the request does not take", p)
+			}
+		}
 		if aov.Name != "" {
 			a.Name = aov.Name
 		}
@@ -967,6 +972,10 @@ func (g *Generator) extraUpdates(r *engine.Resource, ov *Override, d *deriver, r
 			a.InCreate, a.InUpdate = false, false
 			if i := slices.IndexFunc(r.Attrs, func(b *engine.Attr) bool { return b.Name == a.Name }); i >= 0 {
 				a.InCreate = r.Attrs[i].InCreate
+				if r.Attrs[i].Required {
+					// Create needs it: it stays required.
+					a.Required, a.Optional, a.Computed = true, false, false
+				}
 				r.Attrs[i] = a
 			} else {
 				r.Attrs = append(r.Attrs, a)
@@ -1141,8 +1150,8 @@ func (g *Generator) ids(r *engine.Resource, ov *Override, create *operation, oth
 	if ov.ReadFrom != nil {
 		for _, n := range ov.ReadFrom.Match {
 			a := r.Attr(n)
-			if a == nil || a.Local || a.Kind != engine.KindString && a.Kind != engine.KindInt {
-				return fmt.Errorf("read_from: match %s is not a scalar attribute of the API", n)
+			if a == nil || a.Local || a.Kind != engine.KindString {
+				return fmt.Errorf("read_from: match %s is not a string attribute of the API", n)
 			}
 			a.Required, a.Optional, a.Computed, a.ForceNew = true, false, false, true
 			a.InUpdate = false

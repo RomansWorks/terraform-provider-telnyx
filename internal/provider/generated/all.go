@@ -183,7 +183,6 @@ func Actions() []*engine.Action {
 		DisplayIdentityRecordVerifyEmailSendAction(),
 		EnterpriseBrandedCallingAction(),
 		EnterpriseReputationExternalVerificationSubmitAction(),
-		EnterpriseReputationLoaUpdateAction(),
 		EnterpriseReputationNumberOwnershipConfirmAction(),
 		EnterpriseReputationNumbersRefreshAction(),
 		EnterpriseReputationRemediationSubmitAction(),

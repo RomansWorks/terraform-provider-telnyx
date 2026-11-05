@@ -228,10 +228,8 @@ func (r *frameworkResource) Update(ctx context.Context, req resource.UpdateReque
 	plan := fields(req.Plan.Raw)
 	state := fields(req.State.Raw)
 	d := r.d
-	if d.Update == nil && len(d.Updates) == 0 {
-		resp.Diagnostics.AddError("Update not supported", d.TypeName+" cannot be updated in place; this is a provider bug.")
-		return
-	}
+	// Without update operations, an update only fills values the API does
+	// not return, such as after import: nothing is sent.
 
 	send := r.withWriteOnly(plan, fields(req.Config.Raw))
 	include := func(a *Attr) bool { return a.InUpdate }
@@ -332,6 +330,9 @@ func (r *frameworkResource) ImportState(ctx context.Context, req resource.Import
 		}
 		resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root(n), types.StringValue(parts[i]))...)
 	}
+	// Values the API does not return stay null; setting them in
+	// configuration afterwards must not replace the object.
+	resp.Diagnostics.Append(resp.Private.SetKey(ctx, importedKey, []byte("true"))...)
 }
 
 func (r *frameworkResource) deleteWarning(state Values) string {
@@ -407,6 +408,10 @@ func (r *frameworkResource) extraUpdates(ctx context.Context, plan, state Values
 	for _, u := range r.d.Updates {
 		var set, changed bool
 		for _, n := range u.Attrs {
+			if a := r.d.Attr(n); state == nil && a != nil && a.InCreate {
+				// Create already sent it.
+				continue
+			}
 			p := plan[n]
 			if p.IsKnown() && !p.IsNull() {
 				set = true
@@ -590,7 +595,9 @@ func fillPath(attrs []*Attr, p string, vals Values) (string, error) {
 			return "", fmt.Errorf("%s is not known", attr.Name)
 		}
 		b.WriteString(p[:i])
-		b.WriteString(url.PathEscape(s))
+		// "+" is valid in a path but some servers read it as a space:
+		// Telnyx asks for E.164 numbers as %2B.
+		b.WriteString(strings.ReplaceAll(url.PathEscape(s), "+", "%2B"))
 		p = p[i+j+1:]
 	}
 }

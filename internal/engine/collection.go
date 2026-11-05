@@ -159,6 +159,27 @@ func readFrom(ctx context.Context, c *client.Client, d *Resource, vals Values) (
 		return nil, err
 	}
 	match := func(v any) bool { return scalarString(v) == id }
+	// Further fields that identify the object must match too.
+	others := map[string]string{}
+	for _, n := range rf.Match {
+		a := d.Attr(n)
+		var s string
+		if a == nil || vals[n].As(&s) != nil || s == "" {
+			return nil, fmt.Errorf("%s is not known", n)
+		}
+		others[a.JSON] = s
+	}
+	matchObj := func(obj map[string]any) bool {
+		if !match(obj[rf.Key]) {
+			return false
+		}
+		for k, s := range others {
+			if scalarString(obj[k]) != s {
+				return false
+			}
+		}
+		return true
+	}
 
 	if rf.Field == "" {
 		var found Object
@@ -167,7 +188,7 @@ func readFrom(ctx context.Context, c *client.Client, d *Resource, vals Values) (
 				if match(it["value"]) {
 					found = Object{idAttr.JSON: it["value"]}
 				}
-			} else if match(it[rf.Key]) {
+			} else if matchObj(it) {
 				found = it
 			}
 			return found == nil
@@ -197,7 +218,7 @@ func readFrom(ctx context.Context, c *client.Client, d *Resource, vals Values) (
 			}
 			continue
 		}
-		if obj, ok := el.(map[string]any); ok && match(obj[rf.Key]) {
+		if obj, ok := el.(map[string]any); ok && matchObj(obj) {
 			return obj, nil
 		}
 	}

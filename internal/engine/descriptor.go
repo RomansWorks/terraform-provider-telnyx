@@ -105,6 +105,9 @@ type Op struct {
 	// ask for.
 	Paging   Paging
 	PageSize int
+	// Query names attributes sent as query parameters of this operation,
+	// keyed by their JSON name, when they are set.
+	Query []string
 }
 
 // Paging is a list operation's paging style.
@@ -135,6 +138,9 @@ type ReadFrom struct {
 	// Key is the element field that holds the id; empty means the elements
 	// are plain values and the value is the id.
 	Key string
+	// Match names further attributes whose values the element's fields
+	// must equal, for objects identified by more than one field.
+	Match []string
 }
 
 // ExtraUpdate is an operation, besides the main update, that sets some
@@ -207,10 +213,15 @@ type Hooks struct {
 	// It returns the created object as read would.
 	Create func(ctx context.Context, c *client.Client, r *Resource, plan Values) (Object, error)
 	// AfterRead can reshape an API object before it is mapped to attributes.
+	// A not-found error (client.Error with status 404) on a resource read
+	// means the object is gone.
 	AfterRead func(ctx context.Context, obj Object) (Object, error)
 	// DeleteWarning replaces the descriptor's DeleteWarning, for example to
 	// name what stays in Telnyx.
 	DeleteWarning func(state Values) string
+	// Delete replaces the generic delete call, for example when the API
+	// takes the object in a request body. A not-found error is ignored.
+	Delete func(ctx context.Context, c *client.Client, r *Resource, state Values) error
 	// Wait is called after create until the object is ready.
 	Wait func(ctx context.Context, c *client.Client, r *Resource, obj Object) (Object, error)
 }

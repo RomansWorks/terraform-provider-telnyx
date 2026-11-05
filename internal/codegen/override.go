@@ -49,6 +49,9 @@ type Override struct {
 	ReadFrom *ReadFromOverride `yaml:"read_from"`
 	// Updates are further operations that each set some attributes.
 	Updates []UpdateOverride `yaml:"updates"`
+	// Query names top-level attributes that update and delete operations
+	// also take as query parameters of the same name.
+	Query []string `yaml:"query"`
 
 	// ID is the response field holding the object's id. Default "id".
 	ID string `yaml:"id"`
@@ -103,6 +106,9 @@ type ReadFromOverride struct {
 	// Key is the element field matched against the id; empty when the
 	// elements are plain values.
 	Key string `yaml:"key"`
+	// Match names further attributes the element must match; they are
+	// required, force replacement and follow the id in the import id.
+	Match []string `yaml:"match"`
 }
 
 // UpdateOverride is an extra update operation and its optional clear.

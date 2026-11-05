@@ -1,0 +1,12 @@
+type: telnyx_wireguard_peer
+description: A WireGuard peer of a WireGuard interface. When public_key is not set, Telnyx generates a key pair and returns the private key only on create; it is kept in state as a sensitive value.
+create: POST /wireguard_peers
+read: GET /wireguard_peers/{id}
+update: PATCH /wireguard_peers/{id}
+delete: DELETE /wireguard_peers/{id}
+list: GET /wireguard_peers
+attributes:
+  private_key: {create_only: true}
+  # A new key is a new peer; the generated private key in state would
+  # otherwise go stale.
+  public_key: {force_new: true}

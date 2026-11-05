@@ -1,0 +1,1 @@
+terraform import telnyx_network_default_gateway.example <network_id>

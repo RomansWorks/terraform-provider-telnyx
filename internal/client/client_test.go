@@ -155,3 +155,19 @@ func TestDoHonoursContextCancel(t *testing.T) {
 		t.Fatalf("err = %v, want deadline exceeded", err)
 	}
 }
+
+// TestSendKeepsEscapedPath sends an escaped path as it is: %2B stays %2B
+// and is not escaped again.
+func TestSendKeepsEscapedPath(t *testing.T) {
+	var got string
+	c := newTestClient(t, func(w http.ResponseWriter, r *http.Request) {
+		got = r.RequestURI
+		w.WriteHeader(http.StatusNoContent)
+	})
+	if _, err := c.Send(context.Background(), http.MethodGet, "/numbers/%2B13125550100/a%2Fb", nil, "", nil); err != nil {
+		t.Fatal(err)
+	}
+	if got != "/v2/numbers/%2B13125550100/a%2Fb" {
+		t.Errorf("request URI %s", got)
+	}
+}

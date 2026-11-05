@@ -24,7 +24,7 @@ Telnyx trims and lowercases email addresses, inbox usernames and sender filter e
 
 ## Soft deletes
 
-`DELETE /email_blocks/{id}` sets a suppression's status to `removed`, and a released dedicated IP stays readable as `released` until its quarantine ends. A read that still answers 200 would keep such objects in state forever. A read hook can now return `engine.ErrGone`; resource read then removes the object from state, as for a 404, and the next plan creates it again.
+`DELETE /email_blocks/{id}` sets a suppression's status to `removed`, and a released dedicated IP stays readable as `released` until its quarantine ends. A read that still answers 200 would keep such objects in state forever. A read hook answers with a not-found error for such a status; resource read then removes the object from state, as for a 404, and the next plan creates it again.
 
 ## Local-only changes
 
@@ -60,4 +60,4 @@ The data sources are the lists of these resources, `telnyx_email_domain_dns_reco
 
 ## Testing
 
-The conformance test runs every wave 4 resource through create, an empty plan, its data source, import and destroy. Its fake API now answers a `read_from` with `field` from the parent object, and a member added by an id in the request (`dedicated_ip_id`) is keyed by that id. Engine tests cover the `force_destroy` query, setting it on a resource without update, `ErrGone` and the lowercase validator; codegen tests the override key and union lists, and unit tests the two read hooks. Acceptance tests against a real account come in step 4.
+The conformance test runs every wave 4 resource through create, an empty plan, its data source, import and destroy. Its fake API now answers a `read_from` with `field` from the parent object, and a member added by an id in the request (`dedicated_ip_id`) is keyed by that id. Engine tests cover the `force_destroy` query, setting it on a resource without update, a not-found read hook and the lowercase validator; codegen tests the override key and union lists, and unit tests the two read hooks. Acceptance tests against a real account come in step 4.

@@ -30,7 +30,7 @@ An attribute override with `lowercase: true` SHALL reject a configured value tha
 - **THEN** plan fails with an error saying the value must be lowercase
 
 ### Requirement: Soft-deleted objects
-When a resource's read hook returns `engine.ErrGone`, read SHALL remove the object from state, as for a 404.
+Objects the API soft-deletes SHALL have a read hook that answers with a not-found error when the object's status says it is deleted, so read removes it from state (see "Delete hooks and gone objects").
 
 #### Scenario: Removed suppression
 - **WHEN** `GET /email_blocks/{id}` answers with `status = "removed"`

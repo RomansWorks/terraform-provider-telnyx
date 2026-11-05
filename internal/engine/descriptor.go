@@ -293,4 +293,3 @@ func (r *Resource) withFixedID(obj Object) Object {
 func (r *Resource) Path(p string, vals Values) (string, error) {
 	return fillPath(r.Attrs, p, vals)
 }
-

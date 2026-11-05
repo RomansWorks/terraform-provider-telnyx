@@ -3,7 +3,7 @@
 - [x] 1.1 `force_destroy` override key: boolean delete query parameters, local `force_destroy` attribute, sent on destroy when true; tests
 - [x] 1.2 List responses that are a `oneOf`/`anyOf` of page shapes read their items from the first variant with a `data` array; tests
 - [x] 1.3 `lowercase: true` attribute validator for values the API stores lowercased; tests
-- [x] 1.4 `engine.ErrGone` from a read hook removes a soft-deleted object from state; tests
+- [x] 1.4 Read hooks report soft-deleted objects as not found, which removes them from state; tests
 - [x] 1.5 Resources without an update operation store local-only changes (`force_destroy`) without a request; tests
 
 ## 2. Wave 4 overrides

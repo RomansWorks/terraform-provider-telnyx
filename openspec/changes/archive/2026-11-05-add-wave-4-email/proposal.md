@@ -12,7 +12,7 @@ This change covers the Telnyx email product area and no upstream range: it build
   - `force_destroy: [<param>, ...]` adds a local `force_destroy` attribute. When it is true in state, destroy sends each named boolean query parameter of the delete operation as `true`.
   - A list response whose schema is a `oneOf` or `anyOf` of page shapes reads its items from the first variant with a `data` array.
   - `lowercase: true` on an attribute rejects values (or set and list elements) that are not lowercase or have surrounding spaces, because the API stores them normalised and every plan would show a change.
-  - A read hook can return `engine.ErrGone` for a soft-deleted object, which removes it from state like a 404.
+  - Soft-deleted objects (a status that says deleted) are reported as not found by a read hook, which removes them from state.
   - A resource without an update operation stores a change of its local attributes (`force_destroy`, `release_on_destroy`) without a request, instead of failing.
 - **Wave 4 resources, data sources and actions**, generated from overrides. The list is in `tasks.md`.
 - **Read hooks** for `telnyx_email_inbox` (username from the address) and `telnyx_email_domain` (`inbound_enabled` from `inbound.enabled`), so both detect drift and import; and for `telnyx_email_suppression` (status `removed`) and `telnyx_email_dedicated_ip` (status `released`), which the API soft-deletes.
@@ -29,7 +29,7 @@ This change covers the Telnyx email product area and no upstream range: it build
 
 ## Impact
 
-- `internal/engine`: `Resource.ForceDestroy`, `ForceDestroyAttr`, `Attr.Lowercase`, `ErrGone`; delete sends the query parameters; update without an update operation.
+- `internal/engine`: `Resource.ForceDestroy`, `ForceDestroyAttr`, `Attr.Lowercase`; delete sends the query parameters; update without an update operation.
 - `internal/codegen`: the override keys `force_destroy` and `attributes.<f>.lowercase`; `listItems` falls back to union variants.
 - `generator/overrides`: 19 new override files. `internal/provider/generated`: regenerated.
 - `internal/provider`: four read hooks; the conformance fake learns parent-field reads.

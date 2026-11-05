@@ -398,7 +398,7 @@ func (s sources) child(name string, g *Generator) sources {
 		if c == nil {
 			return nil
 		}
-		if request && c["readOnly"] == true {
+		if request && (c["readOnly"] == true || readOnlyObject(g, c)) {
 			return nil
 		}
 		if !request && c["writeOnly"] == true {
@@ -407,6 +407,21 @@ func (s sources) child(name string, g *Generator) sources {
 		return c
 	}
 	return sources{create: pick(s.create, true), update: pick(s.update, true), read: pick(s.read, false)}
+}
+
+// readOnlyObject reports whether every field of an object is read-only, so
+// that a request cannot set any of it (a SIM card's status).
+func readOnlyObject(g *Generator, s map[string]any) bool {
+	props := properties(s)
+	if len(props) == 0 {
+		return false
+	}
+	for _, v := range props {
+		if g.norm(v)["readOnly"] != true {
+			return false
+		}
+	}
+	return true
 }
 
 func (s sources) items(g *Generator) sources {
@@ -483,8 +498,9 @@ func (d *deriver) attrs(src sources, depth int, parentComputed bool, prefix stri
 			InCreate:    inC,
 			InUpdate:    inU,
 			InResponse:  inR,
-			Sensitive:   aov.Sensitive || aov.Masked,
+			Sensitive:   aov.Sensitive || aov.Masked || aov.CreateOnly,
 			Masked:      aov.Masked,
+			CreateOnly:  aov.CreateOnly,
 			Description: describe(cs, aov),
 		}
 		if aov.Name != "" {
@@ -528,6 +544,12 @@ func (d *deriver) attrs(src sources, depth int, parentComputed bool, prefix stri
 			if err := d.writeOnlyAttr(a, p, depth, configurable); err != nil {
 				return nil, err
 			}
+		}
+		if aov.CreateOnly {
+			if depth > 0 || configurable {
+				return nil, fmt.Errorf("%s: create_only applies to top-level fields that requests do not take", p)
+			}
+			a.Required, a.Optional, a.Computed, a.ForceNew = false, false, true, false
 		}
 		if prev, ok := names[a.Name]; ok {
 			return nil, fmt.Errorf("%s and %s both map to attribute %s; rename one", prev, p, a.Name)
@@ -727,6 +749,10 @@ func (g *Generator) Derive(ov *Override) (*engine.Resource, error) {
 			return nil, fmt.Errorf("%s: read %s returns a list; use list or read_from", ov.Type, ov.Read)
 		}
 	}
+	readSchema, err := g.withCreateOnly(ov, readSchema, create)
+	if err != nil {
+		return nil, fmt.Errorf("%s: %w", ov.Type, err)
+	}
 	for _, op := range []*operation{create, update} {
 		if err := g.checkBody(op); err != nil {
 			return nil, fmt.Errorf("%s: %w", ov.Type, err)
@@ -808,6 +834,39 @@ func (g *Generator) Derive(ov *Override) (*engine.Resource, error) {
 	}
 	sort.SliceStable(r.Attrs, func(i, j int) bool { return r.Attrs[i].Name < r.Attrs[j].Name })
 	return r, nil
+}
+
+// withCreateOnly adds the create_only fields that only the create response
+// lists to a copy of the read schema, so that they become attributes.
+func (g *Generator) withCreateOnly(ov *Override, read map[string]any, create *operation) (map[string]any, error) {
+	var names []string
+	for p, a := range ov.Attributes {
+		if a.CreateOnly && properties(read)[p] == nil {
+			names = append(names, p)
+		}
+	}
+	if len(names) == 0 {
+		return read, nil
+	}
+	sort.Strings(names)
+	resp, _ := g.responseSchema(create)
+	props := map[string]any{}
+	for k, v := range properties(read) {
+		props[k] = v
+	}
+	for _, n := range names {
+		f := properties(resp)[n]
+		if f == nil {
+			return nil, fmt.Errorf("create_only %s is in neither the read nor the create response", n)
+		}
+		props[n] = f
+	}
+	out := map[string]any{}
+	for k, v := range read {
+		out[k] = v
+	}
+	out["properties"] = props
+	return out, nil
 }
 
 // collection returns the schema of one element of the collection an object

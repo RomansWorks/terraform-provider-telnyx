@@ -251,7 +251,7 @@ func attr(b *bytes.Buffer, a *engine.Attr) {
 		{"Required", a.Required}, {"Optional", a.Optional}, {"Computed", a.Computed},
 		{"Sensitive", a.Sensitive}, {"ForceNew", a.ForceNew},
 		{"InCreate", a.InCreate}, {"InUpdate", a.InUpdate}, {"InResponse", a.InResponse}, {"Local", a.Local},
-		{"WriteOnly", a.WriteOnly}, {"Masked", a.Masked},
+		{"WriteOnly", a.WriteOnly}, {"Masked", a.Masked}, {"CreateOnly", a.CreateOnly},
 	}
 	for _, f := range flags {
 		if f.on {

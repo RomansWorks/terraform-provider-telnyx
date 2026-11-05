@@ -499,7 +499,7 @@ func Get(ctx context.Context, c *client.Client, d *Resource, vals Values) (Objec
 	if err != nil || d.Read.Whole == "" {
 		return obj, err
 	}
-	return Object{d.Read.Whole: map[string]any(obj)}, nil
+	return Object{d.Read.Whole: obj}, nil
 }
 
 func (r *frameworkResource) afterRead(ctx context.Context, obj Object) (Object, error) {

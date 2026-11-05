@@ -45,15 +45,15 @@ func TestCreateOnlyLifecycle(t *testing.T) {
 		var in Object
 		body, _ := io.ReadAll(r.Body)
 		_ = json.Unmarshal(body, &in)
-		out := Object{}
-		switch {
-		case r.Method == http.MethodPost:
+		var out Object
+		switch r.Method {
+		case http.MethodPost:
 			vault = Object{"id": "v1", "name": in["name"]}
 			out = Object{"id": "v1", "name": in["name"], "token": "t1"}
-		case r.Method == http.MethodPatch:
+		case http.MethodPatch:
 			vault["name"] = in["name"]
 			out = Object{"id": "v1", "name": vault["name"]}
-		case r.Method == http.MethodDelete:
+		case http.MethodDelete:
 			w.WriteHeader(http.StatusNoContent)
 			return
 		default:

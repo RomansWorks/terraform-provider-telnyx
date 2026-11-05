@@ -13,7 +13,7 @@ Upstream range: `5223fc2` to `208f3fb`.
   - Data sources: `telnyx_agent_gateways`, `telnyx_agent_gateway_apis`, `telnyx_agent_gateway_guardrails`, `telnyx_agent_gateway_keys`, `telnyx_agent_gateway_mcp_servers`, `telnyx_agent_gateway_teams`, `telnyx_agent_gateway_policies`, `telnyx_agent_gateway_policy_attachments`, `telnyx_agent_gateway_models`.
   - `GET /agent_gateways/{instance_id}/spend_logs` is `out_of_scope` (reporting), like the LLM token gateway spend operations.
 - **Previously unreviewed operations**:
-  - `GET /telephony_credentials/{id}/token_material` returns signing secrets, so it is an ephemeral resource, `telnyx_telephony_credential_token_material`, like `telnyx_telephony_credential_token`. Deferred: see design.
+  - `GET /telephony_credentials/{id}/token_material` returns signing secrets, so it is an ephemeral resource, `telnyx_telephony_credential_token_material`, like `telnyx_telephony_credential_token`. Built with the account wave (wave 6).
   - `DELETE /ai/conversations/{conversation_id}/conversations-insights/{insight_id}` deletes stored conversation data: `out_of_scope` (runtime), like the list beside it.
 - **Changed operations (19)**: the AI memory operations and `GET /ai/tests/test_framework/v1/personalities` changed only in the shared error schema (`source.parameter` was added to `TelnyxError`), and every tag gained the `agent-gateway_bearerAuth` security scheme. No attribute changes, and no generated file changes.
 - **Candidate resource changed** `/ai/memory/namespaces/{namespace}/settings`: the same error schema change. `telnyx_ai_memory_namespace_settings` is not built yet (wave 5).

@@ -17,7 +17,7 @@ The Agent Gateway is a new AI product: a gateway instance on a WireGuard Interfa
 - **`telnyx_agent_gateway_key`**: the key value is only in the create response. Wave 5 stores it as a sensitive computed attribute (the only way users can get it), and should consider an ephemeral alternative.
 - **Tool permissions are singletons**: `PUT` replaces the grant. Destroy sets `servers` to `[]`, which the API documents as granting none.
 - **Spend logs are out of scope** as reporting, consistent with `GET /llm_token_gateway/spend/*`.
-- **`telnyx_telephony_credential_token_material`** is classified `ephemeral` so the secrets never reach state. It is a follow-up to wave 1 (telephony credentials), which has already merged; it is not assigned to a wave and is noted in the pull request.
+- **`telnyx_telephony_credential_token_material`** is classified `ephemeral` so the secrets never reach state. It belongs to telephony credentials (SIP and WebRTC login tokens), not to Agent Gateway keys, so it is built with the account wave (wave 6); wave 1, which owns `telnyx_telephony_credential`, has already merged.
 
 ## Risks / Trade-offs
 

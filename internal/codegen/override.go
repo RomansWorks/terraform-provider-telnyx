@@ -88,8 +88,9 @@ type Override struct {
 func (o *Override) itemSettings() map[string]AttrOverride {
 	out := map[string]AttrOverride{}
 	for p, a := range o.Attributes {
-		s := AttrOverride{Sensitive: a.Sensitive || a.Masked || a.WriteOnly || a.Once, Set: a.Set}
-		if s.Sensitive || s.Set {
+		// A list is read, which never holds a create-only value.
+		s := AttrOverride{Sensitive: a.Sensitive || a.Masked || a.WriteOnly, Set: a.Set, Skip: a.CreateOnly}
+		if s.Sensitive || s.Set || s.Skip {
 			out[p] = s
 		}
 	}
@@ -137,10 +138,11 @@ type AttrOverride struct {
 	// Masked says the API answers with asterisks in place of the value
 	// after create; the value in state is kept. Masked implies sensitive.
 	Masked bool `yaml:"masked"`
-	// Once says the API returns the value only in the create response,
-	// such as a client secret; the value in state is kept. Once implies
-	// sensitive.
-	Once bool `yaml:"once"`
+	// CreateOnly says only the create response holds the value (a token
+	// or a generated private key): it is computed and sensitive, and
+	// reads keep the value in state. The field may be missing from the
+	// read response.
+	CreateOnly bool `yaml:"create_only"`
 }
 
 // AddAttr is a local attribute.

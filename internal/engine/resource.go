@@ -7,6 +7,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"maps"
 	"net/http"
 	"net/url"
 	"slices"
@@ -183,17 +184,14 @@ func (r *frameworkResource) Create(ctx context.Context, req resource.CreateReque
 		resp.Diagnostics.AddError("Unable to read "+d.TypeName, err.Error())
 		return
 	}
-	// Values returned only by create come from the create response.
-	prior := Values{}
-	for k, v := range plan {
-		prior[k] = v
-	}
+	// Values only the create response holds are gone from the read.
+	final := maps.Clone(plan)
 	for _, a := range d.Attrs {
-		if a.Once {
-			prior[a.Name] = vals[a.Name]
+		if a.CreateOnly {
+			final[a.Name] = vals[a.Name]
 		}
 	}
-	st, err := r.toState(ctx, obj, prior, modeApply, req.Plan.Raw)
+	st, err := r.toState(ctx, obj, final, modeApply, req.Plan.Raw)
 	if err != nil {
 		resp.Diagnostics.AddError("Unable to read "+d.TypeName, err.Error())
 		return

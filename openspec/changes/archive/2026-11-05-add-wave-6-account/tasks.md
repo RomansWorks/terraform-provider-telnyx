@@ -5,7 +5,7 @@
 - [x] 1.3 Body unions told apart by a boolean merge into one object; tests
 - [x] 1.4 Operations on the collection path take all parameters as parents; tests
 - [x] 1.5 A response field made required names the object; tests
-- [x] 1.6 `once: true` keeps a value only create returns; tests
+- [x] 1.6 OAuth client secret uses `create_only` (from wave 3)
 - [x] 1.7 Singletons whose response has an id use the fixed id; tests
 - [x] 1.8 Extra-update attributes without a clear operation are optional and computed
 - [x] 1.9 `Hooks.Delete`; a not-found error from a read hook removes the object from state

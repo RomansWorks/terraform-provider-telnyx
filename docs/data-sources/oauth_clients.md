@@ -37,7 +37,6 @@ Read-Only:
 - `allowed_grant_types` (Set of String) List of allowed OAuth grant types
 - `allowed_scopes` (Set of String) List of allowed OAuth scopes
 - `client_id` (String) OAuth client identifier
-- `client_secret` (String, Sensitive) Client secret (only included when available, for confidential clients)
 - `client_type` (String) OAuth client type
 - `created_at` (String) Timestamp when the client was created
 - `logo_uri` (String) URL of the client logo

@@ -60,13 +60,6 @@ When the override's `id` names a response field that the override makes required
 - **WHEN** `telnyx_enterprise_reputation_number` sets `phone_number = "+13125550100"`
 - **THEN** the create hook sends `{"phone_numbers": ["+13125550100"]}` and the read path is `/enterprises/{enterprise_id}/reputation/numbers/+13125550100`
 
-### Requirement: Values returned once
-`attributes.<f>.once: true` SHALL make a response field sensitive and computed, take its value from the create response, and keep the value in state when later reads return none. Data sources SHALL show what the API returns.
-
-#### Scenario: Client secret
-- **WHEN** a confidential `telnyx_oauth_client` is created and `GET /oauth/clients/{id}` returns `client_secret: null`
-- **THEN** `client_secret` in state holds the secret from the create response, and the next plan is empty
-
 ### Requirement: Once-per-account objects with an id
 A `singleton` whose response has an `id` field SHALL use the fixed id in its place.
 

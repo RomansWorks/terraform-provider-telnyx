@@ -168,7 +168,11 @@ func objectFromJSON(attrs []*Attr, obj Object, prior map[string]tftypes.Value, m
 			continue
 		}
 		raw, inObj := obj[a.JSON]
-		if a.Masked && isMask(raw) || a.Once && m != modeData && p.IsKnown() && !p.IsNull() {
+		if a.CreateOnly && m == modeRead {
+			vals[a.Name] = known(p)
+			continue
+		}
+		if a.Masked && isMask(raw) {
 			vals[a.Name] = known(p)
 			continue
 		}

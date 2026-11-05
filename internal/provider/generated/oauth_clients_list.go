@@ -24,7 +24,6 @@ func OauthClientsList() *engine.List {
 				{Name: "allowed_grant_types", JSON: "allowed_grant_types", Kind: engine.KindSet, Computed: true, InResponse: true, Description: "List of allowed OAuth grant types", Elem: &engine.Attr{Kind: engine.KindString}},
 				{Name: "allowed_scopes", JSON: "allowed_scopes", Kind: engine.KindSet, Computed: true, InResponse: true, Description: "List of allowed OAuth scopes", Elem: &engine.Attr{Kind: engine.KindString}},
 				{Name: "client_id", JSON: "client_id", Kind: engine.KindString, Computed: true, InResponse: true, Description: "OAuth client identifier"},
-				{Name: "client_secret", JSON: "client_secret", Kind: engine.KindString, Computed: true, Sensitive: true, InResponse: true, Description: "Client secret (only included when available, for confidential clients)"},
 				{Name: "client_type", JSON: "client_type", Kind: engine.KindString, Computed: true, InResponse: true, Description: "OAuth client type"},
 				{Name: "created_at", JSON: "created_at", Kind: engine.KindString, Computed: true, InResponse: true, Description: "Timestamp when the client was created"},
 				{Name: "logo_uri", JSON: "logo_uri", Kind: engine.KindString, Computed: true, InResponse: true, Description: "URL of the client logo"},

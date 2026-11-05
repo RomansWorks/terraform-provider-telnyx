@@ -257,7 +257,8 @@ func (r *Resource) dataAttrs() []*Attr {
 	var out []*Attr
 	for _, a := range r.Attrs {
 		lookup := slices.Contains(r.Import, a.Name)
-		if !lookup && a.Query == "" && (a.Local || !a.InResponse) {
+		// Only create returns a create-only value; a read never has it.
+		if !lookup && a.Query == "" && (a.Local || !a.InResponse || a.CreateOnly) {
 			continue
 		}
 		out = append(out, a)

@@ -125,17 +125,6 @@ attributes:
 	}
 }
 
-// A secret returned only by create is sensitive and kept.
-func TestOnce(t *testing.T) {
-	r, err := deriveYAML(t, "type: telnyx_key\ndescription: x\ncreate: POST /keys\nread: GET /keys/{id}\nattributes:\n  secret: {once: true}\n")
-	if err != nil {
-		t.Fatal(err)
-	}
-	if s := r.Attr("secret"); s == nil || !s.Once || !s.Sensitive || !s.Computed {
-		t.Errorf("secret %+v", s)
-	}
-}
-
 // An extra update without a clear keeps the API's value (computed); an
 // attribute create requires stays required.
 func TestExtraUpdateWithoutClear(t *testing.T) {
@@ -153,12 +142,6 @@ updates:
 	b := r.Attr("blocklist_id")
 	if b == nil || !b.Optional || !b.Computed || b.Required {
 		t.Errorf("blocklist_id %+v", b)
-	}
-}
-
-func TestOnceErrors(t *testing.T) {
-	if _, err := deriveYAML(t, "type: telnyx_key\ndescription: x\ncreate: POST /keys\nread: GET /keys/{id}\nattributes:\n  name: {once: true}\n"); err == nil {
-		t.Error("once on a request field: want an error")
 	}
 }
 

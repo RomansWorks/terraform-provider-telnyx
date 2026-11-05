@@ -71,9 +71,9 @@ type Attr struct {
 	// asterisks, as Telnyx does for passwords after create.
 	Masked bool
 
-	// Once attributes are returned only when the object is created, such
-	// as a client secret: the value in state is kept afterwards.
-	Once bool
+	// CreateOnly attributes are returned only by create (a token Telnyx
+	// keeps only a hash of). Reads never overwrite the value in state.
+	CreateOnly bool
 
 	// Query names the query parameter this attribute fills when a data
 	// source reads the object. Unless Required, it is optional.

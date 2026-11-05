@@ -23,7 +23,6 @@ An OAuth 2.0 client that apps use to get access to the Telnyx API on behalf of u
 
 - `allowed_grant_types` (Set of String) List of allowed OAuth grant types
 - `allowed_scopes` (Set of String) List of allowed OAuth scopes
-- `client_secret` (String, Sensitive) Client secret (only included when available, for confidential clients)
 - `client_type` (String) OAuth client type One of `confidential`, `public`.
 - `created_at` (String) Timestamp when the client was created
 - `logo_uri` (String) URL of the client logo

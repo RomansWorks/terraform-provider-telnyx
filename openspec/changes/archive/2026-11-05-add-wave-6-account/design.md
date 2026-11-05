@@ -38,7 +38,7 @@ A response field the override makes required now names the object like a create 
 
 ## Values returned once
 
-`client_secret` of an OAuth client is returned by create only. `once: true` makes it sensitive and computed, takes it from the create response even though create reads the object again, and keeps the state value afterwards. Data sources show what the API returns.
+`client_secret` of an OAuth client is returned by create only. It uses `create_only` from wave 3, which was merged first; this change's own `once` key was dropped in favour of it.
 
 ## Extra updates without a clear
 
@@ -59,7 +59,7 @@ Attributes set by an extra update are optional and never computed, so that remov
 | `telnyx_authentication_provider` | SAML SSO settings. |
 | `telnyx_auto_recharge_preferences` | Singleton; destroy keeps it. |
 | `telnyx_user_profile` | Singleton (beta); destroy keeps it. Fields the API takes but does not return keep the configured value. |
-| `telnyx_oauth_client` | Identified by `client_id`; scopes, grant types and redirect URIs are sets; `client_secret` is `once`. |
+| `telnyx_oauth_client` | Identified by `client_id`; scopes, grant types and redirect URIs are sets; `client_secret` is `create_only`. |
 | `telnyx_managed_account` | No delete: destroy removes it from state and warns. `channel_limit` through `update_global_channel_limit`. API key and token are sensitive. |
 | `telnyx_spend_limit` | See above. |
 | `telnyx_enterprise` | Replaced with PUT. |
@@ -79,4 +79,4 @@ The DIR workflow (submit, references, email verification, infringement update), 
 
 ## Testing
 
-Codegen tests cover match, query, boolean unions, collection operations, response fields that name the object, `once` and singletons with an id. Engine tests cover the match lookup, query parameters and `once`. Hook tests cover each hook. The conformance test runs every wave 6 resource; its fake API now answers batches of one phone number with one object. Acceptance tests are not run (no account).
+Codegen tests cover match, query, boolean unions, collection operations, response fields that name the object, and singletons with an id. Engine tests cover the match lookup and query parameters. Hook tests cover each hook. The conformance test runs every wave 6 resource; its fake API now answers batches of one phone number with one object. Acceptance tests are not run (no account).

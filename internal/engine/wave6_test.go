@@ -76,28 +76,6 @@ func TestOpQuery(t *testing.T) {
 	}
 }
 
-// TestOnceKeepsCreateValue keeps a value only create returns, except in a
-// data source, which shows what the API says.
-func TestOnceKeepsCreateValue(t *testing.T) {
-	attrs := []*Attr{{Name: "secret", JSON: "secret", Kind: KindString, Computed: true, InResponse: true, Once: true}}
-	prior := map[string]tftypes.Value{"secret": str("s3cret")}
-	for _, m := range []mode{modeApply, modeRead} {
-		v, err := objectFromJSON(attrs, Object{"secret": nil}, prior, m)
-		if err != nil || !fields(v)["secret"].Equal(str("s3cret")) {
-			t.Errorf("mode %d: %v %v", m, v, err)
-		}
-	}
-	v, err := objectFromJSON(attrs, Object{"secret": nil}, prior, modeData)
-	if err != nil || !fields(v)["secret"].IsNull() {
-		t.Errorf("data: %v %v", v, err)
-	}
-	// Without a value in state, the API's value is used.
-	v, err = objectFromJSON(attrs, Object{"secret": "new"}, nil, modeRead)
-	if err != nil || !fields(v)["secret"].Equal(str("new")) {
-		t.Errorf("no prior: %v %v", v, err)
-	}
-}
-
 // TestDeleteHookAndGoneRead: a Delete hook replaces the generic delete, its
 // not-found error is ignored, and a not-found error from a read hook removes
 // the object from state.

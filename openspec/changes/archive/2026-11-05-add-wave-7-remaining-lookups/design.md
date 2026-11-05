@@ -12,9 +12,13 @@ Single-object reads take only scalar query parameters. `GET /user_tags` also tak
 
 `GET /speech-to-text/providers` filters by `provider`, which Terraform reserves in every block. A list filter whose name is reserved now takes the suffix `_filter` (`provider_filter`) and is still sent as `provider`. If the operation already has a parameter of that name, generation fails as for any other collision. Path parameters with a reserved name stay a generation error, because they also form import ids.
 
+## Secrets
+
+`external_pin` in `telnyx_phone_numbers_bulk_update` is sensitive, as it is on `telnyx_phone_number`. A port-out's `support_key` (`telnyx_portout`, `telnyx_portouts`) proves the account holder's request, so it is sensitive too.
+
 ## Actions
 
-The actions send their operation once, as the actions from step 2 do. Path parameters are required attributes. `telnyx_portout_status_update` takes the new status as the `status` path parameter (`authorized` or `rejected-pending`). Destructive one-shot operations (`telnyx_phone_numbers_bulk_delete`, `telnyx_organization_user_remove`, `telnyx_ai_integration_connection_delete`, `telnyx_user_bundle_deactivate`) are actions because the objects they remove are not managed by this provider.
+The actions send their operation once, as the actions from step 2 do. Path parameters are required attributes. `telnyx_portout_status_update` takes the new status as the `status` path parameter (`authorized` or `rejected-pending`); the generator does not carry path-parameter enums, so the description lists the values and the API rejects others. The API requires `reason` in both cases. Destructive one-shot operations (`telnyx_phone_numbers_bulk_delete`, `telnyx_organization_user_remove`, `telnyx_ai_integration_connection_delete`, `telnyx_user_bundle_deactivate`) are actions because the objects they remove are not managed by this provider.
 
 ## Not built here
 

@@ -9,7 +9,7 @@ import "github.com/RomansWorks/terraform-provider-telnyx/internal/engine"
 func PortoutStatusUpdateAction() *engine.Action {
 	return &engine.Action{
 		TypeName:    "telnyx_portout_status_update",
-		Description: "Authorizes or rejects a port-out request: set `status` to `authorized` or `rejected-pending`.",
+		Description: "Authorizes or rejects a port-out request: set `status` to `authorized` or `rejected-pending`. The API requires `reason` in both cases.",
 		Op:          &engine.Op{Method: "PATCH", Path: "/portouts/{id}/{status}", Envelope: false},
 		Attrs: []*engine.Attr{
 			{Name: "host_messaging", JSON: "host_messaging", Kind: engine.KindBool, Optional: true, InCreate: true, Description: "Indicates whether messaging services should be maintained with Telnyx after the port out completes"},

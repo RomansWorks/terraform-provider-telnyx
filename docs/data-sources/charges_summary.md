@@ -13,10 +13,10 @@ A summary of the account's charges for a period of up to 31 days, by product.
 ## Example Usage
 
 ```terraform
-# Charges of October 2026. The period can be at most 31 days.
+# Charges of October 2026: end_date is exclusive, and the period can be at most 31 days.
 data "telnyx_charges_summary" "october" {
   start_date = "2026-10-01"
-  end_date   = "2026-10-31"
+  end_date   = "2026-11-01"
 }
 ```
 

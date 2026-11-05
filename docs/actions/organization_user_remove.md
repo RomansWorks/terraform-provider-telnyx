@@ -3,12 +3,12 @@
 page_title: "telnyx_organization_user_remove Action - telnyx"
 subcategory: ""
 description: |-
-  Removes a user from the organization.
+  Removes a user from the organization, ending their access.
 ---
 
 # telnyx_organization_user_remove (Action)
 
-Removes a user from the organization.
+Removes a user from the organization, ending their access.
 
 
 

@@ -9,7 +9,7 @@ import "github.com/RomansWorks/terraform-provider-telnyx/internal/engine"
 func OrganizationUserRemoveAction() *engine.Action {
 	return &engine.Action{
 		TypeName:    "telnyx_organization_user_remove",
-		Description: "Removes a user from the organization.",
+		Description: "Removes a user from the organization, ending their access.",
 		Op:          &engine.Op{Method: "POST", Path: "/organizations/users/{id}/actions/remove", Envelope: false},
 		Attrs: []*engine.Attr{
 			{Name: "id", Kind: engine.KindString, Required: true, Local: true, PathParams: []string{"id"}, Description: "The object's id."},

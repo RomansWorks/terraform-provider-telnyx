@@ -3,12 +3,12 @@
 page_title: "telnyx_portout_status_update Action - telnyx"
 subcategory: ""
 description: |-
-  Authorizes or rejects a port-out request: set status to authorized or rejected-pending.
+  Authorizes or rejects a port-out request: set status to authorized or rejected-pending. The API requires reason in both cases.
 ---
 
 # telnyx_portout_status_update (Action)
 
-Authorizes or rejects a port-out request: set `status` to `authorized` or `rejected-pending`.
+Authorizes or rejects a port-out request: set `status` to `authorized` or `rejected-pending`. The API requires `reason` in both cases.
 
 ## Example Usage
 

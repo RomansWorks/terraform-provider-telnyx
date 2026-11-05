@@ -11,7 +11,7 @@ The provider SHALL offer read-only data sources for the account balance (`telnyx
 The provider SHALL offer `telnyx_charges_summary` and `telnyx_charges_breakdown`, which take the period as lookup attributes, required where the API requires them.
 
 #### Scenario: Charges for a period
-- **WHEN** `data "telnyx_charges_summary" "s" { start_date = "2026-10-01" end_date = "2026-10-31" }` is read
+- **WHEN** `data "telnyx_charges_summary" "s" { start_date = "2026-10-01" end_date = "2026-11-01" }` is read
 - **THEN** the provider sends both dates as query parameters
 
 #### Scenario: Missing period

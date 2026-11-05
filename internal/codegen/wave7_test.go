@@ -24,6 +24,20 @@ const wave7Spec = `{
         "properties": {"data": {"type": "array", "items": {"type": "object", "properties": {"provider": {"type": "string"}}}}}
       }}}}}
     }},
+    "/limits": {"get": {
+      "parameters": [{"name": "max_items", "in": "query", "schema": {"type": "integer"}}],
+      "responses": {"200": {"content": {"application/json": {"schema": {
+        "type": "object",
+        "properties": {"data": {"type": "array", "items": {"type": "object", "properties": {"id": {"type": "string"}}}}}
+      }}}}}
+    }},
+    "/counts/{count}/items": {"get": {
+      "parameters": [{"name": "count", "in": "path", "required": true, "schema": {"type": "string"}}],
+      "responses": {"200": {"content": {"application/json": {"schema": {
+        "type": "object",
+        "properties": {"data": {"type": "array", "items": {"type": "object", "properties": {"id": {"type": "string"}}}}}
+      }}}}}
+    }},
     "/stt_providers": {"get": {
       "parameters": [{"name": "provider", "in": "query", "schema": {"type": "string"}}],
       "responses": {"200": {"content": {"application/json": {"schema": {
@@ -48,20 +62,7 @@ func TestReservedQueryParam(t *testing.T) {
 	}
 	g := &Generator{Spec: s}
 	derive := func(key string) error {
-		p := filepath.Join(dir, "x.yaml")
-		_ = os.WriteFile(p, []byte("type: telnyx_xs\nkind: data_source\ndescription: x\nlist: \""+key+"\"\n"), 0o644)
-		ov, err := LoadOverride(p)
-		if err != nil {
-			t.Fatal(err)
-		}
-		_, l, err := g.DeriveAll(ov)
-		if err != nil {
-			return err
-		}
-		if len(l.Params) != 1 || l.Params[0].Name != "provider_filter" || l.Params[0].JSON != "provider" {
-			t.Errorf("params: %+v", l.Params)
-		}
-		return nil
+		return deriveParam(t, g, dir, key, "provider")
 	}
 	if err := derive("GET /stt_providers"); err != nil {
 		t.Fatal(err)
@@ -69,4 +70,30 @@ func TestReservedQueryParam(t *testing.T) {
 	if err := derive("GET /providers"); err == nil {
 		t.Error("provider and provider_filter: want a collision error")
 	}
+	if err := deriveParam(t, g, dir, "GET /limits", "max_items"); err != nil {
+		t.Errorf("max_items: %v", err)
+	}
+	if err := deriveParam(t, g, dir, "GET /counts/{count}/items", ""); err == nil {
+		t.Error("reserved path parameter: want an error")
+	}
+}
+
+// deriveParam derives a list override for key and checks that its only
+// parameter is <name>_filter, sent as name.
+func deriveParam(t *testing.T, g *Generator, dir, key, name string) error {
+	t.Helper()
+	p := filepath.Join(dir, "x.yaml")
+	_ = os.WriteFile(p, []byte("type: telnyx_xs\nkind: data_source\ndescription: x\nlist: \""+key+"\"\n"), 0o644)
+	ov, err := LoadOverride(p)
+	if err != nil {
+		t.Fatal(err)
+	}
+	_, l, err := g.DeriveAll(ov)
+	if err != nil {
+		return err
+	}
+	if len(l.Params) != 1 || l.Params[0].Name != name+"_filter" || l.Params[0].JSON != name {
+		t.Errorf("%s params: %+v", key, l.Params)
+	}
+	return nil
 }

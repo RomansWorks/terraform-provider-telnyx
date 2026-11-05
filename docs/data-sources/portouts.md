@@ -64,7 +64,7 @@ Read-Only:
 - `spid` (String) New service provider spid
 - `state` (String) State, province, or similar of billing address
 - `status` (String) Status of portout request
-- `support_key` (String) A key to reference this port out request when contacting Telnyx customer support
+- `support_key` (String, Sensitive) A key to reference this port out request when contacting Telnyx customer support
 - `updated_at` (String) ISO 8601 formatted date of when the portout was last updated
 - `user_id` (String) Identifies the user (or organization) who requested the port out
 - `vendor` (String) Telnyx partner providing network coverage

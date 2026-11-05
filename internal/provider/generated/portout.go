@@ -38,7 +38,7 @@ func Portout() *engine.Resource {
 			{Name: "spid", JSON: "spid", Kind: engine.KindString, Computed: true, InResponse: true, Description: "New service provider spid"},
 			{Name: "state", JSON: "state", Kind: engine.KindString, Computed: true, InResponse: true, Description: "State, province, or similar of billing address"},
 			{Name: "status", JSON: "status", Kind: engine.KindString, Computed: true, InResponse: true, Description: "Status of portout request"},
-			{Name: "support_key", JSON: "support_key", Kind: engine.KindString, Computed: true, InResponse: true, Description: "A key to reference this port out request when contacting Telnyx customer support"},
+			{Name: "support_key", JSON: "support_key", Kind: engine.KindString, Computed: true, Sensitive: true, InResponse: true, Description: "A key to reference this port out request when contacting Telnyx customer support"},
 			{Name: "updated_at", JSON: "updated_at", Kind: engine.KindString, Computed: true, InResponse: true, Description: "ISO 8601 formatted date of when the portout was last updated"},
 			{Name: "user_id", JSON: "user_id", Kind: engine.KindString, Computed: true, InResponse: true, Description: "Identifies the user (or organization) who requested the port out"},
 			{Name: "vendor", JSON: "vendor", Kind: engine.KindString, Computed: true, InResponse: true, Description: "Telnyx partner providing network coverage"},

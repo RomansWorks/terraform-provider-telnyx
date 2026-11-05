@@ -1,7 +1,7 @@
 # ai-platform Specification
 
 ## Purpose
-TBD - created by archiving change add-wave-5-ai-storage-media. Update Purpose after archive.
+How the provider manages the Telnyx AI platform around assistants: knowledge collections, memory namespaces, missions, conversation insights, the AI test framework and the AI gateway.
 
 ## Requirements
 

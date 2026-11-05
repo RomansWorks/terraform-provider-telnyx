@@ -1,7 +1,7 @@
 # storage Specification
 
 ## Purpose
-TBD - created by archiving change add-wave-5-ai-storage-media. Update Purpose after archive.
+How the provider manages Telnyx Storage beyond buckets: KV namespaces and keys, SQL databases, CloudFS filesystems, migrations and bucket SSL certificates. Buckets themselves are created with the AWS provider against Telnyx's S3 endpoint.
 
 ## Requirements
 

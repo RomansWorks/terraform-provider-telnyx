@@ -1,7 +1,7 @@
 # speech Specification
 
 ## Purpose
-TBD - created by archiving change add-wave-5-ai-storage-media. Update Purpose after archive.
+How the provider manages voice clones, voice designs and pronunciation dictionaries for Telnyx text-to-speech.
 
 ## Requirements
 

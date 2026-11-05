@@ -1,7 +1,7 @@
 # agent-gateway Specification
 
 ## Purpose
-TBD - created by archiving change add-wave-5-ai-storage-media. Update Purpose after archive.
+How the provider manages Telnyx Agent Gateways (LLM and tool gateways on a WireGuard Interface) and their APIs, MCP servers, guardrails, policies, keys, teams and tool permissions.
 
 ## Requirements
 

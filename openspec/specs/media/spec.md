@@ -1,7 +1,7 @@
 # media Specification
 
 ## Purpose
-TBD - created by archiving change add-wave-5-ai-storage-media. Update Purpose after archive.
+How the provider manages media files and video rooms.
 
 ## Requirements
 

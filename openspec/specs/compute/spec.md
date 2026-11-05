@@ -1,7 +1,7 @@
 # compute Specification
 
 ## Purpose
-TBD - created by archiving change add-wave-5-ai-storage-media. Update Purpose after archive.
+How the provider manages Telnyx Compute function log exports and looks up functions and their revisions.
 
 ## Requirements
 

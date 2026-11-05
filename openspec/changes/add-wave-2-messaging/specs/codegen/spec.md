@@ -1,7 +1,7 @@
 ## MODIFIED Requirements
 
 ### Requirement: List paging
-Lists paged with `page[number]` or `page_number` SHALL stop at `meta.total_pages` or a short page. Lists paged only with `page[after]` SHALL follow `meta.cursors.after` or `meta.end_cursor` until it is empty. Lists paged with a plain `page` and `recordsPerPage`, or `page` and `page_size` without `page_number`, SHALL send both and stop at a short page or once `totalRecords` items are read. When an operation offers both numbers and cursors, page numbers SHALL be used, and other paging parameters SHALL be ignored.
+Lists paged with `page[number]` or `page_number` SHALL stop at `meta.total_pages` or a short page. Lists paged only with `page[after]` SHALL follow `meta.cursors.after` or `meta.end_cursor` until it is empty. Lists paged with a plain `page` and `recordsPerPage`, or `page` and `page_size` without `page_number`, SHALL send both; when the response gives the item count (`totalRecords` or `total_records`) they SHALL page until that many items are read or a page is empty, otherwise they SHALL stop at a short page. When an operation offers both numbers and cursors, page numbers SHALL be used, and other paging parameters SHALL be ignored.
 
 #### Scenario: Paged list
 - **WHEN** `data "telnyx_billing_groups" "all" {}` is read and the API returns three pages with `meta.total_pages = 3`
@@ -47,7 +47,7 @@ Type names whose first segment starts with a digit, such as `telnyx_10dlc_brand`
 - **THEN** the campaigns are in `campaigns`
 
 ### Requirement: Free-form read responses
-A data source whose read response is a map without fixed fields SHALL expose the whole response as one computed JSON attribute named `values`.
+A data source whose read response is a map without fixed fields, or has no fields the generator can derive (such as a union of lists and objects), SHALL expose the whole response as one computed JSON attribute named `values`.
 
 #### Scenario: Campaign operation status
 - **WHEN** `data "telnyx_10dlc_campaign_operation_status" "x" { campaign_id = "c1" }` is read and the API answers with one entry per carrier
@@ -66,3 +66,10 @@ JSON field names SHALL become snake_case attribute names, with a run of capitals
 #### Scenario: Webhook URL
 - **WHEN** a 10DLC brand's `webhookURL` is derived
 - **THEN** the attribute is `webhook_url`, on the resource and on `telnyx_10dlc_brands`
+
+### Requirement: Fields with different request and response shapes
+A field the API takes in one JSON type and returns in another (a boolean returned as a string, strings returned as objects) SHALL be request-only: it is sent but not read back, unless the override sets `returned` because a hook reshapes it.
+
+#### Scenario: Hosted number order numbers
+- **WHEN** a hosted number order is created with `phone_numbers = ["+15551230000"]` and the API returns the numbers as objects
+- **THEN** create succeeds, and `phone_numbers` keeps the configured strings

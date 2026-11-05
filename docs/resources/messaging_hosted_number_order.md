@@ -18,7 +18,7 @@ An order to host numbers you own with another carrier on Telnyx for messaging. A
 ### Optional
 
 - `messaging_profile_id` (String) Automatically associate the number with this messaging profile ID when the order is complete.
-- `phone_numbers` (Set of String) Phone numbers to be used for hosted messaging.
+- `phone_numbers` (Set of String) Phone numbers to be used for hosted messaging. The API does not return this value, so changes made outside Terraform are not detected.
 
 ### Read-Only
 

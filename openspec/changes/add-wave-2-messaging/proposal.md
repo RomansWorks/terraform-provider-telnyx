@@ -2,7 +2,7 @@
 
 ## Why
 
-Step 3 of the plan builds the provider in waves by product area. Wave 2 is messaging: messaging profiles and senders, hosted numbers, 10DLC registration, toll-free verification, notifications, RCS and WhatsApp. The coverage review assigned 26 resources, 42 data sources and 20 actions to it. Several APIs here have shapes the generator could not handle yet: 10DLC lists answer with `records` and page with `page` and `recordsPerPage`, type names start with a digit, camelCase fields with capital runs (`webhookURL`), maps of named entries in responses, constants without a type, and enums wrapped in `allOf`.
+Step 3 of the plan builds the provider in waves by product area. Wave 2 is messaging: messaging profiles and senders, hosted numbers, 10DLC registration, toll-free verification, notifications, RCS and WhatsApp. The coverage review assigned 26 resources, 42 data sources and 20 actions to it; 8 more messaging operations that the review left in no wave are added here. Several APIs here have shapes the generator could not handle yet: 10DLC lists answer with `records` and page with `page` and `recordsPerPage`, type names start with a digit, camelCase fields with capital runs (`webhookURL`), maps of named entries in responses, constants without a type, and enums wrapped in `allOf`.
 
 This change covers no upstream range: it builds on the current pin.
 
@@ -16,7 +16,8 @@ This change covers no upstream range: it builds on the current pin.
   - Read responses that are maps without fixed fields become one JSON attribute `values`.
   - camelCase capital runs are one word (`webhook_url`); `path_params` also renames list parameters; path parameter descriptions no longer say "The phone number id." for values that are not ids.
   - The client sends spec paths that repeat `/v2` once (`/v2/mobile_phone_numbers` was sent as `/v2/v2/...`; this also fixes wave 1's mobile voice connections).
-- **Wave 2 resources, data sources and actions**, generated from 67 new overrides. The list is in the `messaging` spec delta.
+- **Wave 2 resources, data sources and actions**, generated from 75 new overrides. The list is in the `messaging` spec delta.
+- A field that the API takes in one type and returns in another is request-only (mobile number `noise_suppression`, hosted number order `phone_numbers`; a new hook returns wave 1's inexplicit number order `count_requested` as a string, so reading the order no longer fails).
 - **Hook:** WhatsApp message templates read `waba_id` from `whatsapp_business_account.id`.
 - **Coverage.** Three operations move to `out_of_scope`: the hosted number order document upload and the WhatsApp profile photo upload (both multipart), and the 10DLC campaign MNO metadata (keyed by carrier id; the same data is in the use case qualification data source).
 
@@ -33,7 +34,7 @@ This change covers no upstream range: it builds on the current pin.
 - `internal/engine`: `Op.Records`, `Op.SizeParam`, `PagingPage`, `Op.Whole`.
 - `internal/client`: version prefix handling.
 - `internal/codegen`: `GoName`, `snake`, `norm` (allOf), `sources.child`, `listItems`, `listOp`, `DeriveList`, `deriveData`.
-- `generator/overrides`: 67 new files. `internal/provider/generated`: regenerated.
-- `internal/provider`: one hook and the conformance fake's list shapes.
+- `generator/overrides`: 75 new files; `porting_order.yaml` marks `phone_numbers` as reshaped by its hook. `internal/provider/generated`: regenerated.
+- `internal/provider`: two hooks (WhatsApp template `waba_id`, inexplicit number order `count_requested`) and the conformance fake's list shapes.
 - `catalog/coverage.yaml`: three entries move to `out_of_scope`.
 - Docs, examples for the main resources, a changelog entry.

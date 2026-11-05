@@ -35,7 +35,6 @@ A mobile phone number in your account, with its voice settings (call forwarding,
 - `inbound` (Attributes) Settings for inbound calls. (see [below for nested schema](#nestedatt--inbound))
 - `inbound_call_screening` (String) The inbound call screening setting. One of `disabled`, `flag_calls`, `reject_calls`.
 - `mobile_voice_enabled` (Boolean) Indicates if mobile voice is enabled.
-- `noise_suppression` (Boolean) The noise suppression setting.
 - `outbound` (Attributes) Settings for outbound calls. (see [below for nested schema](#nestedatt--outbound))
 - `phone_number` (String) The +E.164-formatted phone number.
 - `record_type` (String) Identifies the type of the resource.

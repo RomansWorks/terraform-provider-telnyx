@@ -19,7 +19,7 @@ func MessagingHostedNumberOrder() *engine.Resource {
 		Attrs: []*engine.Attr{
 			{Name: "id", JSON: "id", Kind: engine.KindString, Computed: true, InResponse: true, PathParams: []string{"id"}, Description: "Resource unique identifier."},
 			{Name: "messaging_profile_id", JSON: "messaging_profile_id", Kind: engine.KindString, Optional: true, Computed: true, ForceNew: true, InCreate: true, InResponse: true, Description: "Automatically associate the number with this messaging profile ID when the order is complete."},
-			{Name: "phone_numbers", JSON: "phone_numbers", Kind: engine.KindSet, Optional: true, Computed: true, ForceNew: true, InCreate: true, InResponse: true, Description: "Phone numbers to be used for hosted messaging.", Elem: &engine.Attr{Kind: engine.KindString}},
+			{Name: "phone_numbers", JSON: "phone_numbers", Kind: engine.KindSet, Optional: true, ForceNew: true, InCreate: true, Description: "Phone numbers to be used for hosted messaging.", Elem: &engine.Attr{Kind: engine.KindString}},
 			{Name: "record_type", JSON: "record_type", Kind: engine.KindString, Computed: true, InResponse: true, Description: "Identifies the type of the resource."},
 			{Name: "status", JSON: "status", Kind: engine.KindString, Computed: true, InResponse: true, Description: "The status of the order."},
 		},

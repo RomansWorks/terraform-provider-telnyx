@@ -9,6 +9,7 @@
 - [x] 1.5 `Op.Whole` for free-form read responses; tests
 - [x] 1.6 `snake` capital runs; `path_params` on lists; path parameter descriptions; tests
 - [x] 1.7 Client: spec paths that repeat `/v2`; test
+- [x] 1.8 Request-only fields when request and response types differ; records paging trusts `totalRecords`/`total_records`; `values` for any underivable read; tests
 
 ## 2. Wave 2 overrides
 
@@ -16,8 +17,9 @@
 - [x] 2.2 Messaging profiles, auto responses, alphanumeric sender ids, short codes, mobile numbers, hosted numbers and orders, toll-free verification
 - [x] 2.3 Notifications and RCS
 - [x] 2.4 WhatsApp numbers, templates, settings and actions
-- [x] 2.5 Hook: WhatsApp message template `waba_id`
-- [x] 2.6 Coverage: two multipart uploads and MNO metadata move to `out_of_scope`
+- [x] 2.5 Hooks: WhatsApp message template `waba_id`; inexplicit number order `count_requested` as a string
+- [x] 2.6 Eight messaging operations the triage left unassigned: 10DLC enumerations, assignment tasks and assign action, RCS capability and test invite, URL domains, mobile number messaging settings
+- [x] 2.7 Coverage: two multipart uploads and MNO metadata move to `out_of_scope`
 
 ## 3. Tests, docs and release notes
 

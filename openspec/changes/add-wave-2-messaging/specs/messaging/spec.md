@@ -1,7 +1,7 @@
 ## ADDED Requirements
 
 ### Requirement: Messaging profiles and senders
-The provider SHALL manage `telnyx_messaging_profile`, `telnyx_messaging_profile_auto_response` and `telnyx_alphanumeric_sender_id`, with list data sources for each, and data sources for a profile's phone numbers, short codes and alphanumeric sender ids. Profile secrets SHALL be sensitive. Regenerating a profile's secret SHALL be an action.
+The provider SHALL manage `telnyx_messaging_profile`, `telnyx_messaging_profile_auto_response` and `telnyx_alphanumeric_sender_id`, with list data sources for each, and data sources for a profile's phone numbers, short codes and alphanumeric sender ids, the account's URL shortening domains, and the messaging settings of mobile numbers. Profile secrets SHALL be sensitive. Regenerating a profile's secret SHALL be an action.
 
 #### Scenario: Profile secret
 - **WHEN** a messaging profile is planned
@@ -33,7 +33,7 @@ The provider SHALL manage `telnyx_10dlc_brand`, `telnyx_10dlc_campaign`, `telnyx
 - **THEN** the brands of every page are in `brands`
 
 ### Requirement: 10DLC workflow
-The provider SHALL offer brand vetting, revetting, SMS OTP, 2FA email, campaign appeal and sharing acceptance as actions, and the registry's lookups (feedback, OTP status, external vettings, use case cost and qualification, operation status, OSR attributes, sharing) as data sources.
+The provider SHALL offer brand vetting, revetting, SMS OTP, 2FA email, campaign appeal and sharing acceptance as actions, and the registry's lookups (enumerations, feedback, OTP status, external vettings, use case cost and qualification, operation status, OSR attributes, sharing) as data sources. Assigning a messaging profile's numbers to a campaign SHALL be an action, with data sources for the assignment task and its numbers.
 
 #### Scenario: Appeal a campaign
 - **WHEN** `action "telnyx_10dlc_campaign_appeal"` is invoked for campaign `c1` with an `appeal_reason`
@@ -54,7 +54,7 @@ The provider SHALL manage `telnyx_notification_channel`, `telnyx_notification_pr
 - **THEN** the plan replaces it, because the API has no update
 
 ### Requirement: RCS
-The provider SHALL manage `telnyx_rcs_brand`, `telnyx_rcs_agent` and `telnyx_rcs_agent_test_device`, list them, read an agent's carrier approvals, and offer brand submit and agent submit and launch as actions. RCS brands and agents have no delete: destroy SHALL remove them from state with a warning.
+The provider SHALL manage `telnyx_rcs_brand`, `telnyx_rcs_agent` and `telnyx_rcs_agent_test_device`, list them, read an agent's carrier approvals and a recipient's RCS capabilities, and offer brand submit, agent submit and launch, and test number invites as actions. RCS brands and agents have no delete: destroy SHALL remove them from state with a warning.
 
 #### Scenario: Brand contacts
 - **WHEN** an RCS brand is created with `contacts.brand` and imported

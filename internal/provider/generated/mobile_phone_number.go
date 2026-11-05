@@ -51,7 +51,7 @@ func MobilePhoneNumber() *engine.Resource {
 			{Name: "inbound_call_screening", JSON: "inbound_call_screening", Kind: engine.KindString, Optional: true, Computed: true, InCreate: true, InUpdate: true, InResponse: true, Enum: []string{"disabled", "flag_calls", "reject_calls"}, Description: "The inbound call screening setting."},
 			{Name: "mobile_phone_number_id", Kind: engine.KindString, Required: true, ForceNew: true, Local: true, PathParams: []string{"id"}, Description: "The mobile phone number id."},
 			{Name: "mobile_voice_enabled", JSON: "mobile_voice_enabled", Kind: engine.KindBool, Computed: true, InResponse: true, Description: "Indicates if mobile voice is enabled."},
-			{Name: "noise_suppression", JSON: "noise_suppression", Kind: engine.KindBool, Optional: true, Computed: true, InCreate: true, InUpdate: true, InResponse: true, Description: "The noise suppression setting."},
+			{Name: "noise_suppression", JSON: "noise_suppression", Kind: engine.KindBool, Optional: true, InCreate: true, InUpdate: true},
 			{Name: "outbound", JSON: "outbound", Kind: engine.KindObject, Optional: true, Computed: true, InCreate: true, InUpdate: true, InResponse: true, Description: "Settings for outbound calls.",
 				Attrs: []*engine.Attr{
 					{Name: "interception_app_id", JSON: "interception_app_id", Kind: engine.KindString, Optional: true, Computed: true, InCreate: true, InUpdate: true, InResponse: true, Description: "The ID of the app that will intercept outbound calls."},

@@ -62,8 +62,14 @@ func Each(ctx context.Context, c *client.Client, op *Op, path string, query url.
 			var records int
 			items, records, err = decodeRecords(out)
 			read += len(items)
-			if err == nil && records > 0 && read >= records {
+			// With a known count, page until it is read whatever the page
+			// size the server chose; without one, a short page is the last.
+			switch {
+			case err != nil || records == 0:
+			case read >= records:
 				total = page
+			default:
+				total = maxPages
 			}
 		} else {
 			items, total, err = decodeList(out, op.Envelope)
@@ -155,11 +161,13 @@ func decodeList(data []byte, envelope bool) ([]Object, int, error) {
 }
 
 // decodeRecords decodes a list response that holds its items in "records"
-// and their count in "totalRecords" (0 when the response does not say).
+// and their count in "totalRecords" or "total_records" (0 when the response
+// does not say).
 func decodeRecords(data []byte) ([]Object, int, error) {
 	var body struct {
 		Records      json.RawMessage `json:"records"`
 		TotalRecords json.Number     `json:"totalRecords"`
+		TotalSnake   json.Number     `json:"total_records"`
 	}
 	dec := json.NewDecoder(bytes.NewReader(data))
 	dec.UseNumber()
@@ -171,6 +179,9 @@ func decodeRecords(data []byte) ([]Object, int, error) {
 	}
 	items, _, err := decodeList(body.Records, false)
 	total, _ := strconv.Atoi(body.TotalRecords.String())
+	if total == 0 {
+		total, _ = strconv.Atoi(body.TotalSnake.String())
+	}
 	return items, total, err
 }
 

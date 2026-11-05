@@ -325,6 +325,42 @@ func (g *Generator) norm(n any) map[string]any {
 	return out
 }
 
+// req returns the request schema of a field: create's, else update's.
+func req(cs sources) map[string]any {
+	if cs.create != nil {
+		return cs.create
+	}
+	return cs.update
+}
+
+// sameShape reports whether a request and a response schema have the same
+// JSON type, and for arrays the same item type. Untyped schemas match
+// anything.
+func sameShape(g *Generator, a, b map[string]any) bool {
+	ta, _ := a["type"].(string)
+	tb, _ := b["type"].(string)
+	if ta == "" || tb == "" || a["x-json"] == true || b["x-json"] == true {
+		return true
+	}
+	num := func(t string) string {
+		if t == "integer" {
+			return "number"
+		}
+		return t
+	}
+	if num(ta) != num(tb) {
+		return false
+	}
+	if ta == "array" {
+		ia, ib := g.norm(a["items"]), g.norm(b["items"])
+		if ia == nil || ib == nil {
+			return true
+		}
+		return sameShape(g, ia, ib)
+	}
+	return true
+}
+
 // scalarParts reports whether every allOf part is a scalar: no fields and
 // a type, enum or const other than an object.
 func scalarParts(g *Generator, parts []any) bool {
@@ -535,6 +571,12 @@ func (d *deriver) attrs(src sources, depth int, parentComputed bool, prefix stri
 		cs := src.child(name, d.g)
 		if aov.Returned && cs.read == nil {
 			cs.read = cs.shape()
+		}
+		// A field the API takes in one shape and returns in another (a
+		// boolean that reads back as a string, strings that read back as
+		// objects) is request-only: reading it back would fail.
+		if !aov.Returned && cs.read != nil && (cs.create != nil || cs.update != nil) && !sameShape(d.g, req(cs), cs.read) {
+			cs.read = nil
 		}
 		inC, inU, inR := cs.create != nil, cs.update != nil, cs.read != nil
 		configurable := inC || inU

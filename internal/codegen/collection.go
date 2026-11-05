@@ -60,9 +60,11 @@ func (g *Generator) deriveData(ov *Override) (*engine.Resource, error) {
 	if err != nil {
 		return nil, fmt.Errorf("%s: %w", ov.Type, err)
 	}
-	// A response that is a map without fixed fields is one JSON value.
+	// A response that is a map without fixed fields, or that has no
+	// fields the generator can derive (a union of lists and objects), is
+	// one JSON value.
 	whole := ""
-	if properties(schema) == nil && schema["type"] == "object" {
+	if len(attrs) == 0 || properties(schema) == nil && schema["type"] == "object" {
 		whole = "values"
 		attrs = append(attrs, &engine.Attr{Name: whole, JSON: whole, Kind: engine.KindJSON, Computed: true, InResponse: true,
 			Description: "The response, as JSON: a map whose keys the API does not fix."})

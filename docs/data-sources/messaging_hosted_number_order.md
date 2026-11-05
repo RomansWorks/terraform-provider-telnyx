@@ -22,6 +22,5 @@ An order to host numbers you own with another carrier on Telnyx for messaging. A
 ### Read-Only
 
 - `messaging_profile_id` (String) Automatically associate the number with this messaging profile ID when the order is complete.
-- `phone_numbers` (Set of String) Phone numbers to be used for hosted messaging.
 - `record_type` (String) Identifies the type of the resource.
 - `status` (String) The status of the order.

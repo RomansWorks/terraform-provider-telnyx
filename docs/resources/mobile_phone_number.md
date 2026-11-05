@@ -29,7 +29,7 @@ A mobile phone number in your account, with its voice settings (call forwarding,
 - `customer_reference` (String) A customer reference string.
 - `inbound` (Attributes) Settings for inbound calls. (see [below for nested schema](#nestedatt--inbound))
 - `inbound_call_screening` (String) The inbound call screening setting. One of `disabled`, `flag_calls`, `reject_calls`.
-- `noise_suppression` (Boolean) The noise suppression setting.
+- `noise_suppression` (Boolean) The API does not return this value, so changes made outside Terraform are not detected.
 - `outbound` (Attributes) Settings for outbound calls. (see [below for nested schema](#nestedatt--outbound))
 - `tags` (Set of String) A list of tags associated with the number.
 

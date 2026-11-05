@@ -73,3 +73,24 @@ func TestAllOfScalar(t *testing.T) {
 		t.Errorf("allOf scalar: %v", s)
 	}
 }
+
+func TestSameShape(t *testing.T) {
+	g := fixture(t)
+	str := map[string]any{"type": "string"}
+	for name, tc := range map[string]struct {
+		a, b map[string]any
+		want bool
+	}{
+		"same":            {str, str, true},
+		"int and number":  {map[string]any{"type": "integer"}, map[string]any{"type": "number"}, true},
+		"bool and string": {map[string]any{"type": "boolean"}, str, false},
+		"untyped":         {map[string]any{}, str, true},
+		"strings and objects": {
+			map[string]any{"type": "array", "items": str},
+			map[string]any{"type": "array", "items": map[string]any{"type": "object"}}, false},
+	} {
+		if got := sameShape(g, tc.a, tc.b); got != tc.want {
+			t.Errorf("%s: %v", name, got)
+		}
+	}
+}

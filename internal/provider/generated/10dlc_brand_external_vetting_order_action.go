@@ -9,7 +9,7 @@ import "github.com/RomansWorks/terraform-provider-telnyx/internal/engine"
 func TenDLCBrandExternalVettingOrderAction() *engine.Action {
 	return &engine.Action{
 		TypeName:    "telnyx_10dlc_brand_external_vetting_order",
-		Description: "TODO Order Brand External Vetting",
+		Description: "Orders an external vetting of a 10DLC brand from a vetting provider approved by The Campaign Registry. Vetting is billable, and a duplicate order for the same provider and class within 180 days of a successful vetting is refused.",
 		Op:          &engine.Op{Method: "POST", Path: "/10dlc/brand/{brandId}/externalVetting", Envelope: false},
 		Attrs: []*engine.Attr{
 			{Name: "brand_id", Kind: engine.KindString, Required: true, Local: true, PathParams: []string{"brandId"}, Description: "The brand id."},

@@ -8,18 +8,18 @@ import "github.com/RomansWorks/terraform-provider-telnyx/internal/engine"
 // WhatsappPhoneNumberCallingRouting returns the descriptor of telnyx_whatsapp_phone_number_calling_routing.
 func WhatsappPhoneNumberCallingRouting() *engine.Resource {
 	return &engine.Resource{
-		TypeName:    "telnyx_whatsapp_phone_number_calling_routing",
-		Description: "TODO Get Connection ID for a WhatsApp Calling BYON number",
-		Create:      &engine.Op{Method: "PATCH", Path: "/whatsapp/phone_numbers/{id}/calling_routing", Envelope: true},
-		Read:        &engine.Op{Method: "GET", Path: "/whatsapp/phone_numbers/{id}/calling_routing", Envelope: true},
-		Update:      &engine.Op{Method: "PATCH", Path: "/whatsapp/phone_numbers/{id}/calling_routing", Envelope: true},
-		IDAttr:      "id",
-		Import:      []string{"id"},
-		DataSource:  true,
+		TypeName:      "telnyx_whatsapp_phone_number_calling_routing",
+		Description:   "The connection that receives inbound WhatsApp calls to a WhatsApp Calling BYON (bring your own number) phone number. Creating this resource adopts the routing of an existing number; destroying it leaves the routing as it is.",
+		Create:        &engine.Op{Method: "PATCH", Path: "/whatsapp/phone_numbers/{id}/calling_routing", Envelope: true},
+		Read:          &engine.Op{Method: "GET", Path: "/whatsapp/phone_numbers/{id}/calling_routing", Envelope: true},
+		Update:        &engine.Op{Method: "PATCH", Path: "/whatsapp/phone_numbers/{id}/calling_routing", Envelope: true},
+		IDAttr:        "phone_number",
+		Import:        []string{"phone_number"},
+		DeleteWarning: "The Telnyx API cannot delete WhatsApp calling routing. It was removed from Terraform state but stays in place in your Telnyx account.",
+		DataSource:    true,
 		Attrs: []*engine.Attr{
-			{Name: "connection_id", JSON: "connection_id", Kind: engine.KindString, Required: true, InCreate: true, InUpdate: true, InResponse: true, Description: "ID of the routing connection, or `null` when none is set."},
-			{Name: "id", Kind: engine.KindString, Required: true, ForceNew: true, Local: true, PathParams: []string{"id"}, Description: "The id id."},
-			{Name: "phone_number", JSON: "phone_number", Kind: engine.KindString, Computed: true, InResponse: true, Description: "Phone number in E.164 format, with a leading `+`."},
+			{Name: "connection_id", JSON: "connection_id", Kind: engine.KindString, Required: true, InCreate: true, InUpdate: true, InResponse: true, Description: "ID of the connection that inbound WhatsApp calls to the number are delivered to."},
+			{Name: "phone_number", JSON: "phone_number", Kind: engine.KindString, Required: true, ForceNew: true, InResponse: true, PathParams: []string{"id"}, Description: "The BYON phone number in E.164 format, with the leading `+`."},
 			{Name: "record_type", JSON: "record_type", Kind: engine.KindString, Computed: true, InResponse: true, Description: "Identifies the type of the resource."},
 		},
 	}

@@ -9,7 +9,7 @@ import "github.com/RomansWorks/terraform-provider-telnyx/internal/engine"
 func WhatsappMessageTemplate() *engine.Resource {
 	return &engine.Resource{
 		TypeName:    "telnyx_whatsapp_message_template",
-		Description: "TODO Create a Whatsapp message template",
+		Description: "A WhatsApp message template of a WhatsApp Business Account. Templates are reviewed by Meta after create and after each change; status shows the outcome, and only approved templates can be used to start conversations.",
 		Create:      &engine.Op{Method: "POST", Path: "/whatsapp/message_templates", Envelope: true},
 		Read:        &engine.Op{Method: "GET", Path: "/whatsapp/message_templates/{id}", Envelope: true},
 		Update:      &engine.Op{Method: "PATCH", Path: "/whatsapp/message_templates/{id}", Envelope: true},
@@ -59,7 +59,7 @@ func WhatsappMessageTemplate() *engine.Resource {
 			{Name: "status", JSON: "status", Kind: engine.KindString, Computed: true, InResponse: true, Description: "Current template status from Meta (e.g. PENDING, APPROVED, REJECTED, PAUSED, DISABLED). Additional statuses may be returned as Meta evolves the template lifecycle."},
 			{Name: "template_id", JSON: "template_id", Kind: engine.KindString, Computed: true, InResponse: true},
 			{Name: "updated_at", JSON: "updated_at", Kind: engine.KindString, Computed: true, InResponse: true},
-			{Name: "waba_id", JSON: "waba_id", Kind: engine.KindString, Required: true, ForceNew: true, InCreate: true, Description: "The WhatsApp Business Account ID."},
+			{Name: "waba_id", JSON: "waba_id", Kind: engine.KindString, Required: true, ForceNew: true, InCreate: true, InResponse: true, Description: "The WhatsApp Business Account ID."},
 			{Name: "whatsapp_business_account", JSON: "whatsapp_business_account", Kind: engine.KindObject, Computed: true, InResponse: true,
 				Attrs: []*engine.Attr{
 					{Name: "id", JSON: "id", Kind: engine.KindString, Computed: true, InResponse: true},

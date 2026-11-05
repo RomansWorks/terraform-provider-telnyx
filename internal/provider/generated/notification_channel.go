@@ -9,7 +9,7 @@ import "github.com/RomansWorks/terraform-provider-telnyx/internal/engine"
 func NotificationChannel() *engine.Resource {
 	return &engine.Resource{
 		TypeName:    "telnyx_notification_channel",
-		Description: "TODO Create a notification channel",
+		Description: "A notification channel, which delivers the notifications of a notification profile by email, SMS, voice call or webhook to one destination.",
 		Create:      &engine.Op{Method: "POST", Path: "/notification_channels", Envelope: true},
 		Read:        &engine.Op{Method: "GET", Path: "/notification_channels/{id}", Envelope: true},
 		Update:      &engine.Op{Method: "PATCH", Path: "/notification_channels/{id}", Envelope: true},
@@ -18,10 +18,10 @@ func NotificationChannel() *engine.Resource {
 		Import:      []string{"id"},
 		DataSource:  true,
 		Attrs: []*engine.Attr{
-			{Name: "channel_destination", JSON: "channel_destination", Kind: engine.KindString, Optional: true, Computed: true, InCreate: true, InUpdate: true, InResponse: true, Description: "The destination associated with the channel type."},
-			{Name: "channel_type_id", JSON: "channel_type_id", Kind: engine.KindString, Optional: true, Computed: true, InCreate: true, InUpdate: true, InResponse: true, Enum: []string{"email", "sms", "voice", "webhook"}, Description: "A Channel Type ID"},
+			{Name: "channel_destination", JSON: "channel_destination", Kind: engine.KindString, Optional: true, Computed: true, InCreate: true, InUpdate: true, InResponse: true, Description: "Where notifications are delivered: an email address, a +E.164 phone number or a webhook URL, depending on `channel_type_id`."},
+			{Name: "channel_type_id", JSON: "channel_type_id", Kind: engine.KindString, Optional: true, Computed: true, InCreate: true, InUpdate: true, InResponse: true, Enum: []string{"email", "sms", "voice", "webhook"}, Description: "How notifications are delivered: `email`, `sms`, `voice` or `webhook`."},
 			{Name: "created_at", JSON: "created_at", Kind: engine.KindString, Computed: true, InResponse: true, Description: "ISO 8601 formatted date indicating when the resource was created."},
-			{Name: "id", JSON: "id", Kind: engine.KindString, Computed: true, InResponse: true, PathParams: []string{"id"}, Description: "A UUID."},
+			{Name: "id", JSON: "id", Kind: engine.KindString, Computed: true, InResponse: true, PathParams: []string{"id"}, Description: "Identifies the notification channel."},
 			{Name: "notification_profile_id", JSON: "notification_profile_id", Kind: engine.KindString, Optional: true, Computed: true, InCreate: true, InUpdate: true, InResponse: true, Description: "A UUID reference to the associated Notification Profile."},
 			{Name: "updated_at", JSON: "updated_at", Kind: engine.KindString, Computed: true, InResponse: true, Description: "ISO 8601 formatted date indicating when the resource was updated."},
 		},

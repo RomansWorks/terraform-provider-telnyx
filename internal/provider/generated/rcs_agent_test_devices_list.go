@@ -12,7 +12,7 @@ func RCSAgentTestDevicesList() *engine.List {
 		Description: "Lists rcs agent test devices, with optional filters. Each item has the attributes of `telnyx_rcs_agent_test_device`.",
 		Op:          &engine.Op{Method: "GET", Path: "/rcs/agents/{id}/test_devices", Envelope: false},
 		Params: []*engine.Attr{
-			{Name: "id", Kind: engine.KindString, Required: true, PathParams: []string{"id"}, Description: "The id id."},
+			{Name: "agent_id", Kind: engine.KindString, Required: true, PathParams: []string{"id"}, Description: "The agent id."},
 		},
 		Items: &engine.Attr{Name: "rcs_agent_test_devices", JSON: "data", Kind: engine.KindList, Computed: true, InResponse: true, Description: "The objects, in the order the API returns them.",
 			Attrs: []*engine.Attr{

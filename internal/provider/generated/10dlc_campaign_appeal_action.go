@@ -9,7 +9,7 @@ import "github.com/RomansWorks/terraform-provider-telnyx/internal/engine"
 func TenDLCCampaignAppealAction() *engine.Action {
 	return &engine.Action{
 		TypeName:    "telnyx_10dlc_campaign_appeal",
-		Description: "TODO Submit campaign appeal for manual review",
+		Description: "Appeals a 10DLC campaign that Telnyx or a carrier rejected (status TELNYX_FAILED or MNO_REJECTED). The appeal goes to Telnyx compliance for manual review and the campaign returns to TCR_ACCEPTED.",
 		Op:          &engine.Op{Method: "POST", Path: "/10dlc/campaign/{campaignId}/appeal", Envelope: false},
 		Attrs: []*engine.Attr{
 			{Name: "appeal_reason", JSON: "appeal_reason", Kind: engine.KindString, Required: true, InCreate: true, Description: "Detailed explanation of why the campaign should be reconsidered and what changes have been made to address the rejection reason."},

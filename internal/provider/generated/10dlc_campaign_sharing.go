@@ -9,7 +9,7 @@ import "github.com/RomansWorks/terraform-provider-telnyx/internal/engine"
 func TenDLCCampaignSharing() *engine.Resource {
 	return &engine.Resource{
 		TypeName:    "telnyx_10dlc_campaign_sharing",
-		Description: "TODO Get Sharing Status",
+		Description: "Whether a 10DLC campaign is shared with or by another campaign service provider, and the state of that sharing.",
 		Read:        &engine.Op{Method: "GET", Path: "/10dlc/campaign/{campaignId}/sharing", Envelope: false},
 		IDAttr:      "",
 		Import:      []string{"campaign_id"},

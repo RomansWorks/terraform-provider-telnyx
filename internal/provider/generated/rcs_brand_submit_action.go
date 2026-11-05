@@ -9,10 +9,10 @@ import "github.com/RomansWorks/terraform-provider-telnyx/internal/engine"
 func RCSBrandSubmitAction() *engine.Action {
 	return &engine.Action{
 		TypeName:    "telnyx_rcs_brand_submit",
-		Description: "TODO Submit an RCS brand",
+		Description: "Submits an RCS brand for verification.",
 		Op:          &engine.Op{Method: "POST", Path: "/rcs/brands/{id}/submit", Envelope: false},
 		Attrs: []*engine.Attr{
-			{Name: "id", Kind: engine.KindString, Required: true, Local: true, PathParams: []string{"id"}, Description: "The object's id."},
+			{Name: "brand_id", Kind: engine.KindString, Required: true, Local: true, PathParams: []string{"id"}, Description: "The brand id."},
 		},
 	}
 }

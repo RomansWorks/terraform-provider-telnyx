@@ -9,7 +9,7 @@ import "github.com/RomansWorks/terraform-provider-telnyx/internal/engine"
 func TenDLCBrandSMSOTP() *engine.Resource {
 	return &engine.Resource{
 		TypeName:    "telnyx_10dlc_brand_sms_otp",
-		Description: "TODO Get Brand SMS OTP Status by Brand ID",
+		Description: "The status of the latest SMS one-time password sent to verify a sole proprietor 10DLC brand, looked up by brand.",
 		Read:        &engine.Op{Method: "GET", Path: "/10dlc/brand/{brandId}/smsOtp", Envelope: false},
 		IDAttr:      "",
 		Import:      []string{"brand_id"},

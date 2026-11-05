@@ -9,7 +9,7 @@ import "github.com/RomansWorks/terraform-provider-telnyx/internal/engine"
 func WhatsappBusinessAccount() *engine.Resource {
 	return &engine.Resource{
 		TypeName:    "telnyx_whatsapp_business_account",
-		Description: "TODO Get a single Whatsapp Business Account",
+		Description: "A WhatsApp Business Account (WABA) connected to your Telnyx account, with its review and business verification status. WABAs are connected through the WhatsApp signup flow in the Telnyx portal, not created by Terraform.",
 		Read:        &engine.Op{Method: "GET", Path: "/whatsapp/business_accounts/{id}", Envelope: true},
 		IDAttr:      "",
 		Import:      []string{"id"},

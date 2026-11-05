@@ -155,3 +155,16 @@ func TestDoHonoursContextCancel(t *testing.T) {
 		t.Fatalf("err = %v, want deadline exceeded", err)
 	}
 }
+
+// TestVersionedPath: a spec path that repeats /v2 is not sent as /v2/v2.
+func TestVersionedPath(t *testing.T) {
+	c := newTestClient(t, func(w http.ResponseWriter, r *http.Request) {
+		if r.URL.Path != "/v2/mobile_phone_numbers/m1" {
+			t.Errorf("unexpected URL %s", r.URL)
+		}
+		_, _ = w.Write([]byte(`{}`))
+	})
+	if err := c.Do(context.Background(), http.MethodGet, "/v2/mobile_phone_numbers/m1", nil, nil, nil); err != nil {
+		t.Fatal(err)
+	}
+}

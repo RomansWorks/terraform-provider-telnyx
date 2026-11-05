@@ -495,7 +495,11 @@ func Get(ctx context.Context, c *client.Client, d *Resource, vals Values) (Objec
 	if err != nil {
 		return nil, err
 	}
-	return Decode(out, d.Read.Envelope)
+	obj, err := Decode(out, d.Read.Envelope)
+	if err != nil || d.Read.Whole == "" {
+		return obj, err
+	}
+	return Object{d.Read.Whole: map[string]any(obj)}, nil
 }
 
 func (r *frameworkResource) afterRead(ctx context.Context, obj Object) (Object, error) {

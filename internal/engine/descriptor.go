@@ -97,6 +97,9 @@ type Op struct {
 	First bool
 	// Form says the request body is a URL-encoded form of scalar fields.
 	Form bool
+	// Whole names the one attribute that holds the whole response object,
+	// for reads whose response is a map without fixed fields.
+	Whole string
 	// Paging says how a list operation pages; PageSize is the page size to
 	// ask for.
 	Paging   Paging

@@ -9,7 +9,7 @@ import "github.com/RomansWorks/terraform-provider-telnyx/internal/engine"
 func TenDLCPartnerCampaignSharedByMeList() *engine.List {
 	return &engine.List{
 		TypeName:    "telnyx_10dlc_partner_campaign_shared_by_me",
-		Description: "TODO List shared partner campaigns",
+		Description: "The partner campaigns you shared with Telnyx that Telnyx accepted. Campaigns still pending acceptance are not listed.",
 		Op:          &engine.Op{Method: "GET", Path: "/10dlc/partnerCampaign/sharedByMe", Envelope: true, Paging: engine.PagingPage, PageSize: 250, SizeParam: "recordsPerPage", Records: true},
 		Params:      []*engine.Attr{},
 		Items: &engine.Attr{Name: "partner_campaign_shared_by_me", JSON: "data", Kind: engine.KindList, Computed: true, InResponse: true, Description: "The objects, in the order the API returns them.",

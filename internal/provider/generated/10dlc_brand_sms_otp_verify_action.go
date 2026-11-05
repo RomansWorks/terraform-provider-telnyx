@@ -9,11 +9,11 @@ import "github.com/RomansWorks/terraform-provider-telnyx/internal/engine"
 func TenDLCBrandSMSOTPVerifyAction() *engine.Action {
 	return &engine.Action{
 		TypeName:    "telnyx_10dlc_brand_sms_otp_verify",
-		Description: "TODO Verify Brand SMS OTP",
+		Description: "Verifies the SMS one-time password a sole proprietor 10DLC brand received, which completes the brand's identity verification.",
 		Op:          &engine.Op{Method: "PUT", Path: "/10dlc/brand/{brandId}/smsOtp", Envelope: false},
 		Attrs: []*engine.Attr{
 			{Name: "brand_id", Kind: engine.KindString, Required: true, Local: true, PathParams: []string{"brandId"}, Description: "The brand id."},
-			{Name: "otp_pin", JSON: "otpPin", Kind: engine.KindString, Required: true, InCreate: true, Description: "The OTP PIN received via SMS"},
+			{Name: "otp_pin", JSON: "otpPin", Kind: engine.KindString, Required: true, Sensitive: true, InCreate: true, Description: "The OTP PIN received via SMS"},
 		},
 	}
 }

@@ -9,7 +9,7 @@ import "github.com/RomansWorks/terraform-provider-telnyx/internal/engine"
 func NotificationProfile() *engine.Resource {
 	return &engine.Resource{
 		TypeName:    "telnyx_notification_profile",
-		Description: "TODO Create a notification profile",
+		Description: "A notification profile, which groups the notification channels that account notifications are sent to.",
 		Create:      &engine.Op{Method: "POST", Path: "/notification_profiles", Envelope: true},
 		Read:        &engine.Op{Method: "GET", Path: "/notification_profiles/{id}", Envelope: true},
 		Update:      &engine.Op{Method: "PATCH", Path: "/notification_profiles/{id}", Envelope: true},
@@ -19,7 +19,7 @@ func NotificationProfile() *engine.Resource {
 		DataSource:  true,
 		Attrs: []*engine.Attr{
 			{Name: "created_at", JSON: "created_at", Kind: engine.KindString, Computed: true, InResponse: true, Description: "ISO 8601 formatted date indicating when the resource was created."},
-			{Name: "id", JSON: "id", Kind: engine.KindString, Computed: true, InResponse: true, PathParams: []string{"id"}, Description: "A UUID."},
+			{Name: "id", JSON: "id", Kind: engine.KindString, Computed: true, InResponse: true, PathParams: []string{"id"}, Description: "Identifies the notification profile."},
 			{Name: "name", JSON: "name", Kind: engine.KindString, Optional: true, Computed: true, InCreate: true, InUpdate: true, InResponse: true, Description: "A human readable name."},
 			{Name: "updated_at", JSON: "updated_at", Kind: engine.KindString, Computed: true, InResponse: true, Description: "ISO 8601 formatted date indicating when the resource was updated."},
 		},

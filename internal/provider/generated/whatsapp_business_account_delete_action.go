@@ -9,10 +9,10 @@ import "github.com/RomansWorks/terraform-provider-telnyx/internal/engine"
 func WhatsappBusinessAccountDeleteAction() *engine.Action {
 	return &engine.Action{
 		TypeName:    "telnyx_whatsapp_business_account_delete",
-		Description: "TODO Delete a Whatsapp Business Account",
+		Description: "Disconnects a WhatsApp Business Account (WABA) from your Telnyx account. This cannot be undone: the account has to be connected again through the WhatsApp signup flow.",
 		Op:          &engine.Op{Method: "DELETE", Path: "/whatsapp/business_accounts/{id}", Envelope: false},
 		Attrs: []*engine.Attr{
-			{Name: "id", Kind: engine.KindString, Required: true, Local: true, PathParams: []string{"id"}, Description: "The object's id."},
+			{Name: "whatsapp_business_account_id", Kind: engine.KindString, Required: true, Local: true, PathParams: []string{"id"}, Description: "The whatsapp business account id."},
 		},
 	}
 }

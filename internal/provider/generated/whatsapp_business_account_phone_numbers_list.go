@@ -9,10 +9,10 @@ import "github.com/RomansWorks/terraform-provider-telnyx/internal/engine"
 func WhatsappBusinessAccountPhoneNumbersList() *engine.List {
 	return &engine.List{
 		TypeName:    "telnyx_whatsapp_business_account_phone_numbers",
-		Description: "TODO List phone numbers for a WABA",
+		Description: "The phone numbers registered with one WhatsApp Business Account (WABA), with their WhatsApp status, quality rating and calling setting.",
 		Op:          &engine.Op{Method: "GET", Path: "/whatsapp/business_accounts/{id}/phone_numbers", Envelope: true, Paging: engine.PagingNumber, PageSize: 250},
 		Params: []*engine.Attr{
-			{Name: "id", Kind: engine.KindString, Required: true, PathParams: []string{"id"}, Description: "The id id."},
+			{Name: "id", Kind: engine.KindString, Required: true, PathParams: []string{"id"}, Description: "The id of the object whose items are listed."},
 		},
 		Items: &engine.Attr{Name: "whatsapp_business_account_phone_numbers", JSON: "data", Kind: engine.KindList, Computed: true, InResponse: true, Description: "The objects, in the order the API returns them.",
 			Attrs: []*engine.Attr{

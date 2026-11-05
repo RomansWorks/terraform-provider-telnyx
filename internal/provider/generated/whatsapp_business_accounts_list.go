@@ -9,7 +9,7 @@ import "github.com/RomansWorks/terraform-provider-telnyx/internal/engine"
 func WhatsappBusinessAccountsList() *engine.List {
 	return &engine.List{
 		TypeName:    "telnyx_whatsapp_business_accounts",
-		Description: "TODO List Whatsapp Business Accounts",
+		Description: "The WhatsApp Business Accounts (WABAs) connected to your Telnyx account.",
 		Op:          &engine.Op{Method: "GET", Path: "/whatsapp/business_accounts", Envelope: true, Paging: engine.PagingNumber, PageSize: 250},
 		Params:      []*engine.Attr{},
 		Items: &engine.Attr{Name: "whatsapp_business_accounts", JSON: "data", Kind: engine.KindList, Computed: true, InResponse: true, Description: "The objects, in the order the API returns them.",

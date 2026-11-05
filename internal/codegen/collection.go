@@ -34,7 +34,7 @@ func (g *Generator) DeriveAll(ov *Override) (*engine.Resource, *engine.List, err
 		desc = "Lists " + strings.ReplaceAll(strings.TrimPrefix(Plural(ov.Type), "telnyx_"), "_", " ") +
 			", with optional filters. Each item has the attributes of `" + ov.Type + "`."
 	}
-	l, err := g.DeriveList(ov.listName(), desc, ov.List, ov.Paging, ov.itemSettings())
+	l, err := g.DeriveList(ov.listName(), desc, ov.List, ov.Paging, ov.itemSettings(), ov.PathParams)
 	if err != nil {
 		return nil, nil, fmt.Errorf("%s: list: %w", ov.Type, err)
 	}
@@ -60,10 +60,17 @@ func (g *Generator) deriveData(ov *Override) (*engine.Resource, error) {
 	if err != nil {
 		return nil, fmt.Errorf("%s: %w", ov.Type, err)
 	}
+	// A response that is a map without fixed fields is one JSON value.
+	whole := ""
+	if properties(schema) == nil && schema["type"] == "object" {
+		whole = "values"
+		attrs = append(attrs, &engine.Attr{Name: whole, JSON: whole, Kind: engine.KindJSON, Computed: true, InResponse: true,
+			Description: "The response, as JSON: a map whose keys the API does not fix."})
+	}
 	r := &engine.Resource{
 		TypeName:    ov.Type,
 		Description: ov.Description,
-		Read:        &engine.Op{Method: read.method, Path: read.path, Envelope: env},
+		Read:        &engine.Op{Method: read.method, Path: read.path, Envelope: env, Whole: whole},
 		Attrs:       attrs,
 		DataSource:  true,
 		NoResource:  true,
@@ -204,7 +211,8 @@ var otherPaging = []string{"page[after]", "page[before]", "page[limit]", "page[s
 
 // DeriveList derives a list data source from a list operation.
 // settings carries the resource's sensitive and set settings to the items.
-func (g *Generator) DeriveList(name, description, key, pagingOverride string, settings map[string]AttrOverride) (*engine.List, error) {
+// pathNames renames path parameters as the override's path_params says.
+func (g *Generator) DeriveList(name, description, key, pagingOverride string, settings map[string]AttrOverride, pathNames map[string]string) (*engine.List, error) {
 	op, err := g.operation(key)
 	if err != nil {
 		return nil, err
@@ -235,8 +243,16 @@ func (g *Generator) DeriveList(name, description, key, pagingOverride string, se
 	for _, p := range g.params(op) {
 		switch {
 		case p.in == "path":
-			a := &engine.Attr{Name: snake(p.name), Kind: engine.KindString, Required: true, PathParams: []string{p.name},
-				Description: "The " + strings.ReplaceAll(strings.TrimSuffix(snake(p.name), "_id"), "_", " ") + " id."}
+			n := snake(p.name)
+			if r, ok := pathNames[p.name]; ok {
+				n = r
+			}
+			desc := paramDescription(n)
+			if n == "id" {
+				desc = "The id of the object whose items are listed."
+			}
+			a := &engine.Attr{Name: n, Kind: engine.KindString, Required: true, PathParams: []string{p.name},
+				Description: desc}
 			if err := addParam(a, p.name); err != nil {
 				return nil, err
 			}

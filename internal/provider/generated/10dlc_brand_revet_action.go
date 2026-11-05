@@ -9,7 +9,7 @@ import "github.com/RomansWorks/terraform-provider-telnyx/internal/engine"
 func TenDLCBrandRevetAction() *engine.Action {
 	return &engine.Action{
 		TypeName:    "telnyx_10dlc_brand_revet",
-		Description: "TODO Revet Brand",
+		Description: "Asks The Campaign Registry to vet a 10DLC brand again, for example after correcting its details. Revetting is billable and allowed once after registration, then at most once every three months.",
 		Op:          &engine.Op{Method: "PUT", Path: "/10dlc/brand/{brandId}/revet", Envelope: false},
 		Attrs: []*engine.Attr{
 			{Name: "brand_id", Kind: engine.KindString, Required: true, Local: true, PathParams: []string{"brandId"}, Description: "The brand id."},

@@ -9,7 +9,7 @@ import "github.com/RomansWorks/terraform-provider-telnyx/internal/engine"
 func TenDLCCampaignBuilderBrandUsecase() *engine.Resource {
 	return &engine.Resource{
 		TypeName:    "telnyx_10dlc_campaign_builder_brand_usecase",
-		Description: "TODO Qualify By Usecase",
+		Description: "Whether a 10DLC brand qualifies for a campaign use case, with the use case's fees and the number of sub-use cases it requires. Check this before creating a campaign.",
 		Read:        &engine.Op{Method: "GET", Path: "/10dlc/campaignBuilder/brand/{brandId}/usecase/{usecase}", Envelope: false},
 		IDAttr:      "",
 		Import:      []string{"brand_id", "usecase"},

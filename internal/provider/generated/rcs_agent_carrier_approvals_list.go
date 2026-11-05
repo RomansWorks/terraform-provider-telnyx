@@ -9,10 +9,10 @@ import "github.com/RomansWorks/terraform-provider-telnyx/internal/engine"
 func RCSAgentCarrierApprovalsList() *engine.List {
 	return &engine.List{
 		TypeName:    "telnyx_rcs_agent_carrier_approvals",
-		Description: "TODO List RCS agent carrier approvals",
+		Description: "Lists the approvals of an RCS agent by each carrier.",
 		Op:          &engine.Op{Method: "GET", Path: "/rcs/agents/{id}/carrier_approvals", Envelope: false},
 		Params: []*engine.Attr{
-			{Name: "id", Kind: engine.KindString, Required: true, PathParams: []string{"id"}, Description: "The id id."},
+			{Name: "agent_id", Kind: engine.KindString, Required: true, PathParams: []string{"id"}, Description: "The agent id."},
 		},
 		Items: &engine.Attr{Name: "rcs_agent_carrier_approvals", JSON: "data", Kind: engine.KindList, Computed: true, InResponse: true, Description: "The objects, in the order the API returns them.",
 			Attrs: []*engine.Attr{

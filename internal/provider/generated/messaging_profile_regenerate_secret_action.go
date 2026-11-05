@@ -9,10 +9,10 @@ import "github.com/RomansWorks/terraform-provider-telnyx/internal/engine"
 func MessagingProfileRegenerateSecretAction() *engine.Action {
 	return &engine.Action{
 		TypeName:    "telnyx_messaging_profile_regenerate_secret",
-		Description: "TODO Regenerate messaging profile secret",
+		Description: "Generates a new v1 secret for a messaging profile. The previous secret stops working.",
 		Op:          &engine.Op{Method: "POST", Path: "/messaging/profiles/{id}/actions/regenerate/secret", Envelope: false},
 		Attrs: []*engine.Attr{
-			{Name: "id", Kind: engine.KindString, Required: true, Local: true, PathParams: []string{"id"}, Description: "The object's id."},
+			{Name: "messaging_profile_id", Kind: engine.KindString, Required: true, Local: true, PathParams: []string{"id"}, Description: "The messaging profile id."},
 		},
 	}
 }

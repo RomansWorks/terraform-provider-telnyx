@@ -8,14 +8,15 @@ import "github.com/RomansWorks/terraform-provider-telnyx/internal/engine"
 // TenDLCSharedCampaign returns the descriptor of telnyx_10dlc_shared_campaign.
 func TenDLCSharedCampaign() *engine.Resource {
 	return &engine.Resource{
-		TypeName:    "telnyx_10dlc_shared_campaign",
-		Description: "TODO Get Single Shared Campaign",
-		Create:      &engine.Op{Method: "PATCH", Path: "/10dlc/partner_campaigns/{campaignId}", Envelope: false},
-		Read:        &engine.Op{Method: "GET", Path: "/10dlc/partner_campaigns/{campaignId}", Envelope: false},
-		Update:      &engine.Op{Method: "PATCH", Path: "/10dlc/partner_campaigns/{campaignId}", Envelope: false},
-		IDAttr:      "campaign_id",
-		Import:      []string{"campaign_id"},
-		DataSource:  true,
+		TypeName:      "telnyx_10dlc_shared_campaign",
+		Description:   "A partner 10DLC campaign that another campaign service provider shared with Telnyx and Telnyx accepted. Terraform manages only its webhook URLs; the campaign itself is owned by the partner.",
+		Create:        &engine.Op{Method: "PATCH", Path: "/10dlc/partner_campaigns/{campaignId}", Envelope: false},
+		Read:          &engine.Op{Method: "GET", Path: "/10dlc/partner_campaigns/{campaignId}", Envelope: false},
+		Update:        &engine.Op{Method: "PATCH", Path: "/10dlc/partner_campaigns/{campaignId}", Envelope: false},
+		IDAttr:        "campaign_id",
+		Import:        []string{"campaign_id"},
+		DeleteWarning: "A shared campaign is owned by the partner that shared it and cannot be deleted through Telnyx. It was removed from Terraform state; its webhook URLs keep their last values.",
+		DataSource:    true,
 		Attrs: []*engine.Attr{
 			{Name: "age_gated", JSON: "ageGated", Kind: engine.KindBool, Computed: true, InResponse: true, Description: "Age gated content in campaign."},
 			{Name: "assigned_phone_numbers_count", JSON: "assignedPhoneNumbersCount", Kind: engine.KindFloat, Computed: true, InResponse: true, Description: "Number of phone numbers associated with the campaign"},
@@ -44,7 +45,7 @@ func TenDLCSharedCampaign() *engine.Resource {
 			{Name: "sample3", JSON: "sample3", Kind: engine.KindString, Computed: true, InResponse: true, Description: "Message sample. Some campaign tiers require 3 or more message samples."},
 			{Name: "sample4", JSON: "sample4", Kind: engine.KindString, Computed: true, InResponse: true, Description: "Message sample. Some campaign tiers require 4 or more message samples."},
 			{Name: "sample5", JSON: "sample5", Kind: engine.KindString, Computed: true, InResponse: true, Description: "Message sample. Some campaign tiers require 5 or more message samples."},
-			{Name: "sub_usecases", JSON: "subUsecases", Kind: engine.KindList, Computed: true, InResponse: true, Description: "Campaign sub-usecases. Must be of defined valid sub-usecase types. Use `/10dlc/enum/usecase` operation to retrieve list of valid sub-usecases", Elem: &engine.Attr{Kind: engine.KindString}},
+			{Name: "sub_usecases", JSON: "subUsecases", Kind: engine.KindSet, Computed: true, InResponse: true, Description: "Campaign sub-usecases. Must be of defined valid sub-usecase types. Use `/10dlc/enum/usecase` operation to retrieve list of valid sub-usecases", Elem: &engine.Attr{Kind: engine.KindString}},
 			{Name: "subscriber_optin", JSON: "subscriberOptin", Kind: engine.KindBool, Computed: true, InResponse: true, Description: "Does campaign require subscriber to opt-in before SMS is sent to subscriber?"},
 			{Name: "subscriber_optout", JSON: "subscriberOptout", Kind: engine.KindBool, Computed: true, InResponse: true, Description: "Does campaign support subscriber opt-out keyword(s)?"},
 			{Name: "tcr_brand_id", JSON: "tcrBrandId", Kind: engine.KindString, Computed: true, InResponse: true, Description: "Unique identifier assigned to the brand by the registry."},
@@ -53,8 +54,8 @@ func TenDLCSharedCampaign() *engine.Resource {
 			{Name: "terms_and_conditions_link", JSON: "termsAndConditionsLink", Kind: engine.KindString, Computed: true, InResponse: true, Description: "Link to the campaign's terms and conditions."},
 			{Name: "updated_at", JSON: "updatedAt", Kind: engine.KindString, Computed: true, InResponse: true, Description: "Date and time that the brand was last updated at."},
 			{Name: "usecase", JSON: "usecase", Kind: engine.KindString, Computed: true, InResponse: true, Description: "Campaign usecase. Must be of defined valid types. Use `/10dlc/enum/usecase` operation to retrieve usecases available for given brand."},
-			{Name: "webhook_failover_u_r_l", JSON: "webhookFailoverURL", Kind: engine.KindString, Optional: true, Computed: true, InCreate: true, InUpdate: true, InResponse: true, Description: "Failover webhook to which campaign status updates are sent."},
-			{Name: "webhook_u_r_l", JSON: "webhookURL", Kind: engine.KindString, Optional: true, Computed: true, InCreate: true, InUpdate: true, InResponse: true, Description: "Webhook to which campaign status updates are sent."},
+			{Name: "webhook_failover_url", JSON: "webhookFailoverURL", Kind: engine.KindString, Optional: true, Computed: true, InCreate: true, InUpdate: true, InResponse: true, Description: "Failover webhook to which campaign status updates are sent."},
+			{Name: "webhook_url", JSON: "webhookURL", Kind: engine.KindString, Optional: true, Computed: true, InCreate: true, InUpdate: true, InResponse: true, Description: "Webhook to which campaign status updates are sent."},
 		},
 	}
 }

@@ -9,14 +9,14 @@ import "github.com/RomansWorks/terraform-provider-telnyx/internal/engine"
 func MessagingHostedNumberOrderValidationCodesAction() *engine.Action {
 	return &engine.Action{
 		TypeName:    "telnyx_messaging_hosted_number_order_validation_codes",
-		Description: "TODO Validate hosted number codes",
+		Description: "Submits the verification codes received by call or SMS on the numbers of a messaging hosted number order, proving that you control them.",
 		Op:          &engine.Op{Method: "POST", Path: "/messaging_hosted_number_orders/{id}/validation_codes", Envelope: false},
 		Attrs: []*engine.Attr{
-			{Name: "id", Kind: engine.KindString, Required: true, Local: true, PathParams: []string{"id"}, Description: "The object's id."},
-			{Name: "verification_codes", JSON: "verification_codes", Kind: engine.KindList, Required: true, InCreate: true,
+			{Name: "messaging_hosted_number_order_id", Kind: engine.KindString, Required: true, Local: true, PathParams: []string{"id"}, Description: "The messaging hosted number order id."},
+			{Name: "verification_codes", JSON: "verification_codes", Kind: engine.KindList, Required: true, InCreate: true, Description: "The code received on each phone number.",
 				Attrs: []*engine.Attr{
-					{Name: "code", JSON: "code", Kind: engine.KindString, Required: true, InCreate: true},
-					{Name: "phone_number", JSON: "phone_number", Kind: engine.KindString, Required: true, InCreate: true},
+					{Name: "code", JSON: "code", Kind: engine.KindString, Required: true, InCreate: true, Description: "The verification code received on the number."},
+					{Name: "phone_number", JSON: "phone_number", Kind: engine.KindString, Required: true, InCreate: true, Description: "The +E.164 phone number the code was sent to."},
 				}},
 		},
 	}

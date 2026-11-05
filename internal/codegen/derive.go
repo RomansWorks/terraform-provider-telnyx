@@ -221,7 +221,21 @@ func (g *Generator) norm(n any) map[string]any {
 	for k, v := range s {
 		out[k] = v
 	}
-	if parts, ok := s["allOf"].([]any); ok {
+	if parts, ok := s["allOf"].([]any); ok && scalarParts(g, parts) {
+		// allOf of scalars, such as a $ref to a string enum with a
+		// description beside it: the parts' keys, then the schema's own.
+		delete(out, "allOf")
+		merged := map[string]any{}
+		for _, p := range parts {
+			for k, v := range g.norm(p) {
+				merged[k] = v
+			}
+		}
+		for k, v := range out {
+			merged[k] = v
+		}
+		out = merged
+	} else if ok {
 		delete(out, "allOf")
 		props := map[string]any{}
 		var req []any
@@ -309,6 +323,21 @@ func (g *Generator) norm(n any) map[string]any {
 		}
 	}
 	return out
+}
+
+// scalarParts reports whether every allOf part is a scalar: no fields and
+// a type, enum or const other than an object.
+func scalarParts(g *Generator, parts []any) bool {
+	for _, p := range parts {
+		ps := g.norm(p)
+		if ps == nil || properties(ps) != nil || ps["type"] == "object" || ps["type"] == "array" {
+			return false
+		}
+		if ps["type"] == nil && ps["enum"] == nil && ps["const"] == nil {
+			return false
+		}
+	}
+	return len(parts) > 0
 }
 
 // mergeVariants merges union variants that share one shape: a single
@@ -721,9 +750,15 @@ var nonWord = regexp.MustCompile(`[^a-z0-9]+`)
 
 func snake(s string) string {
 	var b strings.Builder
-	for i, r := range s {
-		if r >= 'A' && r <= 'Z' {
-			if i > 0 {
+	rs := []rune(s)
+	upper := func(r rune) bool { return r >= 'A' && r <= 'Z' }
+	lower := func(r rune) bool { return r >= 'a' && r <= 'z' || r >= '0' && r <= '9' }
+	for i, r := range rs {
+		if upper(r) {
+			// A capital starts a word after a lowercase letter or digit, or
+			// ends a run of capitals that a lowercase word follows
+			// (webhookURL is webhook_url, isTMobile is is_t_mobile).
+			if i > 0 && (lower(rs[i-1]) || upper(rs[i-1]) && i+1 < len(rs) && rs[i+1] >= 'a' && rs[i+1] <= 'z') {
 				b.WriteByte('_')
 			}
 			r += 'a' - 'A'
@@ -986,7 +1021,7 @@ func (g *Generator) ids(r *engine.Resource, ov *Override, create *operation, oth
 		a.Kind = engine.KindString
 		a.PathParams = append(a.PathParams, p)
 		if a.Description == "" {
-			a.Description = "The " + strings.ReplaceAll(strings.TrimSuffix(name, "_id"), "_", " ") + " id."
+			a.Description = paramDescription(name)
 		}
 		parents = append(parents, a)
 	}

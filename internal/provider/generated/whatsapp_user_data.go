@@ -8,15 +8,16 @@ import "github.com/RomansWorks/terraform-provider-telnyx/internal/engine"
 // WhatsappUserData returns the descriptor of telnyx_whatsapp_user_data.
 func WhatsappUserData() *engine.Resource {
 	return &engine.Resource{
-		TypeName:    "telnyx_whatsapp_user_data",
-		Description: "TODO Fetch Whatsapp user data",
-		Create:      &engine.Op{Method: "PATCH", Path: "/v2/whatsapp/user_data", Envelope: true},
-		Read:        &engine.Op{Method: "GET", Path: "/v2/whatsapp/user_data", Envelope: true},
-		Update:      &engine.Op{Method: "PATCH", Path: "/v2/whatsapp/user_data", Envelope: true},
-		IDAttr:      "id",
-		Import:      []string{"id"},
-		DataSource:  true,
-		FixedID:     "whatsapp_user_data",
+		TypeName:      "telnyx_whatsapp_user_data",
+		Description:   "The account-wide WhatsApp settings of your Telnyx account, the webhook URLs that receive WhatsApp signup events. There is one per account; creating this resource adopts it and destroying it leaves its values as they are.",
+		Create:        &engine.Op{Method: "PATCH", Path: "/v2/whatsapp/user_data", Envelope: true},
+		Read:          &engine.Op{Method: "GET", Path: "/v2/whatsapp/user_data", Envelope: true},
+		Update:        &engine.Op{Method: "PATCH", Path: "/v2/whatsapp/user_data", Envelope: true},
+		IDAttr:        "id",
+		Import:        []string{"id"},
+		DeleteWarning: "The Telnyx API cannot delete WhatsApp user data. It was removed from Terraform state but keeps its current values in your Telnyx account.",
+		DataSource:    true,
+		FixedID:       "whatsapp_user_data",
 		Attrs: []*engine.Attr{
 			{Name: "created_at", JSON: "created_at", Kind: engine.KindString, Computed: true, InResponse: true},
 			{Name: "id", JSON: "id", Kind: engine.KindString, Computed: true, InResponse: true, Description: "Always whatsapp_user_data: there is one per account."},

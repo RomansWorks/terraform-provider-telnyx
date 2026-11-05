@@ -213,7 +213,6 @@ func Actions() []*engine.Action {
 		ExternalConnectionUploadRefreshAction(),
 		ExternalConnectionUploadRetryAction(),
 		ExternalConnectionUploadStartAction(),
-		MessagingHostedNumberOrderFileUploadAction(),
 		MessagingHostedNumberOrderValidationCodesAction(),
 		MessagingHostedNumberOrderVerificationCodesAction(),
 		MessagingNumberBulkUpdatesAction(),
@@ -248,7 +247,6 @@ func Actions() []*engine.Action {
 		VerifiedNumberVerifyAction(),
 		WhatsappBusinessAccountDeleteAction(),
 		WhatsappPhoneNumberProfilePhotoDeleteAction(),
-		WhatsappPhoneNumberProfilePhotoUploadAction(),
 		WhatsappPhoneNumberResendVerificationAction(),
 		WhatsappPhoneNumberVerifyAction(),
 	}

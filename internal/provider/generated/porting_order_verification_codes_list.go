@@ -13,7 +13,7 @@ func PortingOrderVerificationCodesList() *engine.List {
 		Op:          &engine.Op{Method: "GET", Path: "/porting_orders/{id}/verification_codes", Envelope: true, Paging: engine.PagingNumber, PageSize: 250},
 		Params: []*engine.Attr{
 			{Name: "filter_verified", JSON: "filter[verified]", Kind: engine.KindBool, Optional: true, Description: "Filter verification codes that have been verified or not"},
-			{Name: "id", Kind: engine.KindString, Required: true, PathParams: []string{"id"}, Description: "The id id."},
+			{Name: "id", Kind: engine.KindString, Required: true, PathParams: []string{"id"}, Description: "The id of the object whose items are listed."},
 			{Name: "sort_value", JSON: "sort[value]", Kind: engine.KindString, Optional: true, Enum: []string{"-created_at", "created_at"}, Description: "Specifies the sort order for results. If not given, results are sorted by created_at in descending order."},
 		},
 		Items: &engine.Attr{Name: "porting_order_verification_codes", JSON: "data", Kind: engine.KindList, Computed: true, InResponse: true, Description: "The objects, in the order the API returns them.",

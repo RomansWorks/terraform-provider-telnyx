@@ -9,14 +9,15 @@ import "github.com/RomansWorks/terraform-provider-telnyx/internal/engine"
 func TenDLCCampaignOperationStatus() *engine.Resource {
 	return &engine.Resource{
 		TypeName:    "telnyx_10dlc_campaign_operation_status",
-		Description: "TODO Get campaign operation status",
-		Read:        &engine.Op{Method: "GET", Path: "/10dlc/campaign/{campaignId}/operationStatus", Envelope: false},
+		Description: "The approval status of a 10DLC campaign at each mobile network operator.",
+		Read:        &engine.Op{Method: "GET", Path: "/10dlc/campaign/{campaignId}/operationStatus", Envelope: false, Whole: "values"},
 		IDAttr:      "",
 		Import:      []string{"campaign_id"},
 		DataSource:  true,
 		NoResource:  true,
 		Attrs: []*engine.Attr{
 			{Name: "campaign_id", Kind: engine.KindString, Local: true, PathParams: []string{"campaignId"}, Description: "The campaign."},
+			{Name: "values", JSON: "values", Kind: engine.KindJSON, Computed: true, InResponse: true, Description: "The response, as JSON: a map whose keys the API does not fix."},
 		},
 	}
 }

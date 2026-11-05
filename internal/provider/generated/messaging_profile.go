@@ -9,7 +9,7 @@ import "github.com/RomansWorks/terraform-provider-telnyx/internal/engine"
 func MessagingProfile() *engine.Resource {
 	return &engine.Resource{
 		TypeName:    "telnyx_messaging_profile",
-		Description: "TODO Create a messaging profile",
+		Description: "A messaging profile, which groups the settings for sending and receiving SMS and MMS (webhooks, allowed destinations, number pool, spend limits) shared by the numbers assigned to it.",
 		Create:      &engine.Op{Method: "POST", Path: "/messaging_profiles", Envelope: true},
 		Read:        &engine.Op{Method: "GET", Path: "/messaging_profiles/{id}", Envelope: true},
 		Update:      &engine.Op{Method: "PATCH", Path: "/messaging_profiles/{id}", Envelope: true},
@@ -30,7 +30,7 @@ func MessagingProfile() *engine.Resource {
 					{Name: "auto_chunk_long_messages", JSON: "auto_chunk_long_messages", Kind: engine.KindBool, Optional: true, Computed: true, InCreate: true, InUpdate: true, InResponse: true, Description: "Enables server-side chunking of outbound SMS. When enabled, an outbound message that exceeds the maximum number of segments allowed for its destination (10 segments by default; some aggregators accept up to 25) is automatically split into multiple child messages, each within the segment limit, and sent sequentially in order. Splitting is encoding-aware: GSM-7 bodies split at 153-character boundaries and UCS-2 bodies at 134-byte (67-character) boundaries. When disabled (the default), messages exceeding the segment limit are rejected with an error."},
 				}},
 			{Name: "health_webhook_url", JSON: "health_webhook_url", Kind: engine.KindString, Optional: true, Computed: true, ForceNew: true, InCreate: true, InResponse: true, Description: "DEPRECATED: health check url service checking"},
-			{Name: "id", JSON: "id", Kind: engine.KindString, Computed: true, InResponse: true, PathParams: []string{"id"}, Description: "Identifies the type of resource."},
+			{Name: "id", JSON: "id", Kind: engine.KindString, Computed: true, InResponse: true, PathParams: []string{"id"}, Description: "Identifies the messaging profile."},
 			{Name: "mm7_metadata", JSON: "mm7_metadata", Kind: engine.KindObject, Optional: true, Computed: true, InCreate: true, InUpdate: true, InResponse: true, Description: "MM7 settings for inbound messages",
 				Attrs: []*engine.Attr{
 					{Name: "mm7_failover_webhook_url", JSON: "mm7_failover_webhook_url", Kind: engine.KindString, Optional: true, Computed: true, InCreate: true, InUpdate: true, InResponse: true, Description: "Failover webhook URL to receive inbound MM7 traffic"},
@@ -62,11 +62,11 @@ func MessagingProfile() *engine.Resource {
 					{Name: "replace_blacklist_only", JSON: "replace_blacklist_only", Kind: engine.KindBool, Optional: true, Computed: true, InCreate: true, InUpdate: true, InResponse: true, Description: "Use the link replacement tool only for links that are specifically blacklisted by Telnyx."},
 					{Name: "send_webhooks", JSON: "send_webhooks", Kind: engine.KindBool, Optional: true, Computed: true, InCreate: true, InUpdate: true, InResponse: true, Description: "Receive webhooks for when your replaced links are clicked. Webhooks are sent to the webhooks on the messaging profile."},
 				}},
-			{Name: "v1_secret", JSON: "v1_secret", Kind: engine.KindString, Optional: true, Computed: true, InUpdate: true, InResponse: true, Description: "Secret used to authenticate with v1 endpoints."},
+			{Name: "v1_secret", JSON: "v1_secret", Kind: engine.KindString, Optional: true, Computed: true, Sensitive: true, InUpdate: true, InResponse: true, Description: "Secret used to authenticate with v1 endpoints."},
 			{Name: "webhook_api_version", JSON: "webhook_api_version", Kind: engine.KindString, Optional: true, Computed: true, InCreate: true, InUpdate: true, InResponse: true, Enum: []string{"1", "2", "2010-04-01"}, Description: "Determines which webhook format will be used, Telnyx API v1, v2, or a legacy 2010-04-01 format."},
 			{Name: "webhook_failover_url", JSON: "webhook_failover_url", Kind: engine.KindString, Optional: true, Computed: true, InCreate: true, InUpdate: true, InResponse: true, Description: "The failover URL where webhooks related to this messaging profile will be sent if sending to the primary URL fails."},
 			{Name: "webhook_url", JSON: "webhook_url", Kind: engine.KindString, Optional: true, Computed: true, InCreate: true, InUpdate: true, InResponse: true, Description: "The URL where webhooks related to this messaging profile will be sent."},
-			{Name: "whitelisted_destinations", JSON: "whitelisted_destinations", Kind: engine.KindList, Required: true, InCreate: true, InUpdate: true, InResponse: true, Description: "Destinations to which the messaging profile is allowed to send. The elements in the list must be valid ISO 3166-1 alpha-2 country codes. If set to `[\"*\"]`, all destinations will be allowed.", Elem: &engine.Attr{Kind: engine.KindString}},
+			{Name: "whitelisted_destinations", JSON: "whitelisted_destinations", Kind: engine.KindSet, Required: true, InCreate: true, InUpdate: true, InResponse: true, Description: "Destinations to which the messaging profile is allowed to send. The elements in the list must be valid ISO 3166-1 alpha-2 country codes. If set to `[\"*\"]`, all destinations will be allowed.", Elem: &engine.Attr{Kind: engine.KindString}},
 		},
 	}
 }

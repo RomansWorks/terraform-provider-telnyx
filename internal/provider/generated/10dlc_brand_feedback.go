@@ -9,7 +9,7 @@ import "github.com/RomansWorks/terraform-provider-telnyx/internal/engine"
 func TenDLCBrandFeedback() *engine.Resource {
 	return &engine.Resource{
 		TypeName:    "telnyx_10dlc_brand_feedback",
-		Description: "TODO Get Brand Feedback By Id",
+		Description: "The registry's feedback on a 10DLC brand after it was created or revetted, such as a tax ID or stock symbol mismatch, and which submitted fields it concerns.",
 		Read:        &engine.Op{Method: "GET", Path: "/10dlc/brand_feedback/{brandId}", Envelope: false},
 		IDAttr:      "",
 		Import:      []string{"brand_id"},

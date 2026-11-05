@@ -9,7 +9,7 @@ import "github.com/RomansWorks/terraform-provider-telnyx/internal/engine"
 func TenDLCCampaignUsecaseCost() *engine.Resource {
 	return &engine.Resource{
 		TypeName:    "telnyx_10dlc_campaign_usecase_cost",
-		Description: "TODO Get Campaign Cost",
+		Description: "The up-front and monthly cost of a 10DLC campaign use case, including carrier fees.",
 		Read:        &engine.Op{Method: "GET", Path: "/10dlc/campaign/usecase_cost", Envelope: false},
 		IDAttr:      "",
 		Import:      []string{},

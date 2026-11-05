@@ -9,10 +9,10 @@ import "github.com/RomansWorks/terraform-provider-telnyx/internal/engine"
 func RCSAgentSubmitAction() *engine.Action {
 	return &engine.Action{
 		TypeName:    "telnyx_rcs_agent_submit",
-		Description: "TODO Submit RCS agent basics",
+		Description: "Submits the basics of an RCS agent (identity and contact details) for review.",
 		Op:          &engine.Op{Method: "POST", Path: "/rcs/agents/{id}/submit", Envelope: false},
 		Attrs: []*engine.Attr{
-			{Name: "id", Kind: engine.KindString, Required: true, Local: true, PathParams: []string{"id"}, Description: "The object's id."},
+			{Name: "agent_id", Kind: engine.KindString, Required: true, Local: true, PathParams: []string{"id"}, Description: "The agent id."},
 		},
 	}
 }

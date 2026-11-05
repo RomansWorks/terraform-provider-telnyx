@@ -9,13 +9,13 @@ import "github.com/RomansWorks/terraform-provider-telnyx/internal/engine"
 func TenDLCBrandExternalVettingImportAction() *engine.Action {
 	return &engine.Action{
 		TypeName:    "telnyx_10dlc_brand_external_vetting_import",
-		Description: "TODO Import External Vetting Record",
+		Description: "Imports an existing vetting record from a vetting provider approved by The Campaign Registry into a 10DLC brand. Once the provider confirms the record, it counts toward the brand's campaign qualification.",
 		Op:          &engine.Op{Method: "PUT", Path: "/10dlc/brand/{brandId}/externalVetting", Envelope: false},
 		Attrs: []*engine.Attr{
 			{Name: "brand_id", Kind: engine.KindString, Required: true, Local: true, PathParams: []string{"brandId"}, Description: "The brand id."},
 			{Name: "evp_id", JSON: "evpId", Kind: engine.KindString, Required: true, InCreate: true, Description: "External vetting provider ID for the brand."},
 			{Name: "vetting_id", JSON: "vettingId", Kind: engine.KindString, Required: true, InCreate: true, Description: "Unique ID that identifies a vetting transaction performed by a vetting provider. This ID is provided by the vetting provider at time of vetting."},
-			{Name: "vetting_token", JSON: "vettingToken", Kind: engine.KindString, Optional: true, InCreate: true, Description: "Required by some providers for vetting record confirmation."},
+			{Name: "vetting_token", JSON: "vettingToken", Kind: engine.KindString, Optional: true, Sensitive: true, InCreate: true, Description: "Required by some providers for vetting record confirmation."},
 		},
 	}
 }

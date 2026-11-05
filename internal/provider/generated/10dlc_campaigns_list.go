@@ -55,7 +55,7 @@ func TenDLCCampaignsList() *engine.List {
 				{Name: "sample4", JSON: "sample4", Kind: engine.KindString, Computed: true, InResponse: true, Description: "Message sample. Some campaign tiers require 4 or more message samples."},
 				{Name: "sample5", JSON: "sample5", Kind: engine.KindString, Computed: true, InResponse: true, Description: "Message sample. Some campaign tiers require 5 or more message samples."},
 				{Name: "status", JSON: "status", Kind: engine.KindString, Computed: true, InResponse: true, Description: "Current campaign status. Possible values: ACTIVE, EXPIRED. A newly created campaign defaults to ACTIVE status."},
-				{Name: "sub_usecases", JSON: "subUsecases", Kind: engine.KindList, Computed: true, InResponse: true, Description: "Campaign sub-usecases. Must be of defined valid sub-usecase types. Use `/10dlc/enum/usecase` operation to retrieve list of valid sub-usecases", Elem: &engine.Attr{Kind: engine.KindString}},
+				{Name: "sub_usecases", JSON: "subUsecases", Kind: engine.KindSet, Computed: true, InResponse: true, Description: "Campaign sub-usecases. Must be of defined valid sub-usecase types. Use `/10dlc/enum/usecase` operation to retrieve list of valid sub-usecases", Elem: &engine.Attr{Kind: engine.KindString}},
 				{Name: "submission_status", JSON: "submissionStatus", Kind: engine.KindString, Computed: true, InResponse: true, Description: "Campaign submission status"},
 				{Name: "subscriber_help", JSON: "subscriberHelp", Kind: engine.KindBool, Computed: true, InResponse: true, Description: "Does campaign responds to help keyword(s)?"},
 				{Name: "subscriber_optin", JSON: "subscriberOptin", Kind: engine.KindBool, Computed: true, InResponse: true, Description: "Does campaign require subscriber to opt-in before SMS is sent to subscriber?"},
@@ -66,8 +66,8 @@ func TenDLCCampaignsList() *engine.List {
 				{Name: "terms_and_conditions_link", JSON: "termsAndConditionsLink", Kind: engine.KindString, Computed: true, InResponse: true, Description: "Link to the campaign's terms and conditions."},
 				{Name: "usecase", JSON: "usecase", Kind: engine.KindString, Computed: true, InResponse: true, Description: "Campaign usecase. Must be of defined valid types. Use `/10dlc/enum/usecase` operation to retrieve usecases available for given brand."},
 				{Name: "vertical", JSON: "vertical", Kind: engine.KindString, Computed: true, InResponse: true, Deprecated: "Deprecated by Telnyx.", Description: "Business/industry segment of this campaign (Deprecated). Must be of defined valid types. Use `/registry/enum/vertical` operation to retrieve verticals available for given brand, vertical combination. This field is deprecated."},
-				{Name: "webhook_failover_u_r_l", JSON: "webhookFailoverURL", Kind: engine.KindString, Computed: true, InResponse: true, Description: "Failover webhook to which campaign status updates are sent."},
-				{Name: "webhook_u_r_l", JSON: "webhookURL", Kind: engine.KindString, Computed: true, InResponse: true, Description: "Webhook to which campaign status updates are sent."},
+				{Name: "webhook_failover_url", JSON: "webhookFailoverURL", Kind: engine.KindString, Computed: true, InResponse: true, Description: "Failover webhook to which campaign status updates are sent."},
+				{Name: "webhook_url", JSON: "webhookURL", Kind: engine.KindString, Computed: true, InResponse: true, Description: "Webhook to which campaign status updates are sent."},
 			}},
 	}
 }

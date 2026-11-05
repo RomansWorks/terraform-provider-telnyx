@@ -9,7 +9,7 @@ import "github.com/RomansWorks/terraform-provider-telnyx/internal/engine"
 func TenDLCPhoneNumberCampaign() *engine.Resource {
 	return &engine.Resource{
 		TypeName:    "telnyx_10dlc_phone_number_campaign",
-		Description: "TODO Create New Phone Number Campaign",
+		Description: "The assignment of a phone number to a 10DLC campaign, which decides the registered campaign its A2P SMS traffic is sent under. Destroying it removes the number from the campaign.",
 		Create:      &engine.Op{Method: "POST", Path: "/10dlc/phone_number_campaigns", Envelope: false},
 		Read:        &engine.Op{Method: "GET", Path: "/10dlc/phone_number_campaigns/{phoneNumber}", Envelope: false},
 		Update:      &engine.Op{Method: "PUT", Path: "/10dlc/phone_number_campaigns/{phoneNumber}", Envelope: false},
@@ -24,7 +24,7 @@ func TenDLCPhoneNumberCampaign() *engine.Resource {
 			{Name: "created_at", JSON: "createdAt", Kind: engine.KindString, Computed: true, InResponse: true},
 			{Name: "failure_reasons", JSON: "failureReasons", Kind: engine.KindString, Computed: true, InResponse: true, Description: "Extra info about a failure to assign/unassign a number. Relevant only if the assignmentStatus is either FAILED_ASSIGNMENT or FAILED_UNASSIGNMENT"},
 			{Name: "non_tmobile_number_mapping_status", JSON: "nonTmobileNumberMappingStatus", Kind: engine.KindString, Computed: true, InResponse: true, Description: "The assignment status of the number towards other carriers."},
-			{Name: "phone_number", JSON: "phoneNumber", Kind: engine.KindString, Required: true, ForceNew: true, InCreate: true, InResponse: true, PathParams: []string{"phoneNumber"}, Description: "The phone number you want to link to a specified campaign."},
+			{Name: "phone_number", JSON: "phoneNumber", Kind: engine.KindString, Required: true, ForceNew: true, InCreate: true, InResponse: true, PathParams: []string{"phoneNumber"}, Description: "The phone number in E.164 format."},
 			{Name: "tcr_brand_id", JSON: "tcrBrandId", Kind: engine.KindString, Computed: true, InResponse: true, Description: "TCR's alphanumeric ID for the brand."},
 			{Name: "tcr_campaign_id", JSON: "tcrCampaignId", Kind: engine.KindString, Computed: true, InResponse: true, Description: "TCR's alphanumeric ID for the campaign."},
 			{Name: "telnyx_campaign_id", JSON: "telnyxCampaignId", Kind: engine.KindString, Computed: true, InResponse: true, Description: "Campaign ID. Empty if the number is associated to a shared campaign."},

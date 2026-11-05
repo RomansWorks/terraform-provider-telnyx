@@ -9,7 +9,7 @@ import "github.com/RomansWorks/terraform-provider-telnyx/internal/engine"
 func RCSAgentTestDevice() *engine.Resource {
 	return &engine.Resource{
 		TypeName:    "telnyx_rcs_agent_test_device",
-		Description: "TODO Add an RCS agent test device",
+		Description: "A test device invited to an RCS agent, which can receive the agent's messages before launch.",
 		Create:      &engine.Op{Method: "POST", Path: "/rcs/agents/{id}/test_devices", Envelope: false},
 		Delete:      &engine.Op{Method: "DELETE", Path: "/rcs/agents/{id}/test_devices/{test_device_id}", Envelope: false},
 		ReadFrom:    &engine.ReadFrom{Op: &engine.Op{Method: "GET", Path: "/rcs/agents/{id}/test_devices", Envelope: false}, Field: "", Key: "test_device_id"},
@@ -18,8 +18,8 @@ func RCSAgentTestDevice() *engine.Resource {
 		Attrs: []*engine.Attr{
 			{Name: "agent_id", Kind: engine.KindString, Required: true, ForceNew: true, Local: true, PathParams: []string{"id"}, Description: "The agent id."},
 			{Name: "id", JSON: "test_device_id", Kind: engine.KindString, Computed: true, InResponse: true, PathParams: []string{"test_device_id"}, Description: "The object's id."},
-			{Name: "invite_status", JSON: "invite_status", Kind: engine.KindString, Computed: true, InResponse: true},
-			{Name: "phone_number", JSON: "phone_number", Kind: engine.KindString, Required: true, ForceNew: true, InCreate: true, InResponse: true},
+			{Name: "invite_status", JSON: "invite_status", Kind: engine.KindString, Computed: true, InResponse: true, Description: "The status of the invitation to the device."},
+			{Name: "phone_number", JSON: "phone_number", Kind: engine.KindString, Required: true, ForceNew: true, InCreate: true, InResponse: true, Description: "The +E.164 phone number of the test device."},
 		},
 	}
 }

@@ -22,7 +22,7 @@ func ShortCodesList() *engine.List {
 				{Name: "messaging_profile_id", JSON: "messaging_profile_id", Kind: engine.KindString, Computed: true, InResponse: true, Description: "Unique identifier for a messaging profile."},
 				{Name: "record_type", JSON: "record_type", Kind: engine.KindString, Computed: true, InResponse: true, Description: "Identifies the type of the resource."},
 				{Name: "short_code", JSON: "short_code", Kind: engine.KindString, Computed: true, InResponse: true, Description: "Short digit sequence used to address messages."},
-				{Name: "tags", JSON: "tags", Kind: engine.KindList, Computed: true, InResponse: true, Description: "Tags associated with the resource.", Elem: &engine.Attr{Kind: engine.KindString}},
+				{Name: "tags", JSON: "tags", Kind: engine.KindSet, Computed: true, InResponse: true, Description: "Tags associated with the resource.", Elem: &engine.Attr{Kind: engine.KindString}},
 				{Name: "updated_at", JSON: "updated_at", Kind: engine.KindString, Computed: true, InResponse: true, Description: "ISO 8601 formatted date indicating when the resource was updated."},
 			}},
 	}

@@ -163,7 +163,12 @@ func (c *Client) Do(ctx context.Context, method, path string, query url.Values, 
 // *Error. Retries follow the same rules as Do.
 func (c *Client) Send(ctx context.Context, method, path string, query url.Values, contentType string, body []byte) ([]byte, error) {
 	u := *c.baseURL
-	u.Path = c.baseURL.Path + "/" + strings.TrimLeft(path, "/")
+	// A few spec paths repeat the version (/v2/mobile_phone_numbers) that
+	// the base URL already ends with.
+	if base := strings.TrimRight(c.baseURL.Path, "/"); strings.HasSuffix(base, "/v2") && strings.HasPrefix(path, "/v2/") {
+		path = strings.TrimPrefix(path, "/v2")
+	}
+	u.Path = strings.TrimRight(c.baseURL.Path, "/") + "/" + strings.TrimLeft(path, "/")
 	if len(query) > 0 {
 		u.RawQuery = query.Encode()
 	}

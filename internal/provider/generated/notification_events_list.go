@@ -9,7 +9,7 @@ import "github.com/RomansWorks/terraform-provider-telnyx/internal/engine"
 func NotificationEventsList() *engine.List {
 	return &engine.List{
 		TypeName:    "telnyx_notification_events",
-		Description: "TODO List all Notifications Events",
+		Description: "Lists the events Telnyx can send notifications about.",
 		Op:          &engine.Op{Method: "GET", Path: "/notification_events", Envelope: true, Paging: engine.PagingNumber, PageSize: 250},
 		Params:      []*engine.Attr{},
 		Items: &engine.Attr{Name: "notification_events", JSON: "data", Kind: engine.KindList, Computed: true, InResponse: true, Description: "The objects, in the order the API returns them.",

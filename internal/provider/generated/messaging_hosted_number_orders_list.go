@@ -16,7 +16,7 @@ func MessagingHostedNumberOrdersList() *engine.List {
 			Attrs: []*engine.Attr{
 				{Name: "id", JSON: "id", Kind: engine.KindString, Computed: true, InResponse: true, Description: "Resource unique identifier."},
 				{Name: "messaging_profile_id", JSON: "messaging_profile_id", Kind: engine.KindString, Computed: true, InResponse: true, Description: "Automatically associate the number with this messaging profile ID when the order is complete."},
-				{Name: "phone_numbers", JSON: "phone_numbers", Kind: engine.KindList, Computed: true, InResponse: true,
+				{Name: "phone_numbers", JSON: "phone_numbers", Kind: engine.KindSet, Computed: true, InResponse: true,
 					Attrs: []*engine.Attr{
 						{Name: "id", JSON: "id", Kind: engine.KindString, Computed: true, InResponse: true, Description: "Identifies the type of resource."},
 						{Name: "phone_number", JSON: "phone_number", Kind: engine.KindString, Computed: true, InResponse: true, Description: "The messaging hosted phone number (+E.164 format)"},

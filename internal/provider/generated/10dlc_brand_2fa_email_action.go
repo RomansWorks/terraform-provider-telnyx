@@ -9,7 +9,7 @@ import "github.com/RomansWorks/terraform-provider-telnyx/internal/engine"
 func TenDLCBrand2faEmailAction() *engine.Action {
 	return &engine.Action{
 		TypeName:    "telnyx_10dlc_brand_2fa_email",
-		Description: "TODO Resend brand 2FA email",
+		Description: "Resends the two-factor authentication email for a 10DLC brand. The brand contact completes verification through the link in the email before registration continues.",
 		Op:          &engine.Op{Method: "POST", Path: "/10dlc/brand/{brandId}/2faEmail", Envelope: false},
 		Attrs: []*engine.Attr{
 			{Name: "brand_id", Kind: engine.KindString, Required: true, Local: true, PathParams: []string{"brandId"}, Description: "The brand id."},

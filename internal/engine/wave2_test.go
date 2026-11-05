@@ -67,3 +67,22 @@ func TestDecodeRecords(t *testing.T) {
 		t.Error("records that are not an array decoded")
 	}
 }
+
+// TestGetWhole puts a response map without fixed fields into one attribute.
+func TestGetWhole(t *testing.T) {
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		_, _ = w.Write([]byte(`{"10017":{"status":"ok"}}`))
+	}))
+	t.Cleanup(srv.Close)
+	c, err := client.New(client.Config{APIKey: "test", BaseURL: srv.URL, MaxRetries: 0})
+	if err != nil {
+		t.Fatal(err)
+	}
+	d := &Resource{Read: &Op{Method: "GET", Path: "/status", Whole: "values"}}
+	obj, err := Get(context.Background(), c, d, Values{})
+	m, ok := obj["values"].(map[string]any)
+	if err != nil || !ok || m["10017"] == nil || len(obj) != 1 {
+		t.Errorf("obj %v, err %v", obj, err)
+	}
+}

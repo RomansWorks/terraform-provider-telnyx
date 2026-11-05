@@ -9,10 +9,10 @@ import "github.com/RomansWorks/terraform-provider-telnyx/internal/engine"
 func WhatsappPhoneNumberProfilePhotoDeleteAction() *engine.Action {
 	return &engine.Action{
 		TypeName:    "telnyx_whatsapp_phone_number_profile_photo_delete",
-		Description: "TODO Delete Whatsapp profile photo",
+		Description: "Removes the profile photo from a WhatsApp phone number's business profile.",
 		Op:          &engine.Op{Method: "DELETE", Path: "/whatsapp/phone_numbers/{phone_number}/profile/photo", Envelope: false},
 		Attrs: []*engine.Attr{
-			{Name: "phone_number", Kind: engine.KindString, Required: true, Local: true, PathParams: []string{"phone_number"}, Description: "The phone number id."},
+			{Name: "phone_number", Kind: engine.KindString, Required: true, Local: true, PathParams: []string{"phone_number"}, Description: "The phone number."},
 		},
 	}
 }

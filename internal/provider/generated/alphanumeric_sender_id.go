@@ -9,7 +9,7 @@ import "github.com/RomansWorks/terraform-provider-telnyx/internal/engine"
 func AlphanumericSenderID() *engine.Resource {
 	return &engine.Resource{
 		TypeName:    "telnyx_alphanumeric_sender_id",
-		Description: "TODO Create an alphanumeric sender ID",
+		Description: "An alphanumeric sender ID registered on a messaging profile, used as the sender in countries that accept alphanumeric senders. The API cannot change it, so every change replaces it.",
 		Create:      &engine.Op{Method: "POST", Path: "/alphanumeric_sender_ids", Envelope: true},
 		Read:        &engine.Op{Method: "GET", Path: "/alphanumeric_sender_ids/{id}", Envelope: true},
 		Delete:      &engine.Op{Method: "DELETE", Path: "/alphanumeric_sender_ids/{id}", Envelope: false},
@@ -21,7 +21,7 @@ func AlphanumericSenderID() *engine.Resource {
 			{Name: "id", JSON: "id", Kind: engine.KindString, Computed: true, InResponse: true, PathParams: []string{"id"}, Description: "Uniquely identifies the alphanumeric sender ID resource."},
 			{Name: "messaging_profile_id", JSON: "messaging_profile_id", Kind: engine.KindString, Required: true, ForceNew: true, InCreate: true, InResponse: true, Description: "The messaging profile this sender ID belongs to."},
 			{Name: "organization_id", JSON: "organization_id", Kind: engine.KindString, Computed: true, InResponse: true, Description: "The organization that owns this sender ID."},
-			{Name: "record_type", JSON: "record_type", Kind: engine.KindString, Computed: true, InResponse: true},
+			{Name: "record_type", JSON: "record_type", Kind: engine.KindString, Computed: true, InResponse: true, Description: "Identifies the type of the resource."},
 			{Name: "us_long_code_fallback", JSON: "us_long_code_fallback", Kind: engine.KindString, Optional: true, Computed: true, ForceNew: true, InCreate: true, InResponse: true, Description: "A US long code number to use as fallback when sending to US destinations."},
 		},
 	}

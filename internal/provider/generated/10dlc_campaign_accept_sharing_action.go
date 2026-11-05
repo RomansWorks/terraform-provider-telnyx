@@ -9,7 +9,7 @@ import "github.com/RomansWorks/terraform-provider-telnyx/internal/engine"
 func TenDLCCampaignAcceptSharingAction() *engine.Action {
 	return &engine.Action{
 		TypeName:    "telnyx_10dlc_campaign_accept_sharing",
-		Description: "TODO Accept Shared Campaign",
+		Description: "Accepts a 10DLC campaign that another campaign service provider shared with Telnyx, so that Telnyx numbers can be assigned to it.",
 		Op:          &engine.Op{Method: "POST", Path: "/10dlc/campaign/acceptSharing/{campaignId}", Envelope: false},
 		Attrs: []*engine.Attr{
 			{Name: "campaign_id", Kind: engine.KindString, Required: true, Local: true, PathParams: []string{"campaignId"}, Description: "The campaign id."},

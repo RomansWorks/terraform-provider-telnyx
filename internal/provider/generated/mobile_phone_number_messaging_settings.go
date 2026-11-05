@@ -9,10 +9,10 @@ import "github.com/RomansWorks/terraform-provider-telnyx/internal/engine"
 func MobilePhoneNumberMessagingSettings() *engine.Resource {
 	return &engine.Resource{
 		TypeName:    "telnyx_mobile_phone_number_messaging_settings",
-		Description: "TODO Retrieve a mobile phone number with messaging settings",
+		Description: "The messaging settings of a mobile phone number, such as its messaging profile and the messaging features it supports.",
 		Read:        &engine.Op{Method: "GET", Path: "/mobile_phone_numbers/{id}/messaging", Envelope: true},
 		IDAttr:      "",
-		Import:      []string{"id"},
+		Import:      []string{"mobile_phone_number_id"},
 		DataSource:  true,
 		NoResource:  true,
 		Attrs: []*engine.Attr{
@@ -27,9 +27,10 @@ func MobilePhoneNumberMessagingSettings() *engine.Resource {
 							{Name: "international_outbound", JSON: "international_outbound", Kind: engine.KindBool, Computed: true, InResponse: true, Description: "Send messages to numbers in other countries."},
 						}},
 				}},
-			{Name: "id", JSON: "id", Kind: engine.KindString, Computed: true, InResponse: true, PathParams: []string{"id"}, Description: "Identifies the type of resource."},
+			{Name: "id", JSON: "id", Kind: engine.KindString, Computed: true, InResponse: true, Description: "Identifies the mobile phone number."},
 			{Name: "messaging_product", JSON: "messaging_product", Kind: engine.KindString, Computed: true, InResponse: true, Description: "The messaging product that the number is registered to use"},
 			{Name: "messaging_profile_id", JSON: "messaging_profile_id", Kind: engine.KindString, Computed: true, InResponse: true, Description: "Unique identifier for a messaging profile."},
+			{Name: "mobile_phone_number_id", Kind: engine.KindString, Local: true, PathParams: []string{"id"}, Description: "The mobile phone number."},
 			{Name: "organization_id", JSON: "organization_id", Kind: engine.KindString, Computed: true, InResponse: true, Description: "The organization that owns this phone number."},
 			{Name: "phone_number", JSON: "phone_number", Kind: engine.KindString, Computed: true, InResponse: true, Description: "+E.164 formatted phone number."},
 			{Name: "record_type", JSON: "record_type", Kind: engine.KindString, Computed: true, InResponse: true, Description: "Identifies the type of the resource."},

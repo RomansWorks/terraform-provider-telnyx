@@ -9,10 +9,10 @@ import "github.com/RomansWorks/terraform-provider-telnyx/internal/engine"
 func MessagingProfileShortCodesList() *engine.List {
 	return &engine.List{
 		TypeName:    "telnyx_messaging_profile_short_codes",
-		Description: "TODO List short codes associated with a messaging profile",
+		Description: "Lists the short codes assigned to a messaging profile.",
 		Op:          &engine.Op{Method: "GET", Path: "/messaging_profiles/{id}/short_codes", Envelope: true, Paging: engine.PagingNumber, PageSize: 250},
 		Params: []*engine.Attr{
-			{Name: "id", Kind: engine.KindString, Required: true, PathParams: []string{"id"}, Description: "The id id."},
+			{Name: "messaging_profile_id", Kind: engine.KindString, Required: true, PathParams: []string{"id"}, Description: "The messaging profile id."},
 		},
 		Items: &engine.Attr{Name: "messaging_profile_short_codes", JSON: "data", Kind: engine.KindList, Computed: true, InResponse: true, Description: "The objects, in the order the API returns them.",
 			Attrs: []*engine.Attr{

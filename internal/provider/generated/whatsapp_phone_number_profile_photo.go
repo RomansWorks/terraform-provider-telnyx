@@ -9,7 +9,7 @@ import "github.com/RomansWorks/terraform-provider-telnyx/internal/engine"
 func WhatsappPhoneNumberProfilePhoto() *engine.Resource {
 	return &engine.Resource{
 		TypeName:    "telnyx_whatsapp_phone_number_profile_photo",
-		Description: "TODO Get Whatsapp profile photo",
+		Description: "The profile photo of a WhatsApp phone number's business profile.",
 		Read:        &engine.Op{Method: "GET", Path: "/whatsapp/phone_numbers/{phone_number}/profile/photo", Envelope: true},
 		IDAttr:      "",
 		Import:      []string{"phone_number"},

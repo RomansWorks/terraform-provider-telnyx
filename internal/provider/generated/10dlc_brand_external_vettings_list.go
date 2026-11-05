@@ -9,7 +9,7 @@ import "github.com/RomansWorks/terraform-provider-telnyx/internal/engine"
 func TenDLCBrandExternalVettingsList() *engine.List {
 	return &engine.List{
 		TypeName:    "telnyx_10dlc_brand_external_vettings",
-		Description: "TODO List External Vettings",
+		Description: "The external vetting records of a 10DLC brand, with each provider's vetting class and score.",
 		Op:          &engine.Op{Method: "GET", Path: "/10dlc/brand/{brandId}/externalVetting", Envelope: false},
 		Params: []*engine.Attr{
 			{Name: "brand_id", Kind: engine.KindString, Required: true, PathParams: []string{"brandId"}, Description: "The brand id."},
@@ -22,7 +22,7 @@ func TenDLCBrandExternalVettingsList() *engine.List {
 				{Name: "vetting_class", JSON: "vettingClass", Kind: engine.KindString, Computed: true, InResponse: true, Description: "Identifies the vetting classification."},
 				{Name: "vetting_id", JSON: "vettingId", Kind: engine.KindString, Computed: true, InResponse: true, Description: "Unique ID that identifies a vetting transaction performed by a vetting provider. This ID is provided by the vetting provider at time of vetting."},
 				{Name: "vetting_score", JSON: "vettingScore", Kind: engine.KindInt, Computed: true, InResponse: true, Description: "Vetting score ranging from 0-100."},
-				{Name: "vetting_token", JSON: "vettingToken", Kind: engine.KindString, Computed: true, InResponse: true, Description: "Required by some providers for vetting record confirmation."},
+				{Name: "vetting_token", JSON: "vettingToken", Kind: engine.KindString, Computed: true, Sensitive: true, InResponse: true, Description: "Required by some providers for vetting record confirmation."},
 			}},
 	}
 }

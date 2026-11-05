@@ -9,7 +9,7 @@ import "github.com/RomansWorks/terraform-provider-telnyx/internal/engine"
 func TenDLCSharedCampaignsList() *engine.List {
 	return &engine.List{
 		TypeName:    "telnyx_10dlc_shared_campaigns",
-		Description: "TODO List Shared Campaigns",
+		Description: "The partner campaigns you shared with Telnyx that Telnyx accepted. Campaigns still pending acceptance are not listed.",
 		Op:          &engine.Op{Method: "GET", Path: "/10dlc/partner_campaigns", Envelope: true, Paging: engine.PagingPage, PageSize: 250, SizeParam: "recordsPerPage", Records: true},
 		Params: []*engine.Attr{
 			{Name: "sort", JSON: "sort", Kind: engine.KindString, Optional: true, Enum: []string{"-assignedPhoneNumbersCount", "-brandDisplayName", "-campaignStatus", "-createdAt", "-tcrBrandId", "-tcrCampaignId", "assignedPhoneNumbersCount", "brandDisplayName", "campaignStatus", "createdAt", "tcrBrandId", "tcrCampaignId"}, Description: "Specifies the sort order for results. If not given, results are sorted by created_at in descending order."},
@@ -51,8 +51,8 @@ func TenDLCSharedCampaignsList() *engine.List {
 				{Name: "terms_and_conditions_link", JSON: "termsAndConditionsLink", Kind: engine.KindString, Computed: true, InResponse: true, Description: "Link to the campaign's terms and conditions."},
 				{Name: "updated_at", JSON: "updatedAt", Kind: engine.KindString, Computed: true, InResponse: true, Description: "Date and time that the brand was last updated at."},
 				{Name: "usecase", JSON: "usecase", Kind: engine.KindString, Computed: true, InResponse: true, Description: "Campaign usecase. Must be of defined valid types. Use `/10dlc/enum/usecase` operation to retrieve usecases available for given brand."},
-				{Name: "webhook_failover_u_r_l", JSON: "webhookFailoverURL", Kind: engine.KindString, Computed: true, InResponse: true, Description: "Failover webhook to which campaign status updates are sent."},
-				{Name: "webhook_u_r_l", JSON: "webhookURL", Kind: engine.KindString, Computed: true, InResponse: true, Description: "Webhook to which campaign status updates are sent."},
+				{Name: "webhook_failover_url", JSON: "webhookFailoverURL", Kind: engine.KindString, Computed: true, InResponse: true, Description: "Failover webhook to which campaign status updates are sent."},
+				{Name: "webhook_url", JSON: "webhookURL", Kind: engine.KindString, Computed: true, InResponse: true, Description: "Webhook to which campaign status updates are sent."},
 			}},
 	}
 }

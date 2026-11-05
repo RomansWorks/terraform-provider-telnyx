@@ -56,7 +56,7 @@ func MobilePhoneNumbersList() *engine.List {
 				{Name: "record_type", JSON: "record_type", Kind: engine.KindString, Computed: true, InResponse: true, Description: "Identifies the type of the resource."},
 				{Name: "sim_card_id", JSON: "sim_card_id", Kind: engine.KindString, Computed: true, InResponse: true, Description: "The ID of the SIM card associated with this number."},
 				{Name: "status", JSON: "status", Kind: engine.KindString, Computed: true, InResponse: true, Description: "The status of the phone number."},
-				{Name: "tags", JSON: "tags", Kind: engine.KindList, Computed: true, InResponse: true, Description: "A list of tags associated with the number.", Elem: &engine.Attr{Kind: engine.KindString}},
+				{Name: "tags", JSON: "tags", Kind: engine.KindSet, Computed: true, InResponse: true, Description: "A list of tags associated with the number.", Elem: &engine.Attr{Kind: engine.KindString}},
 				{Name: "updated_at", JSON: "updated_at", Kind: engine.KindString, Computed: true, InResponse: true, Description: "ISO 8601 formatted date indicating when the resource was last updated."},
 			}},
 	}

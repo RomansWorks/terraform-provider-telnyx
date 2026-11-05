@@ -9,7 +9,7 @@ import "github.com/RomansWorks/terraform-provider-telnyx/internal/engine"
 func NotificationEventConditionsList() *engine.List {
 	return &engine.List{
 		TypeName:    "telnyx_notification_event_conditions",
-		Description: "TODO List all Notifications Events Conditions",
+		Description: "Lists the notification event conditions, the conditions a notification setting can watch for, such as a balance threshold.",
 		Op:          &engine.Op{Method: "GET", Path: "/notification_event_conditions", Envelope: true, Paging: engine.PagingNumber, PageSize: 250},
 		Params: []*engine.Attr{
 			{Name: "filter_associated_record_type", JSON: "filter[associated_record_type][eq]", Kind: engine.KindString, Optional: true, Enum: []string{"account", "phone_number"}, Description: "Filter by the associated record type"},

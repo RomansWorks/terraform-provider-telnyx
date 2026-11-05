@@ -9,7 +9,7 @@ import "github.com/RomansWorks/terraform-provider-telnyx/internal/engine"
 func TenDLCBrandSMSOTPTriggerAction() *engine.Action {
 	return &engine.Action{
 		TypeName:    "telnyx_10dlc_brand_sms_otp_trigger",
-		Description: "TODO Trigger Brand SMS OTP",
+		Description: "Sends, or sends again, an SMS one-time password to the mobile phone of a sole proprietor 10DLC brand. Campaigns cannot be created for the brand until the password is verified.",
 		Op:          &engine.Op{Method: "POST", Path: "/10dlc/brand/{brandId}/smsOtp", Envelope: false},
 		Attrs: []*engine.Attr{
 			{Name: "brand_id", Kind: engine.KindString, Required: true, Local: true, PathParams: []string{"brandId"}, Description: "The brand id."},

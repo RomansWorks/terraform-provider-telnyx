@@ -154,6 +154,9 @@ func opLiteral(o *engine.Op) string {
 	if o.Form {
 		s += ", Form: true"
 	}
+	if o.Whole != "" {
+		s += fmt.Sprintf(", Whole: %q", o.Whole)
+	}
 	return s + "}"
 }
 

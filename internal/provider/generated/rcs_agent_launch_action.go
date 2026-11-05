@@ -9,9 +9,10 @@ import "github.com/RomansWorks/terraform-provider-telnyx/internal/engine"
 func RCSAgentLaunchAction() *engine.Action {
 	return &engine.Action{
 		TypeName:    "telnyx_rcs_agent_launch",
-		Description: "TODO Submit an RCS agent for launch",
+		Description: "Submits an RCS agent for launch with its campaign and testing details, so carriers can approve it to message users.",
 		Op:          &engine.Op{Method: "POST", Path: "/rcs/agents/{id}/launch", Envelope: false},
 		Attrs: []*engine.Attr{
+			{Name: "agent_id", Kind: engine.KindString, Required: true, Local: true, PathParams: []string{"id"}, Description: "The agent id."},
 			{Name: "campaign", JSON: "campaign", Kind: engine.KindObject, Required: true, InCreate: true,
 				Attrs: []*engine.Attr{
 					{Name: "additional_information", JSON: "additional_information", Kind: engine.KindString, Optional: true, InCreate: true},
@@ -40,7 +41,6 @@ func RCSAgentLaunchAction() *engine.Action {
 						}},
 					{Name: "message_examples", JSON: "message_examples", Kind: engine.KindList, Required: true, InCreate: true, Elem: &engine.Attr{Kind: engine.KindString}},
 				}},
-			{Name: "id", Kind: engine.KindString, Required: true, Local: true, PathParams: []string{"id"}, Description: "The object's id."},
 			{Name: "testing", JSON: "testing", Kind: engine.KindObject, Required: true, InCreate: true,
 				Attrs: []*engine.Attr{
 					{Name: "additional_information", JSON: "additional_information", Kind: engine.KindString, Optional: true, InCreate: true},

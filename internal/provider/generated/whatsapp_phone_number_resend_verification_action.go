@@ -9,11 +9,11 @@ import "github.com/RomansWorks/terraform-provider-telnyx/internal/engine"
 func WhatsappPhoneNumberResendVerificationAction() *engine.Action {
 	return &engine.Action{
 		TypeName:    "telnyx_whatsapp_phone_number_resend_verification",
-		Description: "TODO Resend verification code",
+		Description: "Sends a new verification code to a phone number whose WhatsApp registration was started with telnyx_whatsapp_phone_number. Submit the code with the telnyx_whatsapp_phone_number_verify action.",
 		Op:          &engine.Op{Method: "POST", Path: "/whatsapp/phone_numbers/{phone_number}/resend_verification", Envelope: false},
 		Attrs: []*engine.Attr{
-			{Name: "phone_number", Kind: engine.KindString, Required: true, Local: true, PathParams: []string{"phone_number"}, Description: "The phone number id."},
-			{Name: "verification_method", JSON: "verification_method", Kind: engine.KindString, Optional: true, InCreate: true, Enum: []string{"sms", "voice"}},
+			{Name: "phone_number", Kind: engine.KindString, Required: true, Local: true, PathParams: []string{"phone_number"}, Description: "The phone number."},
+			{Name: "verification_method", JSON: "verification_method", Kind: engine.KindString, Optional: true, InCreate: true, Enum: []string{"sms", "voice"}, Description: "How the verification code is delivered, sms or voice. Defaults to sms."},
 		},
 	}
 }

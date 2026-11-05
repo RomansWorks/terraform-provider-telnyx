@@ -50,7 +50,7 @@ func MessagingHostedNumbersList() *engine.List {
 				{Name: "organization_id", JSON: "organization_id", Kind: engine.KindString, Computed: true, InResponse: true, Description: "The organization that owns this phone number."},
 				{Name: "phone_number", JSON: "phone_number", Kind: engine.KindString, Computed: true, InResponse: true, Description: "+E.164 formatted phone number."},
 				{Name: "record_type", JSON: "record_type", Kind: engine.KindString, Computed: true, InResponse: true, Description: "Identifies the type of the resource."},
-				{Name: "tags", JSON: "tags", Kind: engine.KindList, Computed: true, InResponse: true, Description: "Tags associated with this phone number.", Elem: &engine.Attr{Kind: engine.KindString}},
+				{Name: "tags", JSON: "tags", Kind: engine.KindSet, Computed: true, InResponse: true, Description: "Tags associated with this phone number.", Elem: &engine.Attr{Kind: engine.KindString}},
 				{Name: "traffic_type", JSON: "traffic_type", Kind: engine.KindString, Computed: true, InResponse: true, Description: "The messaging traffic or use case for which the number is currently configured."},
 				{Name: "type", JSON: "type", Kind: engine.KindString, Computed: true, InResponse: true, Description: "The type of the phone number"},
 				{Name: "updated_at", JSON: "updated_at", Kind: engine.KindString, Computed: true, InResponse: true, Description: "ISO 8601 formatted date indicating when the resource was updated."},

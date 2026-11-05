@@ -8,17 +8,18 @@ import "github.com/RomansWorks/terraform-provider-telnyx/internal/engine"
 // RCSBrand returns the descriptor of telnyx_rcs_brand.
 func RCSBrand() *engine.Resource {
 	return &engine.Resource{
-		TypeName:    "telnyx_rcs_brand",
-		Description: "TODO Create an RCS brand",
-		Create:      &engine.Op{Method: "POST", Path: "/rcs/brands", Envelope: false},
-		Read:        &engine.Op{Method: "GET", Path: "/rcs/brands/{id}", Envelope: false},
-		Update:      &engine.Op{Method: "PATCH", Path: "/rcs/brands/{id}", Envelope: false},
-		IDAttr:      "id",
-		Import:      []string{"id"},
-		DataSource:  true,
+		TypeName:      "telnyx_rcs_brand",
+		Description:   "An RCS brand, the verified business under which RCS agents are registered. The API cannot delete brands, so destroy only removes the brand from Terraform state.",
+		Create:        &engine.Op{Method: "POST", Path: "/rcs/brands", Envelope: false},
+		Read:          &engine.Op{Method: "GET", Path: "/rcs/brands/{id}", Envelope: false},
+		Update:        &engine.Op{Method: "PATCH", Path: "/rcs/brands/{id}", Envelope: false},
+		IDAttr:        "id",
+		Import:        []string{"id"},
+		DeleteWarning: "The Telnyx API cannot delete RCS brands. The brand was removed from Terraform state but still exists in your Telnyx account.",
+		DataSource:    true,
 		Attrs: []*engine.Attr{
-			{Name: "addresses", JSON: "addresses", Kind: engine.KindJSON, Required: true, InCreate: true, InUpdate: true, InResponse: true},
-			{Name: "capabilities", JSON: "capabilities", Kind: engine.KindObject, Computed: true, InResponse: true,
+			{Name: "addresses", JSON: "addresses", Kind: engine.KindJSON, Required: true, InCreate: true, InUpdate: true, InResponse: true, Description: "The business addresses."},
+			{Name: "capabilities", JSON: "capabilities", Kind: engine.KindObject, Computed: true, InResponse: true, Description: "What the brand's registration path supports.",
 				Attrs: []*engine.Attr{
 					{Name: "brand_entity", JSON: "brand_entity", Kind: engine.KindBool, Computed: true, InResponse: true},
 					{Name: "brand_verification", JSON: "brand_verification", Kind: engine.KindBool, Computed: true, InResponse: true},
@@ -42,8 +43,8 @@ func RCSBrand() *engine.Resource {
 							{Name: "title", JSON: "title", Kind: engine.KindString, Optional: true, Computed: true, InCreate: true, InUpdate: true, InResponse: true},
 						}},
 				}},
-			{Name: "display_name", JSON: "display_name", Kind: engine.KindString, Required: true, InCreate: true, InUpdate: true, InResponse: true},
-			{Name: "id", JSON: "brand_id", Kind: engine.KindString, Computed: true, InResponse: true, PathParams: []string{"id"}, Description: "The object's id."},
+			{Name: "display_name", JSON: "display_name", Kind: engine.KindString, Required: true, InCreate: true, InUpdate: true, InResponse: true, Description: "The brand name shown to recipients."},
+			{Name: "id", JSON: "brand_id", Kind: engine.KindString, Computed: true, InResponse: true, PathParams: []string{"id"}, Description: "Identifies the RCS brand."},
 			{Name: "identifiers", JSON: "identifiers", Kind: engine.KindObject, Required: true, InCreate: true, InUpdate: true, InResponse: true, Description: "Named business identifiers. Use the `ein` key for the required EIN and `stock_symbol` for a public-profit brand's stock symbol.",
 				Attrs: []*engine.Attr{
 					{Name: "ein", JSON: "ein", Kind: engine.KindObject, Required: true, InCreate: true, InUpdate: true, InResponse: true,
@@ -57,12 +58,12 @@ func RCSBrand() *engine.Resource {
 							{Name: "value", JSON: "value", Kind: engine.KindString, Optional: true, Computed: true, InCreate: true, InUpdate: true, InResponse: true, Description: "A stock symbol using EXCHANGE:SYMBOL."},
 						}},
 				}},
-			{Name: "legal_entity_type", JSON: "legal_entity_type", Kind: engine.KindString, Required: true, InCreate: true, InUpdate: true, InResponse: true, Enum: []string{"CORPORATION", "LIMITED_LIABILITY_COMPANY", "PARTNERSHIP", "SOLE_PROPRIETORSHIP", "S_CORPORATION"}},
-			{Name: "legal_name", JSON: "legal_name", Kind: engine.KindString, Required: true, InCreate: true, InUpdate: true, InResponse: true},
-			{Name: "organization_type", JSON: "organization_type", Kind: engine.KindString, Required: true, InCreate: true, InUpdate: true, InResponse: true, Enum: []string{"GOVERNMENT", "NON_PROFIT", "PRIVATE_PROFIT", "PUBLIC_PROFIT", "UNKNOWN"}},
+			{Name: "legal_entity_type", JSON: "legal_entity_type", Kind: engine.KindString, Required: true, InCreate: true, InUpdate: true, InResponse: true, Enum: []string{"CORPORATION", "LIMITED_LIABILITY_COMPANY", "PARTNERSHIP", "SOLE_PROPRIETORSHIP", "S_CORPORATION"}, Description: "The legal form of the business."},
+			{Name: "legal_name", JSON: "legal_name", Kind: engine.KindString, Required: true, InCreate: true, InUpdate: true, InResponse: true, Description: "The legal name of the business."},
+			{Name: "organization_type", JSON: "organization_type", Kind: engine.KindString, Required: true, InCreate: true, InUpdate: true, InResponse: true, Enum: []string{"GOVERNMENT", "NON_PROFIT", "PRIVATE_PROFIT", "PUBLIC_PROFIT", "UNKNOWN"}, Description: "The kind of organization."},
 			{Name: "profile_id", JSON: "profile_id", Kind: engine.KindString, Optional: true, Computed: true, InCreate: true, InUpdate: true, InResponse: true, Description: "A Messaging Profile owned by the authenticated organization. Agents inherit this value when they do not provide their own profile."},
-			{Name: "status", JSON: "status", Kind: engine.KindString, Computed: true, InResponse: true},
-			{Name: "website_url", JSON: "website_url", Kind: engine.KindString, Required: true, InCreate: true, InUpdate: true, InResponse: true},
+			{Name: "status", JSON: "status", Kind: engine.KindString, Computed: true, InResponse: true, Description: "The verification state of the brand."},
+			{Name: "website_url", JSON: "website_url", Kind: engine.KindString, Required: true, InCreate: true, InUpdate: true, InResponse: true, Description: "The business website."},
 		},
 	}
 }

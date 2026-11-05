@@ -62,11 +62,11 @@ func MessagingProfilesList() *engine.List {
 						{Name: "replace_blacklist_only", JSON: "replace_blacklist_only", Kind: engine.KindBool, Computed: true, InResponse: true, Description: "Use the link replacement tool only for links that are specifically blacklisted by Telnyx."},
 						{Name: "send_webhooks", JSON: "send_webhooks", Kind: engine.KindBool, Computed: true, InResponse: true, Description: "Receive webhooks for when your replaced links are clicked. Webhooks are sent to the webhooks on the messaging profile."},
 					}},
-				{Name: "v1_secret", JSON: "v1_secret", Kind: engine.KindString, Computed: true, InResponse: true, Description: "Secret used to authenticate with v1 endpoints."},
+				{Name: "v1_secret", JSON: "v1_secret", Kind: engine.KindString, Computed: true, Sensitive: true, InResponse: true, Description: "Secret used to authenticate with v1 endpoints."},
 				{Name: "webhook_api_version", JSON: "webhook_api_version", Kind: engine.KindString, Computed: true, InResponse: true, Description: "Determines which webhook format will be used, Telnyx API v1, v2, or a legacy 2010-04-01 format."},
 				{Name: "webhook_failover_url", JSON: "webhook_failover_url", Kind: engine.KindString, Computed: true, InResponse: true, Description: "The failover URL where webhooks related to this messaging profile will be sent if sending to the primary URL fails."},
 				{Name: "webhook_url", JSON: "webhook_url", Kind: engine.KindString, Computed: true, InResponse: true, Description: "The URL where webhooks related to this messaging profile will be sent."},
-				{Name: "whitelisted_destinations", JSON: "whitelisted_destinations", Kind: engine.KindList, Computed: true, InResponse: true, Description: "Destinations to which the messaging profile is allowed to send. The elements in the list must be valid ISO 3166-1 alpha-2 country codes. If set to `[\"*\"]`, all destinations will be allowed.", Elem: &engine.Attr{Kind: engine.KindString}},
+				{Name: "whitelisted_destinations", JSON: "whitelisted_destinations", Kind: engine.KindSet, Computed: true, InResponse: true, Description: "Destinations to which the messaging profile is allowed to send. The elements in the list must be valid ISO 3166-1 alpha-2 country codes. If set to `[\"*\"]`, all destinations will be allowed.", Elem: &engine.Attr{Kind: engine.KindString}},
 			}},
 	}
 }

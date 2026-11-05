@@ -9,10 +9,10 @@ import "github.com/RomansWorks/terraform-provider-telnyx/internal/engine"
 func MessagingProfilePhoneNumbersList() *engine.List {
 	return &engine.List{
 		TypeName:    "telnyx_messaging_profile_phone_numbers",
-		Description: "TODO List phone numbers associated with a messaging profile",
+		Description: "Lists the phone numbers assigned to a messaging profile, with their messaging settings.",
 		Op:          &engine.Op{Method: "GET", Path: "/messaging_profiles/{id}/phone_numbers", Envelope: true, Paging: engine.PagingNumber, PageSize: 250},
 		Params: []*engine.Attr{
-			{Name: "id", Kind: engine.KindString, Required: true, PathParams: []string{"id"}, Description: "The id id."},
+			{Name: "messaging_profile_id", Kind: engine.KindString, Required: true, PathParams: []string{"id"}, Description: "The messaging profile id."},
 		},
 		Items: &engine.Attr{Name: "messaging_profile_phone_numbers", JSON: "data", Kind: engine.KindList, Computed: true, InResponse: true, Description: "The objects, in the order the API returns them.",
 			Attrs: []*engine.Attr{

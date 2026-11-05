@@ -1,0 +1,660 @@
+{
+  "components": {
+    "schemas": {
+      "AgentGatewayPolicyAttachment": {
+        "description": "Where an instance applies a policy.",
+        "properties": {
+          "created_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "When the attachment was created."
+          },
+          "default": {
+            "default": false,
+            "description": "`true` applies the policy only to the requests no other attachment matches.",
+            "type": "boolean"
+          },
+          "id": {
+            "description": "The attachment's ID.",
+            "format": "uuid",
+            "type": "string"
+          },
+          "models": {
+            "default": [],
+            "description": "The models whose requests the policy applies to, by name. A name can use `*` as a wildcard. Empty applies the policy to every request.",
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "policy": {
+            "description": "The policy to apply, by name.",
+            "type": "string"
+          },
+          "priority": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "An attachment with a priority applies before the others."
+          },
+          "updated_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "When the attachment last changed."
+          }
+        },
+        "required": [
+          "id",
+          "policy",
+          "models",
+          "priority",
+          "default",
+          "created_at",
+          "updated_at"
+        ],
+        "type": "object"
+      },
+      "AgentGatewayPolicyAttachmentCreate": {
+        "properties": {
+          "default": {
+            "default": false,
+            "description": "`true` applies the policy only to the requests no other attachment matches.",
+            "type": "boolean"
+          },
+          "models": {
+            "default": [],
+            "description": "The models whose requests the policy applies to, by name. A name can use `*` as a wildcard. Empty applies the policy to every request.",
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "policy": {
+            "description": "The policy to apply, by name.",
+            "type": "string"
+          },
+          "priority": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "An attachment with a priority applies before the others."
+          }
+        },
+        "required": [
+          "policy"
+        ],
+        "type": "object"
+      },
+      "AgentGatewayPolicyAttachmentListResponse": {
+        "properties": {
+          "data": {
+            "items": {
+              "$ref": "#/components/schemas/AgentGatewayPolicyAttachment"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "data"
+        ],
+        "type": "object"
+      },
+      "AgentGatewayPolicyAttachmentResponse": {
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/AgentGatewayPolicyAttachment"
+          }
+        },
+        "required": [
+          "data"
+        ],
+        "type": "object"
+      },
+      "TelnyxError": {
+        "properties": {
+          "code": {
+            "type": "string"
+          },
+          "detail": {
+            "type": "string"
+          },
+          "meta": {
+            "properties": {
+              "url": {
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
+          "source": {
+            "properties": {
+              "parameter": {
+                "type": "string"
+              },
+              "pointer": {
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
+          "title": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "TelnyxErrors": {
+        "properties": {
+          "errors": {
+            "items": {
+              "$ref": "#/components/schemas/TelnyxError"
+            },
+            "type": "array"
+          }
+        },
+        "type": "object"
+      }
+    },
+    "securitySchemes": {
+      "BearerAuth": {
+        "bearerFormat": "API key",
+        "description": "Telnyx API key supplied as `Authorization: Bearer \u003ctoken\u003e`. In production, auth may be validated by the API gateway and forwarded via Telnyx auth headers.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "Payment": {
+        "description": "Machine Payment Protocol credential used on paid retries, sent as `Authorization: Payment ...`. Obtained by paying a challenge returned in the `WWW-Authenticate` header of a 402 response. This is not a Telnyx API key; initial challenge requests use standard bearer authentication instead.",
+        "in": "header",
+        "name": "Authorization",
+        "type": "apiKey"
+      },
+      "agent-gateway_bearerAuth": {
+        "description": "Telnyx API key",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "agent-memory_bearerAuth": {
+        "description": "Telnyx API key",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "bearerAuth": {
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "branded-calling_bearerAuth": {
+        "description": "Telnyx API key. Generate one at https://portal.telnyx.com/#/app/api-keys.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "collections_bearerAuth": {
+        "description": "Telnyx API key. Collections and results are automatically scoped to the authenticated user's organization.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "number-reputation_bearerAuth": {
+        "description": "Telnyx API key. Generate one at https://portal.telnyx.com/#/app/api-keys.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "oauthClientAuth": {
+        "description": "OAuth 2.0 authentication for Telnyx API and MCP integrations",
+        "flows": {
+          "authorizationCode": {
+            "authorizationUrl": "https://api.telnyx.com/v2/oauth/authorize",
+            "refreshUrl": "https://api.telnyx.com/v2/oauth/token",
+            "scopes": {
+              "admin": "Administrative access to Telnyx resources"
+            },
+            "tokenUrl": "https://api.telnyx.com/v2/oauth/token"
+          },
+          "clientCredentials": {
+            "scopes": {
+              "admin": "Administrative access to Telnyx resources"
+            },
+            "tokenUrl": "https://api.telnyx.com/v2/oauth/token"
+          }
+        },
+        "type": "oauth2"
+      },
+      "outbound-voice-profiles_bearerAuth": {
+        "bearerFormat": "JWT",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "pay-connectors_bearerAuth": {
+        "description": "Telnyx API key, not the processor bearer token.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "pronunciation-dicts_bearerAuth": {
+        "description": "Telnyx API v2 key. Obtain from https://portal.telnyx.com",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "rcs-registration_bearerAuth": {
+        "bearerFormat": "API key",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "stored-payment-transactions_bearerAuth": {
+        "bearerFormat": "JWT",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "telnyxApiKey": {
+        "description": "Management-only Telnyx account credential.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "transcriptions-search_bearerAuth": {
+        "description": "Telnyx API key. Results are automatically scoped to the authenticated user's organization.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "web-search_bearerAuth": {
+        "description": "Telnyx API key",
+        "scheme": "bearer",
+        "type": "http"
+      }
+    }
+  },
+  "info": {
+    "contact": {
+      "email": "support@telnyx.com"
+    },
+    "description": "SIP trunking, SMS, MMS, Call Control and Telephony Data Services.",
+    "title": "Telnyx API",
+    "version": "2.0.0",
+    "x-endpoint-cost": "light",
+    "x-latency-category": "responsive"
+  },
+  "openapi": "3.1.0",
+  "paths": {
+    "/agent_gateways/{instance_id}/policy_attachments": {
+      "get": {
+        "description": "Lists where the instance applies each policy.",
+        "operationId": "ListAgentGatewayPolicyAttachments",
+        "parameters": [
+          {
+            "description": "The Agent Gateway's `id`.",
+            "example": "32ce035d-3165-4031-b1a7-a7c0c259590a",
+            "in": "path",
+            "name": "instance_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "data": [
+                    {
+                      "created_at": "2026-11-02T12:58:55.590000Z",
+                      "default": true,
+                      "id": "03244d7b-a1ba-4914-a77c-95edfc700ad5",
+                      "models": [],
+                      "policy": "baseline",
+                      "priority": null,
+                      "updated_at": "2026-11-02T12:58:55.590000Z"
+                    },
+                    {
+                      "created_at": "2026-11-02T12:58:55.388000Z",
+                      "default": false,
+                      "id": "3394712f-2ad5-428a-8a3d-7a08d4b2906d",
+                      "models": [
+                        "GLM-5.3*"
+                      ],
+                      "policy": "strict",
+                      "priority": 10,
+                      "updated_at": "2026-11-02T12:58:55.388000Z"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/AgentGatewayPolicyAttachmentListResponse"
+                }
+              }
+            },
+            "description": "The instance's attachments"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "errors": [
+                    {
+                      "code": "10009",
+                      "detail": "The required authentication headers were either invalid or not included in the request.",
+                      "meta": {
+                        "url": "https://developers.telnyx.com/docs/overview/errors/10009"
+                      },
+                      "title": "Authentication failed"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/TelnyxErrors"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "errors": [
+                    {
+                      "code": "10005",
+                      "detail": "The requested resource or URL could not be found.",
+                      "meta": {
+                        "url": "https://developers.telnyx.com/docs/overview/errors/10005"
+                      },
+                      "title": "Resource not found"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/TelnyxErrors"
+                }
+              }
+            },
+            "description": "Not found"
+          }
+        },
+        "summary": "List policy attachments",
+        "tags": [
+          "Agent Gateway Policy Attachments"
+        ]
+      },
+      "post": {
+        "description": "Applies a policy to every request, or to the requests for the models named. It applies from the next request on.",
+        "operationId": "CreateAgentGatewayPolicyAttachment",
+        "parameters": [
+          {
+            "description": "The Agent Gateway's `id`.",
+            "example": "32ce035d-3165-4031-b1a7-a7c0c259590a",
+            "in": "path",
+            "name": "instance_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "examples": {
+                "default": {
+                  "summary": "The default",
+                  "value": {
+                    "default": true,
+                    "policy": "baseline"
+                  }
+                },
+                "models": {
+                  "summary": "Some models, with a priority",
+                  "value": {
+                    "models": [
+                      "GLM-5.3*"
+                    ],
+                    "policy": "strict",
+                    "priority": 10
+                  }
+                }
+              },
+              "schema": {
+                "$ref": "#/components/schemas/AgentGatewayPolicyAttachmentCreate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "data": {
+                    "created_at": "2026-11-02T12:58:55.388000Z",
+                    "default": false,
+                    "id": "3394712f-2ad5-428a-8a3d-7a08d4b2906d",
+                    "models": [
+                      "GLM-5.3*"
+                    ],
+                    "policy": "strict",
+                    "priority": 10,
+                    "updated_at": "2026-11-02T12:58:55.388000Z"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/AgentGatewayPolicyAttachmentResponse"
+                }
+              }
+            },
+            "description": "The attachment"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "errors": [
+                    {
+                      "code": "10013",
+                      "detail": "One of the associated fields does not exist.",
+                      "meta": {
+                        "url": "https://developers.telnyx.com/docs/overview/errors/10013"
+                      },
+                      "source": {
+                        "pointer": "/policy"
+                      },
+                      "title": "Missing association"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/TelnyxErrors"
+                }
+              }
+            },
+            "description": "A policy the instance does not have"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "errors": [
+                    {
+                      "code": "10009",
+                      "detail": "The required authentication headers were either invalid or not included in the request.",
+                      "meta": {
+                        "url": "https://developers.telnyx.com/docs/overview/errors/10009"
+                      },
+                      "title": "Authentication failed"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/TelnyxErrors"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "errors": [
+                    {
+                      "code": "10005",
+                      "detail": "The requested resource or URL could not be found.",
+                      "meta": {
+                        "url": "https://developers.telnyx.com/docs/overview/errors/10005"
+                      },
+                      "title": "Resource not found"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/TelnyxErrors"
+                }
+              }
+            },
+            "description": "Not found"
+          }
+        },
+        "summary": "Attach a policy",
+        "tags": [
+          "Agent Gateway Policy Attachments"
+        ]
+      }
+    },
+    "/agent_gateways/{instance_id}/policy_attachments/{attachment_id}": {
+      "delete": {
+        "description": "Removes an attachment and returns it as it was. The policy stays.",
+        "operationId": "DeleteAgentGatewayPolicyAttachment",
+        "parameters": [
+          {
+            "description": "The Agent Gateway's `id`.",
+            "example": "32ce035d-3165-4031-b1a7-a7c0c259590a",
+            "in": "path",
+            "name": "instance_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "description": "The attachment's `id`.",
+            "example": "3394712f-2ad5-428a-8a3d-7a08d4b2906d",
+            "in": "path",
+            "name": "attachment_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "data": {
+                    "created_at": "2026-11-02T12:58:55.388000Z",
+                    "default": false,
+                    "id": "3394712f-2ad5-428a-8a3d-7a08d4b2906d",
+                    "models": [
+                      "GLM-5.3*"
+                    ],
+                    "policy": "strict",
+                    "priority": 10,
+                    "updated_at": "2026-11-02T12:58:55.388000Z"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/AgentGatewayPolicyAttachmentResponse"
+                }
+              }
+            },
+            "description": "The removed attachment"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "errors": [
+                    {
+                      "code": "10009",
+                      "detail": "The required authentication headers were either invalid or not included in the request.",
+                      "meta": {
+                        "url": "https://developers.telnyx.com/docs/overview/errors/10009"
+                      },
+                      "title": "Authentication failed"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/TelnyxErrors"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "errors": [
+                    {
+                      "code": "10005",
+                      "detail": "The requested resource or URL could not be found.",
+                      "meta": {
+                        "url": "https://developers.telnyx.com/docs/overview/errors/10005"
+                      },
+                      "title": "Resource not found"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/TelnyxErrors"
+                }
+              }
+            },
+            "description": "Not found"
+          }
+        },
+        "summary": "Detach a policy",
+        "tags": [
+          "Agent Gateway Policy Attachments"
+        ]
+      }
+    }
+  },
+  "security": [
+    {
+      "bearerAuth": []
+    }
+  ],
+  "servers": [
+    {
+      "description": "Version 2.0.0 of the Telnyx API",
+      "url": "https://api.telnyx.com/v2"
+    }
+  ]
+}

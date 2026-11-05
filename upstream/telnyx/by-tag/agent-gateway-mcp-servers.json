@@ -1,0 +1,1374 @@
+{
+  "components": {
+    "schemas": {
+      "AgentGatewayAwsSigV4Auth": {
+        "description": "The gateway signs each request with AWS Signature Version 4. Without keys or a role, it uses the instance's own AWS identity. Keys are write-only.",
+        "properties": {
+          "access_key_id": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "writeOnly": true
+          },
+          "region": {
+            "description": "The AWS region to sign for.",
+            "type": "string"
+          },
+          "role_name": {
+            "description": "The ARN of a role for the gateway to assume.",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "secret_access_key": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "writeOnly": true
+          },
+          "service": {
+            "default": "bedrock-agentcore",
+            "description": "The AWS service to sign for.",
+            "type": "string"
+          },
+          "session_token": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "writeOnly": true
+          },
+          "type": {
+            "const": "aws_sigv4",
+            "type": "string"
+          }
+        },
+        "required": [
+          "type",
+          "region"
+        ],
+        "title": "AWS Signature Version 4",
+        "type": "object"
+      },
+      "AgentGatewayMcpServer": {
+        "properties": {
+          "auth": {
+            "$ref": "#/components/schemas/AgentGatewayShownAuth"
+          },
+          "created_at": {
+            "format": "date-time",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "forwarded_headers": {
+            "description": "Headers copied from the agent's request, by name.",
+            "items": {
+              "type": "string"
+            },
+            "maxItems": 32,
+            "type": "array"
+          },
+          "id": {
+            "description": "Identifies the server.",
+            "format": "uuid",
+            "type": "string"
+          },
+          "name": {
+            "description": "A name for the server, unique on the instance across MCP servers and APIs, regardless of case. Letters, digits, `_`, and `.`. The gateway prefixes the server's tools with it and a hyphen.",
+            "type": "string"
+          },
+          "open_to_every_key": {
+            "default": false,
+            "description": "`true` lets every key on the instance use the server, granted or not.",
+            "type": "boolean"
+          },
+          "static_headers": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "description": "Headers sent on every request.",
+            "type": "object"
+          },
+          "tools": {
+            "description": "The tools the server exposes to every key, by name. `[]` exposes every tool.",
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "transport": {
+            "description": "`http` for Streamable HTTP, or `sse` for Server-Sent Events.",
+            "enum": [
+              "http",
+              "sse"
+            ],
+            "type": "string"
+          },
+          "updated_at": {
+            "format": "date-time",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "url": {
+            "description": "The server's MCP endpoint.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "url",
+          "transport",
+          "auth",
+          "tools",
+          "static_headers",
+          "forwarded_headers",
+          "open_to_every_key",
+          "created_at",
+          "updated_at"
+        ],
+        "type": "object"
+      },
+      "AgentGatewayMcpServerCreate": {
+        "additionalProperties": false,
+        "properties": {
+          "auth": {
+            "description": "How the gateway authenticates to the server. Replaced whole on an update; `{\"type\": \"none\"}` removes the credential.",
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/AgentGatewayNoAuth"
+              },
+              {
+                "$ref": "#/components/schemas/AgentGatewayStaticAuth"
+              },
+              {
+                "$ref": "#/components/schemas/AgentGatewayOAuthClientCredentials"
+              },
+              {
+                "$ref": "#/components/schemas/AgentGatewayPassthroughAuth"
+              },
+              {
+                "$ref": "#/components/schemas/AgentGatewayAwsSigV4Auth"
+              }
+            ]
+          },
+          "forwarded_headers": {
+            "description": "Headers copied from the agent's request, by name.",
+            "items": {
+              "type": "string"
+            },
+            "maxItems": 32,
+            "type": "array"
+          },
+          "name": {
+            "description": "A name for the server, unique on the instance across MCP servers and APIs, regardless of case. Up to 100 letters, digits, `_`, and `.`. The gateway prefixes the server's tools with it and a hyphen.",
+            "pattern": "^[A-Za-z0-9_.]{1,100}$",
+            "type": "string"
+          },
+          "open_to_every_key": {
+            "default": false,
+            "description": "`true` lets every key on the instance use the server, granted or not.",
+            "type": "boolean"
+          },
+          "static_headers": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "description": "Headers sent on every request.",
+            "type": "object"
+          },
+          "tools": {
+            "description": "The tools the server exposes to every key, by name. `[]` exposes every tool.",
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "transport": {
+            "default": "http",
+            "description": "`http` for Streamable HTTP, or `sse` for Server-Sent Events.",
+            "enum": [
+              "http",
+              "sse"
+            ],
+            "type": "string"
+          },
+          "url": {
+            "description": "The server's MCP endpoint, `http` or `https`.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "name",
+          "url"
+        ],
+        "type": "object"
+      },
+      "AgentGatewayMcpServerListResponse": {
+        "properties": {
+          "data": {
+            "items": {
+              "$ref": "#/components/schemas/AgentGatewayMcpServer"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "data"
+        ],
+        "type": "object"
+      },
+      "AgentGatewayMcpServerResponse": {
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/AgentGatewayMcpServer"
+          }
+        },
+        "required": [
+          "data"
+        ],
+        "type": "object"
+      },
+      "AgentGatewayMcpServerUpdate": {
+        "additionalProperties": false,
+        "description": "The fields to change. A field left out stays as it is.",
+        "properties": {
+          "auth": {
+            "description": "How the gateway authenticates to the server. Replaced whole on an update; `{\"type\": \"none\"}` removes the credential.",
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/AgentGatewayNoAuth"
+              },
+              {
+                "$ref": "#/components/schemas/AgentGatewayStaticAuth"
+              },
+              {
+                "$ref": "#/components/schemas/AgentGatewayOAuthClientCredentials"
+              },
+              {
+                "$ref": "#/components/schemas/AgentGatewayPassthroughAuth"
+              },
+              {
+                "$ref": "#/components/schemas/AgentGatewayAwsSigV4Auth"
+              }
+            ]
+          },
+          "forwarded_headers": {
+            "description": "Headers copied from the agent's request, by name.",
+            "items": {
+              "type": "string"
+            },
+            "maxItems": 32,
+            "type": "array"
+          },
+          "name": {
+            "description": "A name for the server, unique on the instance across MCP servers and APIs, regardless of case. Letters, digits, `_`, and `.`. The gateway prefixes the server's tools with it and a hyphen.",
+            "pattern": "^[A-Za-z0-9_.]{1,100}$",
+            "type": "string"
+          },
+          "open_to_every_key": {
+            "default": false,
+            "description": "`true` lets every key on the instance use the server, granted or not.",
+            "type": "boolean"
+          },
+          "static_headers": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "description": "Headers sent on every request.",
+            "type": "object"
+          },
+          "tools": {
+            "description": "The tools the server exposes to every key, by name. `[]` exposes every tool.",
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "transport": {
+            "default": "http",
+            "description": "`http` for Streamable HTTP, or `sse` for Server-Sent Events.",
+            "enum": [
+              "http",
+              "sse"
+            ],
+            "type": "string"
+          },
+          "url": {
+            "description": "The server's MCP endpoint, `http` or `https`.",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "AgentGatewayNoAuth": {
+        "description": "The gateway sends no credential.",
+        "properties": {
+          "type": {
+            "const": "none",
+            "type": "string"
+          }
+        },
+        "title": "No authentication",
+        "type": "object"
+      },
+      "AgentGatewayOAuthClientCredentials": {
+        "description": "The gateway gets its own access token with the `client_credentials` grant and sends it as a bearer token on every request, renewing it before it expires. The client ID and secret are write-only.",
+        "properties": {
+          "audience": {
+            "description": "The token's audience, sent in the token request.",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "client_id": {
+            "type": "string",
+            "writeOnly": true
+          },
+          "client_secret": {
+            "type": "string",
+            "writeOnly": true
+          },
+          "credentials_in": {
+            "default": "body",
+            "description": "Whether the client ID and secret go in the token request's body or as HTTP Basic authentication.",
+            "enum": [
+              "body",
+              "basic"
+            ],
+            "type": "string"
+          },
+          "resource": {
+            "description": "The resource the token is for, sent in the token request.",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "scopes": {
+            "description": "The scopes to request.",
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "token_url": {
+            "description": "The OAuth provider's token endpoint.",
+            "type": "string"
+          },
+          "type": {
+            "const": "oauth_client_credentials",
+            "type": "string"
+          }
+        },
+        "required": [
+          "type",
+          "token_url",
+          "client_id",
+          "client_secret"
+        ],
+        "title": "OAuth client credentials",
+        "type": "object"
+      },
+      "AgentGatewayPassthroughAuth": {
+        "description": "The gateway forwards the agent's own `Authorization` header to the server unchanged.",
+        "properties": {
+          "type": {
+            "const": "passthrough",
+            "type": "string"
+          }
+        },
+        "title": "Token passthrough",
+        "type": "object"
+      },
+      "AgentGatewayShownAuth": {
+        "description": "The server's outbound authentication method. Credentials are never returned.",
+        "properties": {
+          "type": {
+            "description": "The method's `type`.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "type"
+        ],
+        "type": "object"
+      },
+      "AgentGatewayStaticAuth": {
+        "description": "A static credential the gateway sends on every request. Write-only: responses show its `type` only.",
+        "properties": {
+          "header": {
+            "description": "A header name that replaces `X-API-Key` or `Authorization`.",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "type": {
+            "description": "How the credential is sent: `api_key` as `X-API-Key: \u003cvalue\u003e`, `bearer_token` as `Authorization: Bearer \u003cvalue\u003e`, `basic` as `Authorization: Basic \u003cbase64 of value\u003e` with `value` in the form `user:password`, `token` as `Authorization: token \u003cvalue\u003e`, and `authorization` as `Authorization: \u003cvalue\u003e`.",
+            "enum": [
+              "api_key",
+              "bearer_token",
+              "basic",
+              "token",
+              "authorization"
+            ],
+            "type": "string"
+          },
+          "value": {
+            "description": "The credential.",
+            "type": "string",
+            "writeOnly": true
+          }
+        },
+        "required": [
+          "type",
+          "value"
+        ],
+        "title": "API key",
+        "type": "object"
+      },
+      "TelnyxError": {
+        "properties": {
+          "code": {
+            "type": "string"
+          },
+          "detail": {
+            "type": "string"
+          },
+          "meta": {
+            "properties": {
+              "url": {
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
+          "source": {
+            "properties": {
+              "parameter": {
+                "type": "string"
+              },
+              "pointer": {
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
+          "title": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "TelnyxErrors": {
+        "properties": {
+          "errors": {
+            "items": {
+              "$ref": "#/components/schemas/TelnyxError"
+            },
+            "type": "array"
+          }
+        },
+        "type": "object"
+      }
+    },
+    "securitySchemes": {
+      "BearerAuth": {
+        "bearerFormat": "API key",
+        "description": "Telnyx API key supplied as `Authorization: Bearer \u003ctoken\u003e`. In production, auth may be validated by the API gateway and forwarded via Telnyx auth headers.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "Payment": {
+        "description": "Machine Payment Protocol credential used on paid retries, sent as `Authorization: Payment ...`. Obtained by paying a challenge returned in the `WWW-Authenticate` header of a 402 response. This is not a Telnyx API key; initial challenge requests use standard bearer authentication instead.",
+        "in": "header",
+        "name": "Authorization",
+        "type": "apiKey"
+      },
+      "agent-gateway_bearerAuth": {
+        "description": "Telnyx API key",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "agent-memory_bearerAuth": {
+        "description": "Telnyx API key",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "bearerAuth": {
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "branded-calling_bearerAuth": {
+        "description": "Telnyx API key. Generate one at https://portal.telnyx.com/#/app/api-keys.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "collections_bearerAuth": {
+        "description": "Telnyx API key. Collections and results are automatically scoped to the authenticated user's organization.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "number-reputation_bearerAuth": {
+        "description": "Telnyx API key. Generate one at https://portal.telnyx.com/#/app/api-keys.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "oauthClientAuth": {
+        "description": "OAuth 2.0 authentication for Telnyx API and MCP integrations",
+        "flows": {
+          "authorizationCode": {
+            "authorizationUrl": "https://api.telnyx.com/v2/oauth/authorize",
+            "refreshUrl": "https://api.telnyx.com/v2/oauth/token",
+            "scopes": {
+              "admin": "Administrative access to Telnyx resources"
+            },
+            "tokenUrl": "https://api.telnyx.com/v2/oauth/token"
+          },
+          "clientCredentials": {
+            "scopes": {
+              "admin": "Administrative access to Telnyx resources"
+            },
+            "tokenUrl": "https://api.telnyx.com/v2/oauth/token"
+          }
+        },
+        "type": "oauth2"
+      },
+      "outbound-voice-profiles_bearerAuth": {
+        "bearerFormat": "JWT",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "pay-connectors_bearerAuth": {
+        "description": "Telnyx API key, not the processor bearer token.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "pronunciation-dicts_bearerAuth": {
+        "description": "Telnyx API v2 key. Obtain from https://portal.telnyx.com",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "rcs-registration_bearerAuth": {
+        "bearerFormat": "API key",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "stored-payment-transactions_bearerAuth": {
+        "bearerFormat": "JWT",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "telnyxApiKey": {
+        "description": "Management-only Telnyx account credential.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "transcriptions-search_bearerAuth": {
+        "description": "Telnyx API key. Results are automatically scoped to the authenticated user's organization.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "web-search_bearerAuth": {
+        "description": "Telnyx API key",
+        "scheme": "bearer",
+        "type": "http"
+      }
+    }
+  },
+  "info": {
+    "contact": {
+      "email": "support@telnyx.com"
+    },
+    "description": "SIP trunking, SMS, MMS, Call Control and Telephony Data Services.",
+    "title": "Telnyx API",
+    "version": "2.0.0",
+    "x-endpoint-cost": "light",
+    "x-latency-category": "responsive"
+  },
+  "openapi": "3.1.0",
+  "paths": {
+    "/agent_gateways/{instance_id}/mcp_servers": {
+      "get": {
+        "description": "Lists the MCP servers the instance serves at `{gateway_url}/mcp`, without their credentials. The instance must be `ready`; otherwise the request answers `409`.",
+        "operationId": "ListAgentGatewayMcpServers",
+        "parameters": [
+          {
+            "description": "The Agent Gateway's `id`.",
+            "example": "32ce035d-3165-4031-b1a7-a7c0c259590a",
+            "in": "path",
+            "name": "instance_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "data": [
+                    {
+                      "auth": {
+                        "type": "api_key"
+                      },
+                      "created_at": "2026-10-28T16:50:43.184000Z",
+                      "forwarded_headers": [
+                        "X-Request-Id"
+                      ],
+                      "id": "88d5a97b-4080-4855-8bac-a39811b1dc24",
+                      "name": "orders",
+                      "open_to_every_key": false,
+                      "static_headers": {
+                        "X-Env": "prod"
+                      },
+                      "tools": [],
+                      "transport": "http",
+                      "updated_at": "2026-10-28T16:50:43.184000Z",
+                      "url": "http://10.40.3.7:9000/mcp"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/AgentGatewayMcpServerListResponse"
+                }
+              }
+            },
+            "description": "The instance's MCP servers"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "errors": [
+                    {
+                      "code": "10009",
+                      "detail": "The required authentication headers were either invalid or not included in the request.",
+                      "meta": {
+                        "url": "https://developers.telnyx.com/docs/overview/errors/10009"
+                      },
+                      "title": "Authentication failed"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/TelnyxErrors"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "errors": [
+                    {
+                      "code": "10005",
+                      "detail": "The requested resource or URL could not be found.",
+                      "meta": {
+                        "url": "https://developers.telnyx.com/docs/overview/errors/10005"
+                      },
+                      "title": "Resource not found"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/TelnyxErrors"
+                }
+              }
+            },
+            "description": "Not found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "errors": [
+                    {
+                      "code": "99901",
+                      "detail": "The instance is not ready; its engine is not running.",
+                      "title": "Instance not ready"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/TelnyxErrors"
+                }
+              }
+            },
+            "description": "The instance is not `ready`"
+          },
+          "502": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "errors": [
+                    {
+                      "code": "99903",
+                      "detail": "The instance's engine did not answer; try again shortly.",
+                      "title": "Engine unavailable"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/TelnyxErrors"
+                }
+              }
+            },
+            "description": "The instance's engine did not answer"
+          }
+        },
+        "summary": "List MCP servers",
+        "tags": [
+          "Agent Gateway MCP Servers"
+        ]
+      },
+      "post": {
+        "description": "Adds an MCP server. The instance serves its tools at `{gateway_url}/mcp`, each named with the server's `name` and a hyphen, to the keys granted the server and, with `open_to_every_key`, to every key. The instance must be `ready`; otherwise the request answers `409`.",
+        "operationId": "CreateAgentGatewayMcpServer",
+        "parameters": [
+          {
+            "description": "The Agent Gateway's `id`.",
+            "example": "32ce035d-3165-4031-b1a7-a7c0c259590a",
+            "in": "path",
+            "name": "instance_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "examples": {
+                "api_key": {
+                  "summary": "An API key",
+                  "value": {
+                    "auth": {
+                      "type": "api_key",
+                      "value": "example-orders-key"
+                    },
+                    "forwarded_headers": [
+                      "X-Request-Id"
+                    ],
+                    "name": "orders",
+                    "static_headers": {
+                      "X-Env": "prod"
+                    },
+                    "url": "http://10.40.3.7:9000/mcp"
+                  }
+                },
+                "aws": {
+                  "summary": "AWS Signature Version 4",
+                  "value": {
+                    "auth": {
+                      "region": "us-east-1",
+                      "type": "aws_sigv4"
+                    },
+                    "name": "agentcore",
+                    "url": "https://example.bedrock-agentcore.us-east-1.amazonaws.com/mcp"
+                  }
+                },
+                "oauth": {
+                  "summary": "OAuth client credentials",
+                  "value": {
+                    "auth": {
+                      "client_id": "example-client",
+                      "client_secret": "example-client-secret",
+                      "scopes": [
+                        "crm.read"
+                      ],
+                      "token_url": "https://auth.example.com/oauth/token",
+                      "type": "oauth_client_credentials"
+                    },
+                    "name": "crm",
+                    "url": "https://crm.example.com/mcp"
+                  }
+                },
+                "passthrough": {
+                  "summary": "Token passthrough",
+                  "value": {
+                    "auth": {
+                      "type": "passthrough"
+                    },
+                    "name": "github",
+                    "url": "https://api.githubcopilot.com/mcp/"
+                  }
+                }
+              },
+              "schema": {
+                "$ref": "#/components/schemas/AgentGatewayMcpServerCreate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "data": {
+                    "auth": {
+                      "type": "api_key"
+                    },
+                    "created_at": "2026-10-28T16:50:43.184000Z",
+                    "forwarded_headers": [
+                      "X-Request-Id"
+                    ],
+                    "id": "88d5a97b-4080-4855-8bac-a39811b1dc24",
+                    "name": "orders",
+                    "open_to_every_key": false,
+                    "static_headers": {
+                      "X-Env": "prod"
+                    },
+                    "tools": [],
+                    "transport": "http",
+                    "updated_at": "2026-10-28T16:50:43.184000Z",
+                    "url": "http://10.40.3.7:9000/mcp"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/AgentGatewayMcpServerResponse"
+                }
+              }
+            },
+            "description": "The added MCP server"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "errors": [
+                    {
+                      "code": "10012",
+                      "detail": "Resource is a duplicate.",
+                      "meta": {
+                        "url": "https://developers.telnyx.com/docs/overview/errors/10012"
+                      },
+                      "source": {
+                        "pointer": "/name"
+                      },
+                      "title": "Duplicate resource"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/TelnyxErrors"
+                }
+              }
+            },
+            "description": "A name the instance already uses"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "errors": [
+                    {
+                      "code": "10009",
+                      "detail": "The required authentication headers were either invalid or not included in the request.",
+                      "meta": {
+                        "url": "https://developers.telnyx.com/docs/overview/errors/10009"
+                      },
+                      "title": "Authentication failed"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/TelnyxErrors"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "errors": [
+                    {
+                      "code": "10005",
+                      "detail": "The requested resource or URL could not be found.",
+                      "meta": {
+                        "url": "https://developers.telnyx.com/docs/overview/errors/10005"
+                      },
+                      "title": "Resource not found"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/TelnyxErrors"
+                }
+              }
+            },
+            "description": "Not found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "errors": [
+                    {
+                      "code": "99901",
+                      "detail": "The instance is not ready; its engine is not running.",
+                      "title": "Instance not ready"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/TelnyxErrors"
+                }
+              }
+            },
+            "description": "The instance is not `ready`"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "errors": [
+                    {
+                      "code": "10027",
+                      "detail": "String should match pattern '^[A-Za-z0-9_.]{1,100}$'",
+                      "meta": {
+                        "url": "https://developers.telnyx.com/docs/overview/errors/10027"
+                      },
+                      "source": {
+                        "pointer": "/name"
+                      },
+                      "title": "Unprocessable Entity"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/TelnyxErrors"
+                }
+              }
+            },
+            "description": "A field fails validation"
+          },
+          "502": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "errors": [
+                    {
+                      "code": "99903",
+                      "detail": "The instance's engine did not answer; try again shortly.",
+                      "title": "Engine unavailable"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/TelnyxErrors"
+                }
+              }
+            },
+            "description": "The instance's engine did not answer"
+          }
+        },
+        "summary": "Add an MCP server",
+        "tags": [
+          "Agent Gateway MCP Servers"
+        ]
+      }
+    },
+    "/agent_gateways/{instance_id}/mcp_servers/{server_id}": {
+      "delete": {
+        "description": "Removes an MCP server and returns it as it was. Its `id` stays in the tool permissions that name it until they are next set. The instance must be `ready`; otherwise the request answers `409`.",
+        "operationId": "DeleteAgentGatewayMcpServer",
+        "parameters": [
+          {
+            "description": "The Agent Gateway's `id`.",
+            "example": "32ce035d-3165-4031-b1a7-a7c0c259590a",
+            "in": "path",
+            "name": "instance_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "description": "The MCP server's `id`.",
+            "example": "88d5a97b-4080-4855-8bac-a39811b1dc24",
+            "in": "path",
+            "name": "server_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "data": {
+                    "auth": {
+                      "type": "api_key"
+                    },
+                    "created_at": "2026-10-28T16:50:43.184000Z",
+                    "forwarded_headers": [
+                      "X-Request-Id"
+                    ],
+                    "id": "88d5a97b-4080-4855-8bac-a39811b1dc24",
+                    "name": "orders",
+                    "open_to_every_key": false,
+                    "static_headers": {
+                      "X-Env": "prod"
+                    },
+                    "tools": [],
+                    "transport": "http",
+                    "updated_at": "2026-10-28T16:50:43.184000Z",
+                    "url": "http://10.40.3.7:9000/mcp"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/AgentGatewayMcpServerResponse"
+                }
+              }
+            },
+            "description": "The deleted MCP server"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "errors": [
+                    {
+                      "code": "10009",
+                      "detail": "The required authentication headers were either invalid or not included in the request.",
+                      "meta": {
+                        "url": "https://developers.telnyx.com/docs/overview/errors/10009"
+                      },
+                      "title": "Authentication failed"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/TelnyxErrors"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "errors": [
+                    {
+                      "code": "10005",
+                      "detail": "The requested resource or URL could not be found.",
+                      "meta": {
+                        "url": "https://developers.telnyx.com/docs/overview/errors/10005"
+                      },
+                      "title": "Resource not found"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/TelnyxErrors"
+                }
+              }
+            },
+            "description": "Not found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "errors": [
+                    {
+                      "code": "99901",
+                      "detail": "The instance is not ready; its engine is not running.",
+                      "title": "Instance not ready"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/TelnyxErrors"
+                }
+              }
+            },
+            "description": "The instance is not `ready`"
+          },
+          "502": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "errors": [
+                    {
+                      "code": "99903",
+                      "detail": "The instance's engine did not answer; try again shortly.",
+                      "title": "Engine unavailable"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/TelnyxErrors"
+                }
+              }
+            },
+            "description": "The instance's engine did not answer"
+          }
+        },
+        "summary": "Delete an MCP server",
+        "tags": [
+          "Agent Gateway MCP Servers"
+        ]
+      },
+      "patch": {
+        "description": "Changes an MCP server's settings. A field left out stays as it is. `auth` is replaced whole, `tools: []` exposes every tool, and `static_headers: {}` clears the headers. The instance must be `ready`; otherwise the request answers `409`.",
+        "operationId": "UpdateAgentGatewayMcpServer",
+        "parameters": [
+          {
+            "description": "The Agent Gateway's `id`.",
+            "example": "32ce035d-3165-4031-b1a7-a7c0c259590a",
+            "in": "path",
+            "name": "instance_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "description": "The MCP server's `id`.",
+            "example": "88d5a97b-4080-4855-8bac-a39811b1dc24",
+            "in": "path",
+            "name": "server_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "examples": {
+                "tools": {
+                  "summary": "Expose two tools",
+                  "value": {
+                    "tools": [
+                      "get_order",
+                      "create_ticket"
+                    ]
+                  }
+                }
+              },
+              "schema": {
+                "$ref": "#/components/schemas/AgentGatewayMcpServerUpdate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "data": {
+                    "auth": {
+                      "type": "api_key"
+                    },
+                    "created_at": "2026-10-28T16:50:43.184000Z",
+                    "forwarded_headers": [
+                      "X-Request-Id"
+                    ],
+                    "id": "88d5a97b-4080-4855-8bac-a39811b1dc24",
+                    "name": "orders",
+                    "open_to_every_key": false,
+                    "static_headers": {
+                      "X-Env": "prod"
+                    },
+                    "tools": [
+                      "get_order",
+                      "create_ticket"
+                    ],
+                    "transport": "http",
+                    "updated_at": "2026-10-28T16:50:43.184000Z",
+                    "url": "http://10.40.3.7:9000/mcp"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/AgentGatewayMcpServerResponse"
+                }
+              }
+            },
+            "description": "The updated MCP server"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "errors": [
+                    {
+                      "code": "10012",
+                      "detail": "Resource is a duplicate.",
+                      "meta": {
+                        "url": "https://developers.telnyx.com/docs/overview/errors/10012"
+                      },
+                      "source": {
+                        "pointer": "/name"
+                      },
+                      "title": "Duplicate resource"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/TelnyxErrors"
+                }
+              }
+            },
+            "description": "A name the instance already uses"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "errors": [
+                    {
+                      "code": "10009",
+                      "detail": "The required authentication headers were either invalid or not included in the request.",
+                      "meta": {
+                        "url": "https://developers.telnyx.com/docs/overview/errors/10009"
+                      },
+                      "title": "Authentication failed"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/TelnyxErrors"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "errors": [
+                    {
+                      "code": "10005",
+                      "detail": "The requested resource or URL could not be found.",
+                      "meta": {
+                        "url": "https://developers.telnyx.com/docs/overview/errors/10005"
+                      },
+                      "title": "Resource not found"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/TelnyxErrors"
+                }
+              }
+            },
+            "description": "Not found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "errors": [
+                    {
+                      "code": "99901",
+                      "detail": "The instance is not ready; its engine is not running.",
+                      "title": "Instance not ready"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/TelnyxErrors"
+                }
+              }
+            },
+            "description": "The instance is not `ready`"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "errors": [
+                    {
+                      "code": "10027",
+                      "detail": "The value is invalid.",
+                      "meta": {
+                        "url": "https://developers.telnyx.com/docs/overview/errors/10027"
+                      },
+                      "source": {
+                        "pointer": "/transport"
+                      },
+                      "title": "Unprocessable Entity"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/TelnyxErrors"
+                }
+              }
+            },
+            "description": "A field fails validation"
+          },
+          "502": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "errors": [
+                    {
+                      "code": "99903",
+                      "detail": "The instance's engine did not answer; try again shortly.",
+                      "title": "Engine unavailable"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/TelnyxErrors"
+                }
+              }
+            },
+            "description": "The instance's engine did not answer"
+          }
+        },
+        "summary": "Update an MCP server",
+        "tags": [
+          "Agent Gateway MCP Servers"
+        ]
+      }
+    }
+  },
+  "security": [
+    {
+      "bearerAuth": []
+    }
+  ],
+  "servers": [
+    {
+      "description": "Version 2.0.0 of the Telnyx API",
+      "url": "https://api.telnyx.com/v2"
+    }
+  ]
+}

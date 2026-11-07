@@ -3994,7 +3994,7 @@
           },
           "in_transit_data_locality": {
             "default": false,
-            "description": "Requires this assistant's conversations to be processed inside your organization's data-locality region, rather than only stored there, on every channel: for web chat, every model call of a turn; for voice, the call's model calls and the Telnyx-hosted speech services it uses; for SMS and WhatsApp, the model calls of each turn (how messages travel through carriers is not covered). Covered processing that cannot be handled in region fails rather than being served elsewhere. Enabling it requires a data-locality region with in-region inference (USA, EU, AUS, UAE; see [Inference regions](https://developers.telnyx.com/docs/inference/models/regions)), Telnyx-hosted models for the assistant, its fallback, and any conversation-flow node that overrides the model, and, when `insight_settings.model` is set, an insight model available in that region; the request is rejected otherwise. A voice call fails when it starts if its STT model or TTS voice is not self-hosted by Telnyx, if the assistant uses a speech-to-speech model, or if the call's media is anchored outside the region. Once enabled, send web chat requests and WebSocket or WebRTC conversations to your region's API hostname: one entering the platform in another region is refused rather than forwarded, because forwarding it would already have moved the content across the border. See [Data residency](https://developers.telnyx.com/docs/inference/data-residency#in-region-processing-for-ai-assistants). Defaults to false.",
+            "description": "Requires this assistant's conversations to be processed inside your organization's data-locality region, rather than only stored there, on every channel: for web chat, every model call of a turn; for voice, the call's model calls and the Telnyx-hosted speech services it uses; for SMS and WhatsApp, the model calls of each turn (how messages travel through carriers is not covered). Covered processing that cannot be handled in region fails rather than being served elsewhere. Enabling it requires a data-locality region with in-region inference (USA, EU, AUS, UAE; see [Inference regions](https://developers.telnyx.com/docs/inference/models/regions)), models for the assistant, its fallback, and any conversation-flow node that overrides the model that are either Telnyx-hosted or a customer-provided `external_llm` endpoint (third-party model providers are refused), and, when `insight_settings.model` is set, an insight model available in that region; the request is rejected otherwise. A voice call fails when it starts if its STT model or TTS voice is not self-hosted by Telnyx, if the assistant uses a speech-to-speech model, or if the call's media is anchored outside the region. URLs Telnyx is configured to call — an `external_llm` endpoint, webhook tools, Voice API callbacks, or a recording storage destination — are followed as-is: Telnyx cannot verify where a customer-supplied URL processes requests, and keeping those steps in your region is your responsibility. Once enabled, send web chat requests and WebSocket or WebRTC conversations to your region's API hostname: one entering the platform in another region is refused rather than forwarded, because forwarding it would already have moved the content across the border. See [Data residency](https://developers.telnyx.com/docs/inference/data-residency#in-region-processing-for-ai-assistants). Defaults to false.",
             "type": "boolean"
           },
           "pii_redaction": {
@@ -6997,7 +6997,7 @@
           },
           "language": {
             "default": null,
-            "description": "Two-letter ISO 639-1 code of the language the voice speaks, for example `es`. Only applicable to Soniox and AssemblyAI voices, which speak every language of their model. AssemblyAI accepts `en`, `es`, `de`, `fr`, `it`, and `pt`. When unset, the voice speaks English.",
+            "description": "Two-letter ISO 639-1 code of the language the voice speaks, for example `es`. Only applicable to Soniox voices, which speak every language of their model. When unset, the voice speaks English.",
             "type": [
               "string",
               "null"
@@ -7381,7 +7381,7 @@
                 }
               }
             },
-            "description": "Bad Request / Validation Failed (10015). Invalid, duplicate, empty, malformed, or overlong Idempotency-Key headers are rejected by Edge with HTTP 400 and error code 10015. The assistant configuration is validated too: enabling `privacy_settings.in_transit_data_locality` is refused when the organization's data-locality region has no in-region inference, when any model the assistant could use — its `model`, its `fallback_config`, or a conversation-flow node override — is not Telnyx-hosted, or when its `insight_settings.model` is not available in that region."
+            "description": "Bad Request / Validation Failed (10015). Invalid, duplicate, empty, malformed, or overlong Idempotency-Key headers are rejected by Edge with HTTP 400 and error code 10015. The assistant configuration is validated too: enabling `privacy_settings.in_transit_data_locality` is refused when the organization's data-locality region has no in-region inference, when any model the assistant could use — its `model`, its `fallback_config`, or a conversation-flow node override — is a third-party model (a customer-provided `external_llm` endpoint is accepted), or when its `insight_settings.model` is not available in that region."
           },
           "409": {
             "$ref": "#/components/responses/IdempotencyConflictResponse"
@@ -8655,7 +8655,7 @@
                 }
               }
             },
-            "description": "Bad Request. The resulting assistant configuration was rejected. For example, enabling `privacy_settings.in_transit_data_locality` is refused when the organization's data-locality region has no in-region inference, when any model the assistant could use — its `model`, its `fallback_config`, or a conversation-flow node override — is not Telnyx-hosted, or when its `insight_settings.model` is not available in that region. The response detail names the model and where it is configured. Validation runs against the merged result of the update, not only the fields sent."
+            "description": "Bad Request. The resulting assistant configuration was rejected. For example, enabling `privacy_settings.in_transit_data_locality` is refused when the organization's data-locality region has no in-region inference, when any model the assistant could use — its `model`, its `fallback_config`, or a conversation-flow node override — is a third-party model (a customer-provided `external_llm` endpoint is accepted), or when its `insight_settings.model` is not available in that region. The response detail names the model and where it is configured. Validation runs against the merged result of the update, not only the fields sent."
           },
           "422": {
             "content": {
@@ -10621,7 +10621,7 @@
                 }
               }
             },
-            "description": "Bad Request. The resulting assistant configuration was rejected. For example, enabling `privacy_settings.in_transit_data_locality` is refused when the organization's data-locality region has no in-region inference, when any model the assistant could use — its `model`, its `fallback_config`, or a conversation-flow node override — is not Telnyx-hosted, or when its `insight_settings.model` is not available in that region. The response detail names the model and where it is configured. Validation runs against the merged result of the update, not only the fields sent."
+            "description": "Bad Request. The resulting assistant configuration was rejected. For example, enabling `privacy_settings.in_transit_data_locality` is refused when the organization's data-locality region has no in-region inference, when any model the assistant could use — its `model`, its `fallback_config`, or a conversation-flow node override — is a third-party model (a customer-provided `external_llm` endpoint is accepted), or when its `insight_settings.model` is not available in that region. The response detail names the model and where it is configured. Validation runs against the merged result of the update, not only the fields sent."
           },
           "422": {
             "content": {

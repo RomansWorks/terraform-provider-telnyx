@@ -267,10 +267,8 @@ func (l *library) resource(typ, label string) []byte {
 		sort.Strings(names)
 		for _, n := range names {
 			a := s.Attributes[n]
-			v := "null"
-			if a.NestedType != nil {
-				v = "{}"
-			} else {
+			v := "{}"
+			if a.NestedType == nil {
 				v = placeholder(a.Type)
 			}
 			fmt.Fprintf(&sb, "  %s = %s\n", n, v)
@@ -284,7 +282,10 @@ func (l *library) resource(typ, label string) []byte {
 func (l *library) variable(name string) []byte {
 	var found string
 	_ = filepath.WalkDir(l.root, func(p string, d os.DirEntry, err error) error {
-		if err != nil || found != "" || d.IsDir() || !strings.HasSuffix(p, ".tf") {
+		if err != nil {
+			return err
+		}
+		if found != "" || d.IsDir() || !strings.HasSuffix(p, ".tf") {
 			return nil
 		}
 		b, _ := os.ReadFile(p)

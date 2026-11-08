@@ -79,6 +79,10 @@ type Attr struct {
 	// lowercase without surrounding spaces, because the API stores them so.
 	Lowercase bool
 
+	// Nullable request fields are sent as null when unset, for APIs that
+	// take null to clear a value. Only actions use it.
+	Nullable bool
+
 	// Query names the query parameter this attribute fills when a data
 	// source reads the object. Unless Required, it is optional.
 	Query string

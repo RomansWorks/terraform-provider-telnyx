@@ -132,8 +132,11 @@ func objectToJSON(attrs []*Attr, fields map[string]tftypes.Value, include func(*
 		if err != nil {
 			return nil, err
 		}
-		if ok {
+		switch {
+		case ok:
 			out[a.JSON] = j
+		case a.Nullable && fields[a.Name].IsKnown():
+			out[a.JSON] = nil
 		}
 	}
 	return out, nil

@@ -263,3 +263,28 @@ func TestJSONKeepsConfigWhenServerAddsKeys(t *testing.T) {
 		t.Error("data sources show the API value")
 	}
 }
+
+// A nullable field is sent as null when unset, and with its value when set.
+func TestObjectToJSONNullable(t *testing.T) {
+	attrs := []*Attr{
+		{Name: "bundle_id", JSON: "bundle_id", Kind: KindString, Optional: true, InCreate: true, Nullable: true},
+		{Name: "note", JSON: "note", Kind: KindString, Optional: true, InCreate: true},
+	}
+	for _, tc := range []struct {
+		v    tftypes.Value
+		want string
+	}{
+		{tftypes.NewValue(tftypes.String, nil), `{"bundle_id":null}`},
+		{str("b1"), `{"bundle_id":"b1"}`},
+	} {
+		v := nullOf(attrs)
+		v["bundle_id"] = tc.v
+		obj, err := objectToJSON(attrs, v, func(*Attr) bool { return true })
+		if err != nil {
+			t.Fatal(err)
+		}
+		if data, _ := json.Marshal(obj); string(data) != tc.want {
+			t.Errorf("got %s, want %s", data, tc.want)
+		}
+	}
+}

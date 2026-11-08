@@ -83,3 +83,38 @@ jobs:
         run: |
           git diff --compact-summary --exit-code || \
             (echo; echo "Unexpected difference after code generation. Run 'make generate' and commit."; exit 1)
+      - name: Examples validate
+        run: make examples-check
+
+  # The provider is published for OpenTofu too. Unit tests run against a fake
+  # API with the tofu CLI, and every example except the actions (OpenTofu has
+  # no action blocks) must validate.
+  opentofu:
+    name: OpenTofu ${{ matrix.tofu }}
+    needs: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        # 1.11 is the first release with ephemeral resources and write-only
+        # attributes.
+        tofu: ['1.11.x', '1.13.x']
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
+        with:
+          go-version-file: 'go.mod'
+          cache: true
+      - uses: opentofu/setup-opentofu@a1320f892987e89d278cc92dc5adc984fb93aca4 # v2.0.2
+        with:
+          tofu_version: ${{ matrix.tofu }}
+          tofu_wrapper: false
+      # Not TF_ACC: the acceptance tests need a Telnyx API key.
+      - name: Unit tests with tofu
+        run: |
+          export TF_ACC_TERRAFORM_PATH="$(command -v tofu)"
+          export TF_ACC_PROVIDER_HOST=registry.opentofu.org
+          go test -cover ./...
+      - name: Examples validate with tofu
+        run: make examples-check CLI=tofu KINDS=resources,data-sources,ephemeral-resources

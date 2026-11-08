@@ -24,6 +24,15 @@ generate:
 	go run ./cmd/codegen
 	cd tools; go generate ./...
 
+# Validate every example against a fresh build; no credentials needed.
+# CLI=tofu KINDS=resources,data-sources,ephemeral-resources for OpenTofu.
+CLI ?= terraform
+KINDS ?= resources,data-sources,ephemeral-resources,actions
+examples-check:
+	@mkdir -p build
+	go build -o build/terraform-provider-telnyx .
+	go run ./cmd/examplecheck -cli $(CLI) -provider build/terraform-provider-telnyx -kinds $(KINDS)
+
 test:
 	go test -v -cover -timeout=120s -parallel=10 ./...
 
@@ -72,4 +81,4 @@ release-snapshot:
 check: build test api-check
 	openspec validate --all --strict
 
-.PHONY: default build install lint fmt generate test testacc upstream-fetch catalog sync api-diff api-check api-check-release release-snapshot check
+.PHONY: examples-check default build install lint fmt generate test testacc upstream-fetch catalog sync api-diff api-check api-check-release release-snapshot check

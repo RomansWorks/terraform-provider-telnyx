@@ -16,7 +16,8 @@ an official Telnyx product.
 - Terraform 1.11 or later (write-only `_wo` attributes and ephemeral resources);
   Terraform 1.14 or later for actions (`action` blocks).
 - OpenTofu 1.11 or later for resources, data sources and ephemeral resources.
-  OpenTofu does not run provider actions.
+  OpenTofu does not run provider actions; see the
+  [OpenTofu guide](docs/guides/opentofu.md).
 - A Telnyx API v2 key.
 
 ## Usage

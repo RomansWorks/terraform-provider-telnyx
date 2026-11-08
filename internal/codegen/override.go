@@ -154,6 +154,10 @@ type AttrOverride struct {
 	// list or set of strings, each element); configuration must already
 	// be in that form, or every plan would show a change.
 	Lowercase bool `yaml:"lowercase"`
+	// Nullable says the API takes null to clear the field. It applies to
+	// top-level action fields: the attribute is optional, and leaving it
+	// unset sends null rather than leaving the field out.
+	Nullable bool `yaml:"nullable"`
 }
 
 // AddAttr is a local attribute.

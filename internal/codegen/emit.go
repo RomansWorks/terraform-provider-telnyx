@@ -284,6 +284,7 @@ func attr(b *bytes.Buffer, a *engine.Attr) {
 		{"Sensitive", a.Sensitive}, {"ForceNew", a.ForceNew},
 		{"InCreate", a.InCreate}, {"InUpdate", a.InUpdate}, {"InResponse", a.InResponse}, {"Local", a.Local},
 		{"WriteOnly", a.WriteOnly}, {"Masked", a.Masked}, {"CreateOnly", a.CreateOnly}, {"Lowercase", a.Lowercase},
+		{"Nullable", a.Nullable},
 	}
 	for _, f := range flags {
 		if f.on {

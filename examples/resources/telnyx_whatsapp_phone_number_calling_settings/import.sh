@@ -1,0 +1,1 @@
+terraform import telnyx_whatsapp_phone_number_calling_settings.support <phone_number>

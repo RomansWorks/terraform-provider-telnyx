@@ -63,7 +63,7 @@ full loop.
 
 ## Development
 
-Requirements: Go (see `go.mod`), Terraform 1.13 or later, Node.js 20.19 or later for
+Requirements: Go 1.26 or later (see `go.mod`), Terraform 1.13 or later, Node.js 20.19 or later for
 the OpenSpec CLI (`npm install -g @fission-ai/openspec`).
 
 ```sh

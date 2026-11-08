@@ -148,8 +148,9 @@ updates:
 // A data-source lookup can leave out a query parameter it cannot express.
 func TestSkippedQueryLookup(t *testing.T) {
 	body := "type: telnyx_lookup\nkind: data_source\ndescription: x\nread: GET /lookups/{number}\n"
-	if _, err := deriveYAML(t, body); err == nil {
-		t.Error("boolean query parameter: want an error")
+	// Boolean query parameters are lookup attributes (wave 5).
+	if r, err := deriveYAML(t, body); err != nil || r.Attr("fresh") == nil || r.Attr("fresh").Kind != engine.KindBool {
+		t.Errorf("boolean query parameter: %v", err)
 	}
 	r, err := deriveYAML(t, body+"attributes:\n  fresh: {skip: true}\n")
 	if err != nil {

@@ -29,7 +29,7 @@ func Each(ctx context.Context, c *client.Client, op *Op, path string, query url.
 	if size <= 0 {
 		size = DefaultPageSize
 	}
-	cursor := ""
+	cursor, snapshot := "", ""
 	read := 0
 	for page := 1; page <= maxPages; page++ {
 		q := url.Values{}
@@ -40,6 +40,9 @@ func Each(ctx context.Context, c *client.Client, op *Op, path string, query url.
 		case PagingNumber:
 			q.Set("page[number]", strconv.Itoa(page))
 			q.Set("page[size]", strconv.Itoa(size))
+			if snapshot != "" {
+				q.Set("page[snapshot]", snapshot)
+			}
 		case PagingFlat:
 			q.Set("page_number", strconv.Itoa(page))
 			q.Set("page_size", strconv.Itoa(size))
@@ -58,9 +61,13 @@ func Each(ctx context.Context, c *client.Client, op *Op, path string, query url.
 		}
 		var items []Object
 		var total int
-		if op.Records {
+		if op.Records || op.Results {
+			field, counts := "records", []string{"totalRecords", "total_records"}
+			if op.Results {
+				field, counts = "results", []string{"count"}
+			}
 			var records int
-			items, records, err = decodeRecords(out)
+			items, records, err = decodeItems(out, field, counts...)
 			read += len(items)
 			// With a known count, page until it is read whatever the page
 			// size the server chose; without one, a short page is the last.
@@ -90,11 +97,32 @@ func Each(ctx context.Context, c *client.Client, op *Op, path string, query url.
 			cursor = next
 			continue
 		}
+		next, more := pageMeta(out)
+		if more != nil && !*more {
+			return nil
+		}
+		snapshot = next
 		if op.Paging == PagingNone || len(items) == 0 || (total > 0 && page >= total) || (total == 0 && len(items) < size) {
 			return nil
 		}
 	}
 	return fmt.Errorf("%s %s: more than %d pages", op.Method, path, maxPages)
+}
+
+// pageMeta returns meta.snapshot, which pins later pages of a
+// page[number] list to the first page's results (the AI gateway's lists
+// require it after page 1), and meta.has_more when the response has it.
+func pageMeta(data []byte) (string, *bool) {
+	var body struct {
+		Meta struct {
+			Snapshot string `json:"snapshot"`
+			HasMore  *bool  `json:"has_more"`
+		} `json:"meta"`
+	}
+	if json.Unmarshal(data, &body) != nil {
+		return "", nil
+	}
+	return body.Meta.Snapshot, body.Meta.HasMore
 }
 
 // nextCursor returns the cursor of the next page: meta.cursors.after or
@@ -164,25 +192,33 @@ func decodeList(data []byte, envelope bool) ([]Object, int, error) {
 // and their count in "totalRecords" or "total_records" (0 when the response
 // does not say).
 func decodeRecords(data []byte) ([]Object, int, error) {
-	var body struct {
-		Records      json.RawMessage `json:"records"`
-		TotalRecords json.Number     `json:"totalRecords"`
-		TotalSnake   json.Number     `json:"total_records"`
-	}
-	dec := json.NewDecoder(bytes.NewReader(data))
-	dec.UseNumber()
-	if err := dec.Decode(&body); err != nil {
+	return decodeItems(data, "records", "totalRecords", "total_records")
+}
+
+// decodeItems decodes a list response that holds its items in field
+// ("records" or "results") and their count in the first of counts that
+// the response gives a positive value ("totalRecords", "total_records" or
+// "count"; 0 when none does).
+func decodeItems(data []byte, field string, counts ...string) ([]Object, int, error) {
+	var body map[string]json.RawMessage
+	if err := json.Unmarshal(data, &body); err != nil {
 		return nil, 0, fmt.Errorf("decoding list response: %w", err)
 	}
-	if len(body.Records) == 0 || string(body.Records) == "null" {
+	n := 0
+	for _, count := range counts {
+		var total json.Number
+		if raw, ok := body[count]; ok && json.Unmarshal(raw, &total) == nil {
+			if n, _ = strconv.Atoi(total.String()); n > 0 {
+				break
+			}
+		}
+	}
+	records := body[field]
+	if len(records) == 0 || string(records) == "null" {
 		return nil, 0, nil
 	}
-	items, _, err := decodeList(body.Records, false)
-	total, _ := strconv.Atoi(body.TotalRecords.String())
-	if total == 0 {
-		total, _ = strconv.Atoi(body.TotalSnake.String())
-	}
-	return items, total, err
+	items, _, err := decodeList(records, false)
+	return items, n, err
 }
 
 // errNotInCollection is the not-found error of a read from a collection,

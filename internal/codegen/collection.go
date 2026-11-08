@@ -89,6 +89,11 @@ func (g *Generator) deriveData(ov *Override) (*engine.Resource, error) {
 		if p.in != "query" || properties(p.schema) != nil {
 			continue
 		}
+		if ov.Attributes[p.name].Skip {
+			// The override leaves this query parameter unset.
+			d.used[p.name] = true
+			continue
+		}
 		if t, _ := p.schema["type"].(string); t != "string" {
 			return nil, fmt.Errorf("%s: query parameter %s is a %s; only strings are supported", ov.Type, p.name, t)
 		}
@@ -149,11 +154,30 @@ func (g *Generator) listItems(op *operation) (map[string]any, bool, error) {
 		}
 		data := g.norm(properties(schema)["data"])
 		if data == nil || data["type"] != "array" {
+			data = g.variantData(c["schema"])
+		}
+		if data == nil || data["type"] != "array" {
 			return nil, false, fmt.Errorf("%s %s does not return a data array", op.method, op.path)
 		}
 		return g.norm(data["items"]), true, nil
 	}
 	return nil, false, fmt.Errorf("%s %s has no JSON response", op.method, op.path)
+}
+
+// variantData returns the data array of the first variant of a response
+// union that has one. Lists that answer in two shapes, such as page-number
+// and cursor paging with different meta objects, share their items.
+func (g *Generator) variantData(schema any) map[string]any {
+	s := g.resolve(schema)
+	for _, key := range []string{"oneOf", "anyOf"} {
+		for _, v := range asSlice(s[key]) {
+			data := g.norm(properties(g.norm(v))["data"])
+			if data != nil && data["type"] == "array" {
+				return data
+			}
+		}
+	}
+	return nil
 }
 
 // param is one operation parameter.

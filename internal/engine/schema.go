@@ -6,13 +6,17 @@ package engine
 import (
 	"context"
 	"fmt"
+	"regexp"
 	"slices"
 	"strings"
 
 	"github.com/hashicorp/terraform-plugin-framework-timeouts/resource/timeouts"
+	"github.com/hashicorp/terraform-plugin-framework-validators/listvalidator"
+	"github.com/hashicorp/terraform-plugin-framework-validators/setvalidator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	dschema "github.com/hashicorp/terraform-plugin-framework/datasource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/boolplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/float64planmodifier"
@@ -97,6 +101,9 @@ func resourceAttr(a *Attr) schema.Attribute {
 	if len(a.Enum) > 0 && (a.Kind == KindString) {
 		stringValidators = append(stringValidators, stringvalidator.OneOf(a.Enum...))
 	}
+	if a.Lowercase && a.Kind == KindString {
+		stringValidators = append(stringValidators, lowercase)
+	}
 	keep := comp // keep computed values stable across plans
 	switch a.Kind {
 	case KindString, KindJSON:
@@ -105,7 +112,9 @@ func resourceAttr(a *Attr) schema.Attribute {
 			pm = append(pm, stringplanmodifier.UseStateForUnknown())
 		}
 		if a.ForceNew {
-			pm = append(pm, stringplanmodifier.RequiresReplace())
+			pm = append(pm, stringplanmodifier.RequiresReplaceIf(func(ctx context.Context, req planmodifier.StringRequest, resp *stringplanmodifier.RequiresReplaceIfFuncResponse) {
+				resp.RequiresReplace = replaces(ctx, a, req.StateValue, req.Private)
+			}, replaceDesc, replaceDesc))
 		}
 		return schema.StringAttribute{Required: req, Optional: opt, Computed: comp, Sensitive: a.Sensitive, WriteOnly: a.WriteOnly, DeprecationMessage: a.Deprecated,
 			MarkdownDescription: desc, Validators: stringValidators, PlanModifiers: pm}
@@ -115,7 +124,9 @@ func resourceAttr(a *Attr) schema.Attribute {
 			pm = append(pm, int64planmodifier.UseStateForUnknown())
 		}
 		if a.ForceNew {
-			pm = append(pm, int64planmodifier.RequiresReplace())
+			pm = append(pm, int64planmodifier.RequiresReplaceIf(func(ctx context.Context, req planmodifier.Int64Request, resp *int64planmodifier.RequiresReplaceIfFuncResponse) {
+				resp.RequiresReplace = replaces(ctx, a, req.StateValue, req.Private)
+			}, replaceDesc, replaceDesc))
 		}
 		return schema.Int64Attribute{Required: req, Optional: opt, Computed: comp, Sensitive: a.Sensitive, WriteOnly: a.WriteOnly, DeprecationMessage: a.Deprecated,
 			MarkdownDescription: desc, PlanModifiers: pm}
@@ -125,7 +136,9 @@ func resourceAttr(a *Attr) schema.Attribute {
 			pm = append(pm, float64planmodifier.UseStateForUnknown())
 		}
 		if a.ForceNew {
-			pm = append(pm, float64planmodifier.RequiresReplace())
+			pm = append(pm, float64planmodifier.RequiresReplaceIf(func(ctx context.Context, req planmodifier.Float64Request, resp *float64planmodifier.RequiresReplaceIfFuncResponse) {
+				resp.RequiresReplace = replaces(ctx, a, req.StateValue, req.Private)
+			}, replaceDesc, replaceDesc))
 		}
 		return schema.Float64Attribute{Required: req, Optional: opt, Computed: comp, Sensitive: a.Sensitive, WriteOnly: a.WriteOnly, DeprecationMessage: a.Deprecated,
 			MarkdownDescription: desc, PlanModifiers: pm}
@@ -135,7 +148,9 @@ func resourceAttr(a *Attr) schema.Attribute {
 			pm = append(pm, boolplanmodifier.UseStateForUnknown())
 		}
 		if a.ForceNew {
-			pm = append(pm, boolplanmodifier.RequiresReplace())
+			pm = append(pm, boolplanmodifier.RequiresReplaceIf(func(ctx context.Context, req planmodifier.BoolRequest, resp *boolplanmodifier.RequiresReplaceIfFuncResponse) {
+				resp.RequiresReplace = replaces(ctx, a, req.StateValue, req.Private)
+			}, replaceDesc, replaceDesc))
 		}
 		return schema.BoolAttribute{Required: req, Optional: opt, Computed: comp, Sensitive: a.Sensitive, WriteOnly: a.WriteOnly, DeprecationMessage: a.Deprecated,
 			MarkdownDescription: desc, PlanModifiers: pm}
@@ -145,11 +160,17 @@ func resourceAttr(a *Attr) schema.Attribute {
 			pm = append(pm, listplanmodifier.UseStateForUnknown())
 		}
 		if a.ForceNew {
-			pm = append(pm, listplanmodifier.RequiresReplace())
+			pm = append(pm, listplanmodifier.RequiresReplaceIf(func(ctx context.Context, req planmodifier.ListRequest, resp *listplanmodifier.RequiresReplaceIfFuncResponse) {
+				resp.RequiresReplace = replaces(ctx, a, req.StateValue, req.Private)
+			}, replaceDesc, replaceDesc))
 		}
 		if a.Elem != nil {
+			var v []validator.List
+			if a.Lowercase && a.Elem.Kind == KindString {
+				v = append(v, listvalidator.ValueStringsAre(lowercase))
+			}
 			return schema.ListAttribute{ElementType: attrType(a.Elem), Required: req, Optional: opt, Computed: comp,
-				Sensitive: a.Sensitive, DeprecationMessage: a.Deprecated, MarkdownDescription: desc, PlanModifiers: pm}
+				Sensitive: a.Sensitive, DeprecationMessage: a.Deprecated, MarkdownDescription: desc, PlanModifiers: pm, Validators: v}
 		}
 		return schema.ListNestedAttribute{NestedObject: schema.NestedAttributeObject{Attributes: nested(a.Attrs)},
 			Required: req, Optional: opt, Computed: comp, Sensitive: a.Sensitive, DeprecationMessage: a.Deprecated, MarkdownDescription: desc, PlanModifiers: pm}
@@ -159,11 +180,17 @@ func resourceAttr(a *Attr) schema.Attribute {
 			pm = append(pm, setplanmodifier.UseStateForUnknown())
 		}
 		if a.ForceNew {
-			pm = append(pm, setplanmodifier.RequiresReplace())
+			pm = append(pm, setplanmodifier.RequiresReplaceIf(func(ctx context.Context, req planmodifier.SetRequest, resp *setplanmodifier.RequiresReplaceIfFuncResponse) {
+				resp.RequiresReplace = replaces(ctx, a, req.StateValue, req.Private)
+			}, replaceDesc, replaceDesc))
 		}
 		if a.Elem != nil {
+			var v []validator.Set
+			if a.Lowercase && a.Elem.Kind == KindString {
+				v = append(v, setvalidator.ValueStringsAre(lowercase))
+			}
 			return schema.SetAttribute{ElementType: attrType(a.Elem), Required: req, Optional: opt, Computed: comp,
-				Sensitive: a.Sensitive, DeprecationMessage: a.Deprecated, MarkdownDescription: desc, PlanModifiers: pm}
+				Sensitive: a.Sensitive, DeprecationMessage: a.Deprecated, MarkdownDescription: desc, PlanModifiers: pm, Validators: v}
 		}
 		return schema.SetNestedAttribute{NestedObject: schema.NestedAttributeObject{Attributes: nested(a.Attrs)},
 			Required: req, Optional: opt, Computed: comp, Sensitive: a.Sensitive, DeprecationMessage: a.Deprecated, MarkdownDescription: desc, PlanModifiers: pm}
@@ -173,12 +200,36 @@ func resourceAttr(a *Attr) schema.Attribute {
 			pm = append(pm, objectplanmodifier.UseStateForUnknown())
 		}
 		if a.ForceNew {
-			pm = append(pm, objectplanmodifier.RequiresReplace())
+			pm = append(pm, objectplanmodifier.RequiresReplaceIf(func(ctx context.Context, req planmodifier.ObjectRequest, resp *objectplanmodifier.RequiresReplaceIfFuncResponse) {
+				resp.RequiresReplace = replaces(ctx, a, req.StateValue, req.Private)
+			}, replaceDesc, replaceDesc))
 		}
 		return schema.SingleNestedAttribute{Attributes: nested(a.Attrs), Required: req, Optional: opt, Computed: comp,
 			Sensitive: a.Sensitive, DeprecationMessage: a.Deprecated, MarkdownDescription: desc, PlanModifiers: pm}
 	}
 	panic(fmt.Sprintf("engine: unknown kind for %s", a.Name))
+}
+
+const replaceDesc = "Changing this value replaces the object."
+
+// privateGetter reads the provider's private state of a resource.
+type privateGetter interface {
+	GetKey(ctx context.Context, key string) ([]byte, diag.Diagnostics)
+}
+
+// importedKey marks, in private state, a resource that was imported.
+const importedKey = "imported"
+
+// replaces reports whether a change of a ForceNew attribute replaces the
+// object. A value the API does not return is null after import; setting it
+// then only fills the state, because replacing would recreate an object
+// that already exists.
+func replaces(ctx context.Context, a *Attr, state attr.Value, private privateGetter) bool {
+	if a.InResponse || !state.IsNull() || private == nil {
+		return true
+	}
+	v, _ := private.GetKey(ctx, importedKey)
+	return string(v) != "true"
 }
 
 func nested(attrs []*Attr) map[string]schema.Attribute {
@@ -268,3 +319,8 @@ func dataNested(attrs []*Attr) map[string]dschema.Attribute {
 	}
 	return out
 }
+
+// lowercase accepts strings that are lowercase and have no surrounding
+// spaces: the form in which the API stores email addresses.
+var lowercase = stringvalidator.RegexMatches(regexp.MustCompile(`^([^A-Z\s]([^A-Z]*[^A-Z\s])?)?$`),
+	"must be lowercase without leading or trailing spaces, as Telnyx stores it")

@@ -234,6 +234,9 @@ func TestFillPath(t *testing.T) {
 	if err != nil || p != "/things/a%2Fb%20c/voice" {
 		t.Errorf("got %q, %v", p, err)
 	}
+	if p, err := fillPath(d.Attrs, "/numbers/{id}", Values{"id": str("+13125550100")}); err != nil || p != "/numbers/%2B13125550100" {
+		t.Errorf("phone number: got %q, %v", p, err)
+	}
 	if _, err := fillPath(d.Attrs, "/things/{id}", Values{"id": tftypes.NewValue(tftypes.String, nil)}); err == nil {
 		t.Error("a null id must be an error")
 	}

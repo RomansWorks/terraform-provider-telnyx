@@ -49,6 +49,9 @@ type Override struct {
 	ReadFrom *ReadFromOverride `yaml:"read_from"`
 	// Updates are further operations that each set some attributes.
 	Updates []UpdateOverride `yaml:"updates"`
+	// Query names top-level attributes that update and delete operations
+	// also take as query parameters of the same name.
+	Query []string `yaml:"query"`
 
 	// ID is the response field holding the object's id. Default "id".
 	ID string `yaml:"id"`
@@ -67,9 +70,12 @@ type Override struct {
 	Timeouts   bool  `yaml:"timeouts"`
 	// ReleaseOnDestroy keeps the object in Telnyx on destroy unless the
 	// user sets release_on_destroy = true.
-	ReleaseOnDestroy bool       `yaml:"release_on_destroy"`
-	DeleteWarning    string     `yaml:"delete_warning"`
-	ExactlyOne       [][]string `yaml:"exactly_one"`
+	ReleaseOnDestroy bool `yaml:"release_on_destroy"`
+	// ForceDestroy names boolean query parameters of the delete operation
+	// that destroy sets to true when the user sets force_destroy = true.
+	ForceDestroy  []string   `yaml:"force_destroy"`
+	DeleteWarning string     `yaml:"delete_warning"`
+	ExactlyOne    [][]string `yaml:"exactly_one"`
 
 	// Attributes adjusts derived attributes by JSON path ("a.b.c").
 	Attributes map[string]AttrOverride `yaml:"attributes"`
@@ -103,6 +109,9 @@ type ReadFromOverride struct {
 	// Key is the element field matched against the id; empty when the
 	// elements are plain values.
 	Key string `yaml:"key"`
+	// Match names further attributes the element must match; they are
+	// required, force replacement and follow the id in the import id.
+	Match []string `yaml:"match"`
 }
 
 // UpdateOverride is an extra update operation and its optional clear.
@@ -137,6 +146,10 @@ type AttrOverride struct {
 	// reads keep the value in state. The field may be missing from the
 	// read response.
 	CreateOnly bool `yaml:"create_only"`
+	// Lowercase says the API trims and lowercases the value (or, for a
+	// list or set of strings, each element); configuration must already
+	// be in that form, or every plan would show a change.
+	Lowercase bool `yaml:"lowercase"`
 }
 
 // AddAttr is a local attribute.
@@ -212,7 +225,7 @@ func (o *Override) validate() error {
 	}
 	ops := []string{o.Create, o.Read, o.Update, o.Delete, o.List, o.Op, o.Open}
 	resourceOnly := o.Create != "" || o.Update != "" || o.Delete != "" || o.ReadFrom != nil || len(o.Updates) > 0 ||
-		o.ReleaseOnDestroy || o.Timeouts || o.DataSource != nil || len(o.Add) > 0 || len(o.ExactlyOne) > 0 || o.DeleteWarning != ""
+		o.ReleaseOnDestroy || o.Timeouts || o.DataSource != nil || len(o.Add) > 0 || len(o.ExactlyOne) > 0 || o.DeleteWarning != "" || len(o.ForceDestroy) > 0
 	if o.Kind != "action" && o.Op != "" || o.Kind != "ephemeral" && o.Open != "" {
 		return fmt.Errorf("op is only for kind: action, and open only for kind: ephemeral")
 	}
@@ -227,6 +240,9 @@ func (o *Override) validate() error {
 	case "":
 		if o.ReleaseOnDestroy && o.Delete == "" {
 			return fmt.Errorf("release_on_destroy needs delete")
+		}
+		if len(o.ForceDestroy) > 0 && o.Delete == "" {
+			return fmt.Errorf("force_destroy needs delete")
 		}
 		if o.Create == "" || o.Read == "" && o.ReadFrom == nil {
 			return fmt.Errorf("create, and read or read_from, are required")

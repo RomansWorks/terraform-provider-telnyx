@@ -29,7 +29,10 @@ func TestCoverageIsBuilt(t *testing.T) {
 		t.Fatal("coverage.yaml not found or empty")
 	}
 	ctx := context.Background()
-	p := New("test")().(*TelnyxProvider)
+	p, ok := New("test")().(*TelnyxProvider)
+	if !ok {
+		t.Fatal("New does not return a *TelnyxProvider")
+	}
 	pn := "telnyx"
 	types := map[string]map[string]bool{
 		"resource": {}, "data_source": {}, "action": {}, "ephemeral": {},

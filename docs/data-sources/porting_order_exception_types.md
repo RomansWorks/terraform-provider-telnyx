@@ -30,3 +30,14 @@ Read-Only:
 
 - `code` (String) Identifier of an exception type
 - `description` (String) Description of an exception type
+- `remediation` (Attributes) Structured remediation steps so an agent can map the exception to a fix via the API alone (see [below for nested schema](#nestedatt--porting_order_exception_types--remediation))
+
+<a id="nestedatt--porting_order_exception_types--remediation"></a>
+### Nested Schema for `porting_order_exception_types.remediation`
+
+Read-Only:
+
+- `action` (String) The type of remediation action to take
+- `fields` (List of String) Patchable field paths to correct, empty when no field update applies
+- `required_document` (String) The document to (re)upload, when applicable
+- `retryable` (Boolean) Whether resubmission or polling alone can unblock the order

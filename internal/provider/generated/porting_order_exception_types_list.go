@@ -16,6 +16,13 @@ func PortingOrderExceptionTypesList() *engine.List {
 			Attrs: []*engine.Attr{
 				{Name: "code", JSON: "code", Kind: engine.KindString, Computed: true, InResponse: true, Description: "Identifier of an exception type"},
 				{Name: "description", JSON: "description", Kind: engine.KindString, Computed: true, InResponse: true, Description: "Description of an exception type"},
+				{Name: "remediation", JSON: "remediation", Kind: engine.KindObject, Computed: true, InResponse: true, Description: "Structured remediation steps so an agent can map the exception to a fix via the API alone",
+					Attrs: []*engine.Attr{
+						{Name: "action", JSON: "action", Kind: engine.KindString, Computed: true, InResponse: true, Description: "The type of remediation action to take"},
+						{Name: "fields", JSON: "fields", Kind: engine.KindList, Computed: true, InResponse: true, Description: "Patchable field paths to correct, empty when no field update applies", Elem: &engine.Attr{Kind: engine.KindString}},
+						{Name: "required_document", JSON: "required_document", Kind: engine.KindString, Computed: true, InResponse: true, Description: "The document to (re)upload, when applicable"},
+						{Name: "retryable", JSON: "retryable", Kind: engine.KindBool, Computed: true, InResponse: true, Description: "Whether resubmission or polling alone can unblock the order"},
+					}},
 			}},
 	}
 }

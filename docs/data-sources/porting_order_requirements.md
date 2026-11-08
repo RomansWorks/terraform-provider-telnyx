@@ -17,7 +17,7 @@ The requirements of a porting order and whether they are met.
 
 ### Required
 
-- `id` (String) The id id.
+- `id` (String) The id of the object whose items are listed.
 
 ### Optional
 

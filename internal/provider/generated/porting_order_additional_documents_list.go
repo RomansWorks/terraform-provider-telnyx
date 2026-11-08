@@ -13,7 +13,7 @@ func PortingOrderAdditionalDocumentsList() *engine.List {
 		Op:          &engine.Op{Method: "GET", Path: "/porting_orders/{id}/additional_documents", Envelope: true, Paging: engine.PagingNumber, PageSize: 250},
 		Params: []*engine.Attr{
 			{Name: "filter_document_type", JSON: "filter[document_type]", Kind: engine.KindList, Optional: true, Description: "Filter additional documents by a list of document types", Elem: &engine.Attr{Kind: engine.KindString}},
-			{Name: "id", Kind: engine.KindString, Required: true, PathParams: []string{"id"}, Description: "The id id."},
+			{Name: "porting_order_id", Kind: engine.KindString, Required: true, PathParams: []string{"id"}, Description: "The porting order id."},
 			{Name: "sort_value", JSON: "sort[value]", Kind: engine.KindString, Optional: true, Enum: []string{"-created_at", "created_at"}, Description: "Specifies the sort order for results. If not given, results are sorted by created_at in descending order."},
 		},
 		Items: &engine.Attr{Name: "porting_order_additional_documents", JSON: "data", Kind: engine.KindList, Computed: true, InResponse: true, Description: "The objects, in the order the API returns them.",

@@ -4,6 +4,7 @@
 package engine
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"fmt"
@@ -539,7 +540,27 @@ func Get(ctx context.Context, c *client.Client, d *Resource, vals Values) (Objec
 	if err != nil {
 		return nil, err
 	}
+	if d.Read.Whole != "" {
+		return decodeWhole(out, d.Read)
+	}
 	return Decode(out, d.Read.Envelope)
+}
+
+// decodeWhole puts the whole response, whatever its JSON type, into the one
+// attribute op.Whole names.
+func decodeWhole(data []byte, op *Op) (Object, error) {
+	var v any
+	if len(bytes.TrimSpace(data)) > 0 {
+		dec := json.NewDecoder(bytes.NewReader(data))
+		dec.UseNumber()
+		if err := dec.Decode(&v); err != nil {
+			return nil, fmt.Errorf("decoding response: %w", err)
+		}
+	}
+	if m, ok := v.(map[string]any); ok && op.Envelope {
+		v = m["data"]
+	}
+	return Object{op.Whole: v}, nil
 }
 
 func (r *frameworkResource) afterRead(ctx context.Context, obj Object) (Object, error) {

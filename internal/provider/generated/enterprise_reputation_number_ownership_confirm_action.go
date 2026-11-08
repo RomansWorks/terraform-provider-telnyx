@@ -14,7 +14,7 @@ func EnterpriseReputationNumberOwnershipConfirmAction() *engine.Action {
 		Attrs: []*engine.Attr{
 			{Name: "enterprise_id", Kind: engine.KindString, Required: true, Local: true, PathParams: []string{"enterprise_id"}, Description: "The enterprise id."},
 			{Name: "evidence_document_id", JSON: "evidence_document_id", Kind: engine.KindString, Optional: true, InCreate: true, Description: "Optional id of an uploaded document supporting the confirmation."},
-			{Name: "phone_number", Kind: engine.KindString, Required: true, Local: true, PathParams: []string{"phone_number"}, Description: "The phone number id."},
+			{Name: "phone_number", Kind: engine.KindString, Required: true, Local: true, PathParams: []string{"phone_number"}, Description: "The phone number."},
 			{Name: "still_own", JSON: "still_own", Kind: engine.KindBool, Required: true, InCreate: true, Description: "`true` confirms you still own the number. `false` reports that you no longer own it and removes it from Number Reputation."},
 		},
 	}

@@ -119,8 +119,9 @@ func PortingOrdersList() *engine.List {
 					Attrs: []*engine.Attr{
 						{Name: "details", JSON: "details", Kind: engine.KindList, Computed: true, InResponse: true, Description: "A list of 0 or more details about this porting order's status",
 							Attrs: []*engine.Attr{
-								{Name: "code", JSON: "code", Kind: engine.KindString, Computed: true, InResponse: true, Description: "Identifier of an exception type"},
-								{Name: "description", JSON: "description", Kind: engine.KindString, Computed: true, InResponse: true, Description: "Description of an exception type"},
+								{Name: "code", JSON: "code", Kind: engine.KindString, Computed: true, InResponse: true, Description: "Identifier of the exception. Includes legacy codes persisted on older orders"},
+								{Name: "description", JSON: "description", Kind: engine.KindString, Computed: true, InResponse: true, Description: "Description of the exception"},
+								{Name: "remediation", JSON: "remediation", Kind: engine.KindJSON, Computed: true, InResponse: true, Description: "Structured remediation steps so an agent can map the exception to a fix via the API alone"},
 							}},
 						{Name: "value", JSON: "value", Kind: engine.KindString, Computed: true, InResponse: true, Description: "The current status of the porting order"},
 					}},

@@ -1,6 +1,7 @@
 # Checks the upstream Telnyx OpenAPI spec daily. When Telnyx has published a
 # new commit, opens (or refreshes) one pull request with the new pin, the
-# regenerated catalog and the API diff report. A coding agent then turns that
+# regenerated catalog, the output of `make generate` (descriptors, docs and
+# examples, so the Generated docs check passes) and the API diff report. A coding agent then turns that
 # pull request into an OpenSpec sync change (see AGENTS.md).
 name: Telnyx API sync
 
@@ -35,18 +36,40 @@ jobs:
         run: |
           make catalog
           make api-diff BASE=HEAD
+      # make generate formats examples with the Terraform CLI.
+      - uses: hashicorp/setup-terraform@dfe3c3f87815947d99a8997f908cb6525fc44e9e # v4.0.1
+        if: steps.fetch.outputs.changed == 'true'
+        with:
+          terraform_wrapper: false
+      # Fails when an override names an operation the new spec removed. The
+      # pull request still opens; the sync change fixes the override.
+      - name: Regenerate descriptors and docs
+        id: generate
+        if: steps.fetch.outputs.changed == 'true'
+        continue-on-error: true
+        run: make generate
+      - name: Write pull request body
+        if: steps.fetch.outputs.changed == 'true'
+        run: |
           {
             echo "Telnyx published a new API spec: \`${OLD:0:7}\` → \`${NEW:0:7}\`."
             echo
             echo "Next step: ask the coding agent to **run the Telnyx sync** on this branch."
             echo "It creates an OpenSpec change from this report and implements it."
             echo
+            if [ "$GENERATE" != "success" ]; then
+              echo "> [!WARNING]"
+              echo "> \`make generate\` failed, so this pull request has only the pin and catalog."
+              echo "> An override probably uses an operation this spec removed: fix it in the sync change."
+              echo
+            fi
             # GitHub limits a pull request body to 65,536 characters.
             head -c 60000 build/api-diff.md
           } > build/pr-body.md
         env:
           OLD: ${{ steps.fetch.outputs.old_commit }}
           NEW: ${{ steps.fetch.outputs.new_commit }}
+          GENERATE: ${{ steps.generate.outcome }}
       - name: Open or update pull request
         if: steps.fetch.outputs.changed == 'true'
         uses: peter-evans/create-pull-request@5f6978faf089d4d20b00c7766989d076bb2fc7f1 # v8.1.1
@@ -63,3 +86,6 @@ jobs:
           add-paths: |
             upstream/**
             catalog/**
+            internal/provider/generated/**
+            docs/**
+            examples/**

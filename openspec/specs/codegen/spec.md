@@ -288,13 +288,6 @@ A data source whose read response is a map without fixed fields, or has no field
 - **WHEN** `data "telnyx_10dlc_campaign_operation_status" "x" { campaign_id = "c1" }` is read and the API answers with one entry per carrier
 - **THEN** `values` holds that map as JSON
 
-### Requirement: Versioned spec paths
-A spec path that starts with `/v2/` SHALL be sent once under the base URL's `/v2`, not as `/v2/v2/...`.
-
-#### Scenario: Mobile phone numbers
-- **WHEN** `telnyx_mobile_phone_number` reads `GET /v2/mobile_phone_numbers/{id}` with the default base URL
-- **THEN** the request goes to `https://api.telnyx.com/v2/mobile_phone_numbers/{id}`
-
 ### Requirement: Attribute names from camelCase
 JSON field names SHALL become snake_case attribute names, with a run of capitals as one word: `webhookURL` is `webhook_url` and `isTMobileRegistered` is `is_t_mobile_registered`. Path parameter renames (`path_params`) SHALL apply to list data sources too (see "Parent names in list data sources").
 
@@ -544,3 +537,10 @@ A list data source's query parameter whose snake_case name is reserved by Terraf
 #### Scenario: Collision
 - **WHEN** an operation takes both `provider` and `provider_filter` as query parameters
 - **THEN** generation fails naming both parameters
+
+### Requirement: Spec paths repeating the version
+A spec path that starts with `/v2/` SHALL be sent once under the base URL's `/v2`, not as `/v2/v2/...`.
+
+#### Scenario: Path repeating the version
+- **WHEN** a descriptor uses a spec path such as `GET /v2/example/{id}` with the default base URL
+- **THEN** the request goes to `https://api.telnyx.com/v2/example/{id}`

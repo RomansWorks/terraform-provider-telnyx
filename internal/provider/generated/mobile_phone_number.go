@@ -10,9 +10,9 @@ func MobilePhoneNumber() *engine.Resource {
 	return &engine.Resource{
 		TypeName:      "telnyx_mobile_phone_number",
 		Description:   "A mobile phone number in your account, with its voice settings (call forwarding, recording, CNAM, interception apps). Create adopts a number you already own. The API cannot delete mobile numbers, so destroy only removes the number from Terraform state.",
-		Create:        &engine.Op{Method: "PATCH", Path: "/v2/mobile_phone_numbers/{id}", Envelope: true},
-		Read:          &engine.Op{Method: "GET", Path: "/v2/mobile_phone_numbers/{id}", Envelope: true},
-		Update:        &engine.Op{Method: "PATCH", Path: "/v2/mobile_phone_numbers/{id}", Envelope: true},
+		Create:        &engine.Op{Method: "PATCH", Path: "/mobile_phone_numbers/{id}", Envelope: true},
+		Read:          &engine.Op{Method: "GET", Path: "/mobile_phone_numbers/{id}", Envelope: true},
+		Update:        &engine.Op{Method: "PATCH", Path: "/mobile_phone_numbers/{id}", Envelope: true},
 		IDAttr:        "mobile_phone_number_id",
 		Import:        []string{"mobile_phone_number_id"},
 		DeleteWarning: "The Telnyx API cannot delete mobile phone numbers. The number was removed from Terraform state but is still in your Telnyx account with its current settings.",

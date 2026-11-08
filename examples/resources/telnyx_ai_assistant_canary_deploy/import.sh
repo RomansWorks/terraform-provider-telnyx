@@ -1,0 +1,1 @@
+terraform import telnyx_ai_assistant_canary_deploy.front_desk <assistant_id>

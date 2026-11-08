@@ -1,0 +1,1 @@
+terraform import telnyx_mobile_phone_number.main <mobile_phone_number_id>

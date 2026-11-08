@@ -1,0 +1,1 @@
+terraform import telnyx_ai_conversation_insight_group_assignment.sentiment <group_id>/<insight_id>

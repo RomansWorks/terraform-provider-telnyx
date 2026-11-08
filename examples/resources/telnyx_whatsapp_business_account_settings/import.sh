@@ -1,0 +1,1 @@
+terraform import telnyx_whatsapp_business_account_settings.main <whatsapp_business_account_id>

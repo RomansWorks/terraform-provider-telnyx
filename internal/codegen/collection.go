@@ -34,7 +34,7 @@ func (g *Generator) DeriveAll(ov *Override) (*engine.Resource, *engine.List, err
 		desc = "Lists " + strings.ReplaceAll(strings.TrimPrefix(Plural(ov.Type), "telnyx_"), "_", " ") +
 			", with optional filters. Each item has the attributes of `" + ov.Type + "`."
 	}
-	l, err := g.DeriveList(ov.listName(), desc, ov.List, ov.Paging, ov.itemSettings())
+	l, err := g.DeriveList(ov.listName(), desc, ov.List, ov.Paging, ov.itemSettings(), ov.PathParams)
 	if err != nil {
 		return nil, nil, fmt.Errorf("%s: list: %w", ov.Type, err)
 	}
@@ -60,10 +60,19 @@ func (g *Generator) deriveData(ov *Override) (*engine.Resource, error) {
 	if err != nil {
 		return nil, fmt.Errorf("%s: %w", ov.Type, err)
 	}
+	// A response that is a map without fixed fields, or that has no
+	// fields the generator can derive (a union of lists and objects), is
+	// one JSON value.
+	whole := ""
+	if len(attrs) == 0 || properties(schema) == nil && schema["type"] == "object" {
+		whole = "values"
+		attrs = append(attrs, &engine.Attr{Name: whole, JSON: whole, Kind: engine.KindJSON, Computed: true, InResponse: true,
+			Description: "The response, as JSON: a map whose keys the API does not fix."})
+	}
 	r := &engine.Resource{
 		TypeName:    ov.Type,
 		Description: ov.Description,
-		Read:        &engine.Op{Method: read.method, Path: read.path, Envelope: env},
+		Read:        &engine.Op{Method: read.method, Path: read.path, Envelope: env, Whole: whole},
 		Attrs:       attrs,
 		DataSource:  true,
 		NoResource:  true,
@@ -94,13 +103,16 @@ func (g *Generator) deriveData(ov *Override) (*engine.Resource, error) {
 			d.used[p.name] = true
 			continue
 		}
-		if t, _ := p.schema["type"].(string); t != "string" {
-			return nil, fmt.Errorf("%s: query parameter %s is a %s; only strings are supported", ov.Type, p.name, t)
+		kinds := map[string]engine.Kind{"string": engine.KindString, "boolean": engine.KindBool, "integer": engine.KindInt}
+		t, _ := p.schema["type"].(string)
+		kind, ok := kinds[t]
+		if !ok {
+			return nil, fmt.Errorf("%s: query parameter %s is a %s; only strings, booleans and integers are supported", ov.Type, p.name, t)
 		}
 		name := snake(p.name)
 		a := r.Attr(name)
 		if a == nil {
-			a = &engine.Attr{Name: name, Kind: engine.KindString, Local: true, Description: p.desc}
+			a = &engine.Attr{Name: name, Kind: kind, Local: true, Description: p.desc}
 			if a.Description == "" {
 				a.Description = "Sent as the " + p.name + " query parameter."
 			}
@@ -132,7 +144,9 @@ func checkUnused(ov *Override, d *deriver) error {
 
 // listItems returns the schema of one element of a list response's data
 // array, and whether the array is wrapped in data (false for a bare array).
-func (g *Generator) listItems(op *operation) (map[string]any, bool, error) {
+// A response with a records or results array in place of data names that
+// field.
+func (g *Generator) listItems(op *operation) (item map[string]any, env bool, field string, err error) {
 	responses, _ := op.node["responses"].(map[string]any)
 	codes := make([]string, 0, len(responses))
 	for c := range responses {
@@ -150,18 +164,25 @@ func (g *Generator) listItems(op *operation) (map[string]any, bool, error) {
 		}
 		schema := g.norm(c["schema"])
 		if schema["type"] == "array" {
-			return g.norm(schema["items"]), false, nil
+			return g.norm(schema["items"]), false, "", nil
 		}
 		data := g.norm(properties(schema)["data"])
+		if data == nil {
+			for _, f := range []string{"records", "results"} {
+				if rec := g.norm(properties(schema)[f]); rec != nil && rec["type"] == "array" {
+					return g.norm(rec["items"]), true, f, nil
+				}
+			}
+		}
 		if data == nil || data["type"] != "array" {
 			data = g.variantData(c["schema"])
 		}
 		if data == nil || data["type"] != "array" {
-			return nil, false, fmt.Errorf("%s %s does not return a data array", op.method, op.path)
+			return nil, false, "", fmt.Errorf("%s %s does not return a data array", op.method, op.path)
 		}
-		return g.norm(data["items"]), true, nil
+		return g.norm(data["items"]), true, "", nil
 	}
-	return nil, false, fmt.Errorf("%s %s has no JSON response", op.method, op.path)
+	return nil, false, "", fmt.Errorf("%s %s has no JSON response", op.method, op.path)
 }
 
 // variantData returns the data array of the first variant of a response
@@ -222,12 +243,13 @@ var otherPaging = []string{"page[after]", "page[before]", "page[limit]", "page[s
 
 // DeriveList derives a list data source from a list operation.
 // settings carries the resource's sensitive and set settings to the items.
-func (g *Generator) DeriveList(name, description, key, pagingOverride string, settings map[string]AttrOverride) (*engine.List, error) {
+// pathParams renames path parameters as the override's path_params says.
+func (g *Generator) DeriveList(name, description, key, pagingOverride string, settings map[string]AttrOverride, pathParams map[string]string) (*engine.List, error) {
 	op, err := g.operation(key)
 	if err != nil {
 		return nil, err
 	}
-	item, env, err := g.listItems(op)
+	item, env, field, err := g.listItems(op)
 	if err != nil {
 		return nil, err
 	}
@@ -235,7 +257,7 @@ func (g *Generator) DeriveList(name, description, key, pagingOverride string, se
 	if err != nil {
 		return nil, err
 	}
-	listOp.Envelope = env
+	listOp.Envelope, listOp.Records, listOp.Results = env, field == "records", field == "results"
 	l := &engine.List{TypeName: name, Description: description, Op: listOp}
 
 	seen := map[string]string{}
@@ -261,8 +283,18 @@ func (g *Generator) DeriveList(name, description, key, pagingOverride string, se
 	for _, p := range g.params(op) {
 		switch {
 		case p.in == "path":
-			a := &engine.Attr{Name: snake(p.name), Kind: engine.KindString, Required: true, PathParams: []string{p.name},
-				Description: "The " + strings.ReplaceAll(strings.TrimSuffix(snake(p.name), "_id"), "_", " ") + " id."}
+			// The resource's path_params name the parent the same way here,
+			// except a rename to id, which is the item's own id.
+			n := snake(p.name)
+			if r, ok := pathParams[p.name]; ok && r != "id" {
+				n = r
+			}
+			desc := paramDescription(n)
+			if n == "id" {
+				desc = "The id of the object whose items are listed."
+			}
+			a := &engine.Attr{Name: n, Kind: engine.KindString, Required: true, PathParams: []string{p.name},
+				Description: desc}
 			if err := addParam(a, p.name); err != nil {
 				return nil, err
 			}
@@ -282,7 +314,7 @@ func (g *Generator) DeriveList(name, description, key, pagingOverride string, se
 	}
 	sort.SliceStable(l.Params, func(i, j int) bool { return l.Params[i].Name < l.Params[j].Name })
 
-	items := &engine.Attr{Name: strings.TrimPrefix(name, "telnyx_"), JSON: "data", Kind: engine.KindList,
+	items := &engine.Attr{Name: itemsName(name), JSON: "data", Kind: engine.KindList,
 		Computed: true, InResponse: true, Description: "The objects, in the order the API returns them."}
 	ov := &Override{Type: name, Attributes: settings}
 	d := &deriver{g: g, ov: ov, used: map[string]bool{}}
@@ -309,6 +341,20 @@ func (g *Generator) DeriveList(name, description, key, pagingOverride string, se
 	}
 	l.Items = items
 	return l, nil
+}
+
+// itemsName is the name of a list data source's items attribute: the type
+// name without telnyx_, and without a leading segment that starts with a
+// digit (telnyx_10dlc_brands lists brands), since attribute names must start
+// with a letter.
+func itemsName(typeName string) string {
+	n := strings.TrimPrefix(typeName, "telnyx_")
+	if n != "" && n[0] >= '0' && n[0] <= '9' {
+		if i := strings.IndexByte(n, '_'); i > 0 {
+			n = n[i+1:]
+		}
+	}
+	return n
 }
 
 // isPaging reports whether a query parameter pages: the engine sends it,
@@ -350,7 +396,7 @@ func (g *Generator) listOp(op *operation, pagingOverride string) (*engine.Op, er
 		}
 		if _, ok := pagingParams[p.name]; ok || contains(otherPaging, p.name) {
 			present[p.name] = true
-			if strings.Contains(p.name, "size") {
+			if strings.Contains(p.name, "size") || strings.HasSuffix(p.name, "PerPage") {
 				sizes[p.name] = maxOf(p.schema)
 			}
 		}
@@ -363,6 +409,20 @@ func (g *Generator) listOp(op *operation, pagingOverride string) (*engine.Op, er
 		paging, size = engine.PagingFlat, sizes["page_size"]
 	case present["page[after]"]:
 		paging, size = engine.PagingCursor, sizes["page[size]"]
+	}
+	// A plain page number with recordsPerPage, or with page_size and no
+	// page_number, pages by page.
+	sizeParam := ""
+	if present["page"] && !present["page_number"] {
+		for _, n := range []string{"recordsPerPage", "page_size"} {
+			if present[n] {
+				sizeParam = n
+				break
+			}
+		}
+	}
+	if sizeParam != "" {
+		paging, size = engine.PagingPage, sizes[sizeParam]
 	}
 	if paging == engine.PagingNone {
 		names := make([]string, 0, len(present))
@@ -381,6 +441,9 @@ func (g *Generator) listOp(op *operation, pagingOverride string) (*engine.Op, er
 		paging = engine.PagingNone
 	}
 	o.Paging = paging
+	if paging == engine.PagingPage {
+		o.SizeParam = sizeParam
+	}
 	if paging != engine.PagingNone {
 		o.PageSize = engine.DefaultPageSize
 		if size > 0 && size < o.PageSize {

@@ -10,11 +10,13 @@ func CountryCoverage() *engine.Resource {
 	return &engine.Resource{
 		TypeName:    "telnyx_country_coverage",
 		Description: "The phone number features Telnyx offers in each country.",
-		Read:        &engine.Op{Method: "GET", Path: "/country_coverage", Envelope: true},
+		Read:        &engine.Op{Method: "GET", Path: "/country_coverage", Envelope: true, Whole: "values"},
 		IDAttr:      "",
 		Import:      []string{},
 		DataSource:  true,
 		NoResource:  true,
-		Attrs:       []*engine.Attr{},
+		Attrs: []*engine.Attr{
+			{Name: "values", JSON: "values", Kind: engine.KindJSON, Computed: true, InResponse: true, Description: "The response, as JSON: a map whose keys the API does not fix."},
+		},
 	}
 }

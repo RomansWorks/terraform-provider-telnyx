@@ -19,6 +19,10 @@ A user of the organization.
 
 - `id` (String) Identifies the specific resource.
 
+### Optional
+
+- `include_groups` (Boolean) When set to true, includes the groups array for each user in the response. The groups array contains objects with id and name for each group the user belongs to.
+
 ### Read-Only
 
 - `created_at` (String) ISO 8601 formatted date indicating when the resource was created.

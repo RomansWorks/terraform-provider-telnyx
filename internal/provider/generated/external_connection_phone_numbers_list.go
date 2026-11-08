@@ -12,11 +12,11 @@ func ExternalConnectionPhoneNumbersList() *engine.List {
 		Description: "Lists external connection phone number settings, with optional filters. Each item has the attributes of `telnyx_external_connection_phone_number_settings`.",
 		Op:          &engine.Op{Method: "GET", Path: "/external_connections/{id}/phone_numbers", Envelope: true, Paging: engine.PagingNumber, PageSize: 250},
 		Params: []*engine.Attr{
+			{Name: "external_connection_id", Kind: engine.KindString, Required: true, PathParams: []string{"id"}, Description: "The external connection id."},
 			{Name: "filter_civic_address_id", JSON: "filter[civic_address_id][eq]", Kind: engine.KindString, Optional: true, Description: "The civic address ID to filter by"},
 			{Name: "filter_location_id", JSON: "filter[location_id][eq]", Kind: engine.KindString, Optional: true, Description: "The location ID to filter by"},
 			{Name: "filter_phone_number", JSON: "filter[phone_number][eq]", Kind: engine.KindString, Optional: true, Description: "The phone number to filter by (exact match)"},
 			{Name: "filter_phone_number_contains", JSON: "filter[phone_number][contains]", Kind: engine.KindString, Optional: true, Description: "The phone number to filter by (partial match)"},
-			{Name: "id", Kind: engine.KindString, Required: true, PathParams: []string{"id"}, Description: "The id id."},
 		},
 		Items: &engine.Attr{Name: "external_connection_phone_numbers", JSON: "data", Kind: engine.KindList, Computed: true, InResponse: true, Description: "The objects, in the order the API returns them.",
 			Attrs: []*engine.Attr{

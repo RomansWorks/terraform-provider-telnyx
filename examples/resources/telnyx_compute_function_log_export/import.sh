@@ -1,0 +1,1 @@
+terraform import telnyx_compute_function_log_export.example <function_id>

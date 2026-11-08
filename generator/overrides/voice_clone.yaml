@@ -1,0 +1,30 @@
+type: telnyx_voice_clone
+description: A voice clone, usable as a text-to-speech voice, made either from a voice design or from a recording of a voice. A recording with different content creates a new clone.
+# The create hook posts to /voice_clones with voice_design_id, or uploads
+# audio_path to this operation; the upload takes every other create field.
+create: POST /voice_clones/from_upload
+update: PATCH /voice_clones/{id}
+delete: DELETE /voice_clones/{id}
+list: GET /voice_clones
+read_from: {op: "GET /voice_clones", key: id}
+merge_variants: true # one request shape per provider and model
+exactly_one:
+  - [voice_design_id, audio_path]
+attributes:
+  provider: {name: voice_provider}
+  audio_file:
+    skip: true # uploaded from audio_path by the create hook
+add:
+  - name: voice_design_id
+    kind: string
+    optional: true
+    force_new: true
+    description: The voice design to clone. Set this or `audio_path`.
+  - name: audio_path
+    kind: string
+    optional: true
+    description: Path to a recording of the voice to clone (WAV, MP3, FLAC, OGG or M4A, at most 20 MiB), uploaded when the clone is created. Set this or `voice_design_id`.
+  - name: audio_sha256
+    kind: string
+    computed: true
+    description: SHA-256 of the uploaded recording.

@@ -19,6 +19,10 @@ A regulatory requirement for ordering phone numbers.
 
 - `id` (String) Identifies the associated document
 
+### Optional
+
+- `version` (Number) Version number. Increments with each new version. Defaults to 1.
+
 ### Read-Only
 
 - `action` (String) Indicates whether this requirement applies to branded_calling, ordering, porting, or both ordering and porting

@@ -12,7 +12,7 @@ func EmailUnsubscribeGroupSuppressionsList() *engine.List {
 		Description: "Lists email unsubscribe group suppressions, with optional filters. Each item has the attributes of `telnyx_email_unsubscribe_group_suppression`.",
 		Op:          &engine.Op{Method: "GET", Path: "/email_unsubscribe_groups/{id}/suppressions", Envelope: true, Paging: engine.PagingNumber, PageSize: 100},
 		Params: []*engine.Attr{
-			{Name: "id", Kind: engine.KindString, Required: true, PathParams: []string{"id"}, Description: "The id id."},
+			{Name: "group_id", Kind: engine.KindString, Required: true, PathParams: []string{"id"}, Description: "The group id."},
 		},
 		Items: &engine.Attr{Name: "email_unsubscribe_group_suppressions", JSON: "data", Kind: engine.KindList, Computed: true, InResponse: true, Description: "The objects, in the order the API returns them.",
 			Attrs: []*engine.Attr{

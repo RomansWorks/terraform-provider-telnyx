@@ -17,7 +17,7 @@ Lists email unsubscribe group suppressions, with optional filters. Each item has
 
 ### Required
 
-- `id` (String) The id id.
+- `group_id` (String) The group id.
 
 ### Optional
 

@@ -46,6 +46,7 @@ func Requirement() *engine.Resource {
 					{Name: "updated_at", JSON: "updated_at", Kind: engine.KindString, Computed: true, InResponse: true, Description: "ISO 8601 formatted date-time indicating when the resource was last updated."},
 				}},
 			{Name: "updated_at", JSON: "updated_at", Kind: engine.KindString, Computed: true, InResponse: true, Description: "ISO 8601 formatted date-time indicating when the resource was last updated."},
+			{Name: "version", JSON: "version", Kind: engine.KindInt, Computed: true, InResponse: true, Query: "version", Description: "Version number. Increments with each new version. Defaults to 1."},
 		},
 	}
 }

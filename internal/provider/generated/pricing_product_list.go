@@ -13,7 +13,7 @@ func PricingProductList() *engine.List {
 		Op:          &engine.Op{Method: "GET", Path: "/pricing/products/{slug}", Envelope: true, Paging: engine.PagingNumber, PageSize: 100},
 		Params: []*engine.Attr{
 			{Name: "filter_country_iso", JSON: "filter[country_iso]", Kind: engine.KindString, Optional: true},
-			{Name: "slug", Kind: engine.KindString, Required: true, PathParams: []string{"slug"}, Description: "The slug id."},
+			{Name: "slug", Kind: engine.KindString, Required: true, PathParams: []string{"slug"}, Description: "The slug."},
 		},
 		Items: &engine.Attr{Name: "pricing_product", JSON: "data", Kind: engine.KindList, Computed: true, InResponse: true, Description: "The objects, in the order the API returns them.",
 			Attrs: []*engine.Attr{

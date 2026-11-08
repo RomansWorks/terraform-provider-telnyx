@@ -24,6 +24,7 @@ func OrganizationUser() *engine.Resource {
 					{Name: "name", JSON: "name", Kind: engine.KindString, Computed: true, InResponse: true, Description: "The name of the group."},
 				}},
 			{Name: "id", JSON: "id", Kind: engine.KindString, Computed: true, InResponse: true, PathParams: []string{"id"}, Description: "Identifies the specific resource."},
+			{Name: "include_groups", Kind: engine.KindBool, Local: true, Query: "include_groups", Description: "When set to true, includes the groups array for each user in the response. The groups array contains objects with id and name for each group the user belongs to."},
 			{Name: "last_sign_in_at", JSON: "last_sign_in_at", Kind: engine.KindString, Computed: true, InResponse: true, Description: "ISO 8601 formatted date indicating when the resource last signed into the portal. Null if the user has never signed in."},
 			{Name: "organization_user_bypasses_sso", JSON: "organization_user_bypasses_sso", Kind: engine.KindBool, Computed: true, InResponse: true, Description: "Indicates whether this user is allowed to bypass SSO and use password authentication."},
 			{Name: "record_type", JSON: "record_type", Kind: engine.KindString, Computed: true, InResponse: true, Description: "Identifies the type of the resource. Can be 'organization_owner' or 'organization_sub_user'."},

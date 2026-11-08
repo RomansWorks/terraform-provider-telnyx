@@ -18,7 +18,7 @@ Confirms that the enterprise still owns a flagged phone number, or gives it up.
 ### Required
 
 - `enterprise_id` (String) The enterprise id.
-- `phone_number` (String) The phone number id.
+- `phone_number` (String) The phone number.
 - `still_own` (Boolean) `true` confirms you still own the number. `false` reports that you no longer own it and removes it from Number Reputation.
 
 ### Optional

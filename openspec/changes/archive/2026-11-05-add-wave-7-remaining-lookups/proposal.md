@@ -11,7 +11,7 @@ This change covers no upstream range: it builds on the current pin.
 - **Generator.** A list filter named like a Terraform meta-argument (`provider`, `count`) takes the suffix `_filter`, and is still sent under its own name. Before, it was a generation error.
 - **54 data sources and 18 actions**, generated from overrides. The list is in `tasks.md`.
 - **Left to other waves.** `telnyx_bulk_sim_card_action(s)` and `telnyx_wireless_regions` are built by wave 3, and `telnyx_telephony_credential_token_material` by wave 6.
-- **Unsupported lookup parameters are skipped.** `telnyx_organization_user` leaves out `include_groups` (a boolean), `telnyx_requirement` leaves out `version` (an integer, so the current version is read) and `telnyx_charges_breakdown` leaves out `format` (`csv` is not JSON), with the `skip` key wave 6 added.
+- **A skipped lookup parameter.** `telnyx_charges_breakdown` leaves out `format` (`csv` is not JSON), with the `skip` key wave 6 added. `telnyx_organization_user` takes `include_groups` and `telnyx_requirement` takes `version`, with the boolean and integer lookups wave 5 added.
 
 ## Capabilities
 

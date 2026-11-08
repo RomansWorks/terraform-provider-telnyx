@@ -17,7 +17,7 @@ The prices of one Telnyx product.
 
 ### Required
 
-- `slug` (String) The slug id.
+- `slug` (String) The slug.
 
 ### Optional
 

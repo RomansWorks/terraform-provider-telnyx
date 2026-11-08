@@ -17,7 +17,7 @@ The supporting documents of a port-out request.
 
 ### Required
 
-- `id` (String) The id id.
+- `id` (String) The id of the object whose items are listed.
 
 ### Optional
 

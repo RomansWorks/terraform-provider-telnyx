@@ -105,10 +105,25 @@ type Op struct {
 	First bool
 	// Form says the request body is a URL-encoded form of scalar fields.
 	Form bool
+	// Raw says the request body is raw bytes, which the resource's Send
+	// hook supplies.
+	Raw bool
+	// Whole names the one attribute that holds the whole response object,
+	// for reads whose response is a map without fixed fields.
+	Whole string
 	// Paging says how a list operation pages; PageSize is the page size to
 	// ask for.
 	Paging   Paging
 	PageSize int
+	// SizeParam is the page size query parameter of PagingPage.
+	SizeParam string
+	// Records says a list response holds its items in "records", with the
+	// item count in "totalRecords", in place of "data" (the 10DLC and
+	// toll-free verification APIs).
+	Records bool
+	// Results says a list response holds its items in "results", with the
+	// item count in "count" (the AI test framework APIs).
+	Results bool
 	// Query names attributes sent as query parameters of this operation,
 	// keyed by their JSON name, when they are set.
 	Query []string
@@ -130,6 +145,9 @@ const (
 	// PagingCursor sends page[size] and page[after] and follows
 	// meta.cursors.after or meta.end_cursor until it is empty.
 	PagingCursor
+	// PagingPage sends page and the size parameter named by Op.SizeParam,
+	// and stops at a short page or when totalRecords items have been read.
+	PagingPage
 )
 
 // ReadFrom reads an object that has no item read from a collection: the
@@ -219,6 +237,13 @@ type Hooks struct {
 	// Create replaces the generic create call, for example for an upload.
 	// It returns the created object as read would.
 	Create func(ctx context.Context, c *client.Client, r *Resource, plan Values) (Object, error)
+	// Send replaces the request of a create or update, for bodies the
+	// engine cannot build such as raw bytes. op is "create" or "update";
+	// it returns the response object, or nil when the response is empty.
+	Send func(ctx context.Context, c *client.Client, r *Resource, op string, plan, pathVals Values) (Object, error)
+	// Headers returns extra request headers for an "update" or "delete",
+	// such as an If-Match built from the object's version in state.
+	Headers func(op string, vals Values) map[string]string
 	// AfterRead can reshape an API object before it is mapped to attributes.
 	// A not-found error (client.Error with status 404) on a resource read
 	// means the object is gone.

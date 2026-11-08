@@ -15,7 +15,7 @@ func PortoutStatusUpdateAction() *engine.Action {
 			{Name: "host_messaging", JSON: "host_messaging", Kind: engine.KindBool, Optional: true, InCreate: true, Description: "Indicates whether messaging services should be maintained with Telnyx after the port out completes"},
 			{Name: "id", Kind: engine.KindString, Required: true, Local: true, PathParams: []string{"id"}, Description: "The object's id."},
 			{Name: "reason", JSON: "reason", Kind: engine.KindString, Required: true, InCreate: true, Description: "Provide a reason if rejecting the port out request"},
-			{Name: "status", Kind: engine.KindString, Required: true, Local: true, PathParams: []string{"status"}, Description: "The status id."},
+			{Name: "status", Kind: engine.KindString, Required: true, Local: true, PathParams: []string{"status"}, Description: "The status."},
 		},
 	}
 }

@@ -8,6 +8,7 @@ package client
 import (
 	"bytes"
 	"context"
+	crand "crypto/rand"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -163,9 +164,14 @@ func (c *Client) Do(ctx context.Context, method, path string, query url.Values, 
 // *Error. Retries follow the same rules as Do.
 func (c *Client) Send(ctx context.Context, method, path string, query url.Values, contentType string, body []byte) ([]byte, error) {
 	u := *c.baseURL
+	// A few spec paths repeat the version (/v2/mobile_phone_numbers) that
+	// the base URL already ends with.
+	if base := strings.TrimRight(c.baseURL.Path, "/"); strings.HasSuffix(base, "/v2") && strings.HasPrefix(path, "/v2/") {
+		path = strings.TrimPrefix(path, "/v2")
+	}
 	// path is already escaped (fillPath escapes parameter values): keep
 	// it as sent, so %2B and %2F are not escaped a second time.
-	raw := c.baseURL.EscapedPath() + "/" + strings.TrimLeft(path, "/")
+	raw := strings.TrimRight(c.baseURL.EscapedPath(), "/") + "/" + strings.TrimLeft(path, "/")
 	if p, err := url.PathUnescape(raw); err == nil {
 		u.Path, u.RawPath = p, raw
 	} else {
@@ -175,19 +181,32 @@ func (c *Client) Send(ctx context.Context, method, path string, query url.Values
 		u.RawQuery = query.Encode()
 	}
 
+	// One key for every attempt, so the API can tell a retry from a new
+	// request. Operations that do not take the header ignore it.
+	idempotencyKey := ""
+	if method != http.MethodGet && method != http.MethodHead {
+		idempotencyKey = newIdempotencyKey()
+	}
 	for attempt := 0; ; attempt++ {
 		req, err := http.NewRequestWithContext(ctx, method, u.String(), bytes.NewReader(body))
 		if err != nil {
 			return nil, fmt.Errorf("telnyx: building request: %w", err)
 		}
 		req.Header.Set("Authorization", "Bearer "+c.apiKey)
-		// A few operations, such as minting a token, answer in plain text.
-		req.Header.Set("Accept", "application/json, text/plain;q=0.9")
+		// A few operations, such as minting a token, answer in plain text,
+		// and KV keys answer with their raw value.
+		req.Header.Set("Accept", "application/json, text/plain;q=0.9, application/octet-stream;q=0.8")
 		if contentType != "" {
 			req.Header.Set("Content-Type", contentType)
 		}
 		if c.userAgent != "" {
 			req.Header.Set("User-Agent", c.userAgent)
+		}
+		if idempotencyKey != "" {
+			req.Header.Set("Idempotency-Key", idempotencyKey)
+		}
+		for k, v := range headersFrom(ctx) {
+			req.Header.Set(k, v)
 		}
 
 		resp, err := c.httpClient.Do(req)
@@ -314,4 +333,33 @@ func truncate(s string, n int) string {
 		return s
 	}
 	return s[:n] + "…"
+}
+
+type headersKey struct{}
+
+// WithHeader returns a context whose requests also carry the header name,
+// such as an If-Match a resource needs on update. It overrides the
+// client's own headers of the same name.
+func WithHeader(ctx context.Context, name, value string) context.Context {
+	prev := headersFrom(ctx)
+	h := make(map[string]string, len(prev)+1)
+	for k, v := range prev {
+		h[k] = v
+	}
+	h[http.CanonicalHeaderKey(name)] = value
+	return context.WithValue(ctx, headersKey{}, h)
+}
+
+func headersFrom(ctx context.Context) map[string]string {
+	h, _ := ctx.Value(headersKey{}).(map[string]string)
+	return h
+}
+
+// newIdempotencyKey returns a random version 4 UUID.
+func newIdempotencyKey() string {
+	var b [16]byte
+	_, _ = crand.Read(b[:])
+	b[6] = b[6]&0x0f | 0x40
+	b[8] = b[8]&0x3f | 0x80
+	return fmt.Sprintf("%x-%x-%x-%x-%x", b[0:4], b[4:6], b[6:8], b[8:10], b[10:16])
 }

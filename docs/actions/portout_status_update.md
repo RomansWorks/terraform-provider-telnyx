@@ -35,7 +35,7 @@ variable "portout_id" {
 
 - `id` (String) The object's id.
 - `reason` (String) Provide a reason if rejecting the port out request
-- `status` (String) The status id.
+- `status` (String) The status.
 
 ### Optional
 

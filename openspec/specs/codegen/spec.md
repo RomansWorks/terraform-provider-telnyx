@@ -47,11 +47,21 @@ Unions whose object variants each fix `type` to one value SHALL become one neste
 - **THEN** the plan shows no change
 
 ### Requirement: Response envelopes
-When a response schema's only property is `data`, the provider SHALL read the object from `data`.
+When a response schema has a `data` property that is an object, the provider SHALL read the object from `data`, whatever other properties the response has. When a create operation's `data` is a list, the provider SHALL take its only element as the created object, and SHALL fail naming the ids when there is more than one. A single-object read whose `data` is a list SHALL be a generation error.
 
 #### Scenario: Wrapped response
 - **WHEN** the API returns `{"data": {...}}`
 - **THEN** the resource's attributes come from the inner object
+
+#### Scenario: Batch create
+- **WHEN** `POST /porting_orders` answers `{"data": [{"id": "po1", ...}]}`
+- **THEN** the porting order `po1` is in state
+- **WHEN** it answers with two orders
+- **THEN** apply fails and the error names both ids
+
+#### Scenario: Wrapped response with metadata
+- **WHEN** the API returns `{"data": {...}, "meta": {...}}`
+- **THEN** the resource's attributes come from `data`, and `meta` is ignored
 
 ### Requirement: Shared lifecycle behaviour
 Every generated resource SHALL remove itself from state when read returns 404, support import by id (or `parent_id/id` for nested paths), and send only changed attributes on PATCH or POST updates and the full object on PUT updates.
@@ -65,11 +75,15 @@ Every generated resource SHALL remove itself from state when read returns 404, s
 - **THEN** the resource is read into state and the next plan is empty for a matching configuration
 
 ### Requirement: Objects without delete
-When the API offers no delete for an object, destroy SHALL remove it from state and warn that the object still exists in Telnyx.
+When the API offers no delete for an object and the resource has no `Delete` hook, destroy SHALL remove it from state and warn that the object still exists in Telnyx. A `Delete` hook SHALL destroy such an object, for example by writing an empty grant.
 
 #### Scenario: Destroy without delete
 - **WHEN** a resource with no delete operation is destroyed
 - **THEN** no API call is made, the object leaves state, and a warning names it
+
+#### Scenario: Destroy by a Delete hook
+- **WHEN** `telnyx_agent_gateway_key_tool_permissions` is destroyed
+- **THEN** the provider sends `PUT .../tool_permissions` with `{"servers":[]}` and no warning
 
 ### Requirement: Data sources
 A resource's read operation SHALL also be exposed as a data source of the same name that looks the object up by id, with every attribute Computed.
@@ -86,24 +100,42 @@ A resource override's `list` operation, or a data-source-only override, SHALL pr
 
 The engine SHALL fetch pages until the last page or `max_items`, and SHALL send only the filters that are set.
 
-#### Scenario: Paged list
-- **WHEN** `data "telnyx_billing_groups" "all" {}` is read and the API returns three pages with `meta.total_pages = 3`
-- **THEN** `billing_groups` holds the items of all three pages in API order
-
 #### Scenario: Filter and limit
 - **WHEN** a configuration sets `filter_name = "eu"` and `max_items = 10`
 - **THEN** each request carries `filter[name]=eu`, and fetching stops once 10 items are read
 
+### Requirement: List paging
+Lists paged with `page[number]` or `page_number` SHALL stop at `meta.total_pages` or a short page. Lists paged only with `page[after]` SHALL follow `meta.cursors.after` or `meta.end_cursor` until it is empty. When an operation offers both numbers and cursors, page numbers SHALL be used, and other paging parameters SHALL be ignored.
+
+#### Scenario: Paged list
+- **WHEN** `data "telnyx_billing_groups" "all" {}` is read and the API returns three pages with `meta.total_pages = 3`
+- **THEN** `billing_groups` holds the items of all three pages in API order
+
+#### Scenario: Cursor-paged list
+- **WHEN** `data "telnyx_pay_connectors" "all" {}` is read and the first page's `meta.end_cursor` is `c1`, the second's is empty
+- **THEN** the second request carries `page[after]=c1`, no third request is sent, and the items of both pages are returned
+
 #### Scenario: Unsupported paging
-- **WHEN** a list operation pages with a parameter the engine does not know and the override does not set `paging: none`
+- **WHEN** a list operation pages only with parameters the engine does not drive, such as `offset`, and the override does not set `paging: none`
 - **THEN** `make generate` fails, naming the parameter
 
+### Requirement: Record paging
+Lists paged with a plain `page` and `recordsPerPage`, or `page` and `page_size` without `page_number`, SHALL send both. When the response gives the item count (`totalRecords` or `total_records`) they SHALL page until that many items are read or a page is empty; otherwise they SHALL stop at a short page.
+
+#### Scenario: Record-paged list
+- **WHEN** `data "telnyx_10dlc_brands" "all" {}` is read and the API answers `{"records": [...], "totalRecords": 4}` with two records per page
+- **THEN** the requests carry `page=1` and `page=2` with `recordsPerPage`, no third request is sent, and `brands` holds the four records
+
 ### Requirement: Data-source-only overrides
-An override with `kind: data_source` SHALL produce a data source with no resource. It reads either one object (`read`) or a list (`list`). Path parameters SHALL be Required lookup attributes.
+An override with `kind: data_source` SHALL produce a data source with no resource. It reads either one object (`read`) or a list (`list`). Path parameters SHALL be Required lookup attributes. A `read` operation's scalar string query parameters SHALL be lookup attributes too: Required when the spec requires them, otherwise Optional, and sent only when set.
 
 #### Scenario: Reference data
 - **WHEN** an override declares `kind: data_source` with `read: GET /balance`
 - **THEN** `data "telnyx_balance"` exists with every attribute Computed, and there is no `telnyx_balance` resource
+
+#### Scenario: Lookup by query
+- **WHEN** `data "telnyx_sip_registration_status" "x" { credential_type = "telephony_credential", connection_id = "c1" }` is read
+- **THEN** the provider sends `GET /sip_registration_status?connection_id=c1&credential_type=telephony_credential` and `username` is not sent
 
 ### Requirement: Read from a collection
 A resource whose override sets `read_from` SHALL read itself by finding the element whose `key` field (or whose value, for plain values) equals its id. It searches the list operation's pages, or a field of its parent object. When no element matches, the resource SHALL be treated as deleted outside Terraform.
@@ -173,8 +205,112 @@ An override with `release_on_destroy: true` SHALL add an optional `release_on_de
 - **WHEN** a phone number with `release_on_destroy = true` in state is destroyed
 - **THEN** the delete operation is sent
 
+### Requirement: Settings objects
+An override with `id_from_path` SHALL identify the object by that path parameter. Every path parameter of the create path SHALL be a Required attribute that forces replacement, and import SHALL take them all in path order, separated by `/`.
+
+#### Scenario: Import nested settings
+- **WHEN** a user runs `terraform import telnyx_external_connection_phone_number_settings.x ec1/pn1`
+- **THEN** `external_connection_id` is `ec1`, `phone_number_id` is `pn1`, and the settings are read from `GET /external_connections/ec1/phone_numbers/pn1`
+
+### Requirement: Once-per-account settings
+An override with `singleton: true` SHALL produce a resource whose operations have no path parameters. Its `id` SHALL always be the type name without `telnyx_`, and its data source SHALL take no lookup attribute. Destroy SHALL follow the rule for objects without delete.
+
+#### Scenario: Manage account settings
+- **WHEN** `resource "telnyx_inbound_voice_channel_settings" "x" { channels = 10 }` is applied
+- **THEN** the provider sends `PATCH /inbound_channels` with `channels`, `id` is `inbound_voice_channel_settings`, and the next plan is empty
+
+### Requirement: Plain-text ephemeral values
+When an ephemeral resource's operation answers in `text/plain`, the ephemeral resource SHALL have one Computed, Sensitive attribute holding the text without surrounding whitespace. Overrides MAY rename it.
+
+#### Scenario: Mint a token
+- **WHEN** `ephemeral "telnyx_telephony_credential_token" "t" { id = "c1" }` is opened
+- **THEN** `token` holds the body of `POST /telephony_credentials/c1/token`, and neither plan nor state contains it
+
+### Requirement: User-named objects
+When an override's `id` names a response field that the create request also takes, such as a connector's `name` or a verified `phone_number`, that attribute SHALL be Required, sent on create, force replacement, and be the import id.
+
+#### Scenario: Create a SIPREC connector
+- **WHEN** `telnyx_siprec_connector` is created with `name = "rec"`
+- **THEN** the create request carries `name`, later requests use `/siprec_connectors/rec`, and import takes `rec`
+
+### Requirement: Masked secrets
+An attribute override with `masked: true` SHALL make the attribute sensitive and SHALL keep its value in state when the API answers with only asterisks, as Telnyx does for passwords after create.
+
+#### Scenario: Password masked on read
+- **WHEN** a credential connection's password is `s3cret` in state and the API returns `********`
+- **THEN** the plan is empty
+- **WHEN** the API returns another value
+- **THEN** the plan updates the password to the configured value
+
+### Requirement: Secrets in lists
+A resource's sensitive, masked and write-only attributes SHALL be sensitive in the items of its list data source too, and its sets SHALL be sets there.
+
+#### Scenario: List credentials
+- **WHEN** `data "telnyx_telephony_credentials" "all" {}` is read
+- **THEN** each item's `sip_password` is sensitive
+
+### Requirement: Form request bodies
+When an operation takes only `application/x-www-form-urlencoded`, the provider SHALL send its scalar fields as a form. A request body of a type the provider cannot send SHALL be a generation error.
+
+#### Scenario: Create a TeXML queue
+- **WHEN** `telnyx_texml_queue` is created with `max_size = 5`
+- **THEN** the request is a form with `MaxSize=5`
+
+### Requirement: Untyped string enums
+A schema with an `enum` of strings, or a string `const`, and no `type` SHALL be a string; a `const` SHALL be its only allowed value. When an `allOf` part narrows a property that an earlier part defines, the property SHALL keep the earlier definition with the narrowing applied.
+
+#### Scenario: Feature list
+- **WHEN** an advanced number order sets `features = ["sms", "voice"]`
+- **THEN** the values are strings, not JSON
+
+#### Scenario: Narrowed contact type
+- **WHEN** an RCS brand's `contacts.brand` is a `BrandContact` whose `contact_type` an `allOf` part fixes to `BRAND`
+- **THEN** `contact_type` is a string whose only allowed value is `BRAND`
+
+### Requirement: Echoed request objects
+When the response gives an object no fields, or gives a map whose entries have no single shape, the object's configured fields SHALL be read back from the response by the request's schema, so import and drift detection cover them. A map whose entries have fields SHALL be read by the entry schema.
+
+#### Scenario: Import of named identifiers
+- **WHEN** an RCS brand with `identifiers.ein` is imported and the API returns `identifiers` as a map of identifiers
+- **THEN** `identifiers.ein.value` is in state
+
+### Requirement: Names starting with a digit
+Type names whose first segment starts with a digit, such as `telnyx_10dlc_brand`, SHALL generate valid Go names, and a list data source's items attribute SHALL drop that segment (`telnyx_10dlc_brands` lists `brands`).
+
+#### Scenario: 10DLC list
+- **WHEN** `data "telnyx_10dlc_campaigns" "all" {}` is read
+- **THEN** the campaigns are in `campaigns`
+
+### Requirement: Free-form read responses
+A data source whose read response is a map without fixed fields, or has no fields the generator can derive (such as a union of lists and objects), SHALL expose the whole response as one computed JSON attribute named `values`.
+
+#### Scenario: Campaign operation status
+- **WHEN** `data "telnyx_10dlc_campaign_operation_status" "x" { campaign_id = "c1" }` is read and the API answers with one entry per carrier
+- **THEN** `values` holds that map as JSON
+
+### Requirement: Versioned spec paths
+A spec path that starts with `/v2/` SHALL be sent once under the base URL's `/v2`, not as `/v2/v2/...`.
+
+#### Scenario: Mobile phone numbers
+- **WHEN** `telnyx_mobile_phone_number` reads `GET /v2/mobile_phone_numbers/{id}` with the default base URL
+- **THEN** the request goes to `https://api.telnyx.com/v2/mobile_phone_numbers/{id}`
+
+### Requirement: Attribute names from camelCase
+JSON field names SHALL become snake_case attribute names, with a run of capitals as one word: `webhookURL` is `webhook_url` and `isTMobileRegistered` is `is_t_mobile_registered`. Path parameter renames (`path_params`) SHALL apply to list data sources too (see "Parent names in list data sources").
+
+#### Scenario: Webhook URL
+- **WHEN** a 10DLC brand's `webhookURL` is derived
+- **THEN** the attribute is `webhook_url`, on the resource and on `telnyx_10dlc_brands`
+
+### Requirement: Fields with different request and response shapes
+A field the API takes in one JSON type and returns in another (a boolean returned as a string, strings returned as objects) SHALL be request-only: it is sent but not read back, unless the override sets `returned` because a hook reshapes it.
+
+#### Scenario: Hosted number order numbers
+- **WHEN** a hosted number order is created with `phone_numbers = ["+15551230000"]` and the API returns the numbers as objects
+- **THEN** create succeeds, and `phone_numbers` keeps the configured strings
+
 ### Requirement: Values only create returns
-An attribute override MAY set `create_only: true` for a top-level response field that no request takes. The attribute SHALL be computed and sensitive. When the read response schema lacks the field, the generator SHALL take it from the create response schema, and SHALL fail when neither lists it. The engine SHALL fill the value from the create response and SHALL keep the value in state on every read.
+An attribute override MAY set `create_only: true` for a top-level response field that no request takes. The attribute SHALL be computed and sensitive. When the read response schema lacks the field, the generator SHALL take it from the create response schemas, looking at every 2xx response from the lowest code up, and SHALL fail when none lists it. The engine SHALL fill the value from the create response and SHALL keep the value in state on every read.
 
 #### Scenario: Token only create returns
 - **WHEN** `telnyx_tunnel` is created and `POST /tunnels` answers with `tunnel_token`
@@ -185,6 +321,10 @@ An attribute override MAY set `create_only: true` for a top-level response field
 #### Scenario: Read answers null
 - **WHEN** a WireGuard peer refreshes and `GET /wireguard_peers/{id}` answers `"private_key": null`
 - **THEN** the private key from create stays in state
+
+#### Scenario: Value only in the 201 response
+- **WHEN** `POST /llm_token_gateway/token_keys` answers 200 without `token` and 201 with it
+- **THEN** `telnyx_ai_gateway_token_key` has a sensitive computed `token` taken from the 201 schema
 
 ### Requirement: Invalid create-only fields
 Setting `create_only` on a field a request takes, or on a nested field, SHALL be a generation error.
@@ -287,6 +427,69 @@ Attributes of an update without `clear` that the API returns SHALL be optional a
 #### Scenario: Server default without a clear
 - **WHEN** a `telnyx_enterprise_reputation` is created without `check_frequency` and the API answers `business_daily`
 - **THEN** `check_frequency` is `business_daily` in state and the next plan is empty
+
+### Requirement: Raw bodies
+A request body of `application/octet-stream` alone SHALL NOT be a generation error; the operation SHALL be marked raw, and sending it without a `Send` hook SHALL fail. A read that answers with plain text or raw bytes SHALL be read as one `value` attribute holding the body unchanged.
+
+#### Scenario: KV value drift
+- **WHEN** a KV key's value is changed outside Terraform
+- **THEN** the next plan updates `value`
+
+### Requirement: Lists in results
+A list response that holds its items in `results` and their total in `count`, paged with `page` and `page_size`, SHALL be read page by page like lists in `records`: until `count` items are read or a page is empty, and without a count until a short page.
+
+#### Scenario: Test agents
+- **WHEN** `data "telnyx_ai_test_agents"` is read and the API reports `count = 3` with two items per page
+- **THEN** two requests are sent and all three agents are returned
+
+### Requirement: Typed lookup query parameters
+A data-source-only `read` SHALL accept boolean and integer query parameters as lookup attributes, sent in their JSON form. Query parameters of other types SHALL remain generation errors.
+
+#### Scenario: Boolean lookup
+- **WHEN** `data "telnyx_ai_assistant_version"` sets `include_mcp_servers = true`
+- **THEN** the request carries `include_mcp_servers=true`
+
+### Requirement: Merged union variants
+An override with `merge_variants: true` SHALL merge a union whose variants are objects with fields of the same types into one object: enums joined unless a variant takes any value, and a field Required only when every variant requires it. Without the key, such unions SHALL stay JSON attributes.
+
+#### Scenario: One body per provider
+- **WHEN** `POST /voice_clones` takes one object per provider and the override sets `merge_variants: true`
+- **THEN** `name`, `language`, `gender` and `voice_provider` are attributes, and `voice_provider` accepts every provider's values
+
+### Requirement: Request hooks
+A resource's `Send` hook SHALL replace the request of its create and update, for bodies the engine cannot build. A `Headers` hook SHALL add headers to its update and delete requests.
+
+#### Scenario: Versioned update
+- **WHEN** a `telnyx_ai_gateway_token_group` at version 3 is updated
+- **THEN** the PATCH carries `If-Match: "3"`
+
+### Requirement: Generated file names
+A type whose name ends in `_test` SHALL be generated into a file ending in `_test_resource.go`, so Go does not compile it as a test.
+
+#### Scenario: Assistant tests
+- **WHEN** `telnyx_ai_assistant_test` is generated
+- **THEN** it is in `ai_assistant_test_resource.go` and is part of the provider
+
+### Requirement: Parent names in list data sources
+A list data source's path parameters SHALL take the names the resource's `path_params` give them, except a rename to `id`, which names the item itself.
+
+#### Scenario: Keys of a namespace
+- **WHEN** `telnyx_storage_kv_key` maps path parameter `id` to `namespace_id`
+- **THEN** `data "telnyx_storage_kv_keys"` takes `namespace_id`
+
+### Requirement: Snapshot paging
+A `page[number]` list SHALL send the first page's `meta.snapshot` as `page[snapshot]` on later pages, and SHALL stop when `meta.has_more` is false.
+
+#### Scenario: AI gateway keys over two pages
+- **WHEN** page 1 of `GET /llm_token_gateway/token_keys` answers `meta.snapshot = "s1"` and `has_more = true`
+- **THEN** page 2 is requested with `page[snapshot]=s1`
+
+### Requirement: Text reads are UTF-8
+A text read SHALL fail with an error naming the operation when the response is not valid UTF-8, since Terraform strings cannot hold it.
+
+#### Scenario: Binary value
+- **WHEN** a KV key written outside Terraform holds bytes that are not UTF-8
+- **THEN** refresh fails naming `GET /storage/kvs/{id}/keys/{key}`
 
 ### Requirement: Forced deletes
 An override's `force_destroy` SHALL name query parameters that take a boolean (alone or as a variant of a union) of the resource's delete operation, and SHALL add a local, optional boolean attribute `force_destroy`. When `force_destroy` is true in state, destroy SHALL send each named parameter as `true`; otherwise it SHALL send none. Generation SHALL fail when the override has no delete, or a name is not a boolean query parameter of the delete operation.

@@ -17,7 +17,7 @@ func ExternalConnectionReleasesList() *engine.List {
 			{Name: "filter_phone_number", JSON: "filter[phone_number][eq]", Kind: engine.KindString, Optional: true, Description: "The phone number to filter by"},
 			{Name: "filter_phone_number_contains", JSON: "filter[phone_number][contains]", Kind: engine.KindString, Optional: true, Description: "The partial phone number to filter by. Requires 3-15 digits."},
 			{Name: "filter_status", JSON: "filter[status][eq]", Kind: engine.KindList, Optional: true, Description: "The status of the release to filter by", Elem: &engine.Attr{Kind: engine.KindString}},
-			{Name: "id", Kind: engine.KindString, Required: true, PathParams: []string{"id"}, Description: "The id id."},
+			{Name: "id", Kind: engine.KindString, Required: true, PathParams: []string{"id"}, Description: "The id of the object whose items are listed."},
 		},
 		Items: &engine.Attr{Name: "external_connection_releases", JSON: "data", Kind: engine.KindList, Computed: true, InResponse: true, Description: "The objects, in the order the API returns them.",
 			Attrs: []*engine.Attr{

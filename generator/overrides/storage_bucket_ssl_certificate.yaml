@@ -1,0 +1,23 @@
+type: telnyx_storage_bucket_ssl_certificate
+description: The SSL certificate a storage bucket serves on its custom domain.
+create: PUT /storage/buckets/{bucketName}/ssl_certificate
+read: GET /storage/buckets/{bucketName}/ssl_certificate
+update: PUT /storage/buckets/{bucketName}/ssl_certificate
+delete: DELETE /storage/buckets/{bucketName}/ssl_certificate
+id_from_path: bucketName
+path_params:
+  bucketName: bucket_name
+attributes:
+  # The create hook uploads both as files of a multipart form.
+  certificate: {skip: true}
+  private_key: {skip: true}
+add:
+  - name: certificate_pem
+    kind: string
+    required: true
+    description: The certificate in PEM format, with any intermediate certificates after it.
+  - name: private_key_pem
+    kind: string
+    required: true
+    sensitive: true
+    description: The certificate's private key in PEM format.

@@ -1,0 +1,1 @@
+terraform import telnyx_10dlc_phone_number_campaign.main +15551230000

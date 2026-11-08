@@ -12,7 +12,7 @@ func VerifiedNumberVerifyAction() *engine.Action {
 		Description: "Submits the code sent to a phone number to finish its verification.",
 		Op:          &engine.Op{Method: "POST", Path: "/verified_numbers/{phone_number}/actions/verify", Envelope: false},
 		Attrs: []*engine.Attr{
-			{Name: "phone_number", Kind: engine.KindString, Required: true, Local: true, PathParams: []string{"phone_number"}, Description: "The phone number id."},
+			{Name: "phone_number", Kind: engine.KindString, Required: true, Local: true, PathParams: []string{"phone_number"}, Description: "The phone number."},
 			{Name: "verification_code", JSON: "verification_code", Kind: engine.KindString, Required: true, InCreate: true},
 		},
 	}

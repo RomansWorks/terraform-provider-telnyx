@@ -1,0 +1,14 @@
+type: telnyx_email_dedicated_ip
+description: >-
+  A dedicated IP address for sending email, purchased from Telnyx and billed monthly.
+  It carries no mail until its warm-up starts (`telnyx_email_dedicated_ip_start_warmup`)
+  and it is in an IP pool (`telnyx_email_ip_pool_ip`). Destroy releases the IP to Telnyx.
+create: POST /email/dedicated_ips
+read: GET /email/dedicated_ips/{id}
+delete: DELETE /email/dedicated_ips/{id}
+list: GET /email/dedicated_ips
+# PATCH moves the IP between pools or pauses its warm-up, one change per
+# request: pool membership is telnyx_email_ip_pool_ip, warm-up the actions.
+force_destroy: [force, drain]
+attributes:
+  pool_id: {description: "The IP pool the IP is in. Manage membership with `telnyx_email_ip_pool_ip`."}

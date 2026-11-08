@@ -340,6 +340,12 @@ func (a *descriptorAPI) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			if a.obj != nil {
 				items = append(items, a.obj)
 			}
+			// An object read from its parent's array field: the parent
+			// holds it in that field.
+			if f := a.d.ReadFrom.Field; f != "" {
+				a.reply(w, rt.op, map[string]any{f: items})
+				return
+			}
 			w.Header().Set("Content-Type", "application/json")
 			_ = json.NewEncoder(w).Encode(map[string]any{"data": items, "meta": map[string]any{"total_pages": 1}})
 		case "delete":
@@ -382,6 +388,13 @@ func (a *descriptorAPI) create(w http.ResponseWriter, rt route, body map[string]
 	if ida := d.Attr(d.IDAttr); ida != nil && ida.JSON != "" && !ida.Local {
 		if _, ok := obj[ida.JSON]; !ok {
 			obj[ida.JSON] = id
+		}
+	}
+	// An id the request names (a member added by its id) is the key the
+	// collection holds it under.
+	if ida := d.Attr(d.IDAttr); ida != nil && ida.JSON != "" {
+		if v, ok := obj[ida.JSON].(string); ok {
+			id = v
 		}
 	}
 	if d.ReadFrom != nil && d.ReadFrom.Key != "" {

@@ -709,6 +709,7 @@ func (d *deriver) attrs(src sources, depth int, parentComputed bool, prefix stri
 			Masked:      aov.Masked,
 			CreateOnly:  aov.CreateOnly,
 			Lowercase:   aov.Lowercase,
+			Nullable:    aov.Nullable,
 			Description: describe(cs, aov),
 		}
 		if aov.Name != "" {
@@ -752,6 +753,12 @@ func (d *deriver) attrs(src sources, depth int, parentComputed bool, prefix stri
 			if err := d.writeOnlyAttr(a, p, depth, configurable); err != nil {
 				return nil, err
 			}
+		}
+		if aov.Nullable {
+			if depth > 0 || !configurable || d.ov.Kind != "action" {
+				return nil, fmt.Errorf("%s: nullable applies to top-level fields of an action request", p)
+			}
+			a.Required, a.Optional = false, true
 		}
 		if aov.CreateOnly {
 			if depth > 0 || configurable {

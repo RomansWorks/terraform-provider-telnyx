@@ -198,8 +198,9 @@ Read-Only:
 
 Read-Only:
 
-- `code` (String) Identifier of an exception type
-- `description` (String) Description of an exception type
+- `code` (String) Identifier of the exception. Includes legacy codes persisted on older orders
+- `description` (String) Description of the exception
+- `remediation` (String) Structured remediation steps so an agent can map the exception to a fix via the API alone A JSON document; use `jsondecode()` to read it.
 
 
 

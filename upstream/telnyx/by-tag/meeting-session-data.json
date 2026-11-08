@@ -69,10 +69,22 @@
       "MeetingReadAuthUnavailable": {
         "content": {
           "application/json": {
-            "example": {
-              "error": {
-                "code": "auth_unavailable",
-                "message": "authentication service unavailable"
+            "examples": {
+              "authentication": {
+                "value": {
+                  "error": {
+                    "code": "auth_unavailable",
+                    "message": "authentication service unavailable"
+                  }
+                }
+              },
+              "session": {
+                "value": {
+                  "error": {
+                    "code": "not_configured",
+                    "message": "Session data is temporarily unavailable."
+                  }
+                }
               }
             },
             "schema": {
@@ -80,7 +92,27 @@
             }
           }
         },
-        "description": "Authentication is temporarily unavailable."
+        "description": "Authentication or session data is temporarily unavailable. Retry reads with backoff."
+      },
+      "MeetingReadUnavailable": {
+        "content": {
+          "application/json": {
+            "examples": {
+              "provider_error": {
+                "value": {
+                  "error": {
+                    "code": "provider_error",
+                    "message": "Meeting data is temporarily unavailable."
+                  }
+                }
+              }
+            },
+            "schema": {
+              "$ref": "#/components/schemas/meeting-sessions_ErrorResponse"
+            }
+          }
+        },
+        "description": "Current meeting data could not be retrieved. Retry the read with backoff."
       },
       "RecordingMediaAuthenticationUnavailable": {
         "content": {
@@ -296,6 +328,57 @@
         ],
         "type": "object"
       },
+      "MeetingSessionRecordingExport": {
+        "additionalProperties": false,
+        "description": "Customer Storage recording reference. Pending is not downloadable; exported means upload was verified; failed is terminal. Download with ordinary Storage authorization. No presigned URL is returned.",
+        "properties": {
+          "bucket": {
+            "type": "string"
+          },
+          "bytes": {
+            "minimum": 0,
+            "type": [
+              "integer",
+              "null"
+            ]
+          },
+          "exported_at": {
+            "format": "date-time",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "key": {
+            "type": "string"
+          },
+          "region": {
+            "type": "string"
+          },
+          "status": {
+            "enum": [
+              "pending",
+              "exported",
+              "failed"
+            ],
+            "type": "string"
+          },
+          "type": {
+            "const": "video",
+            "type": "string"
+          }
+        },
+        "required": [
+          "type",
+          "bucket",
+          "region",
+          "key",
+          "bytes",
+          "status",
+          "exported_at"
+        ],
+        "type": "object"
+      },
       "MeetingSessionRecordingMediaDeletionResponse": {
         "additionalProperties": false,
         "example": {
@@ -344,6 +427,53 @@
         ],
         "type": "object"
       },
+      "MeetingSessionRecordingsResponse": {
+        "properties": {
+          "data": {
+            "description": "Temporary download URLs for recordings held by the Meeting service, including Zoom and existing Google Meet and Teams recordings. Empty for customer Storage exports; use recording_export instead. Choose the download method from these fields rather than the platform alone.",
+            "items": {
+              "properties": {
+                "expires_at": {
+                  "format": "date-time",
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "type": {
+                  "type": "string"
+                },
+                "url": {
+                  "format": "uri",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "type",
+                "url",
+                "expires_at"
+              ],
+              "type": "object"
+            },
+            "type": "array"
+          },
+          "recording_export": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/MeetingSessionRecordingExport"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Customer Storage export, or null while unavailable/disabled. Omitted for sessions without Storage export support."
+          }
+        },
+        "required": [
+          "data"
+        ],
+        "type": "object"
+      },
       "TranscriptSegment": {
         "additionalProperties": false,
         "example": {
@@ -374,9 +504,11 @@
             ]
           },
           "seq": {
+            "description": "Monotonic transcript append cursor. This is separate from the event-history cursor and does not establish conversational turn order.",
             "type": "integer"
           },
           "speaker_label": {
+            "description": "Recorded participant or bot label, or null when unavailable. Labels are attribution, not verified identity. Segments from concurrent speakers can finalize in a different order from the conversation.",
             "type": [
               "string",
               "null"
@@ -668,6 +800,9 @@
           "500": {
             "$ref": "#/components/responses/meeting-sessions_InternalServerError"
           },
+          "502": {
+            "$ref": "#/components/responses/MeetingReadUnavailable"
+          },
           "503": {
             "$ref": "#/components/responses/MeetingReadAuthUnavailable"
           }
@@ -680,7 +815,7 @@
     },
     "/meeting_sessions/{id}/recording_media": {
       "delete": {
-        "description": "Irreversibly requests deletion of the aggregate recording media for the session. The operation retains the Telnyx-local Meeting session, transcript segments, events, artifacts, and usage records. It is separate from `DELETE /meeting_sessions/{id}`, which stops or cancels participation without deleting the persisted session. A missing/foreign session returns 404; a deletion request whose outcome is unknown returns 502.",
+        "description": "Irreversibly requests deletion of the aggregate recording media for the session. The operation retains the Telnyx-local Meeting session, transcript segments, events, artifacts, and usage records. It is separate from `DELETE /meeting_sessions/{id}`, which stops or cancels participation without deleting the persisted session. A missing/foreign session returns 404; a deletion request whose outcome is unknown returns 502. Customer Storage exports do not support this operation (422 unsupported_capability); delete the exported object through Storage instead. Stopping a session does not delete an exported object.",
         "operationId": "deleteMeetingSessionRecordingMedia",
         "parameters": [
           {
@@ -737,9 +872,124 @@
         ]
       }
     },
+    "/meeting_sessions/{id}/recordings": {
+      "get": {
+        "description": "Retrieve recording export status. Customer Storage exports include recording_export with the bucket, region, key and pending/exported/failed status, or null when no reference is available. The data array is empty for these exports. Download or share the object using the Storage API once its status is exported. Zoom recordings and existing Google Meet or Teams recordings held by the Meeting service continue returning temporary download links in data through this same endpoint and session ID. Those recordings do not require Storage setup or migration. Refresh this endpoint when a link expires. Select the download method from the returned fields, not the platform alone.",
+        "operationId": "listMeetingSessionRecordings",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/MeetingSessionId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "disabled": {
+                    "value": {
+                      "data": [],
+                      "recording_export": null
+                    }
+                  },
+                  "download": {
+                    "summary": "Download links for Meeting-service recordings, including existing Google Meet and Teams recordings",
+                    "value": {
+                      "data": [
+                        {
+                          "expires_at": null,
+                          "type": "video_mixed",
+                          "url": "https://example.com/recording.mp4"
+                        }
+                      ]
+                    }
+                  },
+                  "exported": {
+                    "value": {
+                      "data": [],
+                      "recording_export": {
+                        "bucket": "meeting-recordings",
+                        "bytes": 1048576,
+                        "exported_at": "2026-11-03T12:00:00Z",
+                        "key": "weekly-planning/recording.mp4",
+                        "region": "us-central-1",
+                        "status": "exported",
+                        "type": "video"
+                      }
+                    }
+                  },
+                  "failed": {
+                    "value": {
+                      "data": [],
+                      "recording_export": {
+                        "bucket": "meeting-recordings",
+                        "bytes": null,
+                        "exported_at": null,
+                        "key": "weekly-planning/recording.mp4",
+                        "region": "us-central-1",
+                        "status": "failed",
+                        "type": "video"
+                      }
+                    }
+                  },
+                  "pending": {
+                    "value": {
+                      "data": [],
+                      "recording_export": {
+                        "bucket": "meeting-recordings",
+                        "bytes": null,
+                        "exported_at": null,
+                        "key": "weekly-planning/recording.mp4",
+                        "region": "us-central-1",
+                        "status": "pending",
+                        "type": "video"
+                      }
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/MeetingSessionRecordingsResponse"
+                }
+              }
+            },
+            "description": "Recording results; a pending or empty result does not mean a file is ready."
+          },
+          "401": {
+            "$ref": "#/components/responses/meeting-sessions_Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/RecordingMediaResourceNotFound"
+          },
+          "429": {
+            "$ref": "#/components/responses/TooManyRequests"
+          },
+          "500": {
+            "$ref": "#/components/responses/meeting-sessions_InternalServerError"
+          },
+          "502": {
+            "$ref": "#/components/responses/MeetingReadUnavailable"
+          },
+          "503": {
+            "$ref": "#/components/responses/MeetingReadAuthUnavailable"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "List meeting session recordings",
+        "tags": [
+          "Meeting Session Data"
+        ]
+      }
+    },
     "/meeting_sessions/{id}/transcript": {
       "get": {
-        "description": "Returns transcript segments ordered by ascending `seq`. Default `limit` is 100 and maximum is 1,000. Continue with `after=meta.next_after`. A long-poll timeout returns 200 with empty `data` and `meta.next_after: null`; retain the cursor supplied to that request because null is not a replacement cursor.",
+        "description": "Returns transcript segments ordered by ascending seq. Default limit is 100, maximum 1000. Continue with after=meta.next_after. On an empty page, meta.next_after preserves a positive supplied after cursor, or is null when no positive cursor was supplied. wait_seconds holds an empty read for up to 25 seconds; a timeout still returns 200.",
         "operationId": "listMeetingSessionTranscript",
         "parameters": [
           {
@@ -783,6 +1033,9 @@
           },
           "500": {
             "$ref": "#/components/responses/meeting-sessions_InternalServerError"
+          },
+          "502": {
+            "$ref": "#/components/responses/MeetingReadUnavailable"
           },
           "503": {
             "$ref": "#/components/responses/MeetingReadAuthUnavailable"

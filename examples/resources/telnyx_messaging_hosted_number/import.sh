@@ -1,0 +1,1 @@
+terraform import telnyx_messaging_hosted_number.main <messaging_hosted_number_id>

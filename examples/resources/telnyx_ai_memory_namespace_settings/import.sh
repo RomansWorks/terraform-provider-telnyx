@@ -1,0 +1,1 @@
+terraform import telnyx_ai_memory_namespace_settings.support <namespace>

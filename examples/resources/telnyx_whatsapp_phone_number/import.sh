@@ -1,0 +1,1 @@
+terraform import telnyx_whatsapp_phone_number.support <whatsapp_business_account_id>/<phone_number>

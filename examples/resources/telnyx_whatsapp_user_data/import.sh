@@ -1,0 +1,1 @@
+terraform import telnyx_whatsapp_user_data.this whatsapp_user_data

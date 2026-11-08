@@ -58,11 +58,19 @@ The repository SHALL hold the Telnyx spec from `team-telnyx/openapi` (`openapi/s
 - **THEN** its first artifact is the generated `api-diff.md`
 
 ### Requirement: Scheduled upstream check
-A scheduled workflow SHALL run at least daily, fetch the upstream spec, and when the commit changed, open or update one pull request containing the new pin, regenerated views and the API diff report.
+A scheduled workflow SHALL run at least daily, fetch the upstream spec, and when the commit changed, open or update one pull request containing the new pin, regenerated views, the API diff report, and the output of `make generate` (resource descriptors, docs and formatted examples). When `make generate` fails, the pull request SHALL still open, and its description SHALL say that generation failed.
 
 #### Scenario: Upstream changed overnight
 - **WHEN** Telnyx publishes a new spec commit
 - **THEN** a pull request titled with the new commit appears with the diff report in its description
+
+#### Scenario: Generated docs stay current
+- **WHEN** the new spec changes an attribute description of an implemented resource
+- **THEN** the sync pull request includes the regenerated descriptor and docs, so the `Generated docs` check passes
+
+#### Scenario: Override names a removed operation
+- **WHEN** `make generate` fails because an override uses an operation the new spec removed
+- **THEN** the pull request opens with the pin and catalog, and its description says generation failed and must be fixed in the sync change
 
 ### Requirement: Aliased paths
 When two operations share a method and operationId and their paths differ only by `/` versus `_` or a leading `/v2`, the review SHALL keep one canonical operation: the one with `x-latency-category`, then the one not under `/v2/`, then the one with fewer segments. The others SHALL be `out_of_scope` with the note `alias of <canonical key>`.

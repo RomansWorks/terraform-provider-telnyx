@@ -1,0 +1,1 @@
+terraform import telnyx_calendar_connection.team <calendar_connection_id>

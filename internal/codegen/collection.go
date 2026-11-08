@@ -169,11 +169,30 @@ func (g *Generator) listItems(op *operation) (item map[string]any, env, records 
 			}
 		}
 		if data == nil || data["type"] != "array" {
+			data = g.variantData(c["schema"])
+		}
+		if data == nil || data["type"] != "array" {
 			return nil, false, false, fmt.Errorf("%s %s does not return a data array", op.method, op.path)
 		}
 		return g.norm(data["items"]), true, false, nil
 	}
 	return nil, false, false, fmt.Errorf("%s %s has no JSON response", op.method, op.path)
+}
+
+// variantData returns the data array of the first variant of a response
+// union that has one. Lists that answer in two shapes, such as page-number
+// and cursor paging with different meta objects, share their items.
+func (g *Generator) variantData(schema any) map[string]any {
+	s := g.resolve(schema)
+	for _, key := range []string{"oneOf", "anyOf"} {
+		for _, v := range asSlice(s[key]) {
+			data := g.norm(properties(g.norm(v))["data"])
+			if data != nil && data["type"] == "array" {
+				return data
+			}
+		}
+	}
+	return nil
 }
 
 // param is one operation parameter.

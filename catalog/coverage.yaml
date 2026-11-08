@@ -2430,10 +2430,9 @@ GET /email/dedicated_ips/{id}:
     reviewed: true
     note: read of telnyx_email_dedicated_ip (catalog collection)
 PATCH /email/dedicated_ips/{id}:
-    bucket: resource
-    terraform: telnyx_email_dedicated_ip
+    bucket: out_of_scope
     reviewed: true
-    note: update of telnyx_email_dedicated_ip (catalog collection)
+    note: 'imperative: one change per request; telnyx_email_ip_pool_ip manages pool membership and the warm-up actions pause and resume'
 DELETE /email/dedicated_ips/{id}:
     bucket: resource
     terraform: telnyx_email_dedicated_ip
@@ -2509,15 +2508,13 @@ GET /email_blocks/export:
     reviewed: true
     note: 'runtime: object access'
 POST /email_blocks/import:
-    bucket: action
-    terraform: telnyx_email_suppression_import_start
+    bucket: out_of_scope
     reviewed: true
-    note: one-shot operation
+    note: 'bulk data import: multipart CSV upload whose job id a Terraform action cannot return; telnyx_email_suppression manages single suppressions'
 GET /email_blocks/import/{id}:
-    bucket: data_source
-    terraform: telnyx_email_suppression_import
+    bucket: out_of_scope
     reviewed: true
-    note: read-only
+    note: 'bulk data import: status of a POST /email_blocks/import job, which is out of scope'
 GET /email_blocks/{id}:
     bucket: resource
     terraform: telnyx_email_suppression

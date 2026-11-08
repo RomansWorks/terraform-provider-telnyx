@@ -119,7 +119,7 @@ func TestEphemeralText(t *testing.T) {
 	rtest.UnitTest(t, rtest.TestCase{
 		TerraformVersionChecks:   []tfversion.TerraformVersionCheck{tfversion.SkipBelow(tfversion.Version1_10_0)},
 		ProtoV6ProviderFactories: providers(c, &testProvider{ephemerals: []*Ephemeral{token}}),
-		Steps: []rtest.TestStep{{
+		Steps: []rtest.TestStep{ephemeralStep(rtest.TestStep{
 			Config: `
 ephemeral "telnyx_cred_token" "t" {
   id = "c1"
@@ -129,7 +129,7 @@ provider "echo" {
 }
 resource "echo" "t" {}`,
 			Check: rtest.TestCheckResourceAttr("echo.t", "data", "jwt-123"),
-		}},
+		})},
 	})
 }
 

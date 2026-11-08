@@ -222,7 +222,7 @@ func TestEphemeral(t *testing.T) {
 		TerraformVersionChecks:   []tfversion.TerraformVersionCheck{tfversion.SkipBelow(tfversion.Version1_10_0)},
 		ProtoV6ProviderFactories: providers(c, &testProvider{ephemerals: []*Ephemeral{boxName()}}),
 		Steps: []rtest.TestStep{
-			{
+			ephemeralStep(rtest.TestStep{
 				Config: `
 ephemeral "telnyx_box_name" "n" {
   box_id = "box-1"
@@ -232,7 +232,7 @@ provider "echo" {
 }
 resource "echo" "n" {}`,
 				Check: rtest.TestCheckResourceAttr("echo.n", "data", "b"),
-			},
+			}),
 		},
 	})
 }

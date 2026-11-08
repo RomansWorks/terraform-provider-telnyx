@@ -34,6 +34,9 @@ var (
 	refRe = regexp.MustCompile(`(?:^|[^.\w])(telnyx_\w+)\.(\w+)\.`)
 	varRe = regexp.MustCompile(`\bvar\.(\w+)`)
 	// typeRe finds the resource and data source types an example uses.
+	// fileRe finds files an example reads next to itself, such as a
+	// certificate, which examples do not ship.
+	fileRe = regexp.MustCompile(`file\("\$\{path\.module\}/([\w.-]+)"\)`)
 	typeRe = regexp.MustCompile(`(?m)^(?:resource|data|ephemeral) "(\w+)"`)
 )
 
@@ -127,6 +130,11 @@ func run(cli, provider, root string, kinds []string) (int, int, error) {
 			ex.complete(srcs)
 			for name, b := range srcs {
 				if err := os.WriteFile(filepath.Join(caseDir, name), b, 0o644); err != nil {
+					return checked, failed, err
+				}
+			}
+			for _, m := range fileRe.FindAllStringSubmatch(joined(srcs), -1) {
+				if err := os.WriteFile(filepath.Join(caseDir, m[1]), []byte("placeholder\n"), 0o644); err != nil {
 					return checked, failed, err
 				}
 			}

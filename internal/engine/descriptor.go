@@ -75,6 +75,10 @@ type Attr struct {
 	// keeps only a hash of). Reads never overwrite the value in state.
 	CreateOnly bool
 
+	// Lowercase strings (or the string elements of a list or set) must be
+	// lowercase without surrounding spaces, because the API stores them so.
+	Lowercase bool
+
 	// Query names the query parameter this attribute fills when a data
 	// source reads the object. Unless Required, it is optional.
 	Query string
@@ -192,6 +196,9 @@ type Resource struct {
 	// FixedID is the id of an object that exists once per account. The
 	// engine puts it into every response as "id".
 	FixedID string
+	// ForceDestroy names boolean query parameters of the delete operation
+	// that destroy sets to true when the force_destroy attribute is true.
+	ForceDestroy []string
 
 	Hooks Hooks
 }

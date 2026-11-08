@@ -557,6 +557,7 @@ func (d *deriver) attrs(src sources, depth int, parentComputed bool, prefix stri
 			Sensitive:   aov.Sensitive || aov.Masked || aov.CreateOnly,
 			Masked:      aov.Masked,
 			CreateOnly:  aov.CreateOnly,
+			Lowercase:   aov.Lowercase,
 			Description: describe(cs, aov),
 		}
 		if aov.Name != "" {
@@ -859,6 +860,9 @@ func (g *Generator) Derive(ov *Override) (*engine.Resource, error) {
 		r.Attrs = append(r.Attrs, &engine.Attr{Name: engine.ReleaseAttr, Kind: engine.KindBool, Optional: true, Local: true,
 			Description: "Whether destroy deletes the object in Telnyx. By default destroy only removes it from Terraform state. " +
 				"Destroy uses the value in state, so set it to true and apply before destroying."})
+	}
+	if err := g.forceDestroy(r, ov, del); err != nil {
+		return nil, fmt.Errorf("%s: %w", ov.Type, err)
 	}
 	extra, err := g.extraUpdates(r, ov, d, readSchema)
 	if err != nil {
@@ -1264,4 +1268,64 @@ func (g *Generator) queryParams(r *engine.Resource, ov *Override) error {
 		}
 	}
 	return nil
+}
+
+// forceDestroy adds the local force_destroy attribute when the override
+// names delete query parameters for it. Each must be a boolean query
+// parameter of the delete operation.
+func (g *Generator) forceDestroy(r *engine.Resource, ov *Override, del *operation) error {
+	if len(ov.ForceDestroy) == 0 {
+		return nil
+	}
+	if r.Attr(engine.ForceDestroyAttr) != nil {
+		return fmt.Errorf("the API already has a field named %s; rename it", engine.ForceDestroyAttr)
+	}
+	bools := map[string]bool{}
+	var raw []any
+	if item, ok := g.Spec.Paths()[del.path].(map[string]any); ok {
+		raw = append(raw, asSlice(item["parameters"])...)
+	}
+	raw = append(raw, asSlice(del.node["parameters"])...)
+	for _, r := range raw {
+		p := g.resolve(r)
+		name, _ := p["name"].(string)
+		if p["in"] == "query" && g.takesBool(p["schema"]) {
+			bools[name] = true
+		}
+	}
+	for _, name := range ov.ForceDestroy {
+		if !bools[name] {
+			return fmt.Errorf("force_destroy: %s is not a boolean query parameter of %s %s", name, del.method, del.path)
+		}
+	}
+	r.ForceDestroy = ov.ForceDestroy
+	r.Attrs = append(r.Attrs, &engine.Attr{Name: engine.ForceDestroyAttr, Kind: engine.KindBool, Optional: true, Local: true,
+		Description: "Whether destroy forces the deletion (sends " + forceQuery(ov.ForceDestroy) + "), for example of an object that is in use. " +
+			"Destroy uses the value in state, so set it to true and apply before destroying."})
+	return nil
+}
+
+func forceQuery(params []string) string {
+	parts := make([]string, len(params))
+	for i, p := range params {
+		parts[i] = "`" + p + "=true`"
+	}
+	return strings.Join(parts, " and ")
+}
+
+// takesBool reports whether a parameter schema is a boolean, or a union
+// with a boolean variant (Telnyx also accepts the strings "true"/"false").
+func (g *Generator) takesBool(schema any) bool {
+	s := g.resolve(schema)
+	if s["type"] == "boolean" {
+		return true
+	}
+	for _, key := range []string{"oneOf", "anyOf"} {
+		for _, v := range asSlice(s[key]) {
+			if g.resolve(v)["type"] == "boolean" {
+				return true
+			}
+		}
+	}
+	return false
 }

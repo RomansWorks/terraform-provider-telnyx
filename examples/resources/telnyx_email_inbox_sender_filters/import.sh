@@ -1,0 +1,1 @@
+terraform import telnyx_email_inbox_sender_filters.example <inbox_id>

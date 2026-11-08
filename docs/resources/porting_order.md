@@ -213,8 +213,19 @@ Read-Only:
 
 Read-Only:
 
-- `code` (String) Identifier of an exception type
-- `description` (String) Description of an exception type
+- `code` (String) Identifier of the exception. Includes legacy codes persisted on older orders
+- `description` (String) Description of the exception
+- `remediation` (Attributes) Structured remediation steps so an agent can map the exception to a fix via the API alone (see [below for nested schema](#nestedatt--status--details--remediation))
+
+<a id="nestedatt--status--details--remediation"></a>
+### Nested Schema for `status.details.remediation`
+
+Read-Only:
+
+- `action` (String) The type of remediation action to take
+- `fields` (List of String) Patchable field paths to correct, empty when no field update applies
+- `required_document` (String) The document to (re)upload, when applicable
+- `retryable` (Boolean) Whether resubmission or polling alone can unblock the order
 
 ## Import
 

@@ -47,13 +47,25 @@
         },
         "description": "The meeting provider rejected bot creation."
       },
-      "MeetingReadAuthUnavailable": {
+      "MeetingCreateTooManyRequests": {
         "content": {
           "application/json": {
-            "example": {
-              "error": {
-                "code": "auth_unavailable",
-                "message": "authentication service unavailable"
+            "examples": {
+              "auth_overloaded": {
+                "value": {
+                  "error": {
+                    "code": "auth_overloaded",
+                    "message": "authentication temporarily overloaded"
+                  }
+                }
+              },
+              "capacity_exceeded": {
+                "value": {
+                  "error": {
+                    "code": "capacity_exceeded",
+                    "message": "Meeting capacity is reached; retry later."
+                  }
+                }
               }
             },
             "schema": {
@@ -61,7 +73,100 @@
             }
           }
         },
-        "description": "Authentication is temporarily unavailable."
+        "description": "Meeting capacity is reached (capacity_exceeded), or authentication is overloaded (auth_overloaded). Honor Retry-After when present; otherwise back off. Retry the original create request with the same idempotency key.",
+        "headers": {
+          "Retry-After": {
+            "description": "Seconds to wait, when supplied.",
+            "schema": {
+              "minimum": 1,
+              "type": "integer"
+            }
+          }
+        }
+      },
+      "MeetingReadAuthUnavailable": {
+        "content": {
+          "application/json": {
+            "examples": {
+              "authentication": {
+                "value": {
+                  "error": {
+                    "code": "auth_unavailable",
+                    "message": "authentication service unavailable"
+                  }
+                }
+              },
+              "session": {
+                "value": {
+                  "error": {
+                    "code": "not_configured",
+                    "message": "Session data is temporarily unavailable."
+                  }
+                }
+              }
+            },
+            "schema": {
+              "$ref": "#/components/schemas/meeting-sessions_ErrorResponse"
+            }
+          }
+        },
+        "description": "Authentication or session data is temporarily unavailable. Retry reads with backoff."
+      },
+      "MeetingReadUnavailable": {
+        "content": {
+          "application/json": {
+            "examples": {
+              "provider_error": {
+                "value": {
+                  "error": {
+                    "code": "provider_error",
+                    "message": "Meeting data is temporarily unavailable."
+                  }
+                }
+              }
+            },
+            "schema": {
+              "$ref": "#/components/schemas/meeting-sessions_ErrorResponse"
+            }
+          }
+        },
+        "description": "Current meeting data could not be retrieved. Retry the read with backoff."
+      },
+      "MeetingScheduleConflict": {
+        "content": {
+          "application/json": {
+            "examples": {
+              "calendar_managed": {
+                "value": {
+                  "error": {
+                    "code": "calendar_managed",
+                    "message": "edit the calendar event for this session"
+                  }
+                }
+              },
+              "edit_in_progress": {
+                "value": {
+                  "error": {
+                    "code": "edit_in_progress",
+                    "message": "a previous schedule edit is still reconciling"
+                  }
+                }
+              },
+              "invalid_state": {
+                "value": {
+                  "error": {
+                    "code": "invalid_state",
+                    "message": "only scheduled sessions can be updated"
+                  }
+                }
+              }
+            },
+            "schema": {
+              "$ref": "#/components/schemas/meeting-sessions_ErrorResponse"
+            }
+          }
+        },
+        "description": "The session is no longer editable, the calendar controls it, or another edit remains pending."
       },
       "MeetingStopProviderError": {
         "content": {
@@ -254,33 +359,25 @@
     "schemas": {
       "CreateMeetingSessionRequest": {
         "additionalProperties": false,
-        "description": "Request body for creating a new meeting session.\n\nCross-field rules:\n- `assistant` cannot be combined with `join_at`; it is available only for sessions that join immediately.\n- `assistant` cannot be combined with `barge_in: true`.\n- `assistant.avatar: true` cannot be combined with `speak_on_enter`; the assistant greets through its avatar.\n- The `assistant` options, including `avatar`, take effect at session creation and cannot be modified later.\n- A digital avatar or Assistant webpage output takes precedence over `camera_image`; the static image is ignored and a URL source is not fetched.\n- The former top-level `avatar` object (bring-your-own-key avatar) has been removed and is rejected with 400 `invalid_request`; use `assistant.avatar` instead.",
+        "description": "Request body for creating a new meeting session.\n\nCross-field rules:\n- `assistant` cannot be combined with `join_at`; it is available only for sessions that join immediately.\n- `assistant` cannot be combined with `barge_in: true`.\n- `assistant.avatar: true` cannot be combined with `speak_on_enter`; the assistant greets through its avatar.\n- The `assistant` options, including `avatar`, take effect at session creation and cannot be modified later.\n- An avatar takes precedence over `camera_image`; ordinary assistant sessions can use a static camera image.\n\nGoogle Meet and Teams recording requires a recording_export destination. Use join_at to schedule a meeting, or omit it to join now. Zoom recordings are enabled automatically; Zoom does not support recording, recording_view or recording_export, and ignores leave_policy. Digital avatars require avatar support.",
         "examples": [
           {
             "bot_name": "Notetaker",
             "meeting_url": "https://zoom.us/j/1234567890"
           },
           {
-            "assistant": {
-              "audio_gate": "full_duplex",
-              "avatar": true,
-              "id": "asst_fake-uuid-1234",
-              "leave_on_end": true
+            "bot_name": "Notetaker",
+            "idempotency_key": "weekly-planning-2026-11-10",
+            "leave_policy": {
+              "alone_seconds": 300,
+              "max_duration_seconds": 7200
             },
-            "bot_name": "Avatar Assistant",
-            "meeting_url": "https://meet.google.com/abc-defg-hij"
-          },
-          {
-            "assistant": {
-              "audio_gate": "half_duplex",
-              "dynamic_variables": {
-                "candidate_name": "Ada Lovelace",
-                "role": "Staff Engineer"
-              },
-              "id": "asst_fake-uuid-1234"
-            },
-            "bot_name": "Voice Assistant",
-            "meeting_url": "https://teams.microsoft.com/l/meetup-join/example"
+            "meeting_url": "https://meet.google.com/abc-defg-hij",
+            "recording": true,
+            "recording_export": {
+              "bucket": "meeting-recordings",
+              "prefix": "weekly-planning"
+            }
           }
         ],
         "properties": {
@@ -302,21 +399,24 @@
             "$ref": "#/components/schemas/MeetingSessionCameraImage"
           },
           "chat_on_enter": {
-            "description": "A message the bot posts to the meeting's chat as soon as it becomes active — typically a recording disclosure. Delivered at most once. Independent of `speak_on_enter`: both may be set, and the chat message posts first because it does not wait for text-to-speech or avatar startup. Rejected with 422 `unsupported_capability` on platforms without meeting chat.",
+            "description": "A message the bot posts to the meeting's chat as soon as it becomes active — typically a recording disclosure. Delivered at most once. Independent of `speak_on_enter`: both may be set, and the chat message posts first because it does not wait for text-to-speech or avatar startup. Rejected with 422 `unsupported_capability` on platforms without meeting chat. For Google Meet and Teams, text must be nonblank, at most 4096 UTF-8 bytes, with no control characters except tabs and line breaks. Counts toward the 1000-chat-request session limit.",
             "maxLength": 4000,
             "minLength": 1,
             "type": "string"
           },
           "idempotency_key": {
-            "description": "Client-supplied idempotency key to safely retry creation requests without duplicating sessions. Lookup is scoped to the authenticated account and compares the key only; the request payload is not fingerprinted or compared.",
+            "description": "Use a unique key per intended join and reuse the same key and request on retries. Reusing a key with a different join configuration or meeting URL can return 409 invalid_state. Always retry with the original request.",
             "maxLength": 255,
             "minLength": 1,
             "type": "string"
           },
           "join_at": {
-            "description": "ISO-8601 timestamp in the future at which the bot should join. If omitted, the bot joins immediately.",
+            "description": "Future ISO-8601 join timestamp including timezone. Google Meet and Teams accept dates at most three years ahead. Omit for an immediate join. Assistant sessions created through this endpoint must join immediately.",
             "format": "date-time",
             "type": "string"
+          },
+          "leave_policy": {
+            "$ref": "#/components/schemas/MeetingSessionLeavePolicy"
           },
           "meeting_url": {
             "description": "The meeting URL the bot should join.",
@@ -328,8 +428,25 @@
             "description": "Arbitrary key-value metadata attached to the session. The serialized JSON representation must not exceed 16384 characters at runtime.",
             "type": "object"
           },
+          "recording": {
+            "description": "Google Meet and Teams only. Defaults to true when recording_export is supplied and false otherwise. True requires recording_export.bucket; false cannot be combined with recording_export. Fixed at creation, with no pause/resume action. Zoom rejects recording, recording_view, and recording_export with 422 unsupported_capability; omit these fields for Zoom.",
+            "type": "boolean"
+          },
+          "recording_export": {
+            "$ref": "#/components/schemas/MeetingSessionRecordingDestination"
+          },
+          "recording_view": {
+            "default": "speaker_view",
+            "description": "Recording layout for Google Meet and Teams. Defaults to speaker_view. Accepted at creation only; does not enable recording by itself.",
+            "enum": [
+              "speaker_view",
+              "gallery_view",
+              "speaker_view_no_sidebar"
+            ],
+            "type": "string"
+          },
           "speak_on_enter": {
-            "description": "Text the bot speaks when it enters the meeting. **Not spoken when an `assistant` is attached**: the value is accepted and echoed back on the session, but the assistant owns the voice and the line is never delivered, with no event reporting the omission. Use `chat_on_enter` to announce an assistant-backed bot. Rejected with 400 `invalid_request` when `assistant.avatar` is `true`.",
+            "description": "Text the bot speaks after joining. Available for sessions without a digital avatar. With an AI Assistant, the greeting waits until the assistant is connected. Rejected with 400 invalid_request when assistant.avatar is true.",
             "maxLength": 4000,
             "minLength": 1,
             "type": "string"
@@ -340,7 +457,7 @@
             "type": "boolean"
           },
           "voice": {
-            "description": "Session-default voice identifier used for `speak_on_enter` and ordinary speak actions. A voice supplied on an individual speak action overrides this default for that utterance.",
+            "description": "Session-default voice identifier used for `speak_on_enter` and ordinary speak actions. A voice supplied on an individual speak action overrides this default for that utterance. With an assistant attached, its conversational voice remains configured on the assistant.",
             "maxLength": 100,
             "minLength": 1,
             "type": "string"
@@ -371,7 +488,7 @@
       },
       "MeetingSession": {
         "additionalProperties": false,
-        "description": "Represents a meeting session. All serializer fields are present and required; nullable fields use null when absent. No actor, provider-bot, idempotency, routing, key, or internal fields are exposed.",
+        "description": "Represents a meeting session. Core serializer fields are required; platform-specific fields are optional. Nullable fields use null when absent. No actor, provider-bot, idempotency, routing, key, or internal fields are exposed.",
         "properties": {
           "account_id": {
             "description": "Identifier of the owning account.",
@@ -464,7 +581,7 @@
             ]
           },
           "failure_reason": {
-            "description": "Human-readable failure reason if the session failed, or null.",
+            "description": "A machine-readable lifecycle reason, or null. Values include left_on_request, meeting_ended, everyone_left, no_one_joined, silence_timeout, max_duration_reached, admission_timeout, admission_denied, removed_from_meeting, recording_permission_denied, meeting_not_found, meeting_not_started, meeting_access_denied, meeting_full, cancelled, cancelled_calendar_disconnected, cancelled_calendar_event_deleted, cancelled_calendar_superseded, cancelled_policy, internal_error, and other. Treat this vocabulary as extensible.",
             "type": [
               "string",
               "null"
@@ -512,12 +629,29 @@
             "type": "string"
           },
           "provider": {
-            "description": "Provider handling the meeting session.",
+            "const": "telnyx",
+            "description": "Always telnyx.",
             "type": "string"
           },
           "recording": {
             "description": "Whether the session is being recorded.",
             "type": "boolean"
+          },
+          "recording_export": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/MeetingSessionRecordingExport"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Included on Google Meet and Teams create/retrieve responses, omitted from lists and update/leave responses. Null when disabled or no export reference is available."
+          },
+          "remote_state_observed_at": {
+            "description": "Optional observation time on session list items. Retrieve the individual session when current state is required.",
+            "format": "date-time",
+            "type": "string"
           },
           "status": {
             "description": "Lifecycle status. `waiting_for_admission` means the bot reached the meeting lobby and may require host approval. `active` means the bot entered the meeting/media path. `ended` alone does not prove attendance; use non-null `joined_at` as positive evidence that the session became active. `admission_denied` is reserved for an explicit provider denial, while cancellation or another termination can end a never-admitted session as `ended`.",
@@ -534,7 +668,7 @@
             "type": "string"
           },
           "status_detail": {
-            "description": "Additional human-readable detail about the status, or null.",
+            "description": "A machine-readable lifecycle reason, or null. Values include left_on_request, meeting_ended, everyone_left, no_one_joined, silence_timeout, max_duration_reached, admission_timeout, admission_denied, removed_from_meeting, recording_permission_denied, meeting_not_found, meeting_not_started, meeting_access_denied, meeting_full, cancelled, cancelled_calendar_disconnected, cancelled_calendar_event_deleted, cancelled_calendar_superseded, cancelled_policy, internal_error, and other. Treat this vocabulary as extensible.",
             "type": [
               "string",
               "null"
@@ -606,7 +740,7 @@
                 "type": "null"
               }
             ],
-            "description": "The dynamic variables in force for this session, or null when none were supplied."
+            "description": "Dynamic variables in individual-session responses; null when none were supplied. Omitted from session list items."
           },
           "id": {
             "description": "Identifier of the assistant.",
@@ -620,7 +754,6 @@
         "required": [
           "id",
           "audio_gate",
-          "dynamic_variables",
           "leave_on_end"
         ],
         "title": "MeetingSessionAssistant",
@@ -628,11 +761,11 @@
       },
       "MeetingSessionAssistantRequest": {
         "additionalProperties": false,
-        "description": "Attach a Telnyx AI Assistant to the session. Supply the Assistant's ID; the Meeting service connects it to the meeting directly. The Call Control connection, caller ID and loopback SIP URI previously required here have been removed and are now rejected as unknown fields.",
+        "description": "Attach a Telnyx AI Assistant owned by the authenticated account. Supply its ID and optional conversation settings. Unknown fields are rejected.",
         "properties": {
           "audio_gate": {
             "default": "half_duplex",
-            "description": "Audio gating strategy for the assistant call leg. `half_duplex` (default) sends the assistant a single mixed meeting stream and mutes it while the assistant speaks, so the assistant cannot hear itself and cannot be interrupted. `full_duplex` sends a separate stream per participant, which allows barge-in and removes self-hearing, and COSTS SIGNIFICANTLY MORE: per-participant streams multiply the per-minute cost by the number of participants.",
+            "description": "Use half_duplex (default) to pause listening while the assistant speaks, or full_duplex to allow participants to interrupt. Full-duplex pricing depends on participant audio usage; see the Meeting pricing guide.",
             "enum": [
               "half_duplex",
               "full_duplex"
@@ -641,14 +774,14 @@
           },
           "avatar": {
             "default": false,
-            "description": "Beta. Show the avatar configured on the assistant (its `avatar_settings`; see [AI Assistant avatars](/docs/inference/ai-assistants/avatars)) as the bot's camera, lip-synced to the assistant's own speech. The request carries no avatar ID or key: the assistant is read at creation and the request is rejected with 400 `invalid_request` if it has no Telnyx avatar configured. Supported on Google Meet, Zoom, Microsoft Teams and Webex; other platforms return 422 `unsupported_capability`. REST-only. Not echoed back on `assistant`; the session's top-level `avatar` and `avatar_state` fields report it instead. If the avatar fails, the session continues voice-only and `avatar_state` becomes `degraded`.",
+            "description": "Beta. Show the avatar configured on the assistant (its `avatar_settings`; see [AI Assistant avatars](/docs/inference/ai-assistants/avatars)) as the bot's camera, lip-synced to the assistant's own speech. The request carries no avatar ID or key: the assistant is read at creation and the request is rejected with 400 `invalid_request` if it has no Telnyx avatar configured. Available for Google Meet, Zoom, and Teams sessions. REST-only. Not echoed back on `assistant`; the session's top-level `avatar` and `avatar_state` fields report it instead. If the avatar fails, the session continues voice-only and `avatar_state` becomes `degraded`.",
             "type": "boolean"
           },
           "dynamic_variables": {
             "additionalProperties": {
               "type": "string"
             },
-            "description": "Per-conversation values for the [dynamic variables](/docs/inference/ai-assistants/dynamic-variables) used in the Assistant's instructions, greeting, or tools. Delivered before the Assistant's first utterance, so they resolve for the opening line as well as the rest of the conversation. At most 63 entries; keys 1-128 characters; values must be strings. The map is budgeted in aggregate at 1,047,552 bytes (1023 KiB) rather than capped per value. `streaming_audio`, `ai_assistant_streaming_audio` and `meeting_session_id` are reserved and rejected with `400 invalid_request` -- they toggle provider infrastructure or are set by the service rather than fill a prompt template.",
+            "description": "Per-conversation values for the [dynamic variables](/docs/inference/ai-assistants/dynamic-variables) used in the Assistant's instructions, greeting, or tools. Delivered before the Assistant's first utterance, so they resolve for the opening line as well as the rest of the conversation. At most 63 entries; keys 1-128 characters; values must be strings. The map is budgeted in aggregate at 1,047,552 bytes (1023 KiB) rather than capped per value. `streaming_audio`, `ai_assistant_streaming_audio` and `meeting_session_id` are reserved and rejected with `400 invalid_request`.",
             "maxProperties": 63,
             "propertyNames": {
               "maxLength": 128,
@@ -671,7 +804,7 @@
           },
           "leave_on_end": {
             "default": false,
-            "description": "Leave the meeting when the Assistant's conversation reaches a terminal state -- `ended` **or** `failed`. Off by default, which leaves the bot in the meeting after the Assistant stops. Fires once: a second terminal transition does not leave twice, and a leave the provider refuses is logged without changing how the session settles.",
+            "description": "Leave when the assistant conversation ends or fails. Defaults to false. Other leave-policy rules and explicit leave requests still apply.",
             "type": "boolean"
           }
         },
@@ -713,7 +846,7 @@
         "type": "object"
       },
       "MeetingSessionCameraImage": {
-        "description": "Write-only static camera-tile image for this session, not a native account or participant profile photo. Supply exactly one JPEG source. When effective, the image is used as the bot's static camera/video output; presentation varies by meeting platform and recording configuration and is not guaranteed in recordings. An effective Avatar or Assistant webpage output takes precedence, so this input is ignored and a URL source is not fetched.",
+        "description": "Not supported for Google Meet and Teams joins (422 unsupported_capability). Write-only static camera-tile image for this session, not an account or participant profile photo. Supply exactly one JPEG source. When effective, the image is used as the bot's static camera/video output; presentation varies by meeting platform and recording configuration and is not guaranteed in recordings. An attached assistant or avatar takes precedence, so this input is ignored and a URL source is not fetched.",
         "oneOf": [
           {
             "$ref": "#/components/schemas/MeetingSessionCameraImageBase64Source"
@@ -736,7 +869,7 @@
         ],
         "properties": {
           "base64_data": {
-            "description": "Canonical plain RFC 4648 Base64 for a valid decoded JPEG. Data URIs, whitespace, and the URL-safe alphabet are rejected. The encoded value is limited to 1,835,008 characters and the decoded JPEG to 1,363,148 bytes. The JPEG is limited to 4,096 pixels per dimension, 4 megapixels, and 128 MB of decoder memory. The image bytes are not persisted, returned, or logged.",
+            "description": "Canonical plain RFC 4648 Base64 for a valid decoded JPEG. Data URIs, whitespace, and the URL-safe alphabet are rejected. The encoded value is limited to 1,835,008 characters and the decoded JPEG to 1,363,148 bytes. The JPEG is limited to 4,096 pixels per dimension, 4 megapixels, and 128 MB of decoder memory. The image bytes are not returned in the session response.",
             "maxLength": 1835008,
             "minLength": 4,
             "pattern": "^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$",
@@ -770,7 +903,7 @@
             "type": "string"
           },
           "url": {
-            "description": "Public HTTPS JPEG URL with at most 2,048 characters and no credentials, fragment, surrounding whitespace, raw control characters, or explicit non-default port. Signed queries are allowed but must be treated as credentials. Fetching is limited to public network destinations, a five-second timeout, no redirects, a 2xx image/jpeg response with identity or no content encoding, and a 1,363,148-byte limit enforced against both declared and streamed content. The service resolves the URL before bot creation and does not persist, return, or log the URL or image bytes.",
+            "description": "Public HTTPS JPEG URL with at most 2,048 characters and no credentials, fragment, surrounding whitespace, raw control characters, or explicit non-default port. Signed queries are allowed but must be treated as credentials. Fetching is limited to public network destinations, a five-second timeout, no redirects, a 2xx image/jpeg response with identity or no content encoding, and a 1,363,148-byte limit enforced against both declared and streamed content. The service resolves the URL before bot creation and does not return the URL or image bytes in the session response.",
             "format": "uri",
             "maxLength": 2048,
             "minLength": 1,
@@ -803,6 +936,38 @@
             ],
             "description": "The message posted to chat on join, or null when unset."
           },
+          "deepfake_detection": {
+            "additionalProperties": false,
+            "description": "Detection settings. Enabling audio or video detection is currently unsupported.",
+            "properties": {
+              "audio": {
+                "type": "boolean"
+              },
+              "video": {
+                "type": "boolean"
+              }
+            },
+            "required": [
+              "audio",
+              "video"
+            ],
+            "type": "object"
+          },
+          "leave_policy": {
+            "$ref": "#/components/schemas/MeetingSessionLeavePolicy"
+          },
+          "recording": {
+            "description": "Recording intent set at creation for Google Meet and Teams. Distinct from the top-level recording field, which reports current activity.",
+            "type": "boolean"
+          },
+          "recording_view": {
+            "description": "Non-default recording layout. Omitted for the default speaker_view layout.",
+            "enum": [
+              "gallery_view",
+              "speaker_view_no_sidebar"
+            ],
+            "type": "string"
+          },
           "speak_on_enter": {
             "description": "Text spoken on meeting entry, or null if not set.",
             "type": [
@@ -827,7 +992,8 @@
           "speak_on_enter",
           "barge_in",
           "summarize_on_end",
-          "chat_on_enter"
+          "chat_on_enter",
+          "deepfake_detection"
         ],
         "title": "MeetingSessionConfig",
         "type": "object"
@@ -848,6 +1014,10 @@
             "config": {
               "barge_in": false,
               "chat_on_enter": null,
+              "deepfake_detection": {
+                "audio": false,
+                "video": false
+              },
               "speak_on_enter": null,
               "summarize_on_end": false,
               "voice": null
@@ -885,6 +1055,10 @@
             "config": {
               "barge_in": false,
               "chat_on_enter": null,
+              "deepfake_detection": {
+                "audio": false,
+                "video": false
+              },
               "speak_on_enter": "Hello, I am joining.",
               "summarize_on_end": true,
               "voice": "voice-fake-001"
@@ -999,7 +1173,7 @@
             ]
           },
           "failure_reason": {
-            "description": "Human-readable failure reason if the session failed, or null.",
+            "description": "A machine-readable lifecycle reason, or null. Values include left_on_request, meeting_ended, everyone_left, no_one_joined, silence_timeout, max_duration_reached, admission_timeout, admission_denied, removed_from_meeting, recording_permission_denied, meeting_not_found, meeting_not_started, meeting_access_denied, meeting_full, cancelled, cancelled_calendar_disconnected, cancelled_calendar_event_deleted, cancelled_calendar_superseded, cancelled_policy, internal_error, and other. Treat this vocabulary as extensible.",
             "type": [
               "string",
               "null"
@@ -1047,12 +1221,29 @@
             "type": "string"
           },
           "provider": {
-            "description": "Provider handling the meeting session.",
+            "const": "telnyx",
+            "description": "Always telnyx.",
             "type": "string"
           },
           "recording": {
             "description": "Whether the session is being recorded.",
             "type": "boolean"
+          },
+          "recording_export": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/MeetingSessionRecordingExport"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Included on Google Meet and Teams create/retrieve responses, omitted from lists and update/leave responses. Null when disabled or no export reference is available."
+          },
+          "remote_state_observed_at": {
+            "description": "Optional observation time on session list items. Retrieve the individual session when current state is required.",
+            "format": "date-time",
+            "type": "string"
           },
           "status": {
             "description": "Lifecycle status. `waiting_for_admission` means the bot reached the meeting lobby and may require host approval. `active` means the bot entered the meeting/media path. `ended` alone does not prove attendance; use non-null `joined_at` as positive evidence that the session became active. `admission_denied` is reserved for an explicit provider denial, while cancellation or another termination can end a never-admitted session as `ended`.",
@@ -1069,7 +1260,7 @@
             "type": "string"
           },
           "status_detail": {
-            "description": "Additional human-readable detail about the status, or null.",
+            "description": "A machine-readable lifecycle reason, or null. Values include left_on_request, meeting_ended, everyone_left, no_one_joined, silence_timeout, max_duration_reached, admission_timeout, admission_denied, removed_from_meeting, recording_permission_denied, meeting_not_found, meeting_not_started, meeting_access_denied, meeting_full, cancelled, cancelled_calendar_disconnected, cancelled_calendar_event_deleted, cancelled_calendar_superseded, cancelled_policy, internal_error, and other. Treat this vocabulary as extensible.",
             "type": [
               "string",
               "null"
@@ -1123,6 +1314,72 @@
         "title": "MeetingSessionCreated",
         "type": "object"
       },
+      "MeetingSessionLeavePolicy": {
+        "additionalProperties": false,
+        "description": "Automatic departure settings for Google Meet and Teams. Omitted fields use the default behavior. Set at creation; cannot be changed later. Zoom ignores this policy.",
+        "properties": {
+          "alone_seconds": {
+            "default": 60,
+            "description": "Seconds alone after another participant has attended and left. Does not start just because the bot arrives first.",
+            "maximum": 2147483647,
+            "minimum": 1,
+            "type": "integer"
+          },
+          "bot_name_keywords": {
+            "default": null,
+            "description": "Case-insensitive names or phrases identifying other bots to exclude when deciding whether this bot is alone. Matching splits names on spaces, hyphens and underscores. Null or an empty array disables filtering.",
+            "items": {
+              "maxLength": 100,
+              "minLength": 1,
+              "type": "string"
+            },
+            "maxItems": 100,
+            "type": [
+              "array",
+              "null"
+            ]
+          },
+          "host_wait_seconds": {
+            "default": 600,
+            "description": "Seconds to wait for the host to start the meeting.",
+            "maximum": 2147483647,
+            "minimum": 1,
+            "type": "integer"
+          },
+          "lobby_wait_seconds": {
+            "default": 900,
+            "description": "Seconds to wait for lobby admission.",
+            "maximum": 2147483647,
+            "minimum": 1,
+            "type": "integer"
+          },
+          "max_duration_seconds": {
+            "default": null,
+            "description": "Maximum seconds after joining. Null means no per-join duration limit; service safety limits still apply.",
+            "maximum": 2147483647,
+            "minimum": 1,
+            "type": [
+              "integer",
+              "null"
+            ]
+          },
+          "silence_grace_seconds": {
+            "default": 1200,
+            "description": "Seconds after joining before silence detection starts a fresh inactivity timer.",
+            "maximum": 2147483647,
+            "minimum": 1,
+            "type": "integer"
+          },
+          "silence_seconds": {
+            "default": 600,
+            "description": "Continuous audio inactivity before departure after the silence grace period.",
+            "maximum": 2147483647,
+            "minimum": 1,
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
       "MeetingSessionListResponse": {
         "additionalProperties": false,
         "properties": {
@@ -1135,6 +1392,81 @@
         },
         "required": [
           "data"
+        ],
+        "type": "object"
+      },
+      "MeetingSessionRecordingDestination": {
+        "additionalProperties": false,
+        "description": "Customer-owned Telnyx Storage destination for recording exports. Uses the authenticated organization and user; do not supply credentials, region, organization ID or object key.",
+        "properties": {
+          "bucket": {
+            "description": "Existing accessible bucket. Consecutive dots and IPv4-address names are rejected.",
+            "maxLength": 63,
+            "minLength": 3,
+            "pattern": "^[a-z0-9][a-z0-9.-]{1,61}[a-z0-9]$",
+            "type": "string"
+          },
+          "prefix": {
+            "description": "Optional object-key prefix. One trailing slash is normalized. Empty path segments, . and .. segments are rejected.",
+            "maxLength": 256,
+            "minLength": 1,
+            "pattern": "^[A-Za-z0-9/_.-]+$",
+            "type": "string"
+          }
+        },
+        "required": [
+          "bucket"
+        ],
+        "type": "object"
+      },
+      "MeetingSessionRecordingExport": {
+        "additionalProperties": false,
+        "description": "Customer Storage recording reference. Pending is not downloadable; exported means upload was verified; failed is terminal. Download with ordinary Storage authorization. No presigned URL is returned.",
+        "properties": {
+          "bucket": {
+            "type": "string"
+          },
+          "bytes": {
+            "minimum": 0,
+            "type": [
+              "integer",
+              "null"
+            ]
+          },
+          "exported_at": {
+            "format": "date-time",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "key": {
+            "type": "string"
+          },
+          "region": {
+            "type": "string"
+          },
+          "status": {
+            "enum": [
+              "pending",
+              "exported",
+              "failed"
+            ],
+            "type": "string"
+          },
+          "type": {
+            "const": "video",
+            "type": "string"
+          }
+        },
+        "required": [
+          "type",
+          "bucket",
+          "region",
+          "key",
+          "bytes",
+          "status",
+          "exported_at"
         ],
         "type": "object"
       },
@@ -1339,7 +1671,7 @@
   "paths": {
     "/meeting_sessions": {
       "get": {
-        "description": "Returns a list of meeting sessions, optionally filtered by status.",
+        "description": "Returns a list of meeting sessions, optionally filtered by status. List items omit assistant.dynamic_variables and recording_export. Some items include remote_state_observed_at; retrieve the individual session for current state.",
         "operationId": "listMeetingSessions",
         "parameters": [
           {
@@ -1381,6 +1713,10 @@
                       "config": {
                         "barge_in": false,
                         "chat_on_enter": null,
+                        "deepfake_detection": {
+                          "audio": false,
+                          "video": false
+                        },
                         "speak_on_enter": null,
                         "summarize_on_end": true,
                         "voice": null
@@ -1425,6 +1761,9 @@
           "500": {
             "$ref": "#/components/responses/meeting-sessions_InternalServerError"
           },
+          "502": {
+            "$ref": "#/components/responses/MeetingReadUnavailable"
+          },
           "503": {
             "$ref": "#/components/responses/MeetingReadAuthUnavailable"
           }
@@ -1435,7 +1774,7 @@
         ]
       },
       "post": {
-        "description": "Creates a new meeting session. When an idempotency_key is supplied in the request body, replay lookup is scoped to the authenticated account and compares only the key; the request payload is not fingerprinted or compared. If a session with that key already exists for the account, the existing session is replayed (200); otherwise a new session is created (201). The session may enter asynchronous states (e.g. joining, waiting_for_admission) before becoming active. Optional `camera_image` input is write-only and applies only when no avatar or Assistant webpage output takes precedence. An ignored URL is not fetched. An effective URL source is resolved before bot creation; neither the source URL nor image bytes are persisted, returned, or logged. Treat signed URLs as credentials. With `assistant.avatar: true`, the assistant is read before the bot is created: an assistant without a Telnyx avatar configured is rejected with 400 `invalid_request` (message prefix `assistant_avatar_not_configured:`), an unknown assistant with 400 `invalid_request` (prefix `assistant_not_found:`), and a failed lookup with 503 `assistant_lookup_unavailable`; no bot is created in any of these cases.",
+        "description": "Creates a meeting session and returns 201, or 200 for a replay. Use a unique `idempotency_key` per intended join and reuse the same key and request on retries. Reusing a key with a different join configuration or meeting URL can return 409 invalid_state. Always retry with the original request. The session can pass through joining and waiting_for_admission before active. Optional `camera_image` input is write-only and applies when no assistant avatar takes precedence. An ignored URL is not fetched. An effective URL source is resolved before bot creation; the source URL and image bytes are not returned in the session response. Treat signed URLs as credentials. With `assistant.avatar: true`, the assistant is read before the bot is created: an assistant without a Telnyx avatar configured is rejected with 400 `invalid_request` (message prefix `assistant_avatar_not_configured:`), an unknown assistant with 400 `invalid_request` (prefix `assistant_not_found:`), and a failed lookup with 503 `assistant_lookup_unavailable`; no bot is created in any of these cases.",
         "operationId": "createMeetingSession",
         "requestBody": {
           "content": {
@@ -1477,6 +1816,22 @@
           "403": {
             "$ref": "#/components/responses/Forbidden"
           },
+          "409": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "invalid_state",
+                    "message": "The idempotency key belongs to a different join"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/meeting-sessions_ErrorResponse"
+                }
+              }
+            },
+            "description": "The idempotency key belongs to a different or cancelled join."
+          },
           "413": {
             "$ref": "#/components/responses/PayloadTooLarge"
           },
@@ -1484,7 +1839,7 @@
             "$ref": "#/components/responses/meeting-sessions_UnprocessableEntity"
           },
           "429": {
-            "$ref": "#/components/responses/TooManyRequests"
+            "$ref": "#/components/responses/MeetingCreateTooManyRequests"
           },
           "500": {
             "$ref": "#/components/responses/meeting-sessions_InternalServerError"
@@ -1504,7 +1859,7 @@
     },
     "/meeting_sessions/{id}": {
       "delete": {
-        "description": "Stops a meeting session without deleting its persisted record. Scheduled bots are cancelled, while bots that are joining or active are asked to leave. The persisted meeting session record remains available.",
+        "description": "Stops a meeting session without deleting its persisted record. Scheduled bots are cancelled, while bots that are joining or active are asked to leave. The persisted meeting session record remains available. A successful response can report leaving while departure is pending. Poll until ended, failed, or admission_denied. Exported Storage objects are unaffected.",
         "operationId": "deleteMeetingSession",
         "parameters": [
           {
@@ -1528,6 +1883,10 @@
                     "config": {
                       "barge_in": false,
                       "chat_on_enter": null,
+                      "deepfake_detection": {
+                        "audio": false,
+                        "video": false
+                      },
                       "speak_on_enter": null,
                       "summarize_on_end": true,
                       "voice": null
@@ -1611,6 +1970,10 @@
                     "config": {
                       "barge_in": false,
                       "chat_on_enter": null,
+                      "deepfake_detection": {
+                        "audio": false,
+                        "video": false
+                      },
                       "speak_on_enter": null,
                       "summarize_on_end": true,
                       "voice": null
@@ -1654,6 +2017,9 @@
           "500": {
             "$ref": "#/components/responses/meeting-sessions_InternalServerError"
           },
+          "502": {
+            "$ref": "#/components/responses/MeetingReadUnavailable"
+          },
           "503": {
             "$ref": "#/components/responses/MeetingReadAuthUnavailable"
           }
@@ -1664,7 +2030,7 @@
         ]
       },
       "patch": {
-        "description": "Updates mutable properties of a meeting session. Only sessions in the scheduled state can be updated; any other state returns 409 with the invalid_state error code. All request fields are optional, and an empty object is a valid no-op update.",
+        "description": "Updates mutable properties of a meeting session. Only sessions in the scheduled state can be updated; any other state returns 409 with the invalid_state error code. All request fields are optional, and an empty object is a valid no-op update. Calendar-controlled Google Meet and Teams sessions return 409 calendar_managed; change the event instead. A conflicting pending edit returns 409 edit_in_progress. On a timeout or 503, read the session and retry the same changes.",
         "operationId": "updateMeetingSession",
         "parameters": [
           {
@@ -1701,6 +2067,10 @@
                     "config": {
                       "barge_in": false,
                       "chat_on_enter": null,
+                      "deepfake_detection": {
+                        "audio": false,
+                        "video": false
+                      },
                       "speak_on_enter": null,
                       "summarize_on_end": true,
                       "voice": null
@@ -1742,7 +2112,7 @@
             "$ref": "#/components/responses/meeting-sessions_NotFound"
           },
           "409": {
-            "$ref": "#/components/responses/meeting-sessions_Conflict"
+            "$ref": "#/components/responses/MeetingScheduleConflict"
           },
           "413": {
             "$ref": "#/components/responses/PayloadTooLarge"

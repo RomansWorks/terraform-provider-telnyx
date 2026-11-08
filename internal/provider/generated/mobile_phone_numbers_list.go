@@ -10,7 +10,7 @@ func MobilePhoneNumbersList() *engine.List {
 	return &engine.List{
 		TypeName:    "telnyx_mobile_phone_numbers",
 		Description: "Lists mobile phone numbers, with optional filters. Each item has the attributes of `telnyx_mobile_phone_number`.",
-		Op:          &engine.Op{Method: "GET", Path: "/v2/mobile_phone_numbers", Envelope: true, Paging: engine.PagingNumber, PageSize: 250},
+		Op:          &engine.Op{Method: "GET", Path: "/mobile_phone_numbers", Envelope: true, Paging: engine.PagingNumber, PageSize: 250},
 		Params:      []*engine.Attr{},
 		Items: &engine.Attr{Name: "mobile_phone_numbers", JSON: "data", Kind: engine.KindList, Computed: true, InResponse: true, Description: "The objects, in the order the API returns them.",
 			Attrs: []*engine.Attr{

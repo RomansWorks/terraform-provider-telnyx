@@ -1,0 +1,2045 @@
+{
+  "components": {
+    "responses": {
+      "Forbidden": {
+        "content": {
+          "application/json": {
+            "example": {
+              "error": {
+                "code": "forbidden",
+                "message": "credential is not permitted"
+              }
+            },
+            "schema": {
+              "$ref": "#/components/schemas/meeting-sessions_ErrorResponse"
+            }
+          }
+        },
+        "description": "The authenticated credential is not permitted to perform this operation."
+      },
+      "MeetingReadUnavailable": {
+        "content": {
+          "application/json": {
+            "examples": {
+              "provider_error": {
+                "value": {
+                  "error": {
+                    "code": "provider_error",
+                    "message": "Meeting data is temporarily unavailable."
+                  }
+                }
+              }
+            },
+            "schema": {
+              "$ref": "#/components/schemas/meeting-sessions_ErrorResponse"
+            }
+          }
+        },
+        "description": "Current meeting data could not be retrieved. Retry the read with backoff."
+      },
+      "PayloadTooLarge": {
+        "content": {
+          "application/json": {
+            "example": {
+              "error": {
+                "code": "invalid_request",
+                "message": "request body too large"
+              }
+            },
+            "schema": {
+              "$ref": "#/components/schemas/meeting-sessions_ErrorResponse"
+            }
+          }
+        },
+        "description": "Payload Too Large"
+      },
+      "ServiceUnavailable": {
+        "content": {
+          "application/json": {
+            "example": {
+              "error": {
+                "code": "not_configured",
+                "message": "required feature is not configured"
+              }
+            },
+            "schema": {
+              "$ref": "#/components/schemas/meeting-sessions_ErrorResponse"
+            }
+          }
+        },
+        "description": "A required feature or dependency is not configured, authentication is unavailable, or (`assistant_lookup_unavailable`) the assistant could not be read to check its avatar."
+      },
+      "TooManyRequests": {
+        "content": {
+          "application/json": {
+            "example": {
+              "error": {
+                "code": "auth_overloaded",
+                "message": "authentication temporarily overloaded"
+              }
+            },
+            "schema": {
+              "$ref": "#/components/schemas/meeting-sessions_ErrorResponse"
+            }
+          }
+        },
+        "description": "Authentication is temporarily overloaded. Retry after the number of seconds in `Retry-After`.",
+        "headers": {
+          "Retry-After": {
+            "description": "Seconds to wait before retrying.",
+            "required": true,
+            "schema": {
+              "maximum": 5,
+              "minimum": 1,
+              "type": "integer"
+            }
+          }
+        }
+      },
+      "meeting-sessions_BadRequest": {
+        "content": {
+          "application/json": {
+            "example": {
+              "error": {
+                "code": "invalid_request",
+                "message": "request is invalid"
+              }
+            },
+            "schema": {
+              "$ref": "#/components/schemas/meeting-sessions_ErrorResponse"
+            }
+          }
+        },
+        "description": "Bad Request"
+      },
+      "meeting-sessions_Conflict": {
+        "content": {
+          "application/json": {
+            "example": {
+              "error": {
+                "code": "invalid_state",
+                "message": "only scheduled sessions can be updated"
+              }
+            },
+            "schema": {
+              "$ref": "#/components/schemas/meeting-sessions_ErrorResponse"
+            }
+          }
+        },
+        "description": "Conflict"
+      },
+      "meeting-sessions_InternalServerError": {
+        "content": {
+          "application/json": {
+            "example": {
+              "error": {
+                "code": "internal_error",
+                "message": "internal server error"
+              }
+            },
+            "schema": {
+              "$ref": "#/components/schemas/meeting-sessions_ErrorResponse"
+            }
+          }
+        },
+        "description": "Internal Server Error"
+      },
+      "meeting-sessions_NotFound": {
+        "content": {
+          "application/json": {
+            "example": {
+              "error": {
+                "code": "not_found",
+                "message": "meeting session not found"
+              }
+            },
+            "schema": {
+              "$ref": "#/components/schemas/meeting-sessions_ErrorResponse"
+            }
+          }
+        },
+        "description": "Not Found"
+      },
+      "meeting-sessions_Unauthorized": {
+        "content": {
+          "application/json": {
+            "example": {
+              "error": {
+                "code": "unauthorized",
+                "message": "invalid or missing credentials"
+              }
+            },
+            "schema": {
+              "$ref": "#/components/schemas/meeting-sessions_ErrorResponse"
+            }
+          }
+        },
+        "description": "Unauthorized. On api.telnyx.com, authentication is enforced by the API gateway before the request reaches the Meeting service, so a missing or invalid API key returns the standard Telnyx error envelope (`{\"errors\": [{\"code\": \"10009\", ...}]}`) rather than the single-`error` shape below."
+      },
+      "meeting-sessions_UnprocessableEntity": {
+        "content": {
+          "application/json": {
+            "example": {
+              "error": {
+                "code": "unsupported_capability",
+                "message": "avatar video is not supported on platform 'unknown'"
+              }
+            },
+            "schema": {
+              "$ref": "#/components/schemas/meeting-sessions_ErrorResponse"
+            }
+          }
+        },
+        "description": "Unprocessable Entity, including an unsupported capability"
+      }
+    },
+    "schemas": {
+      "CalendarAssistantDefaults": {
+        "additionalProperties": false,
+        "description": "Default assistant for future calendar-scheduled Google Meet and Teams sessions. The saved configuration must fit within 8 KiB. Use id, audio_gate, dynamic_variables, and leave_on_end; avatar is not accepted. audio_gate defaults to full_duplex.",
+        "properties": {
+          "audio_gate": {
+            "default": "full_duplex",
+            "description": "Use full_duplex (default) to allow participants to interrupt, or half_duplex to pause listening while the assistant speaks. Full-duplex pricing depends on participant audio usage; see the Meeting pricing guide.",
+            "enum": [
+              "half_duplex",
+              "full_duplex"
+            ],
+            "type": "string"
+          },
+          "dynamic_variables": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "description": "Per-conversation values for the [dynamic variables](/docs/inference/ai-assistants/dynamic-variables) used in the Assistant's instructions, greeting, or tools. Delivered before the Assistant's first utterance, so they resolve for the opening line as well as the rest of the conversation. At most 63 entries; keys 1-128 characters; values must be strings. The map is budgeted in aggregate at 1,047,552 bytes (1023 KiB) rather than capped per value. `streaming_audio`, `ai_assistant_streaming_audio` and `meeting_session_id` are reserved and rejected with `400 invalid_request`.",
+            "maxProperties": 63,
+            "propertyNames": {
+              "maxLength": 128,
+              "minLength": 1,
+              "not": {
+                "enum": [
+                  "streaming_audio",
+                  "ai_assistant_streaming_audio",
+                  "meeting_session_id"
+                ]
+              }
+            },
+            "type": "object"
+          },
+          "id": {
+            "description": "Identifier of the assistant to attach.",
+            "maxLength": 255,
+            "minLength": 1,
+            "type": "string"
+          },
+          "leave_on_end": {
+            "default": false,
+            "description": "Leave when the assistant conversation ends or fails. Defaults to false. Other leave-policy rules and explicit leave requests still apply.",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "id"
+        ],
+        "title": "CalendarAssistantDefaults",
+        "type": "object"
+      },
+      "CalendarAttendee": {
+        "additionalProperties": false,
+        "properties": {
+          "display_name": {
+            "anyOf": [
+              {
+                "description": "Display name.",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "email": {
+            "anyOf": [
+              {
+                "description": "Email address.",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "optional": {
+            "anyOf": [
+              {
+                "description": "Whether attendance is optional.",
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "response_status": {
+            "anyOf": [
+              {
+                "description": "Calendar RSVP status.",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "self": {
+            "anyOf": [
+              {
+                "description": "Whether this is the connected calendar user.",
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "email",
+          "display_name",
+          "self",
+          "response_status",
+          "optional"
+        ],
+        "type": "object"
+      },
+      "CalendarConnection": {
+        "additionalProperties": false,
+        "properties": {
+          "auto_join_policy": {
+            "description": "all_meetings joins eligible events; external_organizer_excluded requires the connected user to be the organizer; per_meeting requires an explicit opt-in.",
+            "enum": [
+              "all_meetings",
+              "external_organizer_excluded",
+              "per_meeting"
+            ],
+            "type": "string"
+          },
+          "bot_name": {
+            "anyOf": [
+              {
+                "description": "Bot display name; null clears the override.",
+                "maxLength": 100,
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "created_at": {
+            "description": "Creation time.",
+            "format": "date-time",
+            "type": "string"
+          },
+          "default_assistant": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/MeetingSessionAssistant"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "default_barge_in": {
+            "anyOf": [
+              {
+                "description": "Default manual speech interruption. Cannot be true with default_assistant.",
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "default_recording": {
+            "anyOf": [
+              {
+                "description": "Google Meet and Teams recording intent. When null, recording is enabled only if a destination is set. True requires default_recording_export; false cannot be combined with a destination.",
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "default_recording_export": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/MeetingSessionRecordingDestination"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "default_summarize_on_end": {
+            "anyOf": [
+              {
+                "description": "Generate a summary when each future session transcript finalizes.",
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "default_voice": {
+            "anyOf": [
+              {
+                "description": "Manual-speech voice; must be null when default_assistant is set.",
+                "maxLength": 100,
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "default_webhook_url": {
+            "anyOf": [
+              {
+                "description": "HTTPS destination for future session webhooks. Null clears the default. A non-null update returns webhook_secret once; save it to verify signatures for sessions created with this default. Existing sessions retain their original signing secret.",
+                "format": "uri",
+                "maxLength": 2048,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "id": {
+            "description": "Calendar connection ID.",
+            "type": "string"
+          },
+          "platform": {
+            "description": "Calendar provider: Google Calendar or Microsoft Outlook.",
+            "enum": [
+              "google_calendar",
+              "microsoft_outlook"
+            ],
+            "type": "string"
+          },
+          "platform_email": {
+            "anyOf": [
+              {
+                "description": "Connected calendar email address.",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "status": {
+            "description": "Connection status.",
+            "enum": [
+              "connected",
+              "disconnected",
+              "error"
+            ],
+            "type": "string"
+          },
+          "status_detail": {
+            "anyOf": [
+              {
+                "description": "Additional connection status detail.",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "updated_at": {
+            "description": "Last update time.",
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "platform",
+          "platform_email",
+          "status",
+          "status_detail",
+          "auto_join_policy",
+          "bot_name",
+          "default_barge_in",
+          "default_summarize_on_end",
+          "default_voice",
+          "default_assistant",
+          "default_recording",
+          "default_recording_export",
+          "default_webhook_url",
+          "created_at",
+          "updated_at"
+        ],
+        "type": "object"
+      },
+      "CalendarConnectionListResponse": {
+        "additionalProperties": false,
+        "properties": {
+          "data": {
+            "items": {
+              "$ref": "#/components/schemas/CalendarConnection"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "data"
+        ],
+        "type": "object"
+      },
+      "CalendarConnectionPending": {
+        "additionalProperties": false,
+        "properties": {
+          "oauth_url": {
+            "description": "Open in a browser to authorize calendar access.",
+            "format": "uri",
+            "type": "string"
+          },
+          "platform": {
+            "description": "Calendar provider: Google Calendar or Microsoft Outlook.",
+            "enum": [
+              "google_calendar",
+              "microsoft_outlook"
+            ],
+            "type": "string"
+          },
+          "status": {
+            "const": "pending_oauth",
+            "description": "Authorization has not completed.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "platform",
+          "status",
+          "oauth_url"
+        ],
+        "type": "object"
+      },
+      "CalendarConnectionPendingResponse": {
+        "additionalProperties": false,
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/CalendarConnectionPending"
+          }
+        },
+        "required": [
+          "data"
+        ],
+        "type": "object"
+      },
+      "CalendarConnectionResponse": {
+        "additionalProperties": false,
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/CalendarConnection"
+          }
+        },
+        "required": [
+          "data"
+        ],
+        "type": "object"
+      },
+      "CalendarConnectionUpdated": {
+        "additionalProperties": false,
+        "properties": {
+          "auto_join_policy": {
+            "description": "all_meetings joins eligible events; external_organizer_excluded requires the connected user to be the organizer; per_meeting requires an explicit opt-in.",
+            "enum": [
+              "all_meetings",
+              "external_organizer_excluded",
+              "per_meeting"
+            ],
+            "type": "string"
+          },
+          "bot_name": {
+            "anyOf": [
+              {
+                "description": "Bot display name; null clears the override.",
+                "maxLength": 100,
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "created_at": {
+            "description": "Creation time.",
+            "format": "date-time",
+            "type": "string"
+          },
+          "default_assistant": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/MeetingSessionAssistant"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "default_barge_in": {
+            "anyOf": [
+              {
+                "description": "Default manual speech interruption. Cannot be true with default_assistant.",
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "default_recording": {
+            "anyOf": [
+              {
+                "description": "Google Meet and Teams recording intent. When null, recording is enabled only if a destination is set. True requires default_recording_export; false cannot be combined with a destination.",
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "default_recording_export": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/MeetingSessionRecordingDestination"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "default_summarize_on_end": {
+            "anyOf": [
+              {
+                "description": "Generate a summary when each future session transcript finalizes.",
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "default_voice": {
+            "anyOf": [
+              {
+                "description": "Manual-speech voice; must be null when default_assistant is set.",
+                "maxLength": 100,
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "default_webhook_url": {
+            "anyOf": [
+              {
+                "description": "HTTPS destination for future session webhooks. Null clears the default. A non-null update returns webhook_secret once; save it to verify signatures for sessions created with this default. Existing sessions retain their original signing secret.",
+                "format": "uri",
+                "maxLength": 2048,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "id": {
+            "description": "Calendar connection ID.",
+            "type": "string"
+          },
+          "platform": {
+            "description": "Calendar provider: Google Calendar or Microsoft Outlook.",
+            "enum": [
+              "google_calendar",
+              "microsoft_outlook"
+            ],
+            "type": "string"
+          },
+          "platform_email": {
+            "anyOf": [
+              {
+                "description": "Connected calendar email address.",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "status": {
+            "description": "Connection status.",
+            "enum": [
+              "connected",
+              "disconnected",
+              "error"
+            ],
+            "type": "string"
+          },
+          "status_detail": {
+            "anyOf": [
+              {
+                "description": "Additional connection status detail.",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "updated_at": {
+            "description": "Last update time.",
+            "format": "date-time",
+            "type": "string"
+          },
+          "webhook_secret": {
+            "description": "Returned only when PATCH supplies a non-null default_webhook_url. Not returned by list or retrieve. Save this secret to verify webhooks for future sessions.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "platform",
+          "platform_email",
+          "status",
+          "status_detail",
+          "auto_join_policy",
+          "bot_name",
+          "default_barge_in",
+          "default_summarize_on_end",
+          "default_voice",
+          "default_assistant",
+          "default_recording",
+          "default_recording_export",
+          "default_webhook_url",
+          "created_at",
+          "updated_at"
+        ],
+        "type": "object"
+      },
+      "CalendarConnectionUpdatedResponse": {
+        "additionalProperties": false,
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/CalendarConnectionUpdated"
+          }
+        },
+        "required": [
+          "data"
+        ],
+        "type": "object"
+      },
+      "CalendarMeeting": {
+        "additionalProperties": false,
+        "properties": {
+          "attendees": {
+            "description": "Calendar attendees; identity fields are cleared after the retention window.",
+            "items": {
+              "$ref": "#/components/schemas/CalendarAttendee"
+            },
+            "type": "array"
+          },
+          "bot_will_join": {
+            "description": "Effective policy decision, not proof that the bot has joined.",
+            "type": "boolean"
+          },
+          "bot_will_join_override": {
+            "anyOf": [
+              {
+                "description": "Explicit override; null follows the connection policy.",
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "decision": {
+            "description": "Scheduling decision.",
+            "enum": [
+              "pending",
+              "scheduled",
+              "skipped_policy",
+              "skipped_no_url",
+              "skipped_duplicate",
+              "skipped_unsupported",
+              "cancelled"
+            ],
+            "type": "string"
+          },
+          "end_time": {
+            "anyOf": [
+              {
+                "description": "Event end time.",
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "id": {
+            "description": "Tracked calendar meeting ID.",
+            "type": "string"
+          },
+          "is_external_organizer": {
+            "anyOf": [
+              {
+                "description": "Whether the connected calendar user is not the organizer.",
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "organizer": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/CalendarPerson"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "platform": {
+            "description": "Detected meeting platform.",
+            "enum": [
+              "zoom",
+              "google_meet",
+              "teams",
+              "webex",
+              "unknown"
+            ],
+            "type": "string"
+          },
+          "session_id": {
+            "anyOf": [
+              {
+                "description": "Linked meeting session ID, or null until one exists.",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "start_time": {
+            "description": "Event start time.",
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "platform",
+          "start_time",
+          "end_time",
+          "organizer",
+          "attendees",
+          "is_external_organizer",
+          "bot_will_join",
+          "bot_will_join_override",
+          "decision",
+          "session_id"
+        ],
+        "type": "object"
+      },
+      "CalendarMeetingListResponse": {
+        "additionalProperties": false,
+        "properties": {
+          "data": {
+            "items": {
+              "$ref": "#/components/schemas/CalendarMeeting"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "data"
+        ],
+        "type": "object"
+      },
+      "CalendarMeetingResponse": {
+        "additionalProperties": false,
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/CalendarMeeting"
+          }
+        },
+        "required": [
+          "data"
+        ],
+        "type": "object"
+      },
+      "CalendarPerson": {
+        "additionalProperties": false,
+        "properties": {
+          "display_name": {
+            "anyOf": [
+              {
+                "description": "Display name.",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "email": {
+            "anyOf": [
+              {
+                "description": "Email address.",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "self": {
+            "anyOf": [
+              {
+                "description": "Whether this is the connected calendar user.",
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "email",
+          "display_name",
+          "self"
+        ],
+        "type": "object"
+      },
+      "CreateCalendarConnectionRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "platform": {
+            "description": "Calendar provider: Google Calendar or Microsoft Outlook.",
+            "enum": [
+              "google_calendar",
+              "microsoft_outlook"
+            ],
+            "type": "string"
+          }
+        },
+        "required": [
+          "platform"
+        ],
+        "type": "object"
+      },
+      "MeetingSessionAssistant": {
+        "additionalProperties": false,
+        "properties": {
+          "audio_gate": {
+            "description": "Audio gating strategy in force for the assistant call leg.",
+            "enum": [
+              "half_duplex",
+              "full_duplex"
+            ],
+            "type": "string"
+          },
+          "dynamic_variables": {
+            "anyOf": [
+              {
+                "additionalProperties": {
+                  "type": "string"
+                },
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Dynamic variables in individual-session responses; null when none were supplied. Omitted from session list items."
+          },
+          "id": {
+            "description": "Identifier of the assistant.",
+            "type": "string"
+          },
+          "leave_on_end": {
+            "description": "Whether the bot leaves when the Assistant's conversation ends or fails.",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "id",
+          "audio_gate",
+          "leave_on_end"
+        ],
+        "title": "MeetingSessionAssistant",
+        "type": "object"
+      },
+      "MeetingSessionRecordingDestination": {
+        "additionalProperties": false,
+        "description": "Customer-owned Telnyx Storage destination for recording exports. Uses the authenticated organization and user; do not supply credentials, region, organization ID or object key.",
+        "properties": {
+          "bucket": {
+            "description": "Existing accessible bucket. Consecutive dots and IPv4-address names are rejected.",
+            "maxLength": 63,
+            "minLength": 3,
+            "pattern": "^[a-z0-9][a-z0-9.-]{1,61}[a-z0-9]$",
+            "type": "string"
+          },
+          "prefix": {
+            "description": "Optional object-key prefix. One trailing slash is normalized. Empty path segments, . and .. segments are rejected.",
+            "maxLength": 256,
+            "minLength": 1,
+            "pattern": "^[A-Za-z0-9/_.-]+$",
+            "type": "string"
+          }
+        },
+        "required": [
+          "bucket"
+        ],
+        "type": "object"
+      },
+      "UpdateCalendarConnectionRequest": {
+        "additionalProperties": false,
+        "minProperties": 1,
+        "properties": {
+          "auto_join_policy": {
+            "description": "all_meetings joins eligible events; external_organizer_excluded requires the connected user to be the organizer; per_meeting requires an explicit opt-in.",
+            "enum": [
+              "all_meetings",
+              "external_organizer_excluded",
+              "per_meeting"
+            ],
+            "type": "string"
+          },
+          "bot_name": {
+            "anyOf": [
+              {
+                "description": "Bot display name; null clears the override.",
+                "maxLength": 100,
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "default_assistant": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/CalendarAssistantDefaults"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "default_barge_in": {
+            "anyOf": [
+              {
+                "description": "Default manual speech interruption. Cannot be true with default_assistant.",
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "default_recording": {
+            "anyOf": [
+              {
+                "description": "Google Meet and Teams recording intent. When null, recording is enabled only if a destination is set. True requires default_recording_export; false cannot be combined with a destination.",
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "default_recording_export": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/MeetingSessionRecordingDestination"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "default_summarize_on_end": {
+            "anyOf": [
+              {
+                "description": "Generate a summary when each future session transcript finalizes.",
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "default_voice": {
+            "anyOf": [
+              {
+                "description": "Manual-speech voice; must be null when default_assistant is set.",
+                "maxLength": 100,
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "default_webhook_url": {
+            "anyOf": [
+              {
+                "description": "HTTPS destination for future session webhooks. Null clears the default. A non-null update returns webhook_secret once; save it to verify signatures for sessions created with this default. Existing sessions retain their original signing secret.",
+                "format": "uri",
+                "maxLength": 2048,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "type": "object"
+      },
+      "UpdateCalendarMeetingRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "bot_will_join": {
+            "anyOf": [
+              {
+                "description": "True opts in, false opts out, null follows connection policy. A supported meeting URL is still required.",
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "bot_will_join"
+        ],
+        "type": "object"
+      },
+      "meeting-sessions_ErrorResponse": {
+        "additionalProperties": false,
+        "examples": [
+          {
+            "error": {
+              "code": "invalid_request",
+              "message": "webhook_url is disabled"
+            }
+          },
+          {
+            "error": {
+              "code": "not_found",
+              "message": "meeting session not found"
+            }
+          },
+          {
+            "error": {
+              "code": "unsupported_capability",
+              "message": "avatar video is not supported on platform 'unknown'"
+            }
+          },
+          {
+            "error": {
+              "code": "internal_error",
+              "message": "internal server error"
+            }
+          }
+        ],
+        "properties": {
+          "error": {
+            "additionalProperties": false,
+            "properties": {
+              "code": {
+                "type": "string"
+              },
+              "message": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "code",
+              "message"
+            ],
+            "type": "object"
+          }
+        },
+        "required": [
+          "error"
+        ],
+        "type": "object"
+      }
+    },
+    "securitySchemes": {
+      "BearerAuth": {
+        "bearerFormat": "API key",
+        "description": "Telnyx API key supplied as `Authorization: Bearer \u003ctoken\u003e`. In production, auth may be validated by the API gateway and forwarded via Telnyx auth headers.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "Payment": {
+        "description": "Machine Payment Protocol credential used on paid retries, sent as `Authorization: Payment ...`. Obtained by paying a challenge returned in the `WWW-Authenticate` header of a 402 response. This is not a Telnyx API key; initial challenge requests use standard bearer authentication instead.",
+        "in": "header",
+        "name": "Authorization",
+        "type": "apiKey"
+      },
+      "agent-gateway_bearerAuth": {
+        "description": "Telnyx API key",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "agent-memory_bearerAuth": {
+        "description": "Telnyx API key",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "bearerAuth": {
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "branded-calling_bearerAuth": {
+        "description": "Telnyx API key. Generate one at https://portal.telnyx.com/#/app/api-keys.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "collections_bearerAuth": {
+        "description": "Telnyx API key. Collections and results are automatically scoped to the authenticated user's organization.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "number-reputation_bearerAuth": {
+        "description": "Telnyx API key. Generate one at https://portal.telnyx.com/#/app/api-keys.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "oauthClientAuth": {
+        "description": "OAuth 2.0 authentication for Telnyx API and MCP integrations",
+        "flows": {
+          "authorizationCode": {
+            "authorizationUrl": "https://api.telnyx.com/v2/oauth/authorize",
+            "refreshUrl": "https://api.telnyx.com/v2/oauth/token",
+            "scopes": {
+              "admin": "Administrative access to Telnyx resources"
+            },
+            "tokenUrl": "https://api.telnyx.com/v2/oauth/token"
+          },
+          "clientCredentials": {
+            "scopes": {
+              "admin": "Administrative access to Telnyx resources"
+            },
+            "tokenUrl": "https://api.telnyx.com/v2/oauth/token"
+          }
+        },
+        "type": "oauth2"
+      },
+      "outbound-voice-profiles_bearerAuth": {
+        "bearerFormat": "JWT",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "pay-connectors_bearerAuth": {
+        "description": "Telnyx API key, not the processor bearer token.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "pronunciation-dicts_bearerAuth": {
+        "description": "Telnyx API v2 key. Obtain from https://portal.telnyx.com",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "rcs-registration_bearerAuth": {
+        "bearerFormat": "API key",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "stored-payment-transactions_bearerAuth": {
+        "bearerFormat": "JWT",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "telnyxApiKey": {
+        "description": "Management-only Telnyx account credential.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "transcriptions-search_bearerAuth": {
+        "description": "Telnyx API key. Results are automatically scoped to the authenticated user's organization.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "web-search_bearerAuth": {
+        "description": "Telnyx API key",
+        "scheme": "bearer",
+        "type": "http"
+      }
+    }
+  },
+  "info": {
+    "contact": {
+      "email": "support@telnyx.com"
+    },
+    "description": "SIP trunking, SMS, MMS, Call Control and Telephony Data Services.",
+    "title": "Telnyx API",
+    "version": "2.0.0",
+    "x-endpoint-cost": "light",
+    "x-latency-category": "responsive"
+  },
+  "openapi": "3.1.0",
+  "paths": {
+    "/calendar_connections": {
+      "get": {
+        "description": "List only the authenticated connecting user’s calendar connections. Session resources created by those connections are shared within the organization.",
+        "operationId": "listMeetingCalendarConnections",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "data": [
+                    {
+                      "auto_join_policy": "all_meetings",
+                      "bot_name": "Notetaker",
+                      "created_at": "2026-11-05T09:00:00Z",
+                      "default_assistant": null,
+                      "default_barge_in": null,
+                      "default_recording": null,
+                      "default_recording_export": null,
+                      "default_summarize_on_end": null,
+                      "default_voice": null,
+                      "default_webhook_url": null,
+                      "id": "calconn_example",
+                      "platform": "google_calendar",
+                      "platform_email": "organizer@example.com",
+                      "status": "connected",
+                      "status_detail": null,
+                      "updated_at": "2026-11-05T09:00:00Z"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/CalendarConnectionListResponse"
+                }
+              }
+            },
+            "description": "Successful response."
+          },
+          "401": {
+            "$ref": "#/components/responses/meeting-sessions_Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "429": {
+            "$ref": "#/components/responses/TooManyRequests"
+          },
+          "500": {
+            "$ref": "#/components/responses/meeting-sessions_InternalServerError"
+          },
+          "503": {
+            "$ref": "#/components/responses/ServiceUnavailable"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "List meeting calendar connections",
+        "tags": [
+          "Meeting Calendar Connections"
+        ]
+      },
+      "post": {
+        "description": "Start Google Calendar or Microsoft Outlook OAuth. Open oauth_url in a browser. No connection exists until authorization succeeds. The resulting connection is owned by the connecting user.",
+        "operationId": "createMeetingCalendarConnection",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "example": {
+                "platform": "google_calendar"
+              },
+              "schema": {
+                "$ref": "#/components/schemas/CreateCalendarConnectionRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "data": {
+                    "oauth_url": "https://accounts.google.com/o/oauth2/v2/auth?client_id=example",
+                    "platform": "google_calendar",
+                    "status": "pending_oauth"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/CalendarConnectionPendingResponse"
+                }
+              }
+            },
+            "description": "Successful response."
+          },
+          "400": {
+            "$ref": "#/components/responses/meeting-sessions_BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/meeting-sessions_Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "413": {
+            "$ref": "#/components/responses/PayloadTooLarge"
+          },
+          "422": {
+            "$ref": "#/components/responses/meeting-sessions_UnprocessableEntity"
+          },
+          "429": {
+            "$ref": "#/components/responses/TooManyRequests"
+          },
+          "500": {
+            "$ref": "#/components/responses/meeting-sessions_InternalServerError"
+          },
+          "503": {
+            "$ref": "#/components/responses/ServiceUnavailable"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Connect a meeting calendar",
+        "tags": [
+          "Meeting Calendar Connections"
+        ]
+      }
+    },
+    "/calendar_connections/{id}": {
+      "delete": {
+        "description": "Disconnect the calendar, cancel future joins, and clear retained calendar identity fields. Previously created session records, transcripts, artifacts, and Storage objects remain. The response is the updated connection.",
+        "operationId": "disconnectMeetingCalendar",
+        "parameters": [
+          {
+            "description": "Calendar connection ID.",
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "data": {
+                    "auto_join_policy": "all_meetings",
+                    "bot_name": "Notetaker",
+                    "created_at": "2026-11-05T09:00:00Z",
+                    "default_assistant": null,
+                    "default_barge_in": null,
+                    "default_recording": null,
+                    "default_recording_export": null,
+                    "default_summarize_on_end": null,
+                    "default_voice": null,
+                    "default_webhook_url": null,
+                    "id": "calconn_example",
+                    "platform": "google_calendar",
+                    "platform_email": "organizer@example.com",
+                    "status": "disconnected",
+                    "status_detail": null,
+                    "updated_at": "2026-11-05T09:00:00Z"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/CalendarConnectionResponse"
+                }
+              }
+            },
+            "description": "Successful response."
+          },
+          "401": {
+            "$ref": "#/components/responses/meeting-sessions_Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/meeting-sessions_NotFound"
+          },
+          "429": {
+            "$ref": "#/components/responses/TooManyRequests"
+          },
+          "500": {
+            "$ref": "#/components/responses/meeting-sessions_InternalServerError"
+          },
+          "502": {
+            "$ref": "#/components/responses/MeetingReadUnavailable"
+          },
+          "503": {
+            "$ref": "#/components/responses/ServiceUnavailable"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Disconnect a meeting calendar",
+        "tags": [
+          "Meeting Calendar Connections"
+        ]
+      },
+      "get": {
+        "description": "Retrieve a calendar connection owned by the authenticated connecting user. Missing and foreign connections both return 404. Signing secrets are omitted.",
+        "operationId": "retrieveMeetingCalendarConnection",
+        "parameters": [
+          {
+            "description": "Calendar connection ID.",
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "data": {
+                    "auto_join_policy": "all_meetings",
+                    "bot_name": "Notetaker",
+                    "created_at": "2026-11-05T09:00:00Z",
+                    "default_assistant": null,
+                    "default_barge_in": null,
+                    "default_recording": null,
+                    "default_recording_export": null,
+                    "default_summarize_on_end": null,
+                    "default_voice": null,
+                    "default_webhook_url": null,
+                    "id": "calconn_example",
+                    "platform": "google_calendar",
+                    "platform_email": "organizer@example.com",
+                    "status": "connected",
+                    "status_detail": null,
+                    "updated_at": "2026-11-05T09:00:00Z"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/CalendarConnectionResponse"
+                }
+              }
+            },
+            "description": "Successful response."
+          },
+          "401": {
+            "$ref": "#/components/responses/meeting-sessions_Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/meeting-sessions_NotFound"
+          },
+          "429": {
+            "$ref": "#/components/responses/TooManyRequests"
+          },
+          "500": {
+            "$ref": "#/components/responses/meeting-sessions_InternalServerError"
+          },
+          "502": {
+            "$ref": "#/components/responses/MeetingReadUnavailable"
+          },
+          "503": {
+            "$ref": "#/components/responses/ServiceUnavailable"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Retrieve a meeting calendar connection",
+        "tags": [
+          "Meeting Calendar Connections"
+        ]
+      },
+      "patch": {
+        "description": "Update policy or defaults for future sessions. Supply at least one field. Existing sessions retain their configuration. Null clears nullable overrides. Assistant, recording, and webhook defaults apply to Google Meet and Teams. Assistant defaults require default_barge_in to be false or null and default_voice to be null. Recording=true requires a destination; false rejects one. A non-null default_webhook_url update returns webhook_secret once; save it to verify future session deliveries.",
+        "operationId": "updateMeetingCalendarConnection",
+        "parameters": [
+          {
+            "description": "Calendar connection ID.",
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "example": {
+                "default_recording": true,
+                "default_recording_export": {
+                  "bucket": "meeting-recordings"
+                },
+                "default_webhook_url": "https://example.com/meeting-events"
+              },
+              "schema": {
+                "$ref": "#/components/schemas/UpdateCalendarConnectionRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "data": {
+                    "auto_join_policy": "all_meetings",
+                    "bot_name": "Notetaker",
+                    "created_at": "2026-11-05T09:00:00Z",
+                    "default_assistant": null,
+                    "default_barge_in": null,
+                    "default_recording": true,
+                    "default_recording_export": {
+                      "bucket": "meeting-recordings"
+                    },
+                    "default_summarize_on_end": null,
+                    "default_voice": null,
+                    "default_webhook_url": "https://example.com/meeting-events",
+                    "id": "calconn_example",
+                    "platform": "google_calendar",
+                    "platform_email": "organizer@example.com",
+                    "status": "connected",
+                    "status_detail": null,
+                    "updated_at": "2026-11-05T09:00:00Z",
+                    "webhook_secret": "whsec_example"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/CalendarConnectionUpdatedResponse"
+                }
+              }
+            },
+            "description": "Successful response."
+          },
+          "400": {
+            "$ref": "#/components/responses/meeting-sessions_BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/meeting-sessions_Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/meeting-sessions_NotFound"
+          },
+          "409": {
+            "$ref": "#/components/responses/meeting-sessions_Conflict"
+          },
+          "413": {
+            "$ref": "#/components/responses/PayloadTooLarge"
+          },
+          "422": {
+            "$ref": "#/components/responses/meeting-sessions_UnprocessableEntity"
+          },
+          "429": {
+            "$ref": "#/components/responses/TooManyRequests"
+          },
+          "500": {
+            "$ref": "#/components/responses/meeting-sessions_InternalServerError"
+          },
+          "502": {
+            "$ref": "#/components/responses/MeetingReadUnavailable"
+          },
+          "503": {
+            "$ref": "#/components/responses/ServiceUnavailable"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Update a meeting calendar connection",
+        "tags": [
+          "Meeting Calendar Connections"
+        ]
+      }
+    },
+    "/calendar_connections/{id}/meetings": {
+      "get": {
+        "description": "List tracked meetings in a window. Defaults from now through seven days from now. from must not exceed to and the window must not exceed 31 days. bot_will_join is the effective policy decision; check session_id and the linked session status for actual attendance.",
+        "operationId": "listMeetingCalendarMeetings",
+        "parameters": [
+          {
+            "description": "Calendar connection ID.",
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Window start; defaults to now.",
+            "in": "query",
+            "name": "from",
+            "schema": {
+              "format": "date-time",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Window end; defaults to seven days from now.",
+            "in": "query",
+            "name": "to",
+            "schema": {
+              "format": "date-time",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "data": [
+                    {
+                      "attendees": [],
+                      "bot_will_join": true,
+                      "bot_will_join_override": null,
+                      "decision": "scheduled",
+                      "end_time": "2026-12-05T09:30:00Z",
+                      "id": "calmtg_example",
+                      "is_external_organizer": false,
+                      "organizer": {
+                        "display_name": "Organizer",
+                        "email": "organizer@example.com",
+                        "self": true
+                      },
+                      "platform": "google_meet",
+                      "session_id": "mtgsess_example",
+                      "start_time": "2026-12-05T09:00:00Z"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/CalendarMeetingListResponse"
+                }
+              }
+            },
+            "description": "Successful response."
+          },
+          "400": {
+            "$ref": "#/components/responses/meeting-sessions_BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/meeting-sessions_Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/meeting-sessions_NotFound"
+          },
+          "429": {
+            "$ref": "#/components/responses/TooManyRequests"
+          },
+          "500": {
+            "$ref": "#/components/responses/meeting-sessions_InternalServerError"
+          },
+          "503": {
+            "$ref": "#/components/responses/ServiceUnavailable"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "List calendar meetings",
+        "tags": [
+          "Meeting Calendar Connections"
+        ]
+      }
+    },
+    "/calendar_connections/{id}/meetings/{meeting_id}": {
+      "patch": {
+        "description": "Set an individual meeting override: true opts in, false opts out, null follows the connection policy. A supported meeting link is required. Changes re-evaluate the meeting immediately; poll the linked session for its final lifecycle outcome.",
+        "operationId": "updateMeetingCalendarMeeting",
+        "parameters": [
+          {
+            "description": "Calendar connection ID.",
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Tracked meeting ID.",
+            "in": "path",
+            "name": "meeting_id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "example": {
+                "bot_will_join": false
+              },
+              "schema": {
+                "$ref": "#/components/schemas/UpdateCalendarMeetingRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "data": {
+                    "attendees": [],
+                    "bot_will_join": false,
+                    "bot_will_join_override": false,
+                    "decision": "skipped_policy",
+                    "end_time": "2026-12-05T09:30:00Z",
+                    "id": "calmtg_example",
+                    "is_external_organizer": false,
+                    "organizer": {
+                      "display_name": "Organizer",
+                      "email": "organizer@example.com",
+                      "self": true
+                    },
+                    "platform": "google_meet",
+                    "session_id": "mtgsess_example",
+                    "start_time": "2026-12-05T09:00:00Z"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/CalendarMeetingResponse"
+                }
+              }
+            },
+            "description": "Successful response."
+          },
+          "400": {
+            "$ref": "#/components/responses/meeting-sessions_BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/meeting-sessions_Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/meeting-sessions_NotFound"
+          },
+          "409": {
+            "$ref": "#/components/responses/meeting-sessions_Conflict"
+          },
+          "413": {
+            "$ref": "#/components/responses/PayloadTooLarge"
+          },
+          "429": {
+            "$ref": "#/components/responses/TooManyRequests"
+          },
+          "500": {
+            "$ref": "#/components/responses/meeting-sessions_InternalServerError"
+          },
+          "502": {
+            "$ref": "#/components/responses/MeetingReadUnavailable"
+          },
+          "503": {
+            "$ref": "#/components/responses/ServiceUnavailable"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Update calendar meeting auto-join",
+        "tags": [
+          "Meeting Calendar Connections"
+        ]
+      }
+    },
+    "/meeting_bot/calendar/oauth_callback": {
+      "get": {
+        "description": "Browser redirect after calendar consent. Use the returned oauth_url rather than constructing this request. Verified state identifies the connecting user. Returns HTML for success, cancellation, or failure; no JSON error envelope or bearer token is used.",
+        "operationId": "completeMeetingCalendarAuthorization",
+        "parameters": [
+          {
+            "description": "Authorization code supplied by the calendar provider.",
+            "in": "query",
+            "name": "code",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Unmodified signed state from the authorization URL.",
+            "in": "query",
+            "name": "state",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Authorization error supplied by the calendar provider, such as access_denied.",
+            "in": "query",
+            "name": "error",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "text/html": {
+                "example": "\u003c!doctype html\u003e\u003chtml\u003e\u003cbody\u003e\u003ch1\u003eCalendar connected\u003c/h1\u003e\u003c/body\u003e\u003c/html\u003e",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "description": "Calendar connected, or the user cancelled authorization."
+          },
+          "400": {
+            "content": {
+              "text/html": {
+                "example": "\u003c!doctype html\u003e\u003chtml\u003e\u003cbody\u003e\u003ch1\u003eInvalid request\u003c/h1\u003e\u003c/body\u003e\u003c/html\u003e",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "description": "Invalid, expired, or rejected authorization."
+          },
+          "409": {
+            "content": {
+              "text/html": {
+                "example": "\u003c!doctype html\u003e\u003chtml\u003e\u003cbody\u003e\u003ch1\u003eCalendar already connected\u003c/h1\u003e\u003c/body\u003e\u003c/html\u003e",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "description": "This user already has a connection for this calendar platform."
+          },
+          "500": {
+            "content": {
+              "text/html": {
+                "example": "\u003c!doctype html\u003e\u003chtml\u003e\u003cbody\u003e\u003ch1\u003eCalendar connection failed\u003c/h1\u003e\u003c/body\u003e\u003c/html\u003e",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "description": "Unexpected connection failure."
+          },
+          "502": {
+            "content": {
+              "text/html": {
+                "example": "\u003c!doctype html\u003e\u003chtml\u003e\u003cbody\u003e\u003ch1\u003eCalendar connection failed\u003c/h1\u003e\u003c/body\u003e\u003c/html\u003e",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "description": "Calendar authorization exchange failed."
+          },
+          "503": {
+            "content": {
+              "text/html": {
+                "example": "\u003c!doctype html\u003e\u003chtml\u003e\u003cbody\u003e\u003ch1\u003eCalendar connections unavailable\u003c/h1\u003e\u003c/body\u003e\u003c/html\u003e",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "description": "Calendar connection is temporarily unavailable."
+          }
+        },
+        "security": [],
+        "summary": "Complete meeting calendar authorization",
+        "tags": [
+          "Meeting Calendar Connections"
+        ]
+      }
+    }
+  },
+  "security": [
+    {
+      "bearerAuth": []
+    }
+  ],
+  "servers": [
+    {
+      "description": "Version 2.0.0 of the Telnyx API",
+      "url": "https://api.telnyx.com/v2"
+    }
+  ]
+}

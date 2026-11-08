@@ -10,7 +10,7 @@ func MobileVoiceConnectionsList() *engine.List {
 	return &engine.List{
 		TypeName:    "telnyx_mobile_voice_connections",
 		Description: "Lists mobile voice connections, with optional filters. Each item has the attributes of `telnyx_mobile_voice_connection`.",
-		Op:          &engine.Op{Method: "GET", Path: "/v2/mobile_voice_connections", Envelope: true, Paging: engine.PagingNumber, PageSize: 250},
+		Op:          &engine.Op{Method: "GET", Path: "/mobile_voice_connections", Envelope: true, Paging: engine.PagingNumber, PageSize: 250},
 		Params: []*engine.Attr{
 			{Name: "filter_connection_name_contains", JSON: "filter[connection_name][contains]", Kind: engine.KindString, Optional: true},
 			{Name: "sort", JSON: "sort", Kind: engine.KindString, Optional: true},

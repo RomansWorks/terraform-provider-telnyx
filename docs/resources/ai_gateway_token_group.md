@@ -39,7 +39,7 @@ A token group of the AI gateway, the budgets, rate limits, models and guardrails
 - `budget_started_at` (String)
 - `created_at` (String)
 - `id` (String) The object's id.
-- `record_type` (String) A JSON document; use `jsondecode()` to read it.
+- `record_type` (String)
 - `reserved_spend` (Number) USD, decimal precision at most 6 places; parse exactly to integer micro-USD, never binary float accounting.
 - `resets_at` (String)
 - `spend` (Number) USD, decimal precision at most 6 places; parse exactly to integer micro-USD, never binary float accounting.

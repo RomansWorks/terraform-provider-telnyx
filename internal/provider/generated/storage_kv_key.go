@@ -18,7 +18,7 @@ func StorageKvKey() *engine.Resource {
 		Import:      []string{"namespace_id", "key"},
 		DataSource:  true,
 		Attrs: []*engine.Attr{
-			{Name: "key", Kind: engine.KindString, Required: true, ForceNew: true, Local: true, PathParams: []string{"key"}, Description: "The key id."},
+			{Name: "key", Kind: engine.KindString, Required: true, ForceNew: true, Local: true, PathParams: []string{"key"}, Description: "The key."},
 			{Name: "namespace_id", Kind: engine.KindString, Required: true, ForceNew: true, Local: true, PathParams: []string{"id"}, Description: "The namespace id."},
 			{Name: "ttl_secs", Kind: engine.KindInt, Optional: true, Local: true, Description: "Seconds until the key expires and is removed. Sent when the value is written; by default the key never expires."},
 			{Name: "value", JSON: "value", Kind: engine.KindString, Required: true, Sensitive: true, InResponse: true, Description: "The value, stored as UTF-8 text."},

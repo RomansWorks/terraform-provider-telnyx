@@ -31,7 +31,7 @@ resource "telnyx_storage_bucket_ssl_certificate" "example" {
 
 ### Required
 
-- `bucket_name` (String) The bucket name id.
+- `bucket_name` (String) The bucket name.
 - `certificate_pem` (String) The certificate in PEM format, with any intermediate certificates after it.
 - `private_key_pem` (String, Sensitive) The certificate's private key in PEM format.
 

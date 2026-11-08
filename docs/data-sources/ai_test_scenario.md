@@ -38,7 +38,6 @@ A scenario of the AI test framework, a simulated conversation with a personality
 - `outbound_phone_number_data` (Attributes) (see [below for nested schema](#nestedatt--outbound_phone_number_data))
 - `personality` (Number) ID of the personality the caller simulates.
 - `personality_name` (String)
-- `phone_number` (Number)
 - `project` (Number)
 - `runs` (List of Number)
 - `scenario_language` (String)

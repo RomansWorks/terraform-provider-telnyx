@@ -12,7 +12,7 @@ func ComputeFunctionRevisionsList() *engine.List {
 		Description: "The deployed revisions of a compute function.",
 		Op:          &engine.Op{Method: "GET", Path: "/compute/funcs/{id}/revisions", Envelope: true, Paging: engine.PagingNumber, PageSize: 250},
 		Params: []*engine.Attr{
-			{Name: "id", Kind: engine.KindString, Required: true, PathParams: []string{"id"}, Description: "The id id."},
+			{Name: "id", Kind: engine.KindString, Required: true, PathParams: []string{"id"}, Description: "The id of the object whose items are listed."},
 		},
 		Items: &engine.Attr{Name: "compute_function_revisions", JSON: "data", Kind: engine.KindList, Computed: true, InResponse: true, Description: "The objects, in the order the API returns them.",
 			Attrs: []*engine.Attr{

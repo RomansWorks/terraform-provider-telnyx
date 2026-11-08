@@ -23,7 +23,12 @@ var hooks = map[string]engine.Hooks{
 	"telnyx_ai_tool":                              aiToolHooks,
 	"telnyx_display_identity_record":              displayIdentityRecordHooks,
 	"telnyx_display_identity_record_phone_number": displayIdentityRecordPhoneNumberHooks,
+	"telnyx_email_dedicated_ip":                   emailDedicatedIPHooks,
+	"telnyx_email_domain":                         emailDomainHooks,
+	"telnyx_email_inbox":                          emailInboxHooks,
+	"telnyx_email_suppression":                    emailSuppressionHooks,
 	"telnyx_enterprise_reputation_number":         enterpriseReputationNumberHooks,
+	"telnyx_inexplicit_number_order":              inexplicitNumberOrderHooks,
 	"telnyx_number_order":                         numberOrderHooks,
 	"telnyx_porting_order":                        portingOrderHooks,
 	"telnyx_porting_order_additional_document":    portingOrderAdditionalDocumentHooks,
@@ -35,6 +40,7 @@ var hooks = map[string]engine.Hooks{
 	"telnyx_storage_sql_database":                 storageProvisionHooks,
 	"telnyx_texml_queue":                          texmlQueueHooks,
 	"telnyx_voice_clone":                          voiceCloneHooks,
+	"telnyx_whatsapp_message_template":            whatsappMessageTemplateHooks,
 }
 
 // descriptors returns every generated resource with its hooks attached.

@@ -29,7 +29,7 @@ resource "telnyx_storage_kv_key" "example" {
 
 ### Required
 
-- `key` (String) The key id.
+- `key` (String) The key.
 - `namespace_id` (String) The namespace id.
 - `value` (String, Sensitive) The value, stored as UTF-8 text.
 

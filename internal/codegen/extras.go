@@ -106,5 +106,8 @@ func paramDescription(name string) string {
 	if name == "id" {
 		return "The object's id."
 	}
-	return "The " + strings.ReplaceAll(strings.TrimSuffix(name, "_id"), "_", " ") + " id."
+	if strings.HasSuffix(name, "_id") {
+		return "The " + strings.ReplaceAll(strings.TrimSuffix(name, "_id"), "_", " ") + " id."
+	}
+	return "The " + strings.ReplaceAll(name, "_", " ") + "."
 }

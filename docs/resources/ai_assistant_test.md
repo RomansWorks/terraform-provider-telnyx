@@ -39,7 +39,7 @@ resource "telnyx_ai_assistant_test" "example" {
 
 - `description` (String) Detailed description of the test's purpose and scope.
 - `max_duration_seconds` (Number) Maximum allowed duration for test execution in seconds.
-- `telnyx_conversation_channel` (String) Communication channel used for test execution. A JSON document; use `jsonencode()`.
+- `telnyx_conversation_channel` (String) Communication channel used for test execution. One of `phone_call`, `sms_chat`, `web_call`, `web_chat`.
 - `test_suite` (String) Test suite grouping for organizational purposes.
 
 ### Read-Only

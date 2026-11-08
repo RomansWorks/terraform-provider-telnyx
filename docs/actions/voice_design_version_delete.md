@@ -18,4 +18,4 @@ Deletes one version of a voice design.
 ### Required
 
 - `id` (String) The object's id.
-- `version` (String) The version id.
+- `version` (String) The version.

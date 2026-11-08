@@ -18,7 +18,7 @@ func StorageBucketSslCertificate() *engine.Resource {
 		Import:      []string{"bucket_name"},
 		DataSource:  true,
 		Attrs: []*engine.Attr{
-			{Name: "bucket_name", Kind: engine.KindString, Required: true, ForceNew: true, Local: true, PathParams: []string{"bucketName"}, Description: "The bucket name id."},
+			{Name: "bucket_name", Kind: engine.KindString, Required: true, ForceNew: true, Local: true, PathParams: []string{"bucketName"}, Description: "The bucket name."},
 			{Name: "certificate_pem", Kind: engine.KindString, Required: true, Local: true, Description: "The certificate in PEM format, with any intermediate certificates after it."},
 			{Name: "created_at", JSON: "created_at", Kind: engine.KindString, Computed: true, InResponse: true, Description: "Time when SSL certificate was uploaded"},
 			{Name: "id", JSON: "id", Kind: engine.KindString, Computed: true, InResponse: true, Description: "Unique identifier for the SSL certificate"},

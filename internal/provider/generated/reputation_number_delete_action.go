@@ -12,7 +12,7 @@ func ReputationNumberDeleteAction() *engine.Action {
 		Description: "Removes a phone number from reputation monitoring, without naming its enterprise.",
 		Op:          &engine.Op{Method: "DELETE", Path: "/reputation/numbers/{phone_number}", Envelope: false},
 		Attrs: []*engine.Attr{
-			{Name: "phone_number", Kind: engine.KindString, Required: true, Local: true, PathParams: []string{"phone_number"}, Description: "The phone number id."},
+			{Name: "phone_number", Kind: engine.KindString, Required: true, Local: true, PathParams: []string{"phone_number"}, Description: "The phone number."},
 		},
 	}
 }

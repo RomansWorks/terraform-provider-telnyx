@@ -2022,6 +2022,214 @@
      }
     }
    }
+  },
+  "/pools": {
+   "get": {
+    "parameters": [
+     {
+      "name": "page[number]",
+      "in": "query",
+      "schema": {
+       "type": "integer"
+      }
+     },
+     {
+      "name": "page[size]",
+      "in": "query",
+      "schema": {
+       "type": "integer"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "pools",
+      "content": {
+       "application/json": {
+        "schema": {
+         "oneOf": [
+          {
+           "type": "object",
+           "properties": {
+            "data": {
+             "type": "array",
+             "items": {
+              "type": "object",
+              "properties": {
+               "id": {
+                "type": "string"
+               },
+               "name": {
+                "type": "string"
+               }
+              }
+             }
+            },
+            "meta": {
+             "type": "object",
+             "properties": {
+              "total_pages": {
+               "type": "integer"
+              }
+             }
+            }
+           }
+          },
+          {
+           "type": "object",
+           "properties": {
+            "data": {
+             "type": "array",
+             "items": {
+              "type": "object",
+              "properties": {
+               "id": {
+                "type": "string"
+               },
+               "name": {
+                "type": "string"
+               }
+              }
+             }
+            },
+            "meta": {
+             "type": "object",
+             "properties": {
+              "cursors": {
+               "type": "object",
+               "properties": {
+                "after": {
+                 "type": "string"
+                }
+               }
+              }
+             }
+            }
+           }
+          }
+         ]
+        }
+       }
+      }
+     }
+    }
+   },
+   "post": {
+    "requestBody": {
+     "content": {
+      "application/json": {
+       "schema": {
+        "type": "object",
+        "required": [
+         "name"
+        ],
+        "properties": {
+         "name": {
+          "type": "string"
+         }
+        }
+       }
+      }
+     }
+    },
+    "responses": {
+     "201": {
+      "description": "created",
+      "content": {
+       "application/json": {
+        "schema": {
+         "type": "object",
+         "properties": {
+          "data": {
+           "type": "object",
+           "properties": {
+            "id": {
+             "type": "string"
+            },
+            "name": {
+             "type": "string"
+            }
+           }
+          }
+         }
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/pools/{pool_id}": {
+   "parameters": [
+    {
+     "name": "pool_id",
+     "in": "path",
+     "required": true,
+     "schema": {
+      "type": "string"
+     }
+    }
+   ],
+   "get": {
+    "responses": {
+     "200": {
+      "description": "pool",
+      "content": {
+       "application/json": {
+        "schema": {
+         "type": "object",
+         "properties": {
+          "data": {
+           "type": "object",
+           "properties": {
+            "id": {
+             "type": "string"
+            },
+            "name": {
+             "type": "string"
+            }
+           }
+          }
+         }
+        }
+       }
+      }
+     }
+    }
+   },
+   "delete": {
+    "parameters": [
+     {
+      "name": "force",
+      "in": "query",
+      "schema": {
+       "type": "boolean"
+      }
+     },
+     {
+      "name": "drain",
+      "in": "query",
+      "schema": {
+       "type": "boolean"
+      }
+     },
+     {
+      "name": "reason",
+      "in": "query",
+      "schema": {
+       "type": "string"
+      }
+     },
+     {
+      "$ref": "#/components/parameters/CascadeQuery"
+     }
+    ],
+    "responses": {
+     "204": {
+      "description": "gone"
+     }
+    }
+   }
   }
  },
  "components": {
@@ -2434,6 +2642,26 @@
        }
       }
      }
+    }
+   }
+  },
+  "parameters": {
+   "CascadeQuery": {
+    "name": "cascade",
+    "in": "query",
+    "schema": {
+     "oneOf": [
+      {
+       "type": "string",
+       "enum": [
+        "true",
+        "false"
+       ]
+      },
+      {
+       "type": "boolean"
+      }
+     ]
     }
    }
   }

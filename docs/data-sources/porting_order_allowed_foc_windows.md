@@ -17,7 +17,7 @@ The firm order commitment (FOC) dates a porting order can be given.
 
 ### Required
 
-- `id` (String) The id id.
+- `id` (String) The id of the object whose items are listed.
 
 ### Optional
 

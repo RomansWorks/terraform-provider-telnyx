@@ -62,20 +62,21 @@ func Each(ctx context.Context, c *client.Client, op *Op, path string, query url.
 		var items []Object
 		var total int
 		if op.Records || op.Results {
-			field, count := "records", "totalRecords"
+			field, counts := "records", []string{"totalRecords", "total_records"}
 			if op.Results {
-				field, count = "results", "count"
+				field, counts = "results", []string{"count"}
 			}
 			var records int
-			items, records, err = decodeItems(out, field, count)
+			items, records, err = decodeItems(out, field, counts...)
 			read += len(items)
-			if err == nil && records > 0 {
-				if read >= records {
-					total = page
-				} else {
-					// A short page is not the end while count says more remain.
-					total = page + 1
-				}
+			// With a known count, page until it is read whatever the page
+			// size the server chose; without one, a short page is the last.
+			switch {
+			case err != nil || records == 0:
+			case read >= records:
+				total = page
+			default:
+				total = maxPages
 			}
 		} else {
 			items, total, err = decodeList(out, op.Envelope)
@@ -188,29 +189,35 @@ func decodeList(data []byte, envelope bool) ([]Object, int, error) {
 }
 
 // decodeRecords decodes a list response that holds its items in "records"
-// and their count in "totalRecords" (0 when the response does not say).
+// and their count in "totalRecords" or "total_records" (0 when the response
+// does not say).
 func decodeRecords(data []byte) ([]Object, int, error) {
-	return decodeItems(data, "records", "totalRecords")
+	return decodeItems(data, "records", "totalRecords", "total_records")
 }
 
 // decodeItems decodes a list response that holds its items in field
-// ("records" or "results") and their count in count ("totalRecords" or
-// "count"; 0 when the response does not say).
-func decodeItems(data []byte, field, count string) ([]Object, int, error) {
+// ("records" or "results") and their count in the first of counts that
+// the response gives a positive value ("totalRecords", "total_records" or
+// "count"; 0 when none does).
+func decodeItems(data []byte, field string, counts ...string) ([]Object, int, error) {
 	var body map[string]json.RawMessage
 	if err := json.Unmarshal(data, &body); err != nil {
 		return nil, 0, fmt.Errorf("decoding list response: %w", err)
 	}
-	var total json.Number
-	if raw, ok := body[count]; ok {
-		_ = json.Unmarshal(raw, &total)
+	n := 0
+	for _, count := range counts {
+		var total json.Number
+		if raw, ok := body[count]; ok && json.Unmarshal(raw, &total) == nil {
+			if n, _ = strconv.Atoi(total.String()); n > 0 {
+				break
+			}
+		}
 	}
 	records := body[field]
 	if len(records) == 0 || string(records) == "null" {
 		return nil, 0, nil
 	}
 	items, _, err := decodeList(records, false)
-	n, _ := strconv.Atoi(total.String())
 	return items, n, err
 }
 

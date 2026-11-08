@@ -17,7 +17,7 @@ The SSL certificate a storage bucket serves on its custom domain.
 
 ### Required
 
-- `bucket_name` (String) The bucket name id.
+- `bucket_name` (String) The bucket name.
 
 ### Read-Only
 

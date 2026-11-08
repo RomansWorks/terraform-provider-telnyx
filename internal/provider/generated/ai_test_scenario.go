@@ -46,7 +46,7 @@ func AITestScenario() *engine.Resource {
 				}},
 			{Name: "personality", JSON: "personality", Kind: engine.KindInt, Required: true, InCreate: true, InUpdate: true, InResponse: true, Description: "ID of the personality the caller simulates."},
 			{Name: "personality_name", JSON: "personality_name", Kind: engine.KindString, Computed: true, InResponse: true},
-			{Name: "phone_number", JSON: "phone_number", Kind: engine.KindInt, Optional: true, Computed: true, InUpdate: true, InResponse: true},
+			{Name: "phone_number", JSON: "phone_number", Kind: engine.KindInt, Optional: true, InUpdate: true},
 			{Name: "project", JSON: "project", Kind: engine.KindInt, Computed: true, InResponse: true},
 			{Name: "runs", JSON: "runs", Kind: engine.KindList, Computed: true, InResponse: true, Elem: &engine.Attr{Kind: engine.KindInt}},
 			{Name: "scenario_language", JSON: "scenario_language", Kind: engine.KindString, Optional: true, Computed: true, InUpdate: true, InResponse: true},

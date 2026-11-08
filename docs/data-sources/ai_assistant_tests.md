@@ -38,7 +38,7 @@ Read-Only:
 - `max_duration_seconds` (Number) Maximum allowed duration for test execution in seconds.
 - `name` (String) Human-readable name of the test.
 - `rubric` (Attributes List) Evaluation criteria used to assess test performance. (see [below for nested schema](#nestedatt--ai_assistant_tests--rubric))
-- `telnyx_conversation_channel` (String) Communication channel used for test execution. A JSON document; use `jsondecode()` to read it.
+- `telnyx_conversation_channel` (String) Communication channel used for test execution.
 - `test_id` (String) Unique identifier for the assistant test.
 - `test_suite` (String) Test suite grouping for organizational purposes.
 

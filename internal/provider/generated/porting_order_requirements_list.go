@@ -12,7 +12,7 @@ func PortingOrderRequirementsList() *engine.List {
 		Description: "The requirements of a porting order and whether they are met.",
 		Op:          &engine.Op{Method: "GET", Path: "/porting_orders/{id}/requirements", Envelope: true, Paging: engine.PagingNumber, PageSize: 250},
 		Params: []*engine.Attr{
-			{Name: "id", Kind: engine.KindString, Required: true, PathParams: []string{"id"}, Description: "The id id."},
+			{Name: "id", Kind: engine.KindString, Required: true, PathParams: []string{"id"}, Description: "The id of the object whose items are listed."},
 		},
 		Items: &engine.Attr{Name: "porting_order_requirements", JSON: "data", Kind: engine.KindList, Computed: true, InResponse: true, Description: "The objects, in the order the API returns them.",
 			Attrs: []*engine.Attr{

@@ -15,7 +15,7 @@ func AIKnowledgeCollectionDocumentsList() *engine.List {
 			{Name: "filter", JSON: "filter", Kind: engine.KindString, Optional: true},
 			{Name: "query", JSON: "query", Kind: engine.KindString, Optional: true},
 			{Name: "retrieval_type", JSON: "retrieval_type", Kind: engine.KindString, Optional: true, Enum: []string{"hybrid", "keyword", "vector"}},
-			{Name: "slug", Kind: engine.KindString, Required: true, PathParams: []string{"slug"}, Description: "The slug id."},
+			{Name: "slug", Kind: engine.KindString, Required: true, PathParams: []string{"slug"}, Description: "The slug."},
 			{Name: "sources", JSON: "sources", Kind: engine.KindString, Optional: true},
 			{Name: "top_k", JSON: "top_k", Kind: engine.KindInt, Optional: true},
 		},

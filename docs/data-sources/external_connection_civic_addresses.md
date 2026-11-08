@@ -17,7 +17,7 @@ The civic addresses and locations of an external connection.
 
 ### Required
 
-- `id` (String) The id id.
+- `id` (String) The id of the object whose items are listed.
 
 ### Optional
 

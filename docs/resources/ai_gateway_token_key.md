@@ -60,7 +60,7 @@ output "gateway_token" {
 - `created_at` (String)
 - `id` (String) The object's id.
 - `provisioning` (String) Provisioning state of the key's current policy. `pending`: retry readiness with bounded backoff (treat `unknown` the same). `inactive` and `unsupported` are terminal until the key, group, user or catalog changes. `unavailable` means provisioning is stuck and is retried slowly; surface it. Absent while the gateway runs in compatibility mode.
-- `record_type` (String) A JSON document; use `jsondecode()` to read it.
+- `record_type` (String)
 - `reserved_spend` (Number) USD, decimal precision at most 6 places; parse exactly to integer micro-USD, never binary float accounting.
 - `resets_at` (String)
 - `spend` (Number) USD, decimal precision at most 6 places; parse exactly to integer micro-USD, never binary float accounting.

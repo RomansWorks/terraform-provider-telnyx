@@ -4,6 +4,7 @@
 package engine
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"fmt"
@@ -307,7 +308,7 @@ func (r *frameworkResource) Delete(ctx context.Context, req resource.DeleteReque
 		var p string
 		p, err = fillPath(d.Attrs, d.Delete.Path, state)
 		if err == nil {
-			_, err = r.c.Send(r.withHeaders(ctx, "delete", state), d.Delete.Method, p, opQuery(d.Attrs, d.Delete, state), "", nil)
+			_, err = r.c.Send(r.withHeaders(ctx, "delete", state), d.Delete.Method, p, r.withForce(opQuery(d.Attrs, d.Delete, state), state), "", nil)
 		}
 	}
 	if err != nil && !client.IsNotFound(err) {
@@ -358,6 +359,30 @@ func (r *frameworkResource) changed(plan, state Values) bool {
 		}
 	}
 	return false
+}
+
+// ForceDestroyAttr is the attribute that sets the delete operation's
+// ForceDestroy query parameters.
+const ForceDestroyAttr = "force_destroy"
+
+// withForce adds the ForceDestroy parameters, set to true, to a delete
+// query when the force_destroy value in state is true.
+func (r *frameworkResource) withForce(q url.Values, state Values) url.Values {
+	if len(r.d.ForceDestroy) == 0 {
+		return q
+	}
+	var force bool
+	v := state[ForceDestroyAttr]
+	if !v.IsKnown() || v.IsNull() || v.As(&force) != nil || !force {
+		return q
+	}
+	if q == nil {
+		q = url.Values{}
+	}
+	for _, p := range r.d.ForceDestroy {
+		q.Set(p, "true")
+	}
+	return q
 }
 
 // ReleaseAttr is the attribute that lets destroy delete an object the
@@ -537,7 +562,27 @@ func Get(ctx context.Context, c *client.Client, d *Resource, vals Values) (Objec
 		}
 		return Object{"value": string(out)}, nil
 	}
+	if d.Read.Whole != "" {
+		return decodeWhole(out, d.Read)
+	}
 	return Decode(out, d.Read.Envelope)
+}
+
+// decodeWhole puts the whole response, whatever its JSON type, into the one
+// attribute op.Whole names.
+func decodeWhole(data []byte, op *Op) (Object, error) {
+	var v any
+	if len(bytes.TrimSpace(data)) > 0 {
+		dec := json.NewDecoder(bytes.NewReader(data))
+		dec.UseNumber()
+		if err := dec.Decode(&v); err != nil {
+			return nil, fmt.Errorf("decoding response: %w", err)
+		}
+	}
+	if m, ok := v.(map[string]any); ok && op.Envelope {
+		v = m["data"]
+	}
+	return Object{op.Whole: v}, nil
 }
 
 func (r *frameworkResource) afterRead(ctx context.Context, obj Object) (Object, error) {

@@ -28,7 +28,7 @@ A test that has a simulated user talk to an AI assistant and grades the conversa
 - `max_duration_seconds` (Number) Maximum allowed duration for test execution in seconds.
 - `name` (String) Human-readable name of the test.
 - `rubric` (Attributes List) Evaluation criteria used to assess test performance. (see [below for nested schema](#nestedatt--rubric))
-- `telnyx_conversation_channel` (String) Communication channel used for test execution. A JSON document; use `jsonencode()`.
+- `telnyx_conversation_channel` (String) Communication channel used for test execution. One of `phone_call`, `sms_chat`, `web_call`, `web_chat`.
 - `test_suite` (String) Test suite grouping for organizational purposes.
 
 <a id="nestedatt--rubric"></a>

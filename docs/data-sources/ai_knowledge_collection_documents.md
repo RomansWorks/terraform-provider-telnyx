@@ -17,7 +17,7 @@ Searches the documents of an AI knowledge collection and returns the matching ch
 
 ### Required
 
-- `slug` (String) The slug id.
+- `slug` (String) The slug.
 
 ### Optional
 

@@ -117,7 +117,7 @@ Optional:
 - `avatar_id` (String) Stable identifier returned by the Avatars API. Discover available stock IDs with GET /v2/ai/avatars and filter[avatar_type]=stock rather than maintaining a fixed list. Custom avatar IDs use the `avatar_` prefix and must belong to the authenticated organization. The service validates that the selected avatar is available.
 - `background_id` (String) The background to render. One of `illustrated_workspace`, `office`, `reception`, `studio`.
 - `model` (String) Required avatar model identifier, separate from `avatar_id`. The supported value is `foxtrot-1`. Omission, null, and unsupported model identifiers are rejected. One of `foxtrot-1`.
-- `provider` (String) Selects the Telnyx open-source avatar provider.
+- `provider` (String) Selects the Telnyx open-source avatar provider. One of `telnyx`.
 
 
 <a id="nestedatt--delegation_settings"></a>

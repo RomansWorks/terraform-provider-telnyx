@@ -17,7 +17,7 @@ func AIMemoryNamespaceSettings() *engine.Resource {
 		Import:      []string{"namespace"},
 		DataSource:  true,
 		Attrs: []*engine.Attr{
-			{Name: "namespace", Kind: engine.KindString, Required: true, ForceNew: true, Local: true, PathParams: []string{"namespace"}, Description: "The namespace id."},
+			{Name: "namespace", Kind: engine.KindString, Required: true, ForceNew: true, Local: true, PathParams: []string{"namespace"}, Description: "The namespace."},
 			{Name: "summary", JSON: "summary", Kind: engine.KindObject, Optional: true, Computed: true, InCreate: true, InUpdate: true, InResponse: true, Description: "A namespace's summary settings, shared by every profile in it.",
 				Attrs: []*engine.Attr{
 					{Name: "instructions", JSON: "instructions", Kind: engine.KindString, Optional: true, Computed: true, InCreate: true, InUpdate: true, InResponse: true, Description: "Free-form instructions that influence how this namespace's summaries are written, shared by every profile in the namespace. How you use them is up to you -- they steer the outcome, so try a phrasing and see how the summary comes out. Advisory: they steer the summary but never override or deny a profile's own facts, and they do not affect recall. Null or empty means none are set, and summaries use the neutral default. A change reaches each summary the next time it is regenerated."},

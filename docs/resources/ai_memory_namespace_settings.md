@@ -17,7 +17,7 @@ The settings of an AI memory namespace. Destroy removes them from Terraform stat
 
 ### Required
 
-- `namespace` (String) The namespace id.
+- `namespace` (String) The namespace.
 
 ### Optional
 

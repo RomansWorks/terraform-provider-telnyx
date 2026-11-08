@@ -30,7 +30,7 @@ A scenario of the AI test framework, a simulated conversation with a personality
 - `instructions` (String)
 - `max_duration` (Number)
 - `metrics` (List of Number)
-- `phone_number` (Number)
+- `phone_number` (Number) The API does not return this value, so changes made outside Terraform are not detected.
 - `scenario_language` (String)
 - `tags` (List of String)
 - `test_profile` (Number)

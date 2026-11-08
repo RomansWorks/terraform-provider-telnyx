@@ -13,7 +13,7 @@ func VoiceDesignVersionDeleteAction() *engine.Action {
 		Op:          &engine.Op{Method: "DELETE", Path: "/voice_designs/{id}/versions/{version}", Envelope: false},
 		Attrs: []*engine.Attr{
 			{Name: "id", Kind: engine.KindString, Required: true, Local: true, PathParams: []string{"id"}, Description: "The object's id."},
-			{Name: "version", Kind: engine.KindString, Required: true, Local: true, PathParams: []string{"version"}, Description: "The version id."},
+			{Name: "version", Kind: engine.KindString, Required: true, Local: true, PathParams: []string{"version"}, Description: "The version."},
 		},
 	}
 }

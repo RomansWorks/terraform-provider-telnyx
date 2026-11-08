@@ -120,6 +120,9 @@ func EmitResource(pkg string, r *engine.Resource, source string) ([]byte, error)
 	if r.FixedID != "" {
 		field(&b, "FixedID", strconv.Quote(r.FixedID))
 	}
+	if len(r.ForceDestroy) > 0 {
+		field(&b, "ForceDestroy", quoteList(r.ForceDestroy))
+	}
 	b.WriteString("Attrs: ")
 	attrs(&b, r.Attrs)
 	b.WriteString(",\n}\n}\n")
@@ -163,6 +166,9 @@ func opLiteral(o *engine.Op) string {
 	}
 	if o.Form {
 		s += ", Form: true"
+	}
+	if o.Whole != "" {
+		s += fmt.Sprintf(", Whole: %q", o.Whole)
 	}
 	if len(o.Query) > 0 {
 		s += ", Query: " + quoteList(o.Query)
@@ -277,7 +283,7 @@ func attr(b *bytes.Buffer, a *engine.Attr) {
 		{"Required", a.Required}, {"Optional", a.Optional}, {"Computed", a.Computed},
 		{"Sensitive", a.Sensitive}, {"ForceNew", a.ForceNew},
 		{"InCreate", a.InCreate}, {"InUpdate", a.InUpdate}, {"InResponse", a.InResponse}, {"Local", a.Local},
-		{"WriteOnly", a.WriteOnly}, {"Masked", a.Masked}, {"CreateOnly", a.CreateOnly},
+		{"WriteOnly", a.WriteOnly}, {"Masked", a.Masked}, {"CreateOnly", a.CreateOnly}, {"Lowercase", a.Lowercase},
 	}
 	for _, f := range flags {
 		if f.on {

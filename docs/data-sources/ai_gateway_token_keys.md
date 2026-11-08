@@ -41,7 +41,7 @@ Read-Only:
 - `max_parallel_requests` (Number) Optional maximum concurrent reserved/dispatched cache misses across replicas. Null means no concurrency cap. Cache hits do not consume slots; unknown usage retains its budget hold without a slot.
 - `name` (String)
 - `provisioning` (String) Provisioning state of the key's current policy. `pending`: retry readiness with bounded backoff (treat `unknown` the same). `inactive` and `unsupported` are terminal until the key, group, user or catalog changes. `unavailable` means provisioning is stuck and is retried slowly; surface it. Absent while the gateway runs in compatibility mode.
-- `record_type` (String) A JSON document; use `jsondecode()` to read it.
+- `record_type` (String)
 - `required_end_user_id` (Boolean) Require a nonempty caller-asserted end-user ID; not proof of identity.
 - `reserved_spend` (Number) USD, decimal precision at most 6 places; parse exactly to integer micro-USD, never binary float accounting.
 - `resets_at` (String)

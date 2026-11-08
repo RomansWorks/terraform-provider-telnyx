@@ -29,7 +29,7 @@ func AIAssistantTestsList() *engine.List {
 						{Name: "criteria", JSON: "criteria", Kind: engine.KindString, Computed: true, InResponse: true, Description: "Specific guidance on how to assess the assistant’s performance for this rubric item."},
 						{Name: "name", JSON: "name", Kind: engine.KindString, Computed: true, InResponse: true, Description: "Label for the evaluation criterion, e.g., Empathy, Accuracy, Clarity."},
 					}},
-				{Name: "telnyx_conversation_channel", JSON: "telnyx_conversation_channel", Kind: engine.KindJSON, Computed: true, InResponse: true, Description: "Communication channel used for test execution."},
+				{Name: "telnyx_conversation_channel", JSON: "telnyx_conversation_channel", Kind: engine.KindString, Computed: true, InResponse: true, Description: "Communication channel used for test execution."},
 				{Name: "test_id", JSON: "test_id", Kind: engine.KindString, Computed: true, InResponse: true, Description: "Unique identifier for the assistant test."},
 				{Name: "test_suite", JSON: "test_suite", Kind: engine.KindString, Computed: true, InResponse: true, Description: "Test suite grouping for organizational purposes."},
 			}},

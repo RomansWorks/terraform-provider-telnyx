@@ -263,13 +263,39 @@ func (g *Generator) norm(n any) map[string]any {
 	for k, v := range s {
 		out[k] = v
 	}
-	if parts, ok := s["allOf"].([]any); ok {
+	if parts, ok := s["allOf"].([]any); ok && scalarParts(g, parts) {
+		// allOf of scalars, such as a $ref to a string enum with a
+		// description beside it: the parts' keys, then the schema's own.
+		delete(out, "allOf")
+		merged := map[string]any{}
+		for _, p := range parts {
+			for k, v := range g.norm(p) {
+				merged[k] = v
+			}
+		}
+		for k, v := range out {
+			merged[k] = v
+		}
+		out = merged
+	} else if ok {
 		delete(out, "allOf")
 		props := map[string]any{}
 		var req []any
 		for _, p := range parts {
 			ps := g.norm(p)
 			for k, v := range properties(ps) {
+				// A later part that narrows a property (a const on an enum)
+				// refines it rather than replacing it.
+				if prev := g.norm(props[k]); prev != nil {
+					merged := map[string]any{}
+					for pk, pv := range prev {
+						merged[pk] = pv
+					}
+					for nk, nv := range g.norm(v) {
+						merged[nk] = nv
+					}
+					v = merged
+				}
 				props[k] = v
 			}
 			req = append(req, asSlice(ps["required"])...)
@@ -324,7 +350,10 @@ func (g *Generator) norm(n any) map[string]any {
 			out[k] = v
 		}
 	}
-	// An enum of strings without a type is a string.
+	// An enum or const of strings without a type is a string.
+	if _, ok := out["const"].(string); ok && out["type"] == nil {
+		out["type"] = "string"
+	}
 	if e, ok := out["enum"].([]any); ok && out["type"] == nil && len(e) > 0 {
 		str := true
 		for _, v := range e {
@@ -336,6 +365,57 @@ func (g *Generator) norm(n any) map[string]any {
 		}
 	}
 	return out
+}
+
+// req returns the request schema of a field: create's, else update's.
+func req(cs sources) map[string]any {
+	if cs.create != nil {
+		return cs.create
+	}
+	return cs.update
+}
+
+// sameShape reports whether a request and a response schema have the same
+// JSON type, and for arrays the same item type. Untyped schemas match
+// anything.
+func sameShape(g *Generator, a, b map[string]any) bool {
+	ta, _ := a["type"].(string)
+	tb, _ := b["type"].(string)
+	if ta == "" || tb == "" || a["x-json"] == true || b["x-json"] == true {
+		return true
+	}
+	num := func(t string) string {
+		if t == "integer" {
+			return "number"
+		}
+		return t
+	}
+	if num(ta) != num(tb) {
+		return false
+	}
+	if ta == "array" {
+		ia, ib := g.norm(a["items"]), g.norm(b["items"])
+		if ia == nil || ib == nil {
+			return true
+		}
+		return sameShape(g, ia, ib)
+	}
+	return true
+}
+
+// scalarParts reports whether every allOf part is a scalar: no fields and
+// a type, enum or const other than an object.
+func scalarParts(g *Generator, parts []any) bool {
+	for _, p := range parts {
+		ps := g.norm(p)
+		if ps == nil || properties(ps) != nil || ps["type"] == "object" || ps["type"] == "array" {
+			return false
+		}
+		if ps["type"] == nil && ps["enum"] == nil && ps["const"] == nil {
+			return false
+		}
+	}
+	return len(parts) > 0
 }
 
 // mergeVariants merges union variants that share one shape: a single
@@ -506,7 +586,28 @@ func (s sources) child(name string, g *Generator) sources {
 		}
 		return c
 	}
-	return sources{create: pick(s.create, true), update: pick(s.update, true), read: pick(s.read, false)}
+	out := sources{create: pick(s.create, true), update: pick(s.update, true), read: pick(s.read, false)}
+	// A response object the spec leaves free-form, or a map whose entries
+	// the spec gives no fields for, echoes what was sent.
+	if out.read == nil && s.read != nil && properties(s.read) == nil && s.read["type"] == "object" {
+		ap := s.read["additionalProperties"]
+		if m, ok := ap.(map[string]any); ok {
+			if entry := g.norm(m); properties(entry) != nil {
+				out.read = entry
+				return out
+			}
+		} else if ap != nil && ap != true {
+			return out
+		}
+		out.read = out.create
+		if out.read == nil {
+			out.read = out.update
+		}
+		if out.read != nil && out.read["writeOnly"] == true {
+			out.read = nil
+		}
+	}
+	return out
 }
 
 // readOnlyObject reports whether every field of an object is read-only, so
@@ -586,6 +687,12 @@ func (d *deriver) attrs(src sources, depth int, parentComputed bool, prefix stri
 		if aov.Returned && cs.read == nil {
 			cs.read = cs.shape()
 		}
+		// A field the API takes in one shape and returns in another (a
+		// boolean that reads back as a string, strings that read back as
+		// objects) is request-only: reading it back would fail.
+		if !aov.Returned && cs.read != nil && (cs.create != nil || cs.update != nil) && !sameShape(d.g, req(cs), cs.read) {
+			cs.read = nil
+		}
 		inC, inU, inR := cs.create != nil, cs.update != nil, cs.read != nil
 		configurable := inC || inU
 		if !configurable && !inR {
@@ -601,6 +708,7 @@ func (d *deriver) attrs(src sources, depth int, parentComputed bool, prefix stri
 			Sensitive:   aov.Sensitive || aov.Masked || aov.CreateOnly,
 			Masked:      aov.Masked,
 			CreateOnly:  aov.CreateOnly,
+			Lowercase:   aov.Lowercase,
 			Description: describe(cs, aov),
 		}
 		if aov.Name != "" {
@@ -766,6 +874,9 @@ func stringEnum(schemas ...map[string]any) []string {
 			continue
 		}
 		e, ok := s["enum"].([]any)
+		if c, isConst := s["const"]; isConst {
+			e, ok = []any{c}, true
+		}
 		if !ok {
 			return nil // a request without an enum accepts any value
 		}
@@ -804,9 +915,15 @@ var nonWord = regexp.MustCompile(`[^a-z0-9]+`)
 
 func snake(s string) string {
 	var b strings.Builder
-	for i, r := range s {
-		if r >= 'A' && r <= 'Z' {
-			if i > 0 {
+	rs := []rune(s)
+	upper := func(r rune) bool { return r >= 'A' && r <= 'Z' }
+	lower := func(r rune) bool { return r >= 'a' && r <= 'z' || r >= '0' && r <= '9' }
+	for i, r := range rs {
+		if upper(r) {
+			// A capital starts a word after a lowercase letter or digit, or
+			// ends a run of capitals that a lowercase word follows
+			// (webhookURL is webhook_url, isTMobile is is_t_mobile).
+			if i > 0 && (lower(rs[i-1]) || upper(rs[i-1]) && i+1 < len(rs) && rs[i+1] >= 'a' && rs[i+1] <= 'z') {
 				b.WriteByte('_')
 			}
 			r += 'a' - 'A'
@@ -910,6 +1027,9 @@ func (g *Generator) Derive(ov *Override) (*engine.Resource, error) {
 		r.Attrs = append(r.Attrs, &engine.Attr{Name: engine.ReleaseAttr, Kind: engine.KindBool, Optional: true, Local: true,
 			Description: "Whether destroy deletes the object in Telnyx. By default destroy only removes it from Terraform state. " +
 				"Destroy uses the value in state, so set it to true and apply before destroying."})
+	}
+	if err := g.forceDestroy(r, ov, del); err != nil {
+		return nil, fmt.Errorf("%s: %w", ov.Type, err)
 	}
 	extra, err := g.extraUpdates(r, ov, d, readSchema)
 	if err != nil {
@@ -1140,7 +1260,7 @@ func (g *Generator) ids(r *engine.Resource, ov *Override, create *operation, oth
 		a.Kind = engine.KindString
 		a.PathParams = append(a.PathParams, p)
 		if a.Description == "" {
-			a.Description = "The " + strings.ReplaceAll(strings.TrimSuffix(name, "_id"), "_", " ") + " id."
+			a.Description = paramDescription(name)
 		}
 		parents = append(parents, a)
 	}
@@ -1393,4 +1513,64 @@ func (g *Generator) mergeSameShape(vs []map[string]any) map[string]any {
 	}
 	sort.Slice(req, func(i, j int) bool { return fmt.Sprint(req[i]) < fmt.Sprint(req[j]) })
 	return map[string]any{"type": "object", "properties": props, "required": req}
+}
+
+// forceDestroy adds the local force_destroy attribute when the override
+// names delete query parameters for it. Each must be a boolean query
+// parameter of the delete operation.
+func (g *Generator) forceDestroy(r *engine.Resource, ov *Override, del *operation) error {
+	if len(ov.ForceDestroy) == 0 {
+		return nil
+	}
+	if r.Attr(engine.ForceDestroyAttr) != nil {
+		return fmt.Errorf("the API already has a field named %s; rename it", engine.ForceDestroyAttr)
+	}
+	bools := map[string]bool{}
+	var raw []any
+	if item, ok := g.Spec.Paths()[del.path].(map[string]any); ok {
+		raw = append(raw, asSlice(item["parameters"])...)
+	}
+	raw = append(raw, asSlice(del.node["parameters"])...)
+	for _, r := range raw {
+		p := g.resolve(r)
+		name, _ := p["name"].(string)
+		if p["in"] == "query" && g.takesBool(p["schema"]) {
+			bools[name] = true
+		}
+	}
+	for _, name := range ov.ForceDestroy {
+		if !bools[name] {
+			return fmt.Errorf("force_destroy: %s is not a boolean query parameter of %s %s", name, del.method, del.path)
+		}
+	}
+	r.ForceDestroy = ov.ForceDestroy
+	r.Attrs = append(r.Attrs, &engine.Attr{Name: engine.ForceDestroyAttr, Kind: engine.KindBool, Optional: true, Local: true,
+		Description: "Whether destroy forces the deletion (sends " + forceQuery(ov.ForceDestroy) + "), for example of an object that is in use. " +
+			"Destroy uses the value in state, so set it to true and apply before destroying."})
+	return nil
+}
+
+func forceQuery(params []string) string {
+	parts := make([]string, len(params))
+	for i, p := range params {
+		parts[i] = "`" + p + "=true`"
+	}
+	return strings.Join(parts, " and ")
+}
+
+// takesBool reports whether a parameter schema is a boolean, or a union
+// with a boolean variant (Telnyx also accepts the strings "true"/"false").
+func (g *Generator) takesBool(schema any) bool {
+	s := g.resolve(schema)
+	if s["type"] == "boolean" {
+		return true
+	}
+	for _, key := range []string{"oneOf", "anyOf"} {
+		for _, v := range asSlice(s[key]) {
+			if g.resolve(v)["type"] == "boolean" {
+				return true
+			}
+		}
+	}
+	return false
 }

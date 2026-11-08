@@ -389,6 +389,17 @@ func TestCollectionErrors(t *testing.T) {
 	}
 }
 
+func TestItemsName(t *testing.T) {
+	for in, want := range map[string]string{
+		"telnyx_billing_groups": "billing_groups",
+		"telnyx_10dlc_brands":   "brands",
+	} {
+		if got := itemsName(in); got != want {
+			t.Errorf("itemsName(%s) = %s", in, got)
+		}
+	}
+}
+
 func TestPlural(t *testing.T) {
 	for in, want := range map[string]string{
 		"telnyx_billing_group":    "telnyx_billing_groups",

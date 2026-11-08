@@ -17,7 +17,7 @@ The deployed revisions of a compute function.
 
 ### Required
 
-- `id` (String) The id id.
+- `id` (String) The id of the object whose items are listed.
 
 ### Optional
 

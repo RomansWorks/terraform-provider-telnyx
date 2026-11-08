@@ -17,7 +17,7 @@ A key and its value in a KV namespace.
 
 ### Required
 
-- `key` (String) The key id.
+- `key` (String) The key.
 - `namespace_id` (String) The namespace id.
 
 ### Read-Only

@@ -14,7 +14,44 @@ permissions:
   contents: write
 
 jobs:
+  # Nothing is built or published unless the release gate, unit tests and
+  # generated docs pass and the tag has a collated changelog section.
+  gate:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Collated changelog section exists
+        run: |
+          version="${GITHUB_REF_NAME#v}"
+          test -f ".changes/${version}.md" || {
+            echo "Missing .changes/${version}.md: run 'changie batch ${version} && changie merge' and merge it before tagging."
+            exit 1
+          }
+          grep -q "^## ${version} " CHANGELOG.md || {
+            echo "CHANGELOG.md has no ${version} section: run 'changie merge'."
+            exit 1
+          }
+      - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
+        with:
+          go-version-file: 'go.mod'
+          cache: true
+      - uses: hashicorp/setup-terraform@dfe3c3f87815947d99a8997f908cb6525fc44e9e # v4.0.1
+        with:
+          terraform_wrapper: false
+      - name: Release gate (every operation classified and reviewed)
+        run: make api-check-release
+      - name: Unit tests
+        run: go test -cover ./...
+      - name: Generated docs are current
+        run: |
+          make generate
+          git diff --compact-summary --exit-code || \
+            (echo "Generated files are out of date. Run 'make generate' and commit."; exit 1)
+
   goreleaser:
+    needs: gate
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -25,6 +62,9 @@ jobs:
         with:
           go-version-file: 'go.mod'
           cache: true
+      - name: Version
+        id: version
+        run: echo "version=${GITHUB_REF_NAME#v}" >> "$GITHUB_OUTPUT"
       - name: Import GPG key
         uses: crazy-max/ghaction-import-gpg@2dc316deee8e90f13e1a351ab510b4d5bc0c82cd # v7.0.0
         id: import_gpg
@@ -34,7 +74,7 @@ jobs:
       - name: Run GoReleaser
         uses: goreleaser/goreleaser-action@a4f02ab5355a589de60d917a659ce617ed19b3de # v7.3.0
         with:
-          args: release --clean
+          args: release --clean --release-notes .changes/${{ steps.version.outputs.version }}.md
         env:
           # GitHub sets the GITHUB_TOKEN secret automatically.
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

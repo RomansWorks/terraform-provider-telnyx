@@ -64,7 +64,12 @@ api-check:
 api-check-release:
 	$(APISYNC) check -require-reviewed
 
+# All release archives, checksums and the registry manifest in dist/, without
+# signing or publishing. Needs goreleaser v2.
+release-snapshot:
+	goreleaser release --snapshot --clean --skip=sign,publish
+
 check: build test api-check
 	openspec validate --all --strict
 
-.PHONY: default build install lint fmt generate test testacc upstream-fetch catalog sync api-diff api-check api-check-release check
+.PHONY: default build install lint fmt generate test testacc upstream-fetch catalog sync api-diff api-check api-check-release release-snapshot check

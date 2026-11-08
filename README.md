@@ -5,9 +5,20 @@ provider for the [Telnyx](https://telnyx.com) API: numbers, voice, messaging,
 wireless, networking, storage, and AI assistants, avatars and missions. It is not
 an official Telnyx product.
 
-> **Status:** early. Seven pilot resources are available: AI assistants, avatars,
-> tools and MCP servers, outbound voice profiles, phone number voice settings and
-> number orders. See [the docs](docs/) and [the roadmap](#roadmap).
+> **Status:** 0.x. Every Telnyx API v2 operation is either implemented or
+> recorded as out of scope in [`catalog/coverage.yaml`](catalog/coverage.yaml):
+> about 160 resources, 430 data sources, 110 actions and 4 ephemeral resources.
+> Releases before 1.0 may still change attribute names between minor versions;
+> each change is listed in the [changelog](CHANGELOG.md). See [the docs](docs/).
+
+## Requirements
+
+- Terraform 1.11 or later (write-only `_wo` attributes and ephemeral resources);
+  Terraform 1.14 or later for actions (`action` blocks).
+- OpenTofu 1.11 or later for resources, data sources and ephemeral resources.
+  OpenTofu does not run provider actions; see the
+  [OpenTofu guide](docs/guides/opentofu.md).
+- A Telnyx API v2 key.
 
 ## Usage
 
@@ -31,6 +42,13 @@ provider "telnyx" {
 | `api_key` | `TELNYX_API_KEY` | (required) |
 | `base_url` | `TELNYX_BASE_URL` | `https://api.telnyx.com/v2` |
 | `max_retries` | `TELNYX_MAX_RETRIES` | `4` |
+
+Objects the Telnyx API cannot delete are removed from state with a warning on
+destroy. Phone numbers, SIM cards and hosted numbers stay in your account on
+destroy unless `release_on_destroy = true`.
+
+Telnyx Storage buckets are managed with the AWS provider pointed at Telnyx's S3
+endpoint; see the [storage buckets guide](docs/guides/storage-buckets.md).
 
 ## How the provider stays current
 
@@ -59,11 +77,13 @@ for `romansworks/telnyx` pointing at `$(go env GOPATH)/bin` and run `make instal
 
 ## Roadmap
 
-1. Foundations: provider core, pinned spec, coverage and sync loop.
-2. Resource generator and a pilot set: AI assistant, AI avatar, AI tool, MCP server,
-   outbound voice profile, phone number voice settings, number order (this release).
-3. Coverage rollout by product area.
-4. Hardening, nightly acceptance runs, and 1.0 on the Terraform and OpenTofu registries.
+1. Foundations: provider core, pinned spec, coverage and sync loop. Done.
+2. Resource generator and engine features. Done.
+3. Coverage rollout by product area. Done.
+4. Hardening: 0.1.0 on the Terraform and OpenTofu registries, nightly acceptance
+   runs against a real account, then 1.0.
+
+Releasing is described in [RELEASING.md](RELEASING.md).
 
 ## License
 

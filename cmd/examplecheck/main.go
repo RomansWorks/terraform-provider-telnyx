@@ -26,6 +26,8 @@ import (
 	"os/exec"
 	"path/filepath"
 	"regexp"
+	"runtime"
+	"slices"
 	"sort"
 	"strings"
 )
@@ -93,7 +95,42 @@ func run(cli, provider, root string, kinds []string) (int, int, error) {
 	if err := os.WriteFile(rcPath, []byte(rc), 0o644); err != nil {
 		return 0, 0, err
 	}
-	env := append(os.Environ(), "TF_CLI_CONFIG_FILE="+rcPath, "TF_IN_AUTOMATION=1", "CHECKPOINT_DISABLE=1", "TELNYX_API_KEY=")
+	base := append(os.Environ(), "TF_IN_AUTOMATION=1", "CHECKPOINT_DISABLE=1", "TELNYX_API_KEY=")
+	env := append(slices.Clip(base), "TF_CLI_CONFIG_FILE="+rcPath)
+
+	// Examples that use other providers need init, and OpenTofu's init still
+	// looks the overridden provider up in its registry. For those, a local
+	// mirror serves the build under both registry hosts, as version 99.0.0
+	// (the CLIs never select 0.0.0).
+	bin, err := os.ReadFile(provider)
+	if err != nil {
+		return 0, 0, err
+	}
+	mirror := filepath.Join(work, "mirror")
+	for _, host := range []string{"registry.terraform.io", "registry.opentofu.org"} {
+		dir := filepath.Join(mirror, host, "romansworks", "telnyx", "99.0.0", runtime.GOOS+"_"+runtime.GOARCH)
+		if err := os.MkdirAll(dir, 0o755); err != nil {
+			return 0, 0, err
+		}
+		if err := os.WriteFile(filepath.Join(dir, "terraform-provider-telnyx_v99.0.0"), bin, 0o755); err != nil {
+			return 0, 0, err
+		}
+	}
+	mirrorRC := fmt.Sprintf(`provider_installation {
+  filesystem_mirror {
+    path    = %q
+    include = ["registry.terraform.io/romansworks/telnyx", "registry.opentofu.org/romansworks/telnyx"]
+  }
+  direct {
+    exclude = ["registry.terraform.io/romansworks/telnyx", "registry.opentofu.org/romansworks/telnyx"]
+  }
+}
+`, mirror)
+	mirrorRCPath := filepath.Join(work, "mirror.rc")
+	if err := os.WriteFile(mirrorRCPath, []byte(mirrorRC), 0o644); err != nil {
+		return 0, 0, err
+	}
+	initEnv := append(slices.Clip(base), "TF_CLI_CONFIG_FILE="+mirrorRCPath)
 
 	providerTF, err := os.ReadFile(filepath.Join(root, "provider", "provider.tf"))
 	if err != nil {
@@ -139,7 +176,12 @@ func run(cli, provider, root string, kinds []string) (int, int, error) {
 				}
 			}
 			checked++
-			out, err := validate(cli, env, caseDir, usesOtherProviders(joinedBytes(srcs)))
+			var out []byte
+			if usesOtherProviders(joinedBytes(srcs)) {
+				out, err = validate(cli, initEnv, caseDir, true)
+			} else {
+				out, err = validate(cli, env, caseDir, false)
+			}
 			if err != nil {
 				failed++
 				fmt.Printf("FAIL %s/%s\n%s\n", kind, filepath.Base(dir), indent(stripOverrideWarning(out)))
@@ -150,7 +192,8 @@ func run(cli, provider, root string, kinds []string) (int, int, error) {
 }
 
 // validate runs validate in dir, after init when an example needs providers
-// other than telnyx (dev_overrides cover telnyx without init).
+// other than telnyx (dev_overrides cover telnyx without init, and the mirror
+// with it).
 func validate(cli string, env []string, dir string, needsInit bool) ([]byte, error) {
 	if needsInit {
 		cmd := exec.Command(cli, "init", "-backend=false", "-no-color", "-input=false")

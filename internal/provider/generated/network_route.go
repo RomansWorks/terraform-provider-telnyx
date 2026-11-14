@@ -24,7 +24,7 @@ func NetworkRoute() *engine.Resource {
 			{Name: "next_hop", JSON: "next_hop", Kind: engine.KindObject, Required: true, ForceNew: true, InCreate: true, InResponse: true, Description: "Where the Network sends traffic for the route's CIDR.",
 				Attrs: []*engine.Attr{
 					{Name: "id", JSON: "id", Kind: engine.KindString, Required: true, InCreate: true, InResponse: true, Description: "The id of the tunnel or attachment."},
-					{Name: "type", JSON: "type", Kind: engine.KindString, Required: true, InCreate: true, InResponse: true, Enum: []string{"tunnel"}, Description: "The type of the next hop. Routes added with `POST /network_routes` use `tunnel`. Routes that attachments install carry the attachment's type."},
+					{Name: "type", JSON: "type", Kind: engine.KindString, Required: true, InCreate: true, InResponse: true, Enum: []string{"tunnel", "wireguard_peer"}, Description: "The type of the next hop. Routes added with `POST /network_routes` use `tunnel`. Routes that attachments install carry the attachment's type."},
 				}},
 			{Name: "origin", JSON: "origin", Kind: engine.KindString, Computed: true, InResponse: true, Description: "`static` for a route added with `POST /network_routes`, `attachment` for a route that another resource installed and removes."},
 			{Name: "record_type", JSON: "record_type", Kind: engine.KindString, Computed: true, InResponse: true, Description: "Identifies the type of the resource."},

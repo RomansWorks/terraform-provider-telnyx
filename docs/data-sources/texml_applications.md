@@ -17,8 +17,8 @@ Lists texml applications, with optional filters. Each item has the attributes of
 
 ### Optional
 
-- `filter_friendly_name` (String) If present, applications with <code>friendly_name</code> containing the given value will be returned. Matching is not case-sensitive. Requires at least three characters.
-- `filter_outbound_voice_profile_id` (String) Identifies the associated outbound voice profile.
+- `filter_friendly_name` (String)
+- `filter_outbound_voice_profile_id` (String)
 - `max_items` (Number) Stop reading after this many items. By default every page is read.
 - `sort` (String) One of `active`, `created_at`, `friendly_name`.
 

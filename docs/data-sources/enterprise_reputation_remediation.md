@@ -27,7 +27,7 @@ A request to remediate the reputation of some of an enterprise's numbers, with i
 - `created_at` (String)
 - `id` (String) The ID of this resource.
 - `phone_numbers_count` (Number) Total phone numbers in this batch, including any later cancelled. May exceed the sum of the per-category result buckets, which omit cancelled numbers.
-- `phone_numbers_ineligible` (Number) Numbers rejected before submission (e.g. cooldown).
+- `phone_numbers_ineligible` (Number) Number of phone numbers the reputation partner did not re-review because it had reviewed them within the previous 60 days.
 - `phone_numbers_submitted` (Number) Numbers accepted for remediation, i.e. not rejected as ineligible. Counts numbers still queued (pending) as well as processed ones.
 - `results` (Attributes) Per-category buckets. Populated once results are available. Null while the request is still pending. (see [below for nested schema](#nestedatt--results))
 - `status` (String) Customer-facing status of a remediation request.
@@ -41,8 +41,8 @@ A request to remediate the reputation of some of an enterprise's numbers, with i
 
 Read-Only:
 
-- `ineligible` (List of String)
-- `not_flagged` (List of String)
-- `refused` (List of String)
-- `remediated` (List of String)
-- `requires_review` (List of String)
+- `ineligible` (List of String) Numbers the reputation partner did not re-review because it had already reviewed them within the previous 60 days (already reviewed). The cooldown is measured from the partner's most recent review, not the API submission date. This array identifies the numbers but does not include their last-review or re-eligibility dates.
+- `not_flagged` (List of String) The reputation partner reported no prior spam label for the number (no prior spam label).
+- `refused` (List of String) The reputation partner reviewed the number and declined the redress request (redress declined); the number remains flagged.
+- `remediated` (List of String) The reputation partner approved redress (redress approved) or reported that the number had already been redressed recently (already recently redressed). This does not guarantee removal from every spam list.
+- `requires_review` (List of String) The number needs further review, or the partner response did not match a recognized outcome.

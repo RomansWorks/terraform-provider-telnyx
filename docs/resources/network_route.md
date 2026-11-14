@@ -50,7 +50,7 @@ variable "tunnel_id" {
 Required:
 
 - `id` (String) The id of the tunnel or attachment.
-- `type` (String) The type of the next hop. Routes added with `POST /network_routes` use `tunnel`. Routes that attachments install carry the attachment's type. One of `tunnel`.
+- `type` (String) The type of the next hop. Routes added with `POST /network_routes` use `tunnel`. Routes that attachments install carry the attachment's type. One of `tunnel`, `wireguard_peer`.
 
 ## Import
 

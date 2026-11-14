@@ -12,8 +12,8 @@ func TexmlApplicationsList() *engine.List {
 		Description: "Lists texml applications, with optional filters. Each item has the attributes of `telnyx_texml_application`.",
 		Op:          &engine.Op{Method: "GET", Path: "/texml_applications", Envelope: true, Paging: engine.PagingNumber, PageSize: 250},
 		Params: []*engine.Attr{
-			{Name: "filter_friendly_name", JSON: "filter[friendly_name]", Kind: engine.KindString, Optional: true, Description: "If present, applications with <code>friendly_name</code> containing the given value will be returned. Matching is not case-sensitive. Requires at least three characters."},
-			{Name: "filter_outbound_voice_profile_id", JSON: "filter[outbound_voice_profile_id]", Kind: engine.KindString, Optional: true, Description: "Identifies the associated outbound voice profile."},
+			{Name: "filter_friendly_name", JSON: "filter[friendly_name]", Kind: engine.KindString, Optional: true},
+			{Name: "filter_outbound_voice_profile_id", JSON: "filter[outbound_voice_profile_id]", Kind: engine.KindString, Optional: true},
 			{Name: "sort", JSON: "sort", Kind: engine.KindString, Optional: true, Enum: []string{"active", "created_at", "friendly_name"}},
 		},
 		Items: &engine.Attr{Name: "texml_applications", JSON: "data", Kind: engine.KindList, Computed: true, InResponse: true, Description: "The objects, in the order the API returns them.",

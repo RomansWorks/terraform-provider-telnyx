@@ -175,7 +175,7 @@ An override with `kind: action` SHALL produce a Terraform action whose configura
 - **THEN** the action fails with the API's error message
 
 ### Requirement: Ephemeral resources
-An override with `kind: ephemeral` SHALL produce an ephemeral resource. Its path parameters SHALL be Required. The fields of its operation's request body SHALL be arguments, Optional unless the spec requires them, and neither Computed nor Sensitive; a request field that is an object SHALL be a generator error. Its response fields SHALL be Computed and Sensitive. Opening it SHALL send a JSON body of the arguments the configuration sets whenever the operation takes a body. The value SHALL never be written to plan or state.
+An override with `kind: ephemeral` SHALL produce an ephemeral resource. Its path parameters SHALL be Required, its request body fields arguments, and its response fields Computed and Sensitive. Opening it SHALL send a JSON body of the arguments the configuration sets whenever the operation takes a body. The value SHALL never be written to plan or state.
 
 #### Scenario: Read a secret
 - **WHEN** `ephemeral "telnyx_sim_card_activation_code" "x" { id = "sim1" }` is opened
@@ -184,6 +184,13 @@ An override with `kind: ephemeral` SHALL produce an ephemeral resource. Its path
 #### Scenario: Arguments in the request body
 - **WHEN** `ephemeral "telnyx_room_client_token" "t" { room_id = "r1", token_ttl_secs = 60 }` is opened
 - **THEN** the provider sends `POST /rooms/r1/actions/generate_join_client_token` with `{"token_ttl_secs": 60}`, and an argument left unset is not sent
+
+### Requirement: Ephemeral arguments
+An ephemeral resource's request body fields SHALL be Optional unless the spec requires them, and neither Computed nor Sensitive. A request field that is an object, or a name used by both the request and the response, SHALL be a generator error.
+
+#### Scenario: Object in the request
+- **WHEN** an ephemeral override opens an operation whose request has an object field
+- **THEN** `make generate` fails and names the field
 
 ### Requirement: Write-only secrets
 An attribute override with `write_only: true` SHALL produce a write-only, sensitive attribute named `<name>_wo` and an optional `<name>_wo_version`. Create SHALL send the write-only value. Update SHALL send it only when `<name>_wo_version` changed. The value SHALL never be stored in state.

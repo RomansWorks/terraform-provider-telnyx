@@ -34,6 +34,8 @@ type Override struct {
 
 	// Operations as "METHOD /path".
 	Create string `yaml:"create"`
+	// Read is the read operation, or "none" when the API cannot read the
+	// object back: state keeps what create sent and import is refused.
 	Read   string `yaml:"read"`
 	Update string `yaml:"update"`
 	Delete string `yaml:"delete"`
@@ -224,6 +226,9 @@ func LoadOverride(path string) (*Override, error) {
 	return &o, nil
 }
 
+// ReadNone is the read of a resource the API cannot read back.
+const ReadNone = "none"
+
 func (o *Override) validate() error {
 	if !strings.HasPrefix(o.Type, "telnyx_") || !namePattern.MatchString(o.Type) {
 		return fmt.Errorf("type %q must be telnyx_<snake_case>", o.Type)
@@ -232,6 +237,12 @@ func (o *Override) validate() error {
 		return fmt.Errorf("description is required")
 	}
 	ops := []string{o.Create, o.Read, o.Update, o.Delete, o.List, o.Op, o.Open}
+	if o.Read == ReadNone {
+		if o.Kind != "" || o.ReadFrom != nil || o.Update != "" || o.List != "" || len(o.Updates) > 0 {
+			return fmt.Errorf("read: none is for a resource without read_from, update, updates or list")
+		}
+		ops[1] = ""
+	}
 	resourceOnly := o.Create != "" || o.Update != "" || o.Delete != "" || o.ReadFrom != nil || len(o.Updates) > 0 ||
 		o.ReleaseOnDestroy || o.Timeouts || o.DataSource != nil || len(o.Add) > 0 || len(o.ExactlyOne) > 0 || o.DeleteWarning != "" || len(o.ForceDestroy) > 0
 	if o.Kind != "action" && o.Op != "" || o.Kind != "ephemeral" && o.Open != "" {
@@ -315,7 +326,7 @@ func (o *Override) validate() error {
 
 // dataSource reports whether the resource also gets a data source.
 func (o *Override) dataSource() bool {
-	return o.Kind == "data_source" && o.Read != "" || o.Kind == "" && (o.DataSource == nil || *o.DataSource)
+	return o.Kind == "data_source" && o.Read != "" || o.Kind == "" && o.Read != ReadNone && (o.DataSource == nil || *o.DataSource)
 }
 
 // listName is the list data source's type name.

@@ -945,7 +945,11 @@ func (g *Generator) Derive(ov *Override) (*engine.Resource, error) {
 	g.mergeUnions = ov.MergeVariants
 	defer func() { g.mergeUnions = false }()
 	ops := map[string]*operation{}
-	for name, key := range map[string]string{"create": ov.Create, "read": ov.Read, "update": ov.Update, "delete": ov.Delete} {
+	readKey := ov.Read
+	if readKey == ReadNone {
+		readKey = ""
+	}
+	for name, key := range map[string]string{"create": ov.Create, "read": readKey, "update": ov.Update, "delete": ov.Delete} {
 		op, err := g.operation(key)
 		if err != nil {
 			return nil, fmt.Errorf("%s: %s: %w", ov.Type, name, err)
@@ -965,6 +969,12 @@ func (g *Generator) Derive(ov *Override) (*engine.Resource, error) {
 		}
 		if readSchema, rf, err = g.collection(ov, collection); err != nil {
 			return nil, fmt.Errorf("%s: read_from: %w", ov.Type, err)
+		}
+	} else if ov.Read == ReadNone {
+		// Nothing reads the object back: the create response is all the
+		// API ever says about it.
+		if readSchema, _ = g.responseSchema(create); readSchema == nil {
+			return nil, fmt.Errorf("%s: read: none needs a JSON create response", ov.Type)
 		}
 	} else {
 		readSchema, readEnv = g.responseSchema(read)
@@ -1017,6 +1027,7 @@ func (g *Generator) Derive(ov *Override) (*engine.Resource, error) {
 	if read != nil {
 		r.Read = &engine.Op{Method: read.method, Path: read.path, Envelope: readEnv, Text: readText}
 	}
+	r.Unreadable = ov.Read == ReadNone
 	if update != nil {
 		_, env := g.responseSchema(update)
 		r.Update = &engine.Op{Method: update.method, Path: update.path, Envelope: env, Form: g.formBody(update), Raw: g.rawBody(update)}

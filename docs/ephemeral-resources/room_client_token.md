@@ -30,8 +30,8 @@ ephemeral "telnyx_room_client_token" "guest" {
 
 ### Optional
 
-- `refresh_token_ttl_secs` (Number) The time to live in seconds of the Refresh Token, after that time the Refresh Token is invalid and can't be used to refresh Client Token. The API does not return this value, so changes made outside Terraform are not detected.
-- `token_ttl_secs` (Number) The time to live in seconds of the Client Token, after that time the Client Token is invalid and can't be used to join a Room. The API does not return this value, so changes made outside Terraform are not detected.
+- `refresh_token_ttl_secs` (Number) The time to live in seconds of the Refresh Token, after that time the Refresh Token is invalid and can't be used to refresh Client Token.
+- `token_ttl_secs` (Number) The time to live in seconds of the Client Token, after that time the Client Token is invalid and can't be used to join a Room.
 
 ### Read-Only
 

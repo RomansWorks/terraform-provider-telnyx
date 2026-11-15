@@ -32,7 +32,7 @@ ephemeral "telnyx_storage_object_presigned_url" "report" {
 
 ### Optional
 
-- `ttl` (Number) The time to live of the token in seconds The API does not return this value, so changes made outside Terraform are not detected.
+- `ttl` (Number) The time to live of the token in seconds
 
 ### Read-Only
 

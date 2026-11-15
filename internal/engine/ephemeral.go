@@ -66,6 +66,10 @@ func (a *Attr) input() bool {
 
 func ephemeralAttr(a *Attr, input bool) eschema.Attribute {
 	desc := description(a)
+	if input {
+		// An argument is never compared with the API: no drift note.
+		desc = description(&Attr{Description: a.Description, Enum: a.Enum, Kind: a.Kind, Required: a.Required, Optional: a.Optional, Local: true})
+	}
 	req := input && (a.Required || len(a.PathParams) > 0)
 	opt := input && !req
 	comp, sens := !input, !input || a.Sensitive

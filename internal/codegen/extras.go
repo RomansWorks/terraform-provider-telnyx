@@ -45,7 +45,8 @@ func (g *Generator) DeriveAction(ov *Override) (*engine.Action, error) {
 }
 
 // DeriveEphemeral derives an ephemeral resource from an override with
-// kind: ephemeral. Path parameters are required; response fields computed.
+// kind: ephemeral. Path parameters are required, request body fields are
+// arguments and response fields are computed.
 func (g *Generator) DeriveEphemeral(ov *Override) (*engine.Ephemeral, error) {
 	op, err := g.operation(ov.Open)
 	if err != nil {
@@ -69,6 +70,29 @@ func (g *Generator) DeriveEphemeral(ov *Override) (*engine.Ephemeral, error) {
 	attrs, err := d.attrs(sources{read: schema}, 0, false, "")
 	if err != nil {
 		return nil, fmt.Errorf("%s: %w", ov.Type, err)
+	}
+	if body := g.requestSchema(op); body != nil {
+		// Request fields, such as a token's lifetime, are arguments.
+		in, err := d.attrs(sources{create: body}, 0, false, "")
+		if err != nil {
+			return nil, fmt.Errorf("%s: %w", ov.Type, err)
+		}
+		for _, a := range in {
+			if a.Kind == engine.KindObject || a.Elem == nil && (a.Kind == engine.KindList || a.Kind == engine.KindSet) {
+				return nil, fmt.Errorf("%s: request field %s is an object; ephemeral arguments must be values or lists of values", ov.Type, a.JSON)
+			}
+			if a.WriteOnly {
+				return nil, fmt.Errorf("%s: an ephemeral resource stores nothing, so write_only does not apply", ov.Type)
+			}
+			for _, b := range attrs {
+				if b.Name == a.Name {
+					return nil, fmt.Errorf("%s: request and response both have %s; rename one", ov.Type, a.Name)
+				}
+			}
+			a.Computed, a.ForceNew, a.InResponse = false, false, false
+			a.Optional = !a.Required
+		}
+		attrs = append(attrs, in...)
 	}
 	e := &engine.Ephemeral{TypeName: ov.Type, Description: ov.Description,
 		Open: &engine.Op{Method: op.method, Path: op.path, Envelope: env, Text: text}, Attrs: attrs}

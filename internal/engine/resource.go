@@ -202,6 +202,11 @@ func (r *frameworkResource) Create(ctx context.Context, req resource.CreateReque
 }
 
 func (r *frameworkResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
+	if r.d.Unreadable {
+		// Nothing to compare with: the state stays as create left it.
+		resp.State.Raw = req.State.Raw
+		return
+	}
 	state := fields(req.State.Raw)
 	obj, err := r.get(ctx, state)
 	if err == nil {
@@ -317,6 +322,11 @@ func (r *frameworkResource) Delete(ctx context.Context, req resource.DeleteReque
 }
 
 func (r *frameworkResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
+	if r.d.Unreadable {
+		resp.Diagnostics.AddError("Import not supported",
+			"The Telnyx API cannot read a "+r.d.TypeName+" back, so it cannot be imported. Declare it in configuration and apply instead.")
+		return
+	}
 	parts := strings.Split(req.ID, "/")
 	if len(parts) != len(r.d.Import) {
 		resp.Diagnostics.AddError("Invalid import id",

@@ -210,6 +210,9 @@ type Resource struct {
 
 	// ReadFrom, when set, replaces Read.
 	ReadFrom *ReadFrom
+	// Unreadable says the API cannot read the object back: Read and
+	// ReadFrom are nil, refresh keeps the state and import is refused.
+	Unreadable bool
 	// Updates are further update operations for some attributes.
 	Updates []ExtraUpdate
 	// ReleaseOnDestroy keeps the object in Telnyx on destroy unless the

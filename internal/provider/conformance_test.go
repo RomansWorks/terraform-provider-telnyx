@@ -100,6 +100,38 @@ func conform(t *testing.T, d *engine.Resource) {
 		ignore = append(ignore, "timeouts")
 	}
 
+	steps := []resource.TestStep{
+		{
+			Config: b.String(),
+			Check: func(s *terraform.State) error {
+				if d.IDAttr == "" {
+					return nil
+				}
+				return resource.TestCheckResourceAttrSet(name, d.IDAttr)(s)
+			},
+		},
+		{
+			ResourceName: name,
+			ImportState:  true,
+			ImportStateIdFunc: func(s *terraform.State) (string, error) {
+				rs := s.RootModule().Resources[name]
+				parts := make([]string, 0, len(d.Import))
+				for _, n := range d.Import {
+					parts = append(parts, rs.Primary.Attributes[n])
+				}
+				return strings.Join(parts, "/"), nil
+			},
+			ImportStateVerify:                    true,
+			ImportStateVerifyIdentifierAttribute: d.IDAttr,
+			ImportStateVerifyIgnore:              ignore,
+		},
+	}
+	if d.Unreadable {
+		// Nothing to import from: the import is refused instead.
+		steps[1].ImportStateVerify = false
+		steps[1].ExpectError = regexp.MustCompile("Import not supported")
+	}
+
 	resource.UnitTest(t, resource.TestCase{
 		ProtoV6ProviderFactories: api.factories(),
 		CheckDestroy: func(*terraform.State) error {
@@ -113,32 +145,7 @@ func conform(t *testing.T, d *engine.Resource) {
 			}
 			return nil
 		},
-		Steps: []resource.TestStep{
-			{
-				Config: b.String(),
-				Check: func(s *terraform.State) error {
-					if d.IDAttr == "" {
-						return nil
-					}
-					return resource.TestCheckResourceAttrSet(name, d.IDAttr)(s)
-				},
-			},
-			{
-				ResourceName: name,
-				ImportState:  true,
-				ImportStateIdFunc: func(s *terraform.State) (string, error) {
-					rs := s.RootModule().Resources[name]
-					parts := make([]string, 0, len(d.Import))
-					for _, n := range d.Import {
-						parts = append(parts, rs.Primary.Attributes[n])
-					}
-					return strings.Join(parts, "/"), nil
-				},
-				ImportStateVerify:                    true,
-				ImportStateVerifyIdentifierAttribute: d.IDAttr,
-				ImportStateVerifyIgnore:              ignore,
-			},
-		},
+		Steps: steps,
 	})
 }
 

@@ -5,6 +5,7 @@ package engine
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"strings"
 
@@ -52,30 +53,48 @@ func (r *frameworkEphemeral) Configure(_ context.Context, req ephemeral.Configur
 func (e *Ephemeral) Schema() eschema.Schema {
 	attrs := make(map[string]eschema.Attribute, len(e.Attrs))
 	for _, a := range e.Attrs {
-		attrs[a.Name] = ephemeralAttr(a, len(a.PathParams) > 0)
+		attrs[a.Name] = ephemeralAttr(a, a.input())
 	}
 	return eschema.Schema{MarkdownDescription: e.Description, Attributes: attrs}
 }
 
-func ephemeralAttr(a *Attr, required bool) eschema.Attribute {
+// input reports whether an ephemeral attribute is an argument: a path
+// parameter or a request body field. Everything else is a result.
+func (a *Attr) input() bool {
+	return len(a.PathParams) > 0 || a.InCreate
+}
+
+func ephemeralAttr(a *Attr, input bool) eschema.Attribute {
 	desc := description(a)
-	comp, sens := !required, !required || a.Sensitive
+	if input {
+		// An argument is never compared with the API: no drift note.
+		desc = description(&Attr{Description: a.Description, Enum: a.Enum, Kind: a.Kind, Required: a.Required, Optional: a.Optional, Local: true})
+	}
+	req := input && (a.Required || len(a.PathParams) > 0)
+	opt := input && !req
+	comp, sens := !input, !input || a.Sensitive
 	switch a.Kind {
 	case KindString, KindJSON:
-		return eschema.StringAttribute{Required: required, Computed: comp, Sensitive: sens, MarkdownDescription: desc}
+		return eschema.StringAttribute{Required: req, Optional: opt, Computed: comp, Sensitive: sens, MarkdownDescription: desc}
 	case KindInt:
-		return eschema.Int64Attribute{Required: required, Computed: comp, Sensitive: sens, MarkdownDescription: desc}
+		return eschema.Int64Attribute{Required: req, Optional: opt, Computed: comp, Sensitive: sens, MarkdownDescription: desc}
 	case KindFloat:
-		return eschema.Float64Attribute{Required: required, Computed: comp, Sensitive: sens, MarkdownDescription: desc}
+		return eschema.Float64Attribute{Required: req, Optional: opt, Computed: comp, Sensitive: sens, MarkdownDescription: desc}
 	case KindBool:
-		return eschema.BoolAttribute{Required: required, Computed: comp, Sensitive: sens, MarkdownDescription: desc}
+		return eschema.BoolAttribute{Required: req, Optional: opt, Computed: comp, Sensitive: sens, MarkdownDescription: desc}
 	case KindList:
+		if input {
+			return eschema.ListAttribute{ElementType: attrType(a.Elem), Required: req, Optional: opt, Sensitive: a.Sensitive, MarkdownDescription: desc}
+		}
 		if a.Elem != nil {
 			return eschema.ListAttribute{ElementType: attrType(a.Elem), Computed: true, Sensitive: true, MarkdownDescription: desc}
 		}
 		return eschema.ListNestedAttribute{NestedObject: eschema.NestedAttributeObject{Attributes: ephemeralNested(a.Attrs)},
 			Computed: true, Sensitive: true, MarkdownDescription: desc}
 	case KindSet:
+		if input {
+			return eschema.SetAttribute{ElementType: attrType(a.Elem), Required: req, Optional: opt, Sensitive: a.Sensitive, MarkdownDescription: desc}
+		}
 		if a.Elem != nil {
 			return eschema.SetAttribute{ElementType: attrType(a.Elem), Computed: true, Sensitive: true, MarkdownDescription: desc}
 		}
@@ -101,8 +120,18 @@ func (r *frameworkEphemeral) Open(ctx context.Context, req ephemeral.OpenRequest
 	config := fields(req.Config.Raw)
 	p, err := fillPath(e.Attrs, e.Open.Path, config)
 	if err == nil {
-		var out []byte
-		if out, err = r.c.Send(ctx, e.Open.Method, p, nil, "", nil); err == nil {
+		var out, data []byte
+		contentType := ""
+		var body Object
+		if body, err = objectToJSON(e.Attrs, config, func(a *Attr) bool { return a.InCreate }); err == nil && hasInput(e.Attrs) {
+			// Only the arguments the configuration sets are sent.
+			data, err = json.Marshal(body)
+			contentType = "application/json"
+		}
+		if err == nil {
+			out, err = r.c.Send(ctx, e.Open.Method, p, nil, contentType, data)
+		}
+		if err == nil {
 			var obj Object
 			if e.Open.Text {
 				obj = Object{"value": strings.TrimSpace(string(out))}
@@ -117,4 +146,14 @@ func (r *frameworkEphemeral) Open(ctx context.Context, req ephemeral.OpenRequest
 	if err != nil {
 		resp.Diagnostics.AddError("Unable to open "+e.TypeName, err.Error())
 	}
+}
+
+// hasInput reports whether the operation takes a request body.
+func hasInput(attrs []*Attr) bool {
+	for _, a := range attrs {
+		if a.InCreate && !a.Local {
+			return true
+		}
+	}
+	return false
 }

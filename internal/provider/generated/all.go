@@ -216,6 +216,7 @@ func All() []*engine.Resource {
 		TermsOfServiceStatus(),
 		TexmlApplication(),
 		TexmlQueue(),
+		TexmlSecret(),
 		TrafficPolicyProfile(),
 		Tunnel(),
 		UacConnection(),
@@ -602,7 +603,9 @@ func Actions() []*engine.Action {
 // Ephemerals returns a fresh copy of every generated ephemeral resource descriptor.
 func Ephemerals() []*engine.Ephemeral {
 	return []*engine.Ephemeral{
+		RoomClientTokenEphemeral(),
 		SimCardActivationCodeEphemeral(),
+		StorageObjectPresignedURLEphemeral(),
 		TelephonyCredentialTokenEphemeral(),
 		TelephonyCredentialTokenMaterialEphemeral(),
 		WireguardPeerConfigEphemeral(),

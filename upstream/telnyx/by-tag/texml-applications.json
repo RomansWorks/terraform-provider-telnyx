@@ -24,14 +24,44 @@
         "schema": {
           "properties": {
             "friendly_name": {
-              "default": "null",
-              "description": "If present, applications with \u003ccode\u003efriendly_name\u003c/code\u003e containing the given value will be returned. Matching is not case-sensitive. Requires at least three characters.",
-              "type": "string"
+              "oneOf": [
+                {
+                  "description": "If present, applications with \u003ccode\u003efriendly_name\u003c/code\u003e exactly matching the given value will be returned. Matching is case-sensitive.",
+                  "type": "string"
+                },
+                {
+                  "properties": {
+                    "contains": {
+                      "description": "If present, applications with \u003ccode\u003efriendly_name\u003c/code\u003e containing the given value will be returned. Matching is not case-sensitive.",
+                      "type": "string"
+                    },
+                    "eq": {
+                      "description": "Exact match for friendly_name. Matching is case-sensitive.",
+                      "type": "string"
+                    }
+                  },
+                  "type": "object"
+                }
+              ]
             },
             "outbound_voice_profile_id": {
-              "description": "Identifies the associated outbound voice profile.",
-              "example": "1293384261075731499",
-              "type": "string"
+              "oneOf": [
+                {
+                  "description": "If present, only applications associated with the given outbound voice profile will be returned. Matching is exact.",
+                  "example": "1293384261075731499",
+                  "type": "string"
+                },
+                {
+                  "properties": {
+                    "eq": {
+                      "description": "Exact match for the associated outbound voice profile.",
+                      "example": "1293384261075731499",
+                      "type": "string"
+                    }
+                  },
+                  "type": "object"
+                }
+              ]
             }
           },
           "type": "object"
@@ -52,7 +82,7 @@
               "type": "integer"
             },
             "size": {
-              "default": 250,
+              "default": 100,
               "description": "The size of the page",
               "maximum": 250,
               "minimum": 1,

@@ -38,7 +38,8 @@ resource "telnyx_phone_number_voice_settings" "main_line" {
 
 - `call_forwarding` (Attributes) The call forwarding settings for a phone number. (see [below for nested schema](#nestedatt--call_forwarding))
 - `call_recording` (Attributes) The call recording settings for a phone number. (see [below for nested schema](#nestedatt--call_recording))
-- `caller_id_name_enabled` (Boolean) Controls whether the caller ID name is enabled for this phone number. The API does not return this value, so changes made outside Terraform are not detected.
+- `caller_id_name_enabled` (Boolean) Enables inbound caller name lookup for calls to this phone number. Turning lookup off retains the saved lookup tier.
+- `caller_id_name_lookup_tier` (String) The inbound caller name lookup tier. The initial tier is `standard`. This setting applies when `caller_id_name_enabled` is true. The field may be omitted when tier selection is unavailable. One of `enhanced`, `standard`.
 - `cnam_listing` (Attributes) The CNAM listing settings for a phone number. (see [below for nested schema](#nestedatt--cnam_listing))
 - `inbound_call_screening` (String) The inbound_call_screening setting is a phone number configuration option variable that allows users to configure their settings to block or flag fraudulent calls. It can be set to disabled, reject_calls, or flag_calls. This feature has an additional per-number monthly cost associated with it. One of `disabled`, `flag_calls`, `reject_calls`.
 - `media_features` (Attributes) The media features settings for a phone number. (see [below for nested schema](#nestedatt--media_features))

@@ -1,0 +1,2339 @@
+{
+  "components": {
+    "schemas": {
+      "GpuSpec": {
+        "additionalProperties": false,
+        "description": "The GPU type and count to rent. Only types listed by `GET /ai/sandbox-gpu-types` are accepted, with a count from their `allowed_counts`; anything else fails with `resources_not_allowed`. Currently each type lists one count, so the sandbox gets a whole node of that type.",
+        "properties": {
+          "count": {
+            "description": "A count from the type's `allowed_counts`. Currently that's the node's GPU count, so the sandbox rents a whole node.",
+            "maximum": 8,
+            "minimum": 1,
+            "type": "integer"
+          },
+          "type": {
+            "description": "GPU type, e.g. `B300`.",
+            "maxLength": 64,
+            "minLength": 1,
+            "type": "string"
+          }
+        },
+        "required": [
+          "type",
+          "count"
+        ],
+        "type": "object"
+      },
+      "ImageSpec": {
+        "additionalProperties": false,
+        "description": "The container image to run. The image must be publicly pullable and have a `linux/amd64` variant.",
+        "properties": {
+          "ref": {
+            "description": "Image reference, e.g. `ghcr.io/acme/trainer:1.4`. The image must be publicly pullable and have a `linux/amd64` variant. The registry must be a public DNS name; IP literals, `localhost`, single-label hosts and internal registries fail with `registry_not_allowed`.",
+            "maxLength": 1024,
+            "minLength": 1,
+            "type": "string"
+          }
+        },
+        "required": [
+          "ref"
+        ],
+        "type": "object"
+      },
+      "LogsIncompleteReason": {
+        "description": "Why some of the sandbox's output is permanently missing from the archive:\n`log_bucket_unavailable` (the log bucket couldn't be written), `node_lost` (the\nsandbox's node was lost), `logs_missing` (output was lost on its way to the\narchive), `logs_unverified` (the sandbox's output couldn't be counted, so the\narchive can't be shown complete), or `size_cap_reached` (the output passed the\nsize cap).",
+        "enum": [
+          "log_bucket_unavailable",
+          "node_lost",
+          "logs_missing",
+          "logs_unverified",
+          "size_cap_reached"
+        ],
+        "type": "string"
+      },
+      "NetworkMode": {
+        "description": "Outbound network access, fixed at create: `public` (the internet, never internal addresses), `blocked` (`block_network: true`; no network at all, not even DNS) or `allowlist` (`cidr_allowlist`; only those CIDRs).",
+        "enum": [
+          "public",
+          "blocked",
+          "allowlist"
+        ],
+        "type": "string"
+      },
+      "ReadinessProbe": {
+        "description": "How to tell the sandbox is ready; drives the `ready` field. Set exactly one of `tcp_port` or `exec`; the other may be omitted or `null`.",
+        "oneOf": [
+          {
+            "additionalProperties": false,
+            "properties": {
+              "exec": {
+                "description": "Not set for a TCP port probe.",
+                "type": "null"
+              },
+              "tcp_port": {
+                "description": "Ready once this port accepts connections inside the sandbox.",
+                "maximum": 65535,
+                "minimum": 1,
+                "type": "integer"
+              }
+            },
+            "required": [
+              "tcp_port"
+            ],
+            "title": "TCP port probe",
+            "type": "object"
+          },
+          {
+            "additionalProperties": false,
+            "properties": {
+              "exec": {
+                "description": "Ready once this command (argv) exits with 0.",
+                "items": {
+                  "type": "string"
+                },
+                "minItems": 1,
+                "type": "array"
+              },
+              "tcp_port": {
+                "description": "Not set for an exec probe.",
+                "type": "null"
+              }
+            },
+            "required": [
+              "exec"
+            ],
+            "title": "Exec probe",
+            "type": "object"
+          }
+        ]
+      },
+      "ResolvedSpec": {
+        "description": "What actually runs, resolved before the sandbox is placed. Set once the image\nis resolved.",
+        "properties": {
+          "command": {
+            "description": "Final argv.",
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "image": {
+            "description": "Image pinned by digest: `host/repo@sha256:…`.",
+            "type": "string"
+          },
+          "workdir": {
+            "description": "Final working directory.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "image",
+          "command",
+          "workdir"
+        ],
+        "type": "object"
+      },
+      "Sandbox": {
+        "description": "A sandbox: one container image running in its own virtual machine. Terminated sandboxes stay readable for at least 30 days.",
+        "properties": {
+          "cidr_allowlist": {
+            "description": "Allowed CIDRs, if any.",
+            "items": {
+              "type": "string"
+            },
+            "type": [
+              "array",
+              "null"
+            ]
+          },
+          "command": {
+            "description": "As requested.",
+            "items": {
+              "type": "string"
+            },
+            "type": [
+              "array",
+              "null"
+            ]
+          },
+          "cpu": {
+            "description": "CPU cores: the GPU type's per-GPU default × the GPU count.",
+            "type": "number"
+          },
+          "created_at": {
+            "description": "When it was created.",
+            "format": "date-time",
+            "type": "string"
+          },
+          "disk_gib": {
+            "description": "Size in GiB of `/data`, the sandbox's own disk: the GPU type's per-GPU default × the GPU count. Writing past it fails with \"no space left on device\", and the sandbox keeps running. Everything written outside `/data` counts against the root filesystem's separate limit (`root_disk_gib` in the GPU types list); going past that ends the sandbox with `disk_limit_exceeded`.",
+            "type": "integer"
+          },
+          "env": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "description": "As requested.",
+            "type": "object"
+          },
+          "exit_code": {
+            "description": "The main process's exit code; set whenever it ran.",
+            "type": [
+              "integer",
+              "null"
+            ]
+          },
+          "gpu": {
+            "$ref": "#/components/schemas/GpuSpec",
+            "description": "The rented GPU type and count."
+          },
+          "id": {
+            "description": "Sandbox ID (`sb-…`).",
+            "type": "string"
+          },
+          "idle_timeout": {
+            "description": "Idle timeout in seconds, if set.",
+            "type": [
+              "integer",
+              "null"
+            ]
+          },
+          "image": {
+            "$ref": "#/components/schemas/ImageSpec"
+          },
+          "log_bucket": {
+            "description": "The bucket the sandbox's logs go to, the bucket created for you included; `null` until it's known.",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "logs_incomplete": {
+            "description": "Some output is permanently missing from the archive.",
+            "type": "boolean"
+          },
+          "logs_incomplete_reason": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/LogsIncompleteReason"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Why, when `logs_incomplete` is true."
+          },
+          "memory_mib": {
+            "description": "Memory in MiB: the GPU type's per-GPU default × the GPU count.",
+            "type": "integer"
+          },
+          "name": {
+            "description": "Name, if one was given.",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "network_mode": {
+            "$ref": "#/components/schemas/NetworkMode",
+            "description": "Fixed at create."
+          },
+          "queue_timeout": {
+            "description": "Queue timeout in seconds.",
+            "type": "integer"
+          },
+          "readiness_probe": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ReadinessProbe"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "As requested."
+          },
+          "ready": {
+            "description": "Whether the readiness probe passes. Without a probe, `true` once `running`.",
+            "type": "boolean"
+          },
+          "resolved": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ResolvedSpec"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Set once the image is resolved and the working directory is known."
+          },
+          "started_at": {
+            "description": "When it entered `running`.",
+            "format": "date-time",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "state": {
+            "$ref": "#/components/schemas/SandboxState"
+          },
+          "tags": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "description": "Your tags.",
+            "type": "object"
+          },
+          "terminated_at": {
+            "description": "When it entered `terminated`.",
+            "format": "date-time",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "termination_message": {
+            "description": "Why the sandbox ended, when there's more to say than `termination_reason`. Set in two cases only. With `image_pull_failed`, before the sandbox ran: the registry's own message, or what Telnyx's checks of the image found (the reference, the image's platform, ENTRYPOINT/CMD, WorkingDir or User). Text from your registry is shown as received, cleaned of control characters. With `internal_error`: a short reason from Telnyx, such as the sandbox's disk not being ready.",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "termination_reason": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/TerminationReason"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Set once `state` is `terminated`."
+          },
+          "timeout": {
+            "description": "Maximum lifetime in seconds; `null` means no limit.",
+            "type": [
+              "integer",
+              "null"
+            ]
+          },
+          "workdir": {
+            "description": "As requested.",
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "tags",
+          "state",
+          "termination_reason",
+          "termination_message",
+          "exit_code",
+          "ready",
+          "network_mode",
+          "image",
+          "command",
+          "workdir",
+          "env",
+          "gpu",
+          "cpu",
+          "memory_mib",
+          "disk_gib",
+          "timeout",
+          "idle_timeout",
+          "queue_timeout",
+          "cidr_allowlist",
+          "readiness_probe",
+          "log_bucket",
+          "resolved",
+          "logs_incomplete",
+          "logs_incomplete_reason",
+          "created_at",
+          "started_at",
+          "terminated_at"
+        ],
+        "type": "object"
+      },
+      "SandboxCreateReq": {
+        "additionalProperties": false,
+        "description": "A new sandbox. `image` and `gpu` are required.",
+        "not": {
+          "description": "`block_network: true` can't be combined with a `cidr_allowlist`.",
+          "properties": {
+            "block_network": {
+              "const": true
+            },
+            "cidr_allowlist": {
+              "type": "array"
+            }
+          },
+          "required": [
+            "block_network",
+            "cidr_allowlist"
+          ]
+        },
+        "properties": {
+          "block_network": {
+            "default": false,
+            "description": "No network at all, not even DNS (network mode `blocked`). Can't be combined with `cidr_allowlist`.",
+            "type": "boolean"
+          },
+          "cidr_allowlist": {
+            "description": "Allow outbound traffic only to these CIDRs (network mode `allowlist`). Internal address ranges are always excluded; a CIDR entirely inside them fails with `cidr_not_allowed`. DNS isn't included: allow your resolver's addresses, or connect by IP. Can't be combined with `block_network`.",
+            "items": {
+              "type": "string"
+            },
+            "minItems": 1,
+            "type": [
+              "array",
+              "null"
+            ]
+          },
+          "command": {
+            "description": "Full argv to run, replacing the image's ENTRYPOINT and CMD. Omit it to run the image's own ENTRYPOINT + CMD; if the image has neither, the sandbox ends with `termination_reason: no_command`.",
+            "items": {
+              "type": "string"
+            },
+            "minItems": 1,
+            "type": [
+              "array",
+              "null"
+            ]
+          },
+          "env": {
+            "additionalProperties": {
+              "maxLength": 32768,
+              "type": "string"
+            },
+            "description": "Environment variables, on top of the image's. Names must be POSIX names and can't start with `TELNYX_SANDBOX_`; at most 256 variables, 32 KiB each and 256 KiB in total (else `invalid_env`).",
+            "maxProperties": 256,
+            "propertyNames": {
+              "pattern": "^(?!TELNYX_SANDBOX_)[A-Za-z_][A-Za-z0-9_]*$"
+            },
+            "type": "object"
+          },
+          "gpu": {
+            "$ref": "#/components/schemas/GpuSpec",
+            "description": "The GPU type and a count from its `allowed_counts`, as listed by `GET /ai/sandbox-gpu-types`. Currently that's the node's GPU count, so the sandbox gets a whole node of that type, with the type's CPU, memory and disk."
+          },
+          "idle_timeout": {
+            "description": "End the sandbox (reason `idle_timeout`) after this many seconds of no activity. Activity is an exec running, starting or finishing, and stdin written to an exec or to the main process. Reading output doesn't count, nor do file calls (reading, writing, listing or deleting files), nor does the main process's own work: a sandbox whose main process is a server, with nothing else going on, ends after `idle_timeout`. Must not exceed `timeout` when that is a number. Default: none.",
+            "minimum": 1,
+            "type": [
+              "integer",
+              "null"
+            ]
+          },
+          "image": {
+            "$ref": "#/components/schemas/ImageSpec"
+          },
+          "log_bucket": {
+            "description": "Your own Cloud Storage bucket for this sandbox's logs. It must exist, belong to your organization, be in the Cloud Storage region this service keeps sandbox logs in, and be writable; otherwise the create fails with `log_bucket_not_allowed`. Omit it to use a bucket created for you in your account, with a 30-day lifecycle rule; the sandbox waits for that bucket before it waits for capacity.",
+            "maxLength": 63,
+            "minLength": 3,
+            "pattern": "^[a-z0-9][a-z0-9.-]*[a-z0-9]$",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "name": {
+            "description": "Optional name, unique among your non-terminated sandboxes (else `name_conflict`); reusable once the sandbox holding it is terminated. Look it up with `GET /ai/sandboxes?name=…`.",
+            "maxLength": 64,
+            "minLength": 1,
+            "pattern": "^[A-Za-z0-9._-]+$",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "queue_timeout": {
+            "default": 600,
+            "description": "How long to wait before placement, in seconds: resolving the image, waiting for capacity and preparing GPUs all count. Then the sandbox ends with `queue_timeout`, so with `0` it always does. Queued and preparing time isn't billed.",
+            "maximum": 86400,
+            "minimum": 0,
+            "type": "integer"
+          },
+          "readiness_probe": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ReadinessProbe"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "How to tell the sandbox is ready (see `ready`)."
+          },
+          "tags": {
+            "additionalProperties": {
+              "maxLength": 255,
+              "type": "string"
+            },
+            "description": "Your own key/value labels, e.g. `{\"project\": \"llm-ft\"}`. At most 20 tags; keys 1–63 characters, values up to 255. Filter on them with `GET /ai/sandboxes?tag[\u003ckey\u003e]=\u003cvalue\u003e`.",
+            "maxProperties": 20,
+            "propertyNames": {
+              "maxLength": 63,
+              "minLength": 1
+            },
+            "type": "object"
+          },
+          "timeout": {
+            "default": 300,
+            "description": "Maximum lifetime in seconds. Omitted: 300 s. `null`: no limit; the sandbox runs until it's terminated. There's no maximum. Send an explicit `null` for no limit: a client that drops null fields gets the 300 s default.",
+            "minimum": 1,
+            "type": [
+              "integer",
+              "null"
+            ]
+          },
+          "workdir": {
+            "description": "Absolute working directory (else `invalid_workdir`). Defaults to the image's WorkingDir, then `/`. Execs default to it too.",
+            "maxLength": 4096,
+            "pattern": "^/",
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "image",
+          "gpu"
+        ],
+        "type": "object"
+      },
+      "SandboxListRespData": {
+        "properties": {
+          "data": {
+            "items": {
+              "$ref": "#/components/schemas/Sandbox"
+            },
+            "type": "array"
+          },
+          "meta": {
+            "$ref": "#/components/schemas/sandboxes_Meta"
+          }
+        },
+        "required": [
+          "data",
+          "meta"
+        ],
+        "type": "object"
+      },
+      "SandboxRespData": {
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/Sandbox"
+          }
+        },
+        "required": [
+          "data"
+        ],
+        "type": "object"
+      },
+      "SandboxState": {
+        "description": "Lifecycle state: `queued` → `preparing` (GPU preparation, when needed) →\n`scheduled` → `starting` (pulling the image) → `running` → `terminated`.\nAny non-terminal state can go straight to `terminated`, which is final.",
+        "enum": [
+          "queued",
+          "preparing",
+          "scheduled",
+          "starting",
+          "running",
+          "terminated"
+        ],
+        "type": "string"
+      },
+      "SandboxUpdateReq": {
+        "additionalProperties": false,
+        "description": "New tags for a sandbox. Nothing else can change after create.",
+        "properties": {
+          "tags": {
+            "additionalProperties": {
+              "maxLength": 255,
+              "type": "string"
+            },
+            "description": "Replaces the whole tag set; `{}` clears it. Your own key/value labels, e.g. `{\"project\": \"llm-ft\"}`. At most 20 tags; keys 1–63 characters, values up to 255. Filter on them with `GET /ai/sandboxes?tag[\u003ckey\u003e]=\u003cvalue\u003e`.",
+            "maxProperties": 20,
+            "propertyNames": {
+              "maxLength": 63,
+              "minLength": 1
+            },
+            "type": "object"
+          }
+        },
+        "required": [
+          "tags"
+        ],
+        "type": "object"
+      },
+      "TelnyxErrorMeta": {
+        "description": "Extra error information.",
+        "properties": {
+          "url": {
+            "default": null,
+            "description": "Documentation page for the error code.",
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "type": "object"
+      },
+      "TelnyxErrorSource": {
+        "description": "Where in the request the error was found.",
+        "properties": {
+          "parameter": {
+            "default": null,
+            "description": "Name of the offending parameter.",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "pointer": {
+            "default": null,
+            "description": "JSON pointer into the request body, e.g. `/timeout`.",
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "type": "object"
+      },
+      "TerminationReason": {
+        "description": "Why the sandbox ended. Always set once `state` is `terminated`.\n\n- Before running: `queue_timeout`, `terminated_by_user` (cancelled while queued), `image_pull_failed` (the image can't be used; `termination_message` says why when it's known), `no_command` (the image has no ENTRYPOINT or CMD and no `command` was given), `account_suspended`, `killed_by_operator`, `spend_limit_reached`, `internal_error`.\n- From running: `exit` (see `exit_code`), `timeout`, `idle_timeout`, `terminated_by_user`, `oom_killed`, `disk_limit_exceeded`, `account_suspended`, `killed_by_operator`, `spend_limit_reached`, `node_lost`, `internal_error`.\n\n`spend_limit_reached`: your account, or the API key that created the sandbox, reached its Sandboxes spend limit. A sandbox ended this way isn't restarted when the limit is raised.",
+        "enum": [
+          "exit",
+          "timeout",
+          "idle_timeout",
+          "queue_timeout",
+          "terminated_by_user",
+          "image_pull_failed",
+          "no_command",
+          "oom_killed",
+          "disk_limit_exceeded",
+          "account_suspended",
+          "killed_by_operator",
+          "spend_limit_reached",
+          "node_lost",
+          "internal_error"
+        ],
+        "type": "string"
+      },
+      "sandboxes_Meta": {
+        "description": "Pagination metadata for page-number lists (`page[number]` / `page[size]`).",
+        "properties": {
+          "page_number": {
+            "description": "The page returned (1-based).",
+            "type": "integer"
+          },
+          "page_size": {
+            "description": "Items per page.",
+            "type": "integer"
+          },
+          "total_pages": {
+            "description": "Number of pages.",
+            "type": "integer"
+          },
+          "total_results": {
+            "description": "Number of items across all pages.",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "page_number",
+          "page_size",
+          "total_pages",
+          "total_results"
+        ],
+        "type": "object"
+      },
+      "sandboxes_TelnyxError": {
+        "description": "One error in the standard Telnyx error body.",
+        "properties": {
+          "code": {
+            "description": "Telnyx error code: a 5-digit string for general errors, e.g. `10009`. Sandboxes-specific errors are identified by their name in `title`.",
+            "type": "string"
+          },
+          "detail": {
+            "description": "Human-readable explanation.",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "meta": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/TelnyxErrorMeta"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Extra information."
+          },
+          "source": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/TelnyxErrorSource"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Where the error is."
+          },
+          "title": {
+            "description": "Short, constant summary of the error. For Sandboxes-specific errors, the error's name, e.g. `quota_exceeded`.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "title"
+        ],
+        "type": "object"
+      },
+      "sandboxes_TelnyxErrors": {
+        "description": "The standard Telnyx error body.",
+        "properties": {
+          "errors": {
+            "description": "One or more errors.",
+            "items": {
+              "$ref": "#/components/schemas/sandboxes_TelnyxError"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "errors"
+        ],
+        "type": "object"
+      }
+    },
+    "securitySchemes": {
+      "BearerAuth": {
+        "bearerFormat": "API key",
+        "description": "Telnyx API key supplied as `Authorization: Bearer \u003ctoken\u003e`. In production, auth may be validated by the API gateway and forwarded via Telnyx auth headers.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "Payment": {
+        "description": "Machine Payment Protocol credential used on paid retries, sent as `Authorization: Payment ...`. Obtained by paying a challenge returned in the `WWW-Authenticate` header of a 402 response. This is not a Telnyx API key; initial challenge requests use standard bearer authentication instead.",
+        "in": "header",
+        "name": "Authorization",
+        "type": "apiKey"
+      },
+      "agent-gateway_bearerAuth": {
+        "description": "Telnyx API key",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "agent-memory_bearerAuth": {
+        "description": "Telnyx API key",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "bearerAuth": {
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "branded-calling_bearerAuth": {
+        "description": "Telnyx API key. Generate one at https://portal.telnyx.com/#/app/api-keys.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "collections_bearerAuth": {
+        "description": "Telnyx API key. Collections and results are automatically scoped to the authenticated user's organization.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "number-reputation_bearerAuth": {
+        "description": "Telnyx API key. Generate one at https://portal.telnyx.com/#/app/api-keys.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "oauthClientAuth": {
+        "description": "OAuth 2.0 authentication for Telnyx API and MCP integrations",
+        "flows": {
+          "authorizationCode": {
+            "authorizationUrl": "https://api.telnyx.com/v2/oauth/authorize",
+            "refreshUrl": "https://api.telnyx.com/v2/oauth/token",
+            "scopes": {
+              "admin": "Administrative access to Telnyx resources"
+            },
+            "tokenUrl": "https://api.telnyx.com/v2/oauth/token"
+          },
+          "clientCredentials": {
+            "scopes": {
+              "admin": "Administrative access to Telnyx resources"
+            },
+            "tokenUrl": "https://api.telnyx.com/v2/oauth/token"
+          }
+        },
+        "type": "oauth2"
+      },
+      "outbound-voice-profiles_bearerAuth": {
+        "bearerFormat": "JWT",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "pay-connectors_bearerAuth": {
+        "description": "Telnyx API key, not the processor bearer token.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "pronunciation-dicts_bearerAuth": {
+        "description": "Telnyx API v2 key. Obtain from https://portal.telnyx.com",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "rcs-registration_bearerAuth": {
+        "bearerFormat": "API key",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "stored-payment-transactions_bearerAuth": {
+        "bearerFormat": "JWT",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "telnyxApiKey": {
+        "description": "Management-only Telnyx account credential.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "transcriptions-search_bearerAuth": {
+        "description": "Telnyx API key. Results are automatically scoped to the authenticated user's organization.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "web-search_bearerAuth": {
+        "description": "Telnyx API key",
+        "scheme": "bearer",
+        "type": "http"
+      }
+    }
+  },
+  "info": {
+    "contact": {
+      "email": "support@telnyx.com"
+    },
+    "description": "SIP trunking, SMS, MMS, Call Control and Telephony Data Services.",
+    "title": "Telnyx API",
+    "version": "2.0.0",
+    "x-endpoint-cost": "light",
+    "x-latency-category": "responsive"
+  },
+  "openapi": "3.1.0",
+  "paths": {
+    "/ai/sandboxes": {
+      "get": {
+        "description": "Lists your organization's sandboxes, newest first. Without `state`, only non-terminated sandboxes are listed; add `state=terminated` for finished ones. Filter by exact `name`, or by tags with `tag[\u003ckey\u003e]=\u003cvalue\u003e`; every given tag must match.\n\nTerminated sandboxes stay readable for at least 30 days.",
+        "operationId": "ListSandboxes",
+        "parameters": [
+          {
+            "description": "Exact sandbox name.",
+            "in": "query",
+            "name": "name",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "One or more states (repeat the parameter). Without it, only non-terminated sandboxes are listed.",
+            "in": "query",
+            "name": "state",
+            "required": false,
+            "schema": {
+              "items": {
+                "$ref": "#/components/schemas/SandboxState"
+              },
+              "type": "array"
+            }
+          },
+          {
+            "description": "Page number (1-based).",
+            "in": "query",
+            "name": "page[number]",
+            "required": false,
+            "schema": {
+              "default": 1,
+              "minimum": 1,
+              "type": "integer"
+            }
+          },
+          {
+            "description": "Number of items per page (max 100).",
+            "in": "query",
+            "name": "page[size]",
+            "required": false,
+            "schema": {
+              "default": 20,
+              "maximum": 100,
+              "minimum": 1,
+              "type": "integer"
+            }
+          },
+          {
+            "description": "Filter by tags: `tag[\u003ckey\u003e]=\u003cvalue\u003e`, repeatable; every given tag must match.",
+            "explode": true,
+            "in": "query",
+            "name": "tag",
+            "required": false,
+            "schema": {
+              "additionalProperties": {
+                "type": "string"
+              },
+              "type": "object"
+            },
+            "style": "deepObject"
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "data": [
+                    {
+                      "cidr_allowlist": null,
+                      "command": [
+                        "python",
+                        "train.py"
+                      ],
+                      "cpu": 192,
+                      "created_at": "2026-11-13T10:00:00Z",
+                      "disk_gib": 8192,
+                      "env": {
+                        "EPOCHS": "3"
+                      },
+                      "exit_code": null,
+                      "gpu": {
+                        "count": 8,
+                        "type": "B300"
+                      },
+                      "id": "sb-0192f1c2-7a4b-7c3e-9d1e-2f3a4b5c6d7e",
+                      "idle_timeout": null,
+                      "image": {
+                        "ref": "ghcr.io/acme/trainer:1.4"
+                      },
+                      "log_bucket": "acme-sandbox-logs",
+                      "logs_incomplete": false,
+                      "logs_incomplete_reason": null,
+                      "memory_mib": 2097152,
+                      "name": "train-run-42",
+                      "network_mode": "public",
+                      "queue_timeout": 1800,
+                      "readiness_probe": null,
+                      "ready": true,
+                      "resolved": {
+                        "command": [
+                          "python",
+                          "train.py"
+                        ],
+                        "image": "ghcr.io/acme/trainer@sha256:9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08",
+                        "workdir": "/app"
+                      },
+                      "started_at": "2026-11-13T10:01:12Z",
+                      "state": "running",
+                      "tags": {
+                        "project": "llm-ft"
+                      },
+                      "terminated_at": null,
+                      "termination_message": null,
+                      "termination_reason": null,
+                      "timeout": 36000,
+                      "workdir": "/app"
+                    }
+                  ],
+                  "meta": {
+                    "page_number": 1,
+                    "page_size": 20,
+                    "total_pages": 1,
+                    "total_results": 1
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/SandboxListRespData"
+                }
+              }
+            },
+            "description": "A page of sandboxes."
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/sandboxes_TelnyxErrors"
+                }
+              }
+            },
+            "description": "Validation error: the standard Telnyx validation errors (codes such as 10004 missing parameter, 10015 bad request, 10025 invalid string length, 10026 invalid type)."
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "errors": [
+                    {
+                      "code": "10009",
+                      "detail": "Could not find any usable credentials in the request.",
+                      "title": "Authentication failed"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/sandboxes_TelnyxErrors"
+                }
+              }
+            },
+            "description": "Missing or invalid API key (code 10009)."
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "errors": [
+                    {
+                      "detail": "The organization isn't whitelisted.",
+                      "title": "sandboxes_not_whitelisted"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/sandboxes_TelnyxErrors"
+                }
+              }
+            },
+            "description": "- `sandboxes_require_verification`: your account isn't fully verified.\n- `sandboxes_not_whitelisted`: Sandboxes isn't enabled for your organization (invite-only preview); `GET /ai/sandbox-access` tells whether it is."
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "errors": [
+                    {
+                      "code": "10037",
+                      "detail": "A dependency can't answer right now; retry later.",
+                      "title": "Service unavailable"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/sandboxes_TelnyxErrors"
+                }
+              }
+            },
+            "description": "A dependency can't answer right now (code 10037); retry later."
+          }
+        },
+        "summary": "List sandboxes",
+        "tags": [
+          "Sandboxes"
+        ]
+      },
+      "post": {
+        "description": "Creates a sandbox and returns it at once in state `queued`. It then starts in the background (`queued` → `preparing`, when its GPUs need preparing → `scheduled` → `starting` → `running`); follow it with `GET /ai/sandboxes/{sandbox_id}`, or wait for it to end with `GET /ai/sandboxes/{sandbox_id}/wait`.\n\nSet `gpu` to a type and a count from its `allowed_counts`, as listed by `GET /ai/sandbox-gpu-types`. Currently each type lists one count, its node's GPU count, so a sandbox rents a whole GPU node. Its CPU, memory and disk come from the type.\n\nDefaults: `timeout` 300 s (send `null` for no limit), `queue_timeout` 600 s, network mode `public`.\n\nWhen there's no capacity, the sandbox waits in the queue for up to `queue_timeout`; queued and preparing time isn't billed. A create that would take your organization over its GPU limit for the type fails at once with `quota_exceeded`; contact support to raise the limit.\n\nSend an `Idempotency-Key`: if the response is lost, a retry with the same key returns the same sandbox instead of starting (and billing) a second one.",
+        "operationId": "CreateSandbox",
+        "parameters": [
+          {
+            "description": "Optional client-chosen key (e.g. a UUID, at most 255 characters) that makes the call safe to retry. Within 24 h, the same key with the same request returns the stored response instead of acting twice; the same key with a different request fails with `idempotency_key_reused`; a request with a key that's still being processed fails with `request_in_progress`.",
+            "in": "header",
+            "name": "Idempotency-Key",
+            "required": false,
+            "schema": {
+              "maxLength": 255,
+              "minLength": 1,
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "example": {
+                "command": [
+                  "python",
+                  "train.py"
+                ],
+                "env": {
+                  "EPOCHS": "3"
+                },
+                "gpu": {
+                  "count": 8,
+                  "type": "B300"
+                },
+                "image": {
+                  "ref": "ghcr.io/acme/trainer:1.4"
+                },
+                "name": "train-run-42",
+                "queue_timeout": 1800,
+                "tags": {
+                  "project": "llm-ft"
+                },
+                "timeout": 36000,
+                "workdir": "/app"
+              },
+              "schema": {
+                "$ref": "#/components/schemas/SandboxCreateReq"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "data": {
+                    "cidr_allowlist": null,
+                    "command": [
+                      "python",
+                      "train.py"
+                    ],
+                    "cpu": 192,
+                    "created_at": "2026-11-13T10:00:00Z",
+                    "disk_gib": 8192,
+                    "env": {
+                      "EPOCHS": "3"
+                    },
+                    "exit_code": null,
+                    "gpu": {
+                      "count": 8,
+                      "type": "B300"
+                    },
+                    "id": "sb-0192f1c2-7a4b-7c3e-9d1e-2f3a4b5c6d7e",
+                    "idle_timeout": null,
+                    "image": {
+                      "ref": "ghcr.io/acme/trainer:1.4"
+                    },
+                    "log_bucket": null,
+                    "logs_incomplete": false,
+                    "logs_incomplete_reason": null,
+                    "memory_mib": 2097152,
+                    "name": "train-run-42",
+                    "network_mode": "public",
+                    "queue_timeout": 1800,
+                    "readiness_probe": null,
+                    "ready": false,
+                    "resolved": null,
+                    "started_at": null,
+                    "state": "queued",
+                    "tags": {
+                      "project": "llm-ft"
+                    },
+                    "terminated_at": null,
+                    "termination_message": null,
+                    "termination_reason": null,
+                    "timeout": 36000,
+                    "workdir": "/app"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/SandboxRespData"
+                }
+              }
+            },
+            "description": "The sandbox, in state `queued`."
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "errors": [
+                    {
+                      "code": "10015",
+                      "detail": "Input should be greater than or equal to 1.",
+                      "source": {
+                        "pointer": "/timeout"
+                      },
+                      "title": "Bad Request"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/sandboxes_TelnyxErrors"
+                }
+              }
+            },
+            "description": "Validation error: the standard Telnyx validation errors (codes such as 10004 missing parameter, 10015 bad request, 10025 invalid string length, 10026 invalid type)."
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "errors": [
+                    {
+                      "code": "10009",
+                      "detail": "Could not find any usable credentials in the request.",
+                      "title": "Authentication failed"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/sandboxes_TelnyxErrors"
+                }
+              }
+            },
+            "description": "Missing or invalid API key (code 10009)."
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "errors": [
+                    {
+                      "detail": "The organization isn't whitelisted.",
+                      "title": "sandboxes_not_whitelisted"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/sandboxes_TelnyxErrors"
+                }
+              }
+            },
+            "description": "- `sandboxes_require_verification`: your account isn't fully verified.\n- `sandboxes_not_whitelisted`: Sandboxes isn't enabled for your organization (invite-only preview); `GET /ai/sandbox-access` tells whether it is.\n- `sandboxes_disabled`: creating sandboxes, starting execs or completing an exec's start is disabled for your organization; other operations keep working.\n- `sandboxes_spend_limit_reached`: your account, or the API key the call was made with, has reached its Sandboxes spend limit. An account's limit also ends its running sandboxes, an API key's the ones created with that key."
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "errors": [
+                    {
+                      "detail": "A request with this Idempotency-Key is still being processed.",
+                      "title": "request_in_progress"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/sandboxes_TelnyxErrors"
+                }
+              }
+            },
+            "description": "- `request_in_progress`: a request with the same `Idempotency-Key` is still being processed; retry later.\n- `name_conflict`: a non-terminated sandbox of your organization already has this name."
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "errors": [
+                    {
+                      "detail": "GPU type `H100` isn't available; see GET /sandbox-gpu-types.",
+                      "source": {
+                        "pointer": "/gpu/type"
+                      },
+                      "title": "resources_not_allowed"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/sandboxes_TelnyxErrors"
+                }
+              }
+            },
+            "description": "- `idempotency_key_reused`: the same `Idempotency-Key` was sent with a different request.\n- `registry_not_allowed`: the image's registry isn't a public DNS name, or it's an internal address.\n- `cidr_not_allowed`: a `cidr_allowlist` entry lies entirely inside the internal address ranges sandboxes can never reach.\n- `invalid_env`: an `env` name isn't a POSIX name, uses the reserved `TELNYX_SANDBOX_` prefix, or a size limit is exceeded.\n- `invalid_workdir`: `workdir` isn't an absolute path.\n- `log_bucket_not_allowed`: `log_bucket` doesn't exist, isn't owned by your organization, isn't in the region Sandboxes keeps logs in, or isn't writable.\n- `resources_not_allowed`: the GPU type or count isn't offered, or `gpu` is missing."
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "errors": [
+                    {
+                      "detail": "This sandbox would exceed your organization's GPU limit for B300: limit 8, 8 in use, 8 requested. Contact support to request a higher limit.",
+                      "source": {
+                        "pointer": "/gpu/count"
+                      },
+                      "title": "quota_exceeded"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/sandboxes_TelnyxErrors"
+                }
+              }
+            },
+            "description": "- `quota_exceeded`: your organization's GPU limit for the requested type would be exceeded; the detail names the type, the limit and the usage. The request is never queued."
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "errors": [
+                    {
+                      "detail": "Creating sandboxes is paused; retry later.",
+                      "title": "sandbox_creation_paused"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/sandboxes_TelnyxErrors"
+                }
+              }
+            },
+            "description": "- `sandbox_creation_paused`: creating sandboxes is paused for everyone; retry later.\n- A dependency can't answer right now (code 10037); retry later."
+          }
+        },
+        "summary": "Create a sandbox",
+        "tags": [
+          "Sandboxes"
+        ]
+      }
+    },
+    "/ai/sandboxes/{sandbox_id}": {
+      "get": {
+        "description": "Returns one sandbox: its `state`, `termination_reason`, `exit_code` and `ready`, what was requested, and what was resolved. Poll it to follow a sandbox starting up (`state: running`, `ready: true`).\n\nTerminated sandboxes stay readable for at least 30 days.",
+        "operationId": "GetSandbox",
+        "parameters": [
+          {
+            "description": "Sandbox ID (`sb-…`).",
+            "example": "sb-0192f1c2-7a4b-7c3e-9d1e-2f3a4b5c6d7e",
+            "in": "path",
+            "name": "sandbox_id",
+            "required": true,
+            "schema": {
+              "maxLength": 64,
+              "minLength": 1,
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "data": {
+                    "cidr_allowlist": null,
+                    "command": [
+                      "python",
+                      "train.py"
+                    ],
+                    "cpu": 192,
+                    "created_at": "2026-11-13T10:00:00Z",
+                    "disk_gib": 8192,
+                    "env": {
+                      "EPOCHS": "3"
+                    },
+                    "exit_code": null,
+                    "gpu": {
+                      "count": 8,
+                      "type": "B300"
+                    },
+                    "id": "sb-0192f1c2-7a4b-7c3e-9d1e-2f3a4b5c6d7e",
+                    "idle_timeout": null,
+                    "image": {
+                      "ref": "ghcr.io/acme/trainer:1.4"
+                    },
+                    "log_bucket": "acme-sandbox-logs",
+                    "logs_incomplete": false,
+                    "logs_incomplete_reason": null,
+                    "memory_mib": 2097152,
+                    "name": "train-run-42",
+                    "network_mode": "public",
+                    "queue_timeout": 1800,
+                    "readiness_probe": null,
+                    "ready": true,
+                    "resolved": {
+                      "command": [
+                        "python",
+                        "train.py"
+                      ],
+                      "image": "ghcr.io/acme/trainer@sha256:9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08",
+                      "workdir": "/app"
+                    },
+                    "started_at": "2026-11-13T10:01:12Z",
+                    "state": "running",
+                    "tags": {
+                      "project": "llm-ft"
+                    },
+                    "terminated_at": null,
+                    "termination_message": null,
+                    "termination_reason": null,
+                    "timeout": 36000,
+                    "workdir": "/app"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/SandboxRespData"
+                }
+              }
+            },
+            "description": "The sandbox."
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/sandboxes_TelnyxErrors"
+                }
+              }
+            },
+            "description": "Validation error: the standard Telnyx validation errors (codes such as 10004 missing parameter, 10015 bad request, 10025 invalid string length, 10026 invalid type)."
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "errors": [
+                    {
+                      "code": "10009",
+                      "detail": "Could not find any usable credentials in the request.",
+                      "title": "Authentication failed"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/sandboxes_TelnyxErrors"
+                }
+              }
+            },
+            "description": "Missing or invalid API key (code 10009)."
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "errors": [
+                    {
+                      "detail": "The organization isn't whitelisted.",
+                      "title": "sandboxes_not_whitelisted"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/sandboxes_TelnyxErrors"
+                }
+              }
+            },
+            "description": "- `sandboxes_require_verification`: your account isn't fully verified.\n- `sandboxes_not_whitelisted`: Sandboxes isn't enabled for your organization (invite-only preview); `GET /ai/sandbox-access` tells whether it is."
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "errors": [
+                    {
+                      "code": "10005",
+                      "detail": "Sandbox not found.",
+                      "title": "Resource not found"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/sandboxes_TelnyxErrors"
+                }
+              }
+            },
+            "description": "Not found (code 10005): the resource doesn't exist or belongs to another organization. The detail says what's missing."
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "errors": [
+                    {
+                      "code": "10037",
+                      "detail": "A dependency can't answer right now; retry later.",
+                      "title": "Service unavailable"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/sandboxes_TelnyxErrors"
+                }
+              }
+            },
+            "description": "A dependency can't answer right now (code 10037); retry later."
+          }
+        },
+        "summary": "Get a sandbox",
+        "tags": [
+          "Sandboxes"
+        ]
+      },
+      "patch": {
+        "description": "Replaces the sandbox's whole tag set; `{}` clears it. Tags are the only thing you can change after create; any other field is rejected. Works on terminated sandboxes too.",
+        "operationId": "UpdateSandboxTags",
+        "parameters": [
+          {
+            "description": "Sandbox ID (`sb-…`).",
+            "example": "sb-0192f1c2-7a4b-7c3e-9d1e-2f3a4b5c6d7e",
+            "in": "path",
+            "name": "sandbox_id",
+            "required": true,
+            "schema": {
+              "maxLength": 64,
+              "minLength": 1,
+              "type": "string"
+            }
+          },
+          {
+            "description": "Optional client-chosen key (e.g. a UUID, at most 255 characters) that makes the call safe to retry. Within 24 h, the same key with the same request returns the stored response instead of acting twice; the same key with a different request fails with `idempotency_key_reused`; a request with a key that's still being processed fails with `request_in_progress`.",
+            "in": "header",
+            "name": "Idempotency-Key",
+            "required": false,
+            "schema": {
+              "maxLength": 255,
+              "minLength": 1,
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "example": {
+                "tags": {
+                  "project": "llm-ft",
+                  "stage": "eval"
+                }
+              },
+              "schema": {
+                "$ref": "#/components/schemas/SandboxUpdateReq"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "data": {
+                    "cidr_allowlist": null,
+                    "command": [
+                      "python",
+                      "train.py"
+                    ],
+                    "cpu": 192,
+                    "created_at": "2026-11-13T10:00:00Z",
+                    "disk_gib": 8192,
+                    "env": {
+                      "EPOCHS": "3"
+                    },
+                    "exit_code": null,
+                    "gpu": {
+                      "count": 8,
+                      "type": "B300"
+                    },
+                    "id": "sb-0192f1c2-7a4b-7c3e-9d1e-2f3a4b5c6d7e",
+                    "idle_timeout": null,
+                    "image": {
+                      "ref": "ghcr.io/acme/trainer:1.4"
+                    },
+                    "log_bucket": "acme-sandbox-logs",
+                    "logs_incomplete": false,
+                    "logs_incomplete_reason": null,
+                    "memory_mib": 2097152,
+                    "name": "train-run-42",
+                    "network_mode": "public",
+                    "queue_timeout": 1800,
+                    "readiness_probe": null,
+                    "ready": true,
+                    "resolved": {
+                      "command": [
+                        "python",
+                        "train.py"
+                      ],
+                      "image": "ghcr.io/acme/trainer@sha256:9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08",
+                      "workdir": "/app"
+                    },
+                    "started_at": "2026-11-13T10:01:12Z",
+                    "state": "running",
+                    "tags": {
+                      "project": "llm-ft",
+                      "stage": "eval"
+                    },
+                    "terminated_at": null,
+                    "termination_message": null,
+                    "termination_reason": null,
+                    "timeout": 36000,
+                    "workdir": "/app"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/SandboxRespData"
+                }
+              }
+            },
+            "description": "The sandbox with its new tags."
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/sandboxes_TelnyxErrors"
+                }
+              }
+            },
+            "description": "Validation error: the standard Telnyx validation errors (codes such as 10004 missing parameter, 10015 bad request, 10025 invalid string length, 10026 invalid type)."
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "errors": [
+                    {
+                      "code": "10009",
+                      "detail": "Could not find any usable credentials in the request.",
+                      "title": "Authentication failed"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/sandboxes_TelnyxErrors"
+                }
+              }
+            },
+            "description": "Missing or invalid API key (code 10009)."
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "errors": [
+                    {
+                      "detail": "The organization isn't whitelisted.",
+                      "title": "sandboxes_not_whitelisted"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/sandboxes_TelnyxErrors"
+                }
+              }
+            },
+            "description": "- `sandboxes_require_verification`: your account isn't fully verified.\n- `sandboxes_not_whitelisted`: Sandboxes isn't enabled for your organization (invite-only preview); `GET /ai/sandbox-access` tells whether it is."
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "errors": [
+                    {
+                      "code": "10005",
+                      "detail": "Sandbox not found.",
+                      "title": "Resource not found"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/sandboxes_TelnyxErrors"
+                }
+              }
+            },
+            "description": "Not found (code 10005): the resource doesn't exist or belongs to another organization. The detail says what's missing."
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "errors": [
+                    {
+                      "detail": "A request with this Idempotency-Key is still being processed.",
+                      "title": "request_in_progress"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/sandboxes_TelnyxErrors"
+                }
+              }
+            },
+            "description": "- `request_in_progress`: a request with the same `Idempotency-Key` is still being processed; retry later."
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "errors": [
+                    {
+                      "detail": "This Idempotency-Key was used with a different request.",
+                      "title": "idempotency_key_reused"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/sandboxes_TelnyxErrors"
+                }
+              }
+            },
+            "description": "- `idempotency_key_reused`: the same `Idempotency-Key` was sent with a different request."
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "errors": [
+                    {
+                      "code": "10037",
+                      "detail": "A dependency can't answer right now; retry later.",
+                      "title": "Service unavailable"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/sandboxes_TelnyxErrors"
+                }
+              }
+            },
+            "description": "A dependency can't answer right now (code 10037); retry later."
+          }
+        },
+        "summary": "Replace a sandbox's tags",
+        "tags": [
+          "Sandboxes"
+        ]
+      }
+    },
+    "/ai/sandboxes/{sandbox_id}/stdin/close": {
+      "post": {
+        "description": "Sends EOF to the stdin of the sandbox's main process, as the attach WebSocket's `stdin_eof` message does: the process sees it once the input already accepted has been written. Disconnecting from the attach WebSocket never sends EOF. Closing it twice changes nothing.",
+        "operationId": "CloseSandboxStdin",
+        "parameters": [
+          {
+            "description": "Sandbox ID (`sb-…`).",
+            "example": "sb-0192f1c2-7a4b-7c3e-9d1e-2f3a4b5c6d7e",
+            "in": "path",
+            "name": "sandbox_id",
+            "required": true,
+            "schema": {
+              "maxLength": 64,
+              "minLength": 1,
+              "type": "string"
+            }
+          },
+          {
+            "description": "Optional client-chosen key (e.g. a UUID, at most 255 characters) that makes the call safe to retry. Within 24 h, the same key with the same request returns the stored response instead of acting twice; the same key with a different request fails with `idempotency_key_reused`; a request with a key that's still being processed fails with `request_in_progress`.",
+            "in": "header",
+            "name": "Idempotency-Key",
+            "required": false,
+            "schema": {
+              "maxLength": 255,
+              "minLength": 1,
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "202": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "data": {
+                    "cidr_allowlist": null,
+                    "command": [
+                      "python",
+                      "train.py"
+                    ],
+                    "cpu": 192,
+                    "created_at": "2026-11-13T10:00:00Z",
+                    "disk_gib": 8192,
+                    "env": {
+                      "EPOCHS": "3"
+                    },
+                    "exit_code": null,
+                    "gpu": {
+                      "count": 8,
+                      "type": "B300"
+                    },
+                    "id": "sb-0192f1c2-7a4b-7c3e-9d1e-2f3a4b5c6d7e",
+                    "idle_timeout": null,
+                    "image": {
+                      "ref": "ghcr.io/acme/trainer:1.4"
+                    },
+                    "log_bucket": "acme-sandbox-logs",
+                    "logs_incomplete": false,
+                    "logs_incomplete_reason": null,
+                    "memory_mib": 2097152,
+                    "name": "train-run-42",
+                    "network_mode": "public",
+                    "queue_timeout": 1800,
+                    "readiness_probe": null,
+                    "ready": true,
+                    "resolved": {
+                      "command": [
+                        "python",
+                        "train.py"
+                      ],
+                      "image": "ghcr.io/acme/trainer@sha256:9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08",
+                      "workdir": "/app"
+                    },
+                    "started_at": "2026-11-13T10:01:12Z",
+                    "state": "running",
+                    "tags": {
+                      "project": "llm-ft"
+                    },
+                    "terminated_at": null,
+                    "termination_message": null,
+                    "termination_reason": null,
+                    "timeout": 36000,
+                    "workdir": "/app"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/SandboxRespData"
+                }
+              }
+            },
+            "description": "The sandbox."
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/sandboxes_TelnyxErrors"
+                }
+              }
+            },
+            "description": "Validation error: the standard Telnyx validation errors (codes such as 10004 missing parameter, 10015 bad request, 10025 invalid string length, 10026 invalid type)."
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "errors": [
+                    {
+                      "code": "10009",
+                      "detail": "Could not find any usable credentials in the request.",
+                      "title": "Authentication failed"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/sandboxes_TelnyxErrors"
+                }
+              }
+            },
+            "description": "Missing or invalid API key (code 10009)."
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "errors": [
+                    {
+                      "detail": "The organization isn't whitelisted.",
+                      "title": "sandboxes_not_whitelisted"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/sandboxes_TelnyxErrors"
+                }
+              }
+            },
+            "description": "- `sandboxes_require_verification`: your account isn't fully verified.\n- `sandboxes_not_whitelisted`: Sandboxes isn't enabled for your organization (invite-only preview); `GET /ai/sandbox-access` tells whether it is."
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "errors": [
+                    {
+                      "code": "10005",
+                      "detail": "Sandbox not found.",
+                      "title": "Resource not found"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/sandboxes_TelnyxErrors"
+                }
+              }
+            },
+            "description": "Not found (code 10005): the resource doesn't exist or belongs to another organization. The detail says what's missing."
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "errors": [
+                    {
+                      "detail": "A request with this Idempotency-Key is still being processed.",
+                      "title": "request_in_progress"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/sandboxes_TelnyxErrors"
+                }
+              }
+            },
+            "description": "- `request_in_progress`: a request with the same `Idempotency-Key` is still being processed; retry later.\n- `sandbox_not_running`: the operation needs a running sandbox."
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "errors": [
+                    {
+                      "detail": "This Idempotency-Key was used with a different request.",
+                      "title": "idempotency_key_reused"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/sandboxes_TelnyxErrors"
+                }
+              }
+            },
+            "description": "- `idempotency_key_reused`: the same `Idempotency-Key` was sent with a different request."
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "errors": [
+                    {
+                      "code": "10037",
+                      "detail": "A dependency can't answer right now; retry later.",
+                      "title": "Service unavailable"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/sandboxes_TelnyxErrors"
+                }
+              }
+            },
+            "description": "A dependency can't answer right now (code 10037); retry later."
+          }
+        },
+        "summary": "Close the main process's stdin",
+        "tags": [
+          "Sandboxes"
+        ]
+      }
+    },
+    "/ai/sandboxes/{sandbox_id}/terminate": {
+      "post": {
+        "description": "Stops the sandbox. A queued or preparing sandbox is cancelled at once. A sandbox that has been placed is stopped asynchronously: its processes get `SIGTERM`, then `SIGKILL` if they're still running after a grace period, and it reaches `terminated` with `termination_reason: terminated_by_user` and the main process's `exit_code` if it ran. The response shows the sandbox as it is now; use `GET /ai/sandboxes/{sandbox_id}/wait` to see it end.\n\nIf the sandbox already ended on its own, its own reason stays. Terminating a terminated sandbox succeeds and changes nothing.",
+        "operationId": "TerminateSandbox",
+        "parameters": [
+          {
+            "description": "Sandbox ID (`sb-…`).",
+            "example": "sb-0192f1c2-7a4b-7c3e-9d1e-2f3a4b5c6d7e",
+            "in": "path",
+            "name": "sandbox_id",
+            "required": true,
+            "schema": {
+              "maxLength": 64,
+              "minLength": 1,
+              "type": "string"
+            }
+          },
+          {
+            "description": "Optional client-chosen key (e.g. a UUID, at most 255 characters) that makes the call safe to retry. Within 24 h, the same key with the same request returns the stored response instead of acting twice; the same key with a different request fails with `idempotency_key_reused`; a request with a key that's still being processed fails with `request_in_progress`.",
+            "in": "header",
+            "name": "Idempotency-Key",
+            "required": false,
+            "schema": {
+              "maxLength": 255,
+              "minLength": 1,
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "202": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "data": {
+                    "cidr_allowlist": null,
+                    "command": [
+                      "python",
+                      "train.py"
+                    ],
+                    "cpu": 192,
+                    "created_at": "2026-11-13T10:00:00Z",
+                    "disk_gib": 8192,
+                    "env": {
+                      "EPOCHS": "3"
+                    },
+                    "exit_code": null,
+                    "gpu": {
+                      "count": 8,
+                      "type": "B300"
+                    },
+                    "id": "sb-0192f1c2-7a4b-7c3e-9d1e-2f3a4b5c6d7e",
+                    "idle_timeout": null,
+                    "image": {
+                      "ref": "ghcr.io/acme/trainer:1.4"
+                    },
+                    "log_bucket": "acme-sandbox-logs",
+                    "logs_incomplete": false,
+                    "logs_incomplete_reason": null,
+                    "memory_mib": 2097152,
+                    "name": "train-run-42",
+                    "network_mode": "public",
+                    "queue_timeout": 1800,
+                    "readiness_probe": null,
+                    "ready": true,
+                    "resolved": {
+                      "command": [
+                        "python",
+                        "train.py"
+                      ],
+                      "image": "ghcr.io/acme/trainer@sha256:9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08",
+                      "workdir": "/app"
+                    },
+                    "started_at": "2026-11-13T10:01:12Z",
+                    "state": "running",
+                    "tags": {
+                      "project": "llm-ft"
+                    },
+                    "terminated_at": null,
+                    "termination_message": null,
+                    "termination_reason": null,
+                    "timeout": 36000,
+                    "workdir": "/app"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/SandboxRespData"
+                }
+              }
+            },
+            "description": "The sandbox as it is now."
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/sandboxes_TelnyxErrors"
+                }
+              }
+            },
+            "description": "Validation error: the standard Telnyx validation errors (codes such as 10004 missing parameter, 10015 bad request, 10025 invalid string length, 10026 invalid type)."
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "errors": [
+                    {
+                      "code": "10009",
+                      "detail": "Could not find any usable credentials in the request.",
+                      "title": "Authentication failed"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/sandboxes_TelnyxErrors"
+                }
+              }
+            },
+            "description": "Missing or invalid API key (code 10009)."
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "errors": [
+                    {
+                      "detail": "The organization isn't whitelisted.",
+                      "title": "sandboxes_not_whitelisted"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/sandboxes_TelnyxErrors"
+                }
+              }
+            },
+            "description": "- `sandboxes_require_verification`: your account isn't fully verified.\n- `sandboxes_not_whitelisted`: Sandboxes isn't enabled for your organization (invite-only preview); `GET /ai/sandbox-access` tells whether it is."
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "errors": [
+                    {
+                      "code": "10005",
+                      "detail": "Sandbox not found.",
+                      "title": "Resource not found"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/sandboxes_TelnyxErrors"
+                }
+              }
+            },
+            "description": "Not found (code 10005): the resource doesn't exist or belongs to another organization. The detail says what's missing."
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "errors": [
+                    {
+                      "detail": "A request with this Idempotency-Key is still being processed.",
+                      "title": "request_in_progress"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/sandboxes_TelnyxErrors"
+                }
+              }
+            },
+            "description": "- `request_in_progress`: a request with the same `Idempotency-Key` is still being processed; retry later."
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "errors": [
+                    {
+                      "detail": "This Idempotency-Key was used with a different request.",
+                      "title": "idempotency_key_reused"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/sandboxes_TelnyxErrors"
+                }
+              }
+            },
+            "description": "- `idempotency_key_reused`: the same `Idempotency-Key` was sent with a different request."
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "errors": [
+                    {
+                      "code": "10037",
+                      "detail": "A dependency can't answer right now; retry later.",
+                      "title": "Service unavailable"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/sandboxes_TelnyxErrors"
+                }
+              }
+            },
+            "description": "A dependency can't answer right now (code 10037); retry later."
+          }
+        },
+        "summary": "Terminate a sandbox",
+        "tags": [
+          "Sandboxes"
+        ]
+      }
+    },
+    "/ai/sandboxes/{sandbox_id}/wait": {
+      "get": {
+        "description": "Long-poll: returns as soon as the sandbox is `terminated`, or after at most 10 s, whichever comes first, always with `200` and the sandbox as it is then. If `state` isn't `terminated` yet, call again. This is how you wait for a long-running sandbox without holding one connection open.",
+        "operationId": "WaitForSandbox",
+        "parameters": [
+          {
+            "description": "Sandbox ID (`sb-…`).",
+            "example": "sb-0192f1c2-7a4b-7c3e-9d1e-2f3a4b5c6d7e",
+            "in": "path",
+            "name": "sandbox_id",
+            "required": true,
+            "schema": {
+              "maxLength": 64,
+              "minLength": 1,
+              "type": "string"
+            }
+          },
+          {
+            "description": "Seconds to wait. The server waits at most 10 s; larger values are clamped. `0` returns at once.",
+            "in": "query",
+            "name": "timeout",
+            "required": false,
+            "schema": {
+              "default": 10,
+              "minimum": 0,
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "data": {
+                    "cidr_allowlist": null,
+                    "command": [
+                      "python",
+                      "train.py"
+                    ],
+                    "cpu": 192,
+                    "created_at": "2026-11-13T10:00:00Z",
+                    "disk_gib": 8192,
+                    "env": {
+                      "EPOCHS": "3"
+                    },
+                    "exit_code": 143,
+                    "gpu": {
+                      "count": 8,
+                      "type": "B300"
+                    },
+                    "id": "sb-0192f1c2-7a4b-7c3e-9d1e-2f3a4b5c6d7e",
+                    "idle_timeout": null,
+                    "image": {
+                      "ref": "ghcr.io/acme/trainer:1.4"
+                    },
+                    "log_bucket": "acme-sandbox-logs",
+                    "logs_incomplete": false,
+                    "logs_incomplete_reason": null,
+                    "memory_mib": 2097152,
+                    "name": "train-run-42",
+                    "network_mode": "public",
+                    "queue_timeout": 1800,
+                    "readiness_probe": null,
+                    "ready": false,
+                    "resolved": {
+                      "command": [
+                        "python",
+                        "train.py"
+                      ],
+                      "image": "ghcr.io/acme/trainer@sha256:9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08",
+                      "workdir": "/app"
+                    },
+                    "started_at": "2026-11-13T10:01:12Z",
+                    "state": "terminated",
+                    "tags": {
+                      "project": "llm-ft"
+                    },
+                    "terminated_at": "2026-11-13T12:30:05Z",
+                    "termination_message": null,
+                    "termination_reason": "terminated_by_user",
+                    "timeout": 36000,
+                    "workdir": "/app"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/SandboxRespData"
+                }
+              }
+            },
+            "description": "The sandbox as it is when the wait ends."
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/sandboxes_TelnyxErrors"
+                }
+              }
+            },
+            "description": "Validation error: the standard Telnyx validation errors (codes such as 10004 missing parameter, 10015 bad request, 10025 invalid string length, 10026 invalid type)."
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "errors": [
+                    {
+                      "code": "10009",
+                      "detail": "Could not find any usable credentials in the request.",
+                      "title": "Authentication failed"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/sandboxes_TelnyxErrors"
+                }
+              }
+            },
+            "description": "Missing or invalid API key (code 10009)."
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "errors": [
+                    {
+                      "detail": "The organization isn't whitelisted.",
+                      "title": "sandboxes_not_whitelisted"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/sandboxes_TelnyxErrors"
+                }
+              }
+            },
+            "description": "- `sandboxes_require_verification`: your account isn't fully verified.\n- `sandboxes_not_whitelisted`: Sandboxes isn't enabled for your organization (invite-only preview); `GET /ai/sandbox-access` tells whether it is."
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "errors": [
+                    {
+                      "code": "10005",
+                      "detail": "Sandbox not found.",
+                      "title": "Resource not found"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/sandboxes_TelnyxErrors"
+                }
+              }
+            },
+            "description": "Not found (code 10005): the resource doesn't exist or belongs to another organization. The detail says what's missing."
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "errors": [
+                    {
+                      "code": "10037",
+                      "detail": "A dependency can't answer right now; retry later.",
+                      "title": "Service unavailable"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/sandboxes_TelnyxErrors"
+                }
+              }
+            },
+            "description": "A dependency can't answer right now (code 10037); retry later."
+          }
+        },
+        "summary": "Wait for a sandbox to end",
+        "tags": [
+          "Sandboxes"
+        ]
+      }
+    }
+  },
+  "security": [
+    {
+      "bearerAuth": []
+    }
+  ],
+  "servers": [
+    {
+      "description": "Version 2.0.0 of the Telnyx API",
+      "url": "https://api.telnyx.com/v2"
+    }
+  ]
+}

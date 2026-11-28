@@ -359,7 +359,7 @@
     "schemas": {
       "CreateMeetingSessionRequest": {
         "additionalProperties": false,
-        "description": "Request body for creating a new meeting session.\n\nCross-field rules:\n- `assistant` cannot be combined with `join_at`; it is available only for sessions that join immediately.\n- `assistant` cannot be combined with `barge_in: true`.\n- `assistant.avatar: true` cannot be combined with `speak_on_enter`; the assistant greets through its avatar.\n- The `assistant` options, including `avatar`, take effect at session creation and cannot be modified later.\n- An avatar takes precedence over `camera_image`; ordinary assistant sessions can use a static camera image.\n\nGoogle Meet and Teams recording requires a recording_export destination. Use join_at to schedule a meeting, or omit it to join now. Zoom recordings are enabled automatically; Zoom does not support recording, recording_view or recording_export, and ignores leave_policy. Digital avatars require avatar support.",
+        "description": "Request body for creating a new meeting session.\n\nCross-field rules:\n- `assistant` cannot be combined with `join_at`; it is available only for sessions that join immediately.\n- `assistant` cannot be combined with `barge_in: true`.\n- `assistant.avatar: true` cannot be combined with `speak_on_enter`; the assistant greets through its avatar.\n- The `assistant` options, including `avatar`, take effect at session creation and cannot be modified later.\n- An avatar takes precedence over `camera_image`; ordinary assistant sessions can use a static camera image.\n\nGoogle Meet and Teams recording requires a recording_export destination. Zoom meetings are recorded by default without one; the recording is held by the Meeting service and read through the recordings endpoint. Use join_at to schedule a meeting, or omit it to join now. Zoom ignores leave_policy. Digital avatars require avatar support.",
         "examples": [
           {
             "bot_name": "Notetaker",
@@ -429,18 +429,33 @@
             "type": "object"
           },
           "recording": {
-            "description": "Google Meet and Teams only. Defaults to true when recording_export is supplied and false otherwise. True requires recording_export.bucket; false cannot be combined with recording_export. Fixed at creation, with no pause/resume action. Zoom rejects recording, recording_view, and recording_export with 422 unsupported_capability; omit these fields for Zoom.",
+            "description": "Google Meet and Teams: defaults to true when recording_export is supplied and false otherwise. True requires recording_export.bucket; false cannot be combined with recording_export. Zoom: defaults to true, and the recording is held by the Meeting service; false disables the saved recording, and recording_export is ignored. Fixed at creation, with no pause/resume action.",
             "type": "boolean"
           },
           "recording_export": {
             "$ref": "#/components/schemas/MeetingSessionRecordingDestination"
           },
+          "recording_retention": {
+            "$ref": "#/components/schemas/MeetingSessionRecordingRetentionRequest"
+          },
+          "recording_screenshare_participants": {
+            "default": "overlap",
+            "description": "Where participant video goes in the recording while a screen is shared, on Google Meet, Teams, and Zoom. overlap (default) keeps the default layout, in which participant video can cover part of the shared screen. beside places participant video in a column next to the shared screen. hide records the shared screen alone. When nobody is sharing, the frame follows recording_view. Accepted at creation only; does not enable recording by itself.",
+            "enum": [
+              "overlap",
+              "beside",
+              "hide"
+            ],
+            "type": "string"
+          },
           "recording_view": {
             "default": "speaker_view",
-            "description": "Recording layout for Google Meet and Teams. Defaults to speaker_view. Accepted at creation only; does not enable recording by itself.",
+            "description": "Recording layout while nobody is sharing a screen. Defaults to speaker_view. gallery_view_v2 is a Zoom grid that also draws a named tile for participants whose camera is off; Google Meet and Teams treat it as gallery_view and return it as gallery_view. audio_only records a Zoom meeting without video; Google Meet and Teams reject it with 422 unsupported_capability. speaker_view_no_sidebar applies to Google Meet and Teams and is ignored for Zoom. Accepted at creation only; does not enable recording by itself.",
             "enum": [
               "speaker_view",
               "gallery_view",
+              "gallery_view_v2",
+              "audio_only",
               "speaker_view_no_sidebar"
             ],
             "type": "string"
@@ -674,6 +689,11 @@
               "null"
             ]
           },
+          "transcript_deleted_at": {
+            "description": "When the transcript was deleted with DELETE /meeting_sessions/{id}/transcript. Present only after the transcript has been deleted.",
+            "format": "date-time",
+            "type": "string"
+          },
           "updated_at": {
             "description": "Timestamp of the last update to the session.",
             "format": "date-time",
@@ -774,7 +794,7 @@
           },
           "avatar": {
             "default": false,
-            "description": "Beta. Show the avatar configured on the assistant (its `avatar_settings`; see [AI Assistant avatars](/docs/inference/ai-assistants/avatars)) as the bot's camera, lip-synced to the assistant's own speech. The request carries no avatar ID or key: the assistant is read at creation and the request is rejected with 400 `invalid_request` if it has no Telnyx avatar configured. Available for Google Meet, Zoom, and Teams sessions. REST-only. Not echoed back on `assistant`; the session's top-level `avatar` and `avatar_state` fields report it instead. If the avatar fails, the session continues voice-only and `avatar_state` becomes `degraded`.",
+            "description": "Show the avatar configured on the assistant (its `avatar_settings`; see [AI Assistant avatars](/docs/inference/ai-assistants/avatars)) as the bot's camera, lip-synced to the assistant's own speech. The request carries no avatar ID or key: the assistant is read at creation and the request is rejected with 400 `invalid_request` if it has no Telnyx avatar configured. Available for Google Meet, Zoom, and Teams sessions. REST-only. Not echoed back on `assistant`; the session's top-level `avatar` and `avatar_state` fields report it instead. If the avatar fails, the session continues voice-only and `avatar_state` becomes `degraded`.",
             "type": "boolean"
           },
           "dynamic_variables": {
@@ -957,13 +977,26 @@
             "$ref": "#/components/schemas/MeetingSessionLeavePolicy"
           },
           "recording": {
-            "description": "Recording intent set at creation for Google Meet and Teams. Distinct from the top-level recording field, which reports current activity.",
+            "description": "Recording intent set at creation. Distinct from the top-level recording field, which reports current activity.",
             "type": "boolean"
+          },
+          "recording_retention": {
+            "$ref": "#/components/schemas/MeetingSessionRecordingRetention"
+          },
+          "recording_screenshare_participants": {
+            "description": "Non-default placement of participant video while a screen is shared. Omitted for the default overlap behavior.",
+            "enum": [
+              "beside",
+              "hide"
+            ],
+            "type": "string"
           },
           "recording_view": {
             "description": "Non-default recording layout. Omitted for the default speaker_view layout.",
             "enum": [
               "gallery_view",
+              "gallery_view_v2",
+              "audio_only",
               "speaker_view_no_sidebar"
             ],
             "type": "string"
@@ -1469,6 +1502,107 @@
           "exported_at"
         ],
         "type": "object"
+      },
+      "MeetingSessionRecordingRetention": {
+        "description": "Automatic recording deletion policy set at creation. A days value is returned as hours.",
+        "examples": [
+          {
+            "hours": 720
+          }
+        ],
+        "oneOf": [
+          {
+            "additionalProperties": false,
+            "properties": {
+              "hours": {
+                "description": "Hours after the meeting session ends at which the recording is deleted.",
+                "maximum": 8760,
+                "minimum": 1,
+                "type": "integer"
+              }
+            },
+            "required": [
+              "hours"
+            ],
+            "type": "object"
+          },
+          {
+            "additionalProperties": false,
+            "properties": {
+              "delete_at": {
+                "description": "Instant at which the recording is deleted.",
+                "format": "date-time",
+                "type": "string"
+              }
+            },
+            "required": [
+              "delete_at"
+            ],
+            "type": "object"
+          }
+        ],
+        "title": "MeetingSessionRecordingRetention"
+      },
+      "MeetingSessionRecordingRetentionRequest": {
+        "description": "Deletes the recording automatically. Supply exactly one of hours, days, or delete_at. Requires recording to be enabled: on Google Meet and Teams that means recording_export.bucket, and recording: false with a retention policy is rejected with 400. On Zoom the recording held by the Meeting service is deleted; that recording is removed after 167 hours at the latest, so a longer policy does not keep it longer. Fixed at creation. Only the recording is deleted; the session, transcript, events, and artifacts are kept. Returns 503 not_configured when automatic deletion is unavailable.",
+        "examples": [
+          {
+            "days": 30
+          },
+          {
+            "hours": 72
+          },
+          {
+            "delete_at": "2026-12-31T00:00:00Z"
+          }
+        ],
+        "oneOf": [
+          {
+            "additionalProperties": false,
+            "properties": {
+              "hours": {
+                "description": "Delete the recording this many hours after the meeting session ends.",
+                "maximum": 8760,
+                "minimum": 1,
+                "type": "integer"
+              }
+            },
+            "required": [
+              "hours"
+            ],
+            "type": "object"
+          },
+          {
+            "additionalProperties": false,
+            "properties": {
+              "days": {
+                "description": "Delete the recording this many days after the meeting session ends. Stored and returned as hours.",
+                "maximum": 365,
+                "minimum": 1,
+                "type": "integer"
+              }
+            },
+            "required": [
+              "days"
+            ],
+            "type": "object"
+          },
+          {
+            "additionalProperties": false,
+            "properties": {
+              "delete_at": {
+                "description": "Delete the recording at this instant (RFC 3339 with an offset). Must be at least one hour after the meeting starts (join_at, or the time of the request) and at most 365 days after it.",
+                "format": "date-time",
+                "type": "string"
+              }
+            },
+            "required": [
+              "delete_at"
+            ],
+            "type": "object"
+          }
+        ],
+        "title": "MeetingSessionRecordingRetentionRequest"
       },
       "MeetingSessionResponse": {
         "additionalProperties": false,

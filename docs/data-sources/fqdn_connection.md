@@ -52,6 +52,7 @@ A SIP connection that sends calls to fully qualified domain names.
 - `send_normalized_timestamps` (Boolean) Indicates whether normalized timestamps should be sent.
 - `tags` (Set of String) Tags associated with the connection.
 - `third_party_control_enabled` (Boolean) Indicates whether third-party control is enabled.
+- `transfer_caller_id` (String) Selects the caller ID presented to the destination of a SIP REFER transfer: from-transferee uses the number of the party being transferred, from-transferor the number of the party initiating the transfer. Defaults to from-transferee and returns the saved value. Only from-transferee and from-transferor are accepted; null and other values are rejected. This API provisions the preference; dialplan behavior is implemented separately. One of `from-transferee`, `from-transferor`.
 - `transport_protocol` (String) One of UDP, TLS, or TCP. Applies only to connections with IP authentication or FQDN authentication. One of `TCP`, `TLS`, `UDP`.
 - `txt_name` (String) The name for the TXT record associated with the FQDN connection.
 - `txt_ttl` (Number) The time to live for the TXT record associated with the FQDN connection.

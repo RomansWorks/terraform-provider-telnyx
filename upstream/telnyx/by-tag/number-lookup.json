@@ -69,16 +69,91 @@
     },
     "schemas": {
       "CallerIdentity": {
-        "description": "Identity information for the phone number's owner, including name and postal address. Populated when `type=caller-identity` is requested.",
+        "description": "Identity information for the phone number's owner — name and postal address plus additional identity, line, and demographic detail. Populated when `type=caller-identity` is requested. Person-only fields (name parts, demographics) are null for a business.",
         "properties": {
           "address": {
             "$ref": "#/components/schemas/number-lookup_Address"
+          },
+          "alternate_names": {
+            "description": "Other names associated with the owner, de-duplicated. Null when not available.",
+            "example": [
+              "J Doe"
+            ],
+            "items": {
+              "type": "string"
+            },
+            "type": [
+              "array",
+              "null"
+            ]
+          },
+          "carrier": {
+            "description": "The identity data source's view of the carrier. May differ from the LRN-derived carrier data. Null when not available.",
+            "example": "Example Wireless",
+            "type": [
+              "string",
+              "null"
+            ]
           },
           "confidence_score": {
             "description": "How strongly the phone number is linked to the returned name, on a scale of 50 to 90 (higher means more supporting signals). Reflects signal strength, not probability: 70 indicates stronger, more consistent evidence than 60, not a 70% chance of being correct. As a guide, 70+ is high confidence, 60 moderate, and 50 limited. Below 50 no name is returned, so scores under 50 are never present.",
             "example": 80,
             "type": [
               "number",
+              "null"
+            ]
+          },
+          "country_calling_code": {
+            "description": "The number's country calling (dial) code. Null when not available.",
+            "example": "1",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "demographics": {
+            "description": "Demographic detail for a person owner. Present on a successful lookup; its fields are null for a business.",
+            "properties": {
+              "age_range": {
+                "description": "Owner's approximate age range. Null for a business or when not available.",
+                "example": "35-44",
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "gender": {
+                "description": "Owner's gender as provided by the identity data source. Null for a business or when not available.",
+                "example": "Female",
+                "type": [
+                  "string",
+                  "null"
+                ]
+              }
+            },
+            "type": [
+              "object",
+              "null"
+            ]
+          },
+          "entity_linked_since": {
+            "description": "Approximate date the owner was first associated with this phone number, if available. Null when not available.",
+            "example": "2018-06-01",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "entity_type": {
+            "description": "Whether the number's owner is a `person` or a `business`. Null when not available.",
+            "enum": [
+              "person",
+              "business",
+              null
+            ],
+            "example": "person",
+            "type": [
+              "string",
               "null"
             ]
           },
@@ -90,11 +165,116 @@
               "null"
             ]
           },
+          "first_name": {
+            "description": "Owner's first name. Returned for a person; null for a business.",
+            "example": "Jane",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "industry": {
+            "description": "Industries associated with a business owner. Empty array when none; null on a failed lookup.",
+            "example": [
+              "Telecommunications"
+            ],
+            "items": {
+              "type": "string"
+            },
+            "type": [
+              "array",
+              "null"
+            ]
+          },
+          "is_commercial": {
+            "description": "Whether the line is commercial (a business indicator). Null when not available.",
+            "example": false,
+            "type": [
+              "boolean",
+              "null"
+            ]
+          },
+          "is_prepaid": {
+            "description": "Whether the line is prepaid. Null when not available.",
+            "example": false,
+            "type": [
+              "boolean",
+              "null"
+            ]
+          },
+          "is_valid": {
+            "description": "The identity data source's view of whether the number is valid. May differ from the top-level `valid_number`, which comes from LRN data. Null when not available.",
+            "example": true,
+            "type": [
+              "boolean",
+              "null"
+            ]
+          },
+          "last_name": {
+            "description": "Owner's last name. Returned for a person; null for a business.",
+            "example": "Doe",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "line_type": {
+            "description": "The identity data source's view of the line type, at finer granularity than `portability.line_type`. May disagree with `portability.*`, which comes from LRN data. Null when not available.",
+            "enum": [
+              "landline",
+              "mobile",
+              "fixed_voip",
+              "non_fixed_voip",
+              "premium",
+              "toll_free",
+              "voicemail",
+              "other",
+              null
+            ],
+            "example": "mobile",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "middle_name": {
+            "description": "Owner's middle name. Returned for a person; null for a business.",
+            "example": "A",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
           "name": {
             "description": "The name associated with the phone number.",
             "example": "Jane Doe",
             "type": [
               "string",
+              "null"
+            ]
+          },
+          "phone_number": {
+            "description": "The looked-up phone number, echoed back for request/response verification.",
+            "example": "+13129457420",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "warnings": {
+            "description": "Warnings about the request, as Telnyx-owned codes. Null or empty when there are none.",
+            "example": [],
+            "items": {
+              "enum": [
+                "invalid_input",
+                "missing_input",
+                "international_not_authorized",
+                "not_available"
+              ],
+              "type": "string"
+            },
+            "type": [
+              "array",
               "null"
             ]
           }
@@ -436,6 +616,38 @@
           "country_code": {
             "description": "Two-letter ISO 3166-1 country code.",
             "example": "US",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "delivery_point": {
+            "description": "Delivery-point classification of the address, for example `SingleUnit`, `MultiUnit`, `POBox`, or `PartialAddress`. Null when not available.",
+            "example": "SingleUnit",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "entity_linked_since": {
+            "description": "Approximate date the owner was first associated with this address, if available. Null when not available.",
+            "example": "2019-01-01",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "is_active": {
+            "description": "Whether the address is currently active for the owner. Null when not available.",
+            "example": true,
+            "type": [
+              "boolean",
+              "null"
+            ]
+          },
+          "location_type": {
+            "description": "Classification of the address, for example `Address` or `ZipPlus4`. Null when not available.",
+            "example": "Address",
             "type": [
               "string",
               "null"

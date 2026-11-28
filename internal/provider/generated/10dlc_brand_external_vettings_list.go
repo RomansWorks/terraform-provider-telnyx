@@ -13,6 +13,7 @@ func TenDLCBrandExternalVettingsList() *engine.List {
 		Op:          &engine.Op{Method: "GET", Path: "/10dlc/brand/{brandId}/externalVetting", Envelope: false},
 		Params: []*engine.Attr{
 			{Name: "brand_id", Kind: engine.KindString, Required: true, PathParams: []string{"brandId"}, Description: "The brand id."},
+			{Name: "vetting_status", JSON: "vettingStatus", Kind: engine.KindList, Optional: true, Elem: &engine.Attr{Kind: engine.KindString}},
 		},
 		Items: &engine.Attr{Name: "brand_external_vettings", JSON: "data", Kind: engine.KindList, Computed: true, InResponse: true, Description: "The objects, in the order the API returns them.",
 			Attrs: []*engine.Attr{

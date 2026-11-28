@@ -221,6 +221,22 @@
           }
         }
       },
+      "TranscriptDeletionInvalidState": {
+        "content": {
+          "application/json": {
+            "example": {
+              "error": {
+                "code": "invalid_state",
+                "message": "the transcript is still being finalized; retry once transcript.completed has been emitted"
+              }
+            },
+            "schema": {
+              "$ref": "#/components/schemas/meeting-sessions_ErrorResponse"
+            }
+          }
+        },
+        "description": "The transcript is not final yet: the session has not reached a terminal status, or it has ended and the transcript is still being finalized."
+      },
       "meeting-sessions_BadRequest": {
         "content": {
           "application/json": {
@@ -427,6 +443,49 @@
         ],
         "type": "object"
       },
+      "MeetingSessionRecordingRetentionStatus": {
+        "additionalProperties": false,
+        "description": "Automatic deletion state for a session created with recording_retention.",
+        "properties": {
+          "delete_after": {
+            "description": "When the recording becomes due for deletion. Null for an hours policy until the session has ended.",
+            "format": "date-time",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "deleted_at": {
+            "description": "When the recording was deleted, or null.",
+            "format": "date-time",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "failure_reason": {
+            "description": "Why deletion was abandoned. Present when status is failed. Uses the same values as the recording.deletion_failed event.",
+            "type": "string"
+          },
+          "status": {
+            "description": "scheduled: deletion is pending. deleted: the recording was deleted, or was already gone. skipped: the session produced no recording. failed: deletion was abandoned after retries; see failure_reason.",
+            "enum": [
+              "scheduled",
+              "deleted",
+              "skipped",
+              "failed"
+            ],
+            "type": "string"
+          }
+        },
+        "required": [
+          "delete_after",
+          "status",
+          "deleted_at"
+        ],
+        "title": "MeetingSessionRecordingRetentionStatus",
+        "type": "object"
+      },
       "MeetingSessionRecordingsResponse": {
         "properties": {
           "data": {
@@ -467,6 +526,58 @@
               }
             ],
             "description": "Customer Storage export, or null while unavailable/disabled. Omitted for sessions without Storage export support."
+          },
+          "retention": {
+            "$ref": "#/components/schemas/MeetingSessionRecordingRetentionStatus",
+            "description": "Automatic deletion state. Present only for sessions created with recording_retention."
+          }
+        },
+        "required": [
+          "data"
+        ],
+        "type": "object"
+      },
+      "MeetingSessionTranscriptDeletionResponse": {
+        "additionalProperties": false,
+        "example": {
+          "data": {
+            "deleted": true,
+            "meeting_session_id": "mtgsess_a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+            "segments_deleted": 412,
+            "transcript_deleted_at": "2026-11-18T01:02:03.000Z"
+          }
+        },
+        "properties": {
+          "data": {
+            "additionalProperties": false,
+            "properties": {
+              "deleted": {
+                "const": true,
+                "description": "Always true: the session has no stored transcript after this call.",
+                "type": "boolean"
+              },
+              "meeting_session_id": {
+                "description": "The account-scoped Meeting Session identifier.",
+                "type": "string"
+              },
+              "segments_deleted": {
+                "description": "Transcript segments removed by this call. 0 when the transcript was already deleted or the bot never joined.",
+                "minimum": 0,
+                "type": "integer"
+              },
+              "transcript_deleted_at": {
+                "description": "When the transcript was deleted. A repeated call returns the original time.",
+                "format": "date-time",
+                "type": "string"
+              }
+            },
+            "required": [
+              "meeting_session_id",
+              "deleted",
+              "transcript_deleted_at",
+              "segments_deleted"
+            ],
+            "type": "object"
           }
         },
         "required": [
@@ -874,7 +985,7 @@
     },
     "/meeting_sessions/{id}/recordings": {
       "get": {
-        "description": "Retrieve recording export status. Customer Storage exports include recording_export with the bucket, region, key and pending/exported/failed status, or null when no reference is available. The data array is empty for these exports. Download or share the object using the Storage API once its status is exported. Zoom recordings and existing Google Meet or Teams recordings held by the Meeting service continue returning temporary download links in data through this same endpoint and session ID. Those recordings do not require Storage setup or migration. Refresh this endpoint when a link expires. Select the download method from the returned fields, not the platform alone.",
+        "description": "Retrieve recording export status. Customer Storage exports include recording_export with the bucket, region, key and pending/exported/failed status, or null when no reference is available. The data array is empty for these exports. Download or share the object using the Storage API once its status is exported. Zoom recordings and existing Google Meet or Teams recordings held by the Meeting service continue returning temporary download links in data through this same endpoint and session ID. Those recordings do not require Storage setup or migration. Refresh this endpoint when a link expires. Select the download method from the returned fields, not the platform alone. Sessions created with recording_retention also return a retention object with the automatic deletion state. recording_export keeps reporting exported after the recording has been deleted; read retention.status.",
         "operationId": "listMeetingSessionRecordings",
         "parameters": [
           {
@@ -945,6 +1056,46 @@
                         "type": "video"
                       }
                     }
+                  },
+                  "retention_deleted": {
+                    "summary": "Storage export deleted by the retention policy",
+                    "value": {
+                      "data": [],
+                      "recording_export": {
+                        "bucket": "meeting-recordings",
+                        "bytes": 1048576,
+                        "exported_at": "2026-11-03T12:00:00Z",
+                        "key": "weekly-planning/recording.mp4",
+                        "region": "us-central-1",
+                        "status": "exported",
+                        "type": "video"
+                      },
+                      "retention": {
+                        "delete_after": "2026-12-03T12:30:00Z",
+                        "deleted_at": "2026-12-03T12:30:41Z",
+                        "status": "deleted"
+                      }
+                    }
+                  },
+                  "retention_scheduled": {
+                    "summary": "Storage export with automatic deletion scheduled",
+                    "value": {
+                      "data": [],
+                      "recording_export": {
+                        "bucket": "meeting-recordings",
+                        "bytes": 1048576,
+                        "exported_at": "2026-11-03T12:00:00Z",
+                        "key": "weekly-planning/recording.mp4",
+                        "region": "us-central-1",
+                        "status": "exported",
+                        "type": "video"
+                      },
+                      "retention": {
+                        "delete_after": "2026-12-03T12:30:00Z",
+                        "deleted_at": null,
+                        "status": "scheduled"
+                      }
+                    }
                   }
                 },
                 "schema": {
@@ -988,8 +1139,62 @@
       }
     },
     "/meeting_sessions/{id}/transcript": {
+      "delete": {
+        "description": "Irreversibly deletes the transcript of a meeting session: every transcript segment, and the transcript.segment entries in the session's event history. The session must have reached a terminal status and its transcript must be finalized (transcript.completed emitted); otherwise the request returns 409 invalid_state. A session that ended before the bot joined returns 200 with nothing to delete. The call is idempotent: repeating it returns 200 with the original transcript_deleted_at and segments_deleted 0. Afterwards the session carries transcript_deleted_at, a transcript.deleted event is emitted, GET /meeting_sessions/{id}/transcript returns an empty list, and POST /meeting_sessions/{id}/artifacts returns 409 transcript_deleted. Artifacts generated before the deletion, webhook payloads already delivered, and recordings are not deleted. A missing or foreign session returns 404.",
+        "operationId": "deleteMeetingSessionTranscript",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/MeetingSessionId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MeetingSessionTranscriptDeletionResponse"
+                }
+              }
+            },
+            "description": "The transcript was deleted, was already deleted, or there was nothing to delete."
+          },
+          "401": {
+            "$ref": "#/components/responses/meeting-sessions_Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/meeting-sessions_NotFound"
+          },
+          "409": {
+            "$ref": "#/components/responses/TranscriptDeletionInvalidState"
+          },
+          "429": {
+            "$ref": "#/components/responses/TooManyRequests"
+          },
+          "500": {
+            "$ref": "#/components/responses/meeting-sessions_InternalServerError"
+          },
+          "502": {
+            "$ref": "#/components/responses/MeetingReadUnavailable"
+          },
+          "503": {
+            "$ref": "#/components/responses/MeetingReadAuthUnavailable"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Delete meeting session transcript",
+        "tags": [
+          "Meeting Session Data"
+        ]
+      },
       "get": {
-        "description": "Returns transcript segments ordered by ascending seq. Default limit is 100, maximum 1000. Continue with after=meta.next_after. On an empty page, meta.next_after preserves a positive supplied after cursor, or is null when no positive cursor was supplied. wait_seconds holds an empty read for up to 25 seconds; a timeout still returns 200.",
+        "description": "Returns transcript segments ordered by ascending seq. Default limit is 100, maximum 1000. Continue with after=meta.next_after. On an empty page, meta.next_after preserves a positive supplied after cursor, or is null when no positive cursor was supplied. wait_seconds holds an empty read for up to 25 seconds; a timeout still returns 200. After the transcript has been deleted, this operation returns 200 with an empty list.",
         "operationId": "listMeetingSessionTranscript",
         "parameters": [
           {

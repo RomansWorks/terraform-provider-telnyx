@@ -1,0 +1,1480 @@
+{
+  "components": {
+    "schemas": {
+      "Exec": {
+        "description": "A process started in a sandbox. It keeps running when clients disconnect. Execs live as long as their sandbox.",
+        "properties": {
+          "command": {
+            "description": "Argv.",
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "created_at": {
+            "description": "When it was started.",
+            "format": "date-time",
+            "type": "string"
+          },
+          "env": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "description": "The extra environment variables given.",
+            "type": "object"
+          },
+          "exit_code": {
+            "description": "Set once `exited`. A process killed by a signal reports 128 + the signal number (e.g. 137 for SIGKILL).",
+            "type": [
+              "integer",
+              "null"
+            ]
+          },
+          "finished_at": {
+            "description": "When it ended.",
+            "format": "date-time",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "id": {
+            "description": "Exec ID (`exec-…`).",
+            "type": "string"
+          },
+          "reason": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ExecReason"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Set when `failed` or `terminated`."
+          },
+          "sandbox_id": {
+            "description": "The sandbox it runs in.",
+            "type": "string"
+          },
+          "status": {
+            "$ref": "#/components/schemas/ExecStatus"
+          },
+          "timeout": {
+            "description": "Exec timeout in seconds, if set.",
+            "type": [
+              "integer",
+              "null"
+            ]
+          },
+          "workdir": {
+            "description": "Working directory: the one given, else the sandbox's. `null` when neither is known: the sandbox was created without `workdir` and its image's wasn't read.",
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "sandbox_id",
+          "command",
+          "workdir",
+          "env",
+          "timeout",
+          "status",
+          "exit_code",
+          "reason",
+          "created_at",
+          "finished_at"
+        ],
+        "type": "object"
+      },
+      "ExecCreateReq": {
+        "additionalProperties": false,
+        "description": "A command to run in a running sandbox.",
+        "properties": {
+          "command": {
+            "description": "Argv to run, e.g. `[\"python\", \"train.py\"]`: at most 4096 arguments, each at most 131071 bytes in UTF-8, at most 1 MiB in total, with no NUL byte (else `invalid_command`).",
+            "items": {
+              "type": "string"
+            },
+            "maxItems": 4096,
+            "minItems": 1,
+            "type": "array"
+          },
+          "env": {
+            "additionalProperties": {
+              "maxLength": 32768,
+              "type": "string"
+            },
+            "description": "Extra environment variables on top of the sandbox's environment. Same rules as on create: POSIX names, no `TELNYX_SANDBOX_` prefix, size limits (else `invalid_env`).",
+            "maxProperties": 256,
+            "propertyNames": {
+              "pattern": "^(?!TELNYX_SANDBOX_)[A-Za-z_][A-Za-z0-9_]*$"
+            },
+            "type": "object"
+          },
+          "timeout": {
+            "description": "Stop the process after this many seconds (status `terminated`, reason `timeout`). Default: no limit. At most 2147483647 (about 68 years); it never outlives the sandbox.",
+            "maximum": 2147483647,
+            "minimum": 1,
+            "type": [
+              "integer",
+              "null"
+            ]
+          },
+          "workdir": {
+            "description": "Absolute working directory (else `invalid_workdir`). Defaults to the sandbox's working directory.",
+            "maxLength": 4096,
+            "pattern": "^/",
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "command"
+        ],
+        "type": "object"
+      },
+      "ExecKillReq": {
+        "additionalProperties": false,
+        "description": "Which signal to send.",
+        "properties": {
+          "signal": {
+            "$ref": "#/components/schemas/Signal",
+            "default": "SIGKILL",
+            "description": "Default `SIGKILL`."
+          }
+        },
+        "type": "object"
+      },
+      "ExecListRespData": {
+        "properties": {
+          "data": {
+            "items": {
+              "$ref": "#/components/schemas/Exec"
+            },
+            "type": "array"
+          },
+          "meta": {
+            "$ref": "#/components/schemas/sandboxes_Meta"
+          }
+        },
+        "required": [
+          "data",
+          "meta"
+        ],
+        "type": "object"
+      },
+      "ExecReason": {
+        "description": "Why an exec is `failed` or `terminated`:\n- `sandbox_terminated`: the sandbox ended (or was ending) first;\n- `timeout`: the exec's `timeout` was reached;\n- `agent_unavailable`: the sandbox didn't confirm the start in time;\n- `cancelled`: killed with `SIGKILL` before its start was confirmed. If the start had in fact reached the sandbox, the exec moves on to what really ran, then exits from the kill;\n- `agent_error`: the sandbox returned an inconsistent answer.",
+        "enum": [
+          "sandbox_terminated",
+          "timeout",
+          "agent_unavailable",
+          "cancelled",
+          "agent_error"
+        ],
+        "type": "string"
+      },
+      "ExecRespData": {
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/Exec"
+          }
+        },
+        "required": [
+          "data"
+        ],
+        "type": "object"
+      },
+      "ExecStatus": {
+        "description": "`starting` → `running` → `exited`. `failed`: the process was never confirmed started (see `reason`: `sandbox_terminated`, `agent_unavailable`, `cancelled` or `agent_error`). An `agent_unavailable` or `cancelled` exec can still move on to `running`, `exited` or `terminated` if its start did reach the sandbox. `terminated`: the process was stopped because the sandbox ended or the exec's `timeout` was reached.",
+        "enum": [
+          "starting",
+          "running",
+          "exited",
+          "failed",
+          "terminated"
+        ],
+        "type": "string"
+      },
+      "Signal": {
+        "description": "Signal to send, as an uppercase POSIX signal name.",
+        "enum": [
+          "SIGTERM",
+          "SIGKILL",
+          "SIGINT",
+          "SIGHUP",
+          "SIGQUIT",
+          "SIGUSR1",
+          "SIGUSR2"
+        ],
+        "type": "string"
+      },
+      "TelnyxErrorMeta": {
+        "description": "Extra error information.",
+        "properties": {
+          "url": {
+            "default": null,
+            "description": "Documentation page for the error code.",
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "type": "object"
+      },
+      "TelnyxErrorSource": {
+        "description": "Where in the request the error was found.",
+        "properties": {
+          "parameter": {
+            "default": null,
+            "description": "Name of the offending parameter.",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "pointer": {
+            "default": null,
+            "description": "JSON pointer into the request body, e.g. `/timeout`.",
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "type": "object"
+      },
+      "sandboxes_Meta": {
+        "description": "Pagination metadata for page-number lists (`page[number]` / `page[size]`).",
+        "properties": {
+          "page_number": {
+            "description": "The page returned (1-based).",
+            "type": "integer"
+          },
+          "page_size": {
+            "description": "Items per page.",
+            "type": "integer"
+          },
+          "total_pages": {
+            "description": "Number of pages.",
+            "type": "integer"
+          },
+          "total_results": {
+            "description": "Number of items across all pages.",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "page_number",
+          "page_size",
+          "total_pages",
+          "total_results"
+        ],
+        "type": "object"
+      },
+      "sandboxes_TelnyxError": {
+        "description": "One error in the standard Telnyx error body.",
+        "properties": {
+          "code": {
+            "description": "Telnyx error code: a 5-digit string for general errors, e.g. `10009`. Sandboxes-specific errors are identified by their name in `title`.",
+            "type": "string"
+          },
+          "detail": {
+            "description": "Human-readable explanation.",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "meta": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/TelnyxErrorMeta"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Extra information."
+          },
+          "source": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/TelnyxErrorSource"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Where the error is."
+          },
+          "title": {
+            "description": "Short, constant summary of the error. For Sandboxes-specific errors, the error's name, e.g. `quota_exceeded`.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "title"
+        ],
+        "type": "object"
+      },
+      "sandboxes_TelnyxErrors": {
+        "description": "The standard Telnyx error body.",
+        "properties": {
+          "errors": {
+            "description": "One or more errors.",
+            "items": {
+              "$ref": "#/components/schemas/sandboxes_TelnyxError"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "errors"
+        ],
+        "type": "object"
+      }
+    },
+    "securitySchemes": {
+      "BearerAuth": {
+        "bearerFormat": "API key",
+        "description": "Telnyx API key supplied as `Authorization: Bearer \u003ctoken\u003e`. In production, auth may be validated by the API gateway and forwarded via Telnyx auth headers.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "Payment": {
+        "description": "Machine Payment Protocol credential used on paid retries, sent as `Authorization: Payment ...`. Obtained by paying a challenge returned in the `WWW-Authenticate` header of a 402 response. This is not a Telnyx API key; initial challenge requests use standard bearer authentication instead.",
+        "in": "header",
+        "name": "Authorization",
+        "type": "apiKey"
+      },
+      "agent-gateway_bearerAuth": {
+        "description": "Telnyx API key",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "agent-memory_bearerAuth": {
+        "description": "Telnyx API key",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "bearerAuth": {
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "branded-calling_bearerAuth": {
+        "description": "Telnyx API key. Generate one at https://portal.telnyx.com/#/app/api-keys.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "collections_bearerAuth": {
+        "description": "Telnyx API key. Collections and results are automatically scoped to the authenticated user's organization.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "number-reputation_bearerAuth": {
+        "description": "Telnyx API key. Generate one at https://portal.telnyx.com/#/app/api-keys.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "oauthClientAuth": {
+        "description": "OAuth 2.0 authentication for Telnyx API and MCP integrations",
+        "flows": {
+          "authorizationCode": {
+            "authorizationUrl": "https://api.telnyx.com/v2/oauth/authorize",
+            "refreshUrl": "https://api.telnyx.com/v2/oauth/token",
+            "scopes": {
+              "admin": "Administrative access to Telnyx resources"
+            },
+            "tokenUrl": "https://api.telnyx.com/v2/oauth/token"
+          },
+          "clientCredentials": {
+            "scopes": {
+              "admin": "Administrative access to Telnyx resources"
+            },
+            "tokenUrl": "https://api.telnyx.com/v2/oauth/token"
+          }
+        },
+        "type": "oauth2"
+      },
+      "outbound-voice-profiles_bearerAuth": {
+        "bearerFormat": "JWT",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "pay-connectors_bearerAuth": {
+        "description": "Telnyx API key, not the processor bearer token.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "pronunciation-dicts_bearerAuth": {
+        "description": "Telnyx API v2 key. Obtain from https://portal.telnyx.com",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "rcs-registration_bearerAuth": {
+        "bearerFormat": "API key",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "stored-payment-transactions_bearerAuth": {
+        "bearerFormat": "JWT",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "telnyxApiKey": {
+        "description": "Management-only Telnyx account credential.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "transcriptions-search_bearerAuth": {
+        "description": "Telnyx API key. Results are automatically scoped to the authenticated user's organization.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "web-search_bearerAuth": {
+        "description": "Telnyx API key",
+        "scheme": "bearer",
+        "type": "http"
+      }
+    }
+  },
+  "info": {
+    "contact": {
+      "email": "support@telnyx.com"
+    },
+    "description": "SIP trunking, SMS, MMS, Call Control and Telephony Data Services.",
+    "title": "Telnyx API",
+    "version": "2.0.0",
+    "x-endpoint-cost": "light",
+    "x-latency-category": "responsive"
+  },
+  "openapi": "3.1.0",
+  "paths": {
+    "/ai/sandboxes/{sandbox_id}/execs": {
+      "get": {
+        "description": "Lists the sandbox's execs, newest first, optionally filtered by `status`. Works on terminated sandboxes too, while they're readable. A status here may lag the process by up to about 15 s; `GET /ai/sandboxes/{sandbox_id}/execs/{exec_id}` asks the sandbox.",
+        "operationId": "ListSandboxExecs",
+        "parameters": [
+          {
+            "description": "Sandbox ID (`sb-…`).",
+            "example": "sb-0192f1c2-7a4b-7c3e-9d1e-2f3a4b5c6d7e",
+            "in": "path",
+            "name": "sandbox_id",
+            "required": true,
+            "schema": {
+              "maxLength": 64,
+              "minLength": 1,
+              "type": "string"
+            }
+          },
+          {
+            "description": "One or more statuses (repeat the parameter).",
+            "in": "query",
+            "name": "status",
+            "required": false,
+            "schema": {
+              "items": {
+                "$ref": "#/components/schemas/ExecStatus"
+              },
+              "type": "array"
+            }
+          },
+          {
+            "description": "Page number (1-based).",
+            "in": "query",
+            "name": "page[number]",
+            "required": false,
+            "schema": {
+              "default": 1,
+              "minimum": 1,
+              "type": "integer"
+            }
+          },
+          {
+            "description": "Number of items per page (max 100).",
+            "in": "query",
+            "name": "page[size]",
+            "required": false,
+            "schema": {
+              "default": 20,
+              "maximum": 100,
+              "minimum": 1,
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "data": [
+                    {
+                      "command": [
+                        "python",
+                        "evaluate.py",
+                        "--split",
+                        "test"
+                      ],
+                      "created_at": "2026-11-13T10:05:00Z",
+                      "env": {
+                        "LOG_LEVEL": "info"
+                      },
+                      "exit_code": null,
+                      "finished_at": null,
+                      "id": "exec-0192f1c9-3e2a-7b1d-8c4f-5a6b7c8d9e0f",
+                      "reason": null,
+                      "sandbox_id": "sb-0192f1c2-7a4b-7c3e-9d1e-2f3a4b5c6d7e",
+                      "status": "running",
+                      "timeout": 3600,
+                      "workdir": "/app"
+                    },
+                    {
+                      "command": [
+                        "nvidia-smi"
+                      ],
+                      "created_at": "2026-11-13T10:02:00Z",
+                      "env": {},
+                      "exit_code": 0,
+                      "finished_at": "2026-11-13T10:02:01Z",
+                      "id": "exec-0192f1c5-0b7d-7f2e-9a3c-1d2e3f4a5b6c",
+                      "reason": null,
+                      "sandbox_id": "sb-0192f1c2-7a4b-7c3e-9d1e-2f3a4b5c6d7e",
+                      "status": "exited",
+                      "timeout": null,
+                      "workdir": "/app"
+                    }
+                  ],
+                  "meta": {
+                    "page_number": 1,
+                    "page_size": 20,
+                    "total_pages": 1,
+                    "total_results": 2
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ExecListRespData"
+                }
+              }
+            },
+            "description": "A page of execs."
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/sandboxes_TelnyxErrors"
+                }
+              }
+            },
+            "description": "Validation error: the standard Telnyx validation errors (codes such as 10004 missing parameter, 10015 bad request, 10025 invalid string length, 10026 invalid type)."
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "errors": [
+                    {
+                      "code": "10009",
+                      "detail": "Could not find any usable credentials in the request.",
+                      "title": "Authentication failed"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/sandboxes_TelnyxErrors"
+                }
+              }
+            },
+            "description": "Missing or invalid API key (code 10009)."
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "errors": [
+                    {
+                      "detail": "The organization isn't whitelisted.",
+                      "title": "sandboxes_not_whitelisted"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/sandboxes_TelnyxErrors"
+                }
+              }
+            },
+            "description": "- `sandboxes_require_verification`: your account isn't fully verified.\n- `sandboxes_not_whitelisted`: Sandboxes isn't enabled for your organization (invite-only preview); `GET /ai/sandbox-access` tells whether it is."
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "errors": [
+                    {
+                      "code": "10005",
+                      "detail": "Sandbox not found.",
+                      "title": "Resource not found"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/sandboxes_TelnyxErrors"
+                }
+              }
+            },
+            "description": "Not found (code 10005): the resource doesn't exist or belongs to another organization. The detail says what's missing."
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "errors": [
+                    {
+                      "code": "10037",
+                      "detail": "A dependency can't answer right now; retry later.",
+                      "title": "Service unavailable"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/sandboxes_TelnyxErrors"
+                }
+              }
+            },
+            "description": "A dependency can't answer right now (code 10037); retry later."
+          }
+        },
+        "summary": "List a sandbox's execs",
+        "tags": [
+          "Sandbox execs"
+        ]
+      },
+      "post": {
+        "description": "Starts a command inside a running sandbox and returns the exec at once: `running`, or `exited` with its `exit_code` if it already finished. It doesn't wait for the command or stream its output: attach to the exec's WebSocket for its output and stdin, or wait for the exit code with `GET /ai/sandboxes/{sandbox_id}/execs/{exec_id}?wait=…`.\n\nIf the sandbox can't confirm the start within a few seconds (it may still be starting up), the exec comes back `starting`, and the start completes in the background: follow it with `GET /ai/sandboxes/{sandbox_id}/execs/{exec_id}`. A start that can't be confirmed within 5 minutes ends `failed` with reason `agent_unavailable`.\n\nThe process keeps running when you disconnect. It uses the sandbox's working directory and environment unless you override them.\n\nSend an `Idempotency-Key`: a retry with the same key returns the same exec instead of starting the command twice, and completes a start that was still `starting`.",
+        "operationId": "CreateSandboxExec",
+        "parameters": [
+          {
+            "description": "Sandbox ID (`sb-…`).",
+            "example": "sb-0192f1c2-7a4b-7c3e-9d1e-2f3a4b5c6d7e",
+            "in": "path",
+            "name": "sandbox_id",
+            "required": true,
+            "schema": {
+              "maxLength": 64,
+              "minLength": 1,
+              "type": "string"
+            }
+          },
+          {
+            "description": "Optional client-chosen key (e.g. a UUID, at most 255 characters) that makes the call safe to retry. Within 24 h, the same key with the same request returns the stored response instead of acting twice; the same key with a different request fails with `idempotency_key_reused`; a request with a key that's still being processed fails with `request_in_progress`.",
+            "in": "header",
+            "name": "Idempotency-Key",
+            "required": false,
+            "schema": {
+              "maxLength": 255,
+              "minLength": 1,
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "example": {
+                "command": [
+                  "python",
+                  "evaluate.py",
+                  "--split",
+                  "test"
+                ],
+                "env": {
+                  "LOG_LEVEL": "info"
+                },
+                "timeout": 3600,
+                "workdir": "/app"
+              },
+              "schema": {
+                "$ref": "#/components/schemas/ExecCreateReq"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "data": {
+                    "command": [
+                      "python",
+                      "evaluate.py",
+                      "--split",
+                      "test"
+                    ],
+                    "created_at": "2026-11-13T10:05:00Z",
+                    "env": {
+                      "LOG_LEVEL": "info"
+                    },
+                    "exit_code": null,
+                    "finished_at": null,
+                    "id": "exec-0192f1c9-3e2a-7b1d-8c4f-5a6b7c8d9e0f",
+                    "reason": null,
+                    "sandbox_id": "sb-0192f1c2-7a4b-7c3e-9d1e-2f3a4b5c6d7e",
+                    "status": "running",
+                    "timeout": 3600,
+                    "workdir": "/app"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ExecRespData"
+                }
+              }
+            },
+            "description": "The exec."
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "errors": [
+                    {
+                      "code": "10015",
+                      "detail": "Input should be greater than or equal to 1.",
+                      "source": {
+                        "pointer": "/timeout"
+                      },
+                      "title": "Bad Request"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/sandboxes_TelnyxErrors"
+                }
+              }
+            },
+            "description": "Validation error: the standard Telnyx validation errors (codes such as 10004 missing parameter, 10015 bad request, 10025 invalid string length, 10026 invalid type)."
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "errors": [
+                    {
+                      "code": "10009",
+                      "detail": "Could not find any usable credentials in the request.",
+                      "title": "Authentication failed"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/sandboxes_TelnyxErrors"
+                }
+              }
+            },
+            "description": "Missing or invalid API key (code 10009)."
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "errors": [
+                    {
+                      "detail": "The organization isn't whitelisted.",
+                      "title": "sandboxes_not_whitelisted"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/sandboxes_TelnyxErrors"
+                }
+              }
+            },
+            "description": "- `sandboxes_require_verification`: your account isn't fully verified.\n- `sandboxes_not_whitelisted`: Sandboxes isn't enabled for your organization (invite-only preview); `GET /ai/sandbox-access` tells whether it is.\n- `sandboxes_disabled`: creating sandboxes, starting execs or completing an exec's start is disabled for your organization; other operations keep working."
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "errors": [
+                    {
+                      "code": "10005",
+                      "detail": "Sandbox not found.",
+                      "title": "Resource not found"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/sandboxes_TelnyxErrors"
+                }
+              }
+            },
+            "description": "Not found (code 10005): the resource doesn't exist or belongs to another organization. The detail says what's missing."
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "errors": [
+                    {
+                      "detail": "The sandbox isn't running.",
+                      "title": "sandbox_not_running"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/sandboxes_TelnyxErrors"
+                }
+              }
+            },
+            "description": "- `request_in_progress`: a request with the same `Idempotency-Key` is still being processed; retry later.\n- `sandbox_not_running`: the operation needs a running sandbox."
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "errors": [
+                    {
+                      "detail": "The command has more than 4096 arguments.",
+                      "title": "invalid_command"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/sandboxes_TelnyxErrors"
+                }
+              }
+            },
+            "description": "- `idempotency_key_reused`: the same `Idempotency-Key` was sent with a different request.\n- `invalid_command`: the argv breaks a size rule: at most 4096 arguments, each at most 131071 bytes in UTF-8, at most 1 MiB in total, and no NUL byte.\n- `invalid_env`: an `env` name isn't a POSIX name, uses the reserved `TELNYX_SANDBOX_` prefix, or a size limit is exceeded.\n- `invalid_workdir`: `workdir` isn't an absolute path."
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "errors": [
+                    {
+                      "code": "10037",
+                      "detail": "A dependency can't answer right now; retry later.",
+                      "title": "Service unavailable"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/sandboxes_TelnyxErrors"
+                }
+              }
+            },
+            "description": "A dependency can't answer right now (code 10037); retry later."
+          }
+        },
+        "summary": "Run a command in a sandbox",
+        "tags": [
+          "Sandbox execs"
+        ]
+      }
+    },
+    "/ai/sandboxes/{sandbox_id}/execs/{exec_id}": {
+      "get": {
+        "description": "Returns the exec: `status`, `exit_code` and `reason`. With `wait`, it's a long-poll: it returns as soon as the exec has ended, or after at most 10 s, always with `200`; call again until `status` is `exited`, `failed` or `terminated`. If the sandbox can't answer, you get the last known state.",
+        "operationId": "GetSandboxExec",
+        "parameters": [
+          {
+            "description": "Sandbox ID (`sb-…`).",
+            "example": "sb-0192f1c2-7a4b-7c3e-9d1e-2f3a4b5c6d7e",
+            "in": "path",
+            "name": "sandbox_id",
+            "required": true,
+            "schema": {
+              "maxLength": 64,
+              "minLength": 1,
+              "type": "string"
+            }
+          },
+          {
+            "description": "Exec ID (`exec-…`).",
+            "example": "exec-0192f1c9-3e2a-7b1d-8c4f-5a6b7c8d9e0f",
+            "in": "path",
+            "name": "exec_id",
+            "required": true,
+            "schema": {
+              "maxLength": 64,
+              "minLength": 1,
+              "type": "string"
+            }
+          },
+          {
+            "description": "Seconds to wait for the exec to end. `0` (default) returns at once; the server waits at most 10 s and clamps larger values.",
+            "in": "query",
+            "name": "wait",
+            "required": false,
+            "schema": {
+              "default": 0,
+              "minimum": 0,
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "data": {
+                    "command": [
+                      "python",
+                      "evaluate.py",
+                      "--split",
+                      "test"
+                    ],
+                    "created_at": "2026-11-13T10:05:00Z",
+                    "env": {
+                      "LOG_LEVEL": "info"
+                    },
+                    "exit_code": 0,
+                    "finished_at": "2026-11-13T10:07:42Z",
+                    "id": "exec-0192f1c9-3e2a-7b1d-8c4f-5a6b7c8d9e0f",
+                    "reason": null,
+                    "sandbox_id": "sb-0192f1c2-7a4b-7c3e-9d1e-2f3a4b5c6d7e",
+                    "status": "exited",
+                    "timeout": 3600,
+                    "workdir": "/app"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ExecRespData"
+                }
+              }
+            },
+            "description": "The exec."
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/sandboxes_TelnyxErrors"
+                }
+              }
+            },
+            "description": "Validation error: the standard Telnyx validation errors (codes such as 10004 missing parameter, 10015 bad request, 10025 invalid string length, 10026 invalid type)."
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "errors": [
+                    {
+                      "code": "10009",
+                      "detail": "Could not find any usable credentials in the request.",
+                      "title": "Authentication failed"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/sandboxes_TelnyxErrors"
+                }
+              }
+            },
+            "description": "Missing or invalid API key (code 10009)."
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "errors": [
+                    {
+                      "detail": "The organization isn't whitelisted.",
+                      "title": "sandboxes_not_whitelisted"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/sandboxes_TelnyxErrors"
+                }
+              }
+            },
+            "description": "- `sandboxes_require_verification`: your account isn't fully verified.\n- `sandboxes_not_whitelisted`: Sandboxes isn't enabled for your organization (invite-only preview); `GET /ai/sandbox-access` tells whether it is."
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "errors": [
+                    {
+                      "code": "10005",
+                      "detail": "Sandbox not found.",
+                      "title": "Resource not found"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/sandboxes_TelnyxErrors"
+                }
+              }
+            },
+            "description": "Not found (code 10005): the resource doesn't exist or belongs to another organization. The detail says what's missing."
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "errors": [
+                    {
+                      "code": "10037",
+                      "detail": "A dependency can't answer right now; retry later.",
+                      "title": "Service unavailable"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/sandboxes_TelnyxErrors"
+                }
+              }
+            },
+            "description": "A dependency can't answer right now (code 10037); retry later."
+          }
+        },
+        "summary": "Get an exec",
+        "tags": [
+          "Sandbox execs"
+        ]
+      }
+    },
+    "/ai/sandboxes/{sandbox_id}/execs/{exec_id}/kill": {
+      "post": {
+        "description": "Sends a signal to the exec's process group (default `SIGKILL`). It's asynchronous: the response shows the exec as it is right after; with `SIGKILL` it ends shortly after with `status` `exited` and `exit_code` 137 (128 + the signal number). Signalling an exec that already ended changes nothing.\n\nAn exec still `starting` can only be cancelled: `SIGKILL` makes sure the command never runs (it ends `failed` with reason `cancelled`); another signal gets `exec_not_started`. Retry once it's `running`.\n\nWith an `Idempotency-Key`, a retry replays the first answer. Two overlapping requests with the same key may both deliver the signal.",
+        "operationId": "KillSandboxExec",
+        "parameters": [
+          {
+            "description": "Sandbox ID (`sb-…`).",
+            "example": "sb-0192f1c2-7a4b-7c3e-9d1e-2f3a4b5c6d7e",
+            "in": "path",
+            "name": "sandbox_id",
+            "required": true,
+            "schema": {
+              "maxLength": 64,
+              "minLength": 1,
+              "type": "string"
+            }
+          },
+          {
+            "description": "Exec ID (`exec-…`).",
+            "example": "exec-0192f1c9-3e2a-7b1d-8c4f-5a6b7c8d9e0f",
+            "in": "path",
+            "name": "exec_id",
+            "required": true,
+            "schema": {
+              "maxLength": 64,
+              "minLength": 1,
+              "type": "string"
+            }
+          },
+          {
+            "description": "Optional client-chosen key (e.g. a UUID, at most 255 characters) that makes the call safe to retry. Within 24 h, the same key with the same request returns the stored response instead of acting twice; the same key with a different request fails with `idempotency_key_reused`; a request with a key that's still being processed fails with `request_in_progress`.",
+            "in": "header",
+            "name": "Idempotency-Key",
+            "required": false,
+            "schema": {
+              "maxLength": 255,
+              "minLength": 1,
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "example": {
+                "signal": "SIGTERM"
+              },
+              "schema": {
+                "$ref": "#/components/schemas/ExecKillReq"
+              }
+            }
+          },
+          "required": false
+        },
+        "responses": {
+          "202": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "data": {
+                    "command": [
+                      "python",
+                      "evaluate.py",
+                      "--split",
+                      "test"
+                    ],
+                    "created_at": "2026-11-13T10:05:00Z",
+                    "env": {
+                      "LOG_LEVEL": "info"
+                    },
+                    "exit_code": null,
+                    "finished_at": null,
+                    "id": "exec-0192f1c9-3e2a-7b1d-8c4f-5a6b7c8d9e0f",
+                    "reason": null,
+                    "sandbox_id": "sb-0192f1c2-7a4b-7c3e-9d1e-2f3a4b5c6d7e",
+                    "status": "running",
+                    "timeout": 3600,
+                    "workdir": "/app"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ExecRespData"
+                }
+              }
+            },
+            "description": "The exec as it is right after the signal."
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/sandboxes_TelnyxErrors"
+                }
+              }
+            },
+            "description": "Validation error: the standard Telnyx validation errors (codes such as 10004 missing parameter, 10015 bad request, 10025 invalid string length, 10026 invalid type)."
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "errors": [
+                    {
+                      "code": "10009",
+                      "detail": "Could not find any usable credentials in the request.",
+                      "title": "Authentication failed"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/sandboxes_TelnyxErrors"
+                }
+              }
+            },
+            "description": "Missing or invalid API key (code 10009)."
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "errors": [
+                    {
+                      "detail": "The organization isn't whitelisted.",
+                      "title": "sandboxes_not_whitelisted"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/sandboxes_TelnyxErrors"
+                }
+              }
+            },
+            "description": "- `sandboxes_require_verification`: your account isn't fully verified.\n- `sandboxes_not_whitelisted`: Sandboxes isn't enabled for your organization (invite-only preview); `GET /ai/sandbox-access` tells whether it is."
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "errors": [
+                    {
+                      "code": "10005",
+                      "detail": "Sandbox not found.",
+                      "title": "Resource not found"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/sandboxes_TelnyxErrors"
+                }
+              }
+            },
+            "description": "Not found (code 10005): the resource doesn't exist or belongs to another organization. The detail says what's missing."
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "errors": [
+                    {
+                      "detail": "The exec hasn't started; only SIGKILL can be sent.",
+                      "title": "exec_not_started"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/sandboxes_TelnyxErrors"
+                }
+              }
+            },
+            "description": "- `request_in_progress`: a request with the same `Idempotency-Key` is still being processed; retry later.\n- `sandbox_not_running`: the operation needs a running sandbox.\n- `exec_not_started`: the exec hasn't started yet, so only `SIGKILL` (which cancels it) can be sent; retry once it's `running`."
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "errors": [
+                    {
+                      "detail": "This Idempotency-Key was used with a different request.",
+                      "title": "idempotency_key_reused"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/sandboxes_TelnyxErrors"
+                }
+              }
+            },
+            "description": "- `idempotency_key_reused`: the same `Idempotency-Key` was sent with a different request."
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "errors": [
+                    {
+                      "code": "10037",
+                      "detail": "A dependency can't answer right now; retry later.",
+                      "title": "Service unavailable"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/sandboxes_TelnyxErrors"
+                }
+              }
+            },
+            "description": "A dependency can't answer right now (code 10037); retry later."
+          }
+        },
+        "summary": "Send a signal to an exec",
+        "tags": [
+          "Sandbox execs"
+        ]
+      }
+    },
+    "/ai/sandboxes/{sandbox_id}/execs/{exec_id}/stdin/close": {
+      "post": {
+        "description": "Sends EOF to the exec's stdin, as the exec attach WebSocket's `stdin_eof` message does: the process sees it once the input already accepted has been written. Disconnecting never sends EOF; a process reading stdin keeps waiting until you call this. Closing it twice, or on an exec that ended, changes nothing.\n\nAn exec still `starting` is started first. While your organization's sandboxes are disabled, that's refused with `sandboxes_disabled`.",
+        "operationId": "CloseSandboxExecStdin",
+        "parameters": [
+          {
+            "description": "Sandbox ID (`sb-…`).",
+            "example": "sb-0192f1c2-7a4b-7c3e-9d1e-2f3a4b5c6d7e",
+            "in": "path",
+            "name": "sandbox_id",
+            "required": true,
+            "schema": {
+              "maxLength": 64,
+              "minLength": 1,
+              "type": "string"
+            }
+          },
+          {
+            "description": "Exec ID (`exec-…`).",
+            "example": "exec-0192f1c9-3e2a-7b1d-8c4f-5a6b7c8d9e0f",
+            "in": "path",
+            "name": "exec_id",
+            "required": true,
+            "schema": {
+              "maxLength": 64,
+              "minLength": 1,
+              "type": "string"
+            }
+          },
+          {
+            "description": "Optional client-chosen key (e.g. a UUID, at most 255 characters) that makes the call safe to retry. Within 24 h, the same key with the same request returns the stored response instead of acting twice; the same key with a different request fails with `idempotency_key_reused`; a request with a key that's still being processed fails with `request_in_progress`.",
+            "in": "header",
+            "name": "Idempotency-Key",
+            "required": false,
+            "schema": {
+              "maxLength": 255,
+              "minLength": 1,
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "202": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "data": {
+                    "command": [
+                      "python",
+                      "evaluate.py",
+                      "--split",
+                      "test"
+                    ],
+                    "created_at": "2026-11-13T10:05:00Z",
+                    "env": {
+                      "LOG_LEVEL": "info"
+                    },
+                    "exit_code": null,
+                    "finished_at": null,
+                    "id": "exec-0192f1c9-3e2a-7b1d-8c4f-5a6b7c8d9e0f",
+                    "reason": null,
+                    "sandbox_id": "sb-0192f1c2-7a4b-7c3e-9d1e-2f3a4b5c6d7e",
+                    "status": "running",
+                    "timeout": 3600,
+                    "workdir": "/app"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ExecRespData"
+                }
+              }
+            },
+            "description": "The exec."
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/sandboxes_TelnyxErrors"
+                }
+              }
+            },
+            "description": "Validation error: the standard Telnyx validation errors (codes such as 10004 missing parameter, 10015 bad request, 10025 invalid string length, 10026 invalid type)."
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "errors": [
+                    {
+                      "code": "10009",
+                      "detail": "Could not find any usable credentials in the request.",
+                      "title": "Authentication failed"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/sandboxes_TelnyxErrors"
+                }
+              }
+            },
+            "description": "Missing or invalid API key (code 10009)."
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "errors": [
+                    {
+                      "detail": "The organization isn't whitelisted.",
+                      "title": "sandboxes_not_whitelisted"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/sandboxes_TelnyxErrors"
+                }
+              }
+            },
+            "description": "- `sandboxes_require_verification`: your account isn't fully verified.\n- `sandboxes_not_whitelisted`: Sandboxes isn't enabled for your organization (invite-only preview); `GET /ai/sandbox-access` tells whether it is.\n- `sandboxes_disabled`: creating sandboxes, starting execs or completing an exec's start is disabled for your organization; other operations keep working."
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "errors": [
+                    {
+                      "code": "10005",
+                      "detail": "Sandbox not found.",
+                      "title": "Resource not found"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/sandboxes_TelnyxErrors"
+                }
+              }
+            },
+            "description": "Not found (code 10005): the resource doesn't exist or belongs to another organization. The detail says what's missing."
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "errors": [
+                    {
+                      "detail": "A request with this Idempotency-Key is still being processed.",
+                      "title": "request_in_progress"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/sandboxes_TelnyxErrors"
+                }
+              }
+            },
+            "description": "- `request_in_progress`: a request with the same `Idempotency-Key` is still being processed; retry later.\n- `sandbox_not_running`: the operation needs a running sandbox."
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "errors": [
+                    {
+                      "detail": "This Idempotency-Key was used with a different request.",
+                      "title": "idempotency_key_reused"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/sandboxes_TelnyxErrors"
+                }
+              }
+            },
+            "description": "- `idempotency_key_reused`: the same `Idempotency-Key` was sent with a different request."
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "errors": [
+                    {
+                      "code": "10037",
+                      "detail": "A dependency can't answer right now; retry later.",
+                      "title": "Service unavailable"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/sandboxes_TelnyxErrors"
+                }
+              }
+            },
+            "description": "A dependency can't answer right now (code 10037); retry later."
+          }
+        },
+        "summary": "Close an exec's stdin",
+        "tags": [
+          "Sandbox execs"
+        ]
+      }
+    }
+  },
+  "security": [
+    {
+      "bearerAuth": []
+    }
+  ],
+  "servers": [
+    {
+      "description": "Version 2.0.0 of the Telnyx API",
+      "url": "https://api.telnyx.com/v2"
+    }
+  ]
+}

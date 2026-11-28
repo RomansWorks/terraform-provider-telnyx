@@ -26,7 +26,7 @@ resource "telnyx_ai_collection_source" "example" {
 ### Required
 
 - `collection_id` (String) The collection id.
-- `source_type` (String) The type of Telnyx data attached as a source. `bucket` requires an additional `bucket_id`. Only `voice` is searchable today; `meeting_bot`, `message`, and `bucket` attach but are not yet searchable (Coming soon). One of `bucket`, `meeting_bot`, `message`, `voice`.
+- `source_type` (String) The type of Telnyx data attached as a source. `bucket` requires an additional `bucket_id`. `voice`, `meeting_bot`, `message`, `email`, and `whatsapp` are searchable today; `bucket` attaches but is not yet searchable (Coming soon). One of `bucket`, `email`, `meeting_bot`, `message`, `voice`, `whatsapp`.
 
 ### Optional
 

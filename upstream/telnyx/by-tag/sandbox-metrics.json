@@ -1,0 +1,675 @@
+{
+  "components": {
+    "schemas": {
+      "GpuSample": {
+        "description": "One GPU in a per-minute sample.",
+        "properties": {
+          "index": {
+            "description": "GPU index inside the sandbox.",
+            "type": "integer"
+          },
+          "mem_bytes": {
+            "description": "Guest-reported, display only. GPU memory used, bytes. `null` when not reported for this period.",
+            "type": [
+              "integer",
+              "null"
+            ]
+          },
+          "util_avg": {
+            "description": "Guest-reported, display only. Average utilization, percent. `null` when not reported for this period.",
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "util_max": {
+            "description": "Guest-reported, display only. Peak utilization, percent. `null` when not reported for this period.",
+            "type": [
+              "number",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "index",
+          "util_avg",
+          "util_max",
+          "mem_bytes"
+        ],
+        "type": "object"
+      },
+      "LatestGpu": {
+        "description": "One GPU in the latest sample.",
+        "properties": {
+          "index": {
+            "description": "GPU index inside the sandbox.",
+            "type": "integer"
+          },
+          "mem_bytes": {
+            "description": "Guest-reported, display only. GPU memory used, bytes. `null` when not reported for this period.",
+            "type": [
+              "integer",
+              "null"
+            ]
+          },
+          "util": {
+            "description": "Guest-reported, display only. Utilization, percent. `null` when not reported for this period.",
+            "type": [
+              "number",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "index",
+          "util",
+          "mem_bytes"
+        ],
+        "type": "object"
+      },
+      "LatestMetrics": {
+        "description": "The most recent sample (taken every 15 s).",
+        "properties": {
+          "cpu_cores": {
+            "description": "Host-measured (trusted). Average since the previous sample (usually about 15 s earlier; for the first, since the sandbox started), in cores: CPU used by the whole sandbox VM, its virtualization overhead included, so a busy sandbox can read above its `cpu`, by up to 1 core. `null` when not reported for this period.",
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "disk_bytes": {
+            "description": "Bytes used on `/data`, the sandbox's disk, measured outside the sandbox every one to two minutes; for display only. It doesn't include the root filesystem. `null` when not measured.",
+            "type": [
+              "integer",
+              "null"
+            ]
+          },
+          "gpus": {
+            "description": "Per-GPU usage. Not reported yet: always `null`.",
+            "items": {
+              "$ref": "#/components/schemas/LatestGpu"
+            },
+            "type": [
+              "array",
+              "null"
+            ]
+          },
+          "mem_bytes": {
+            "description": "Guest-reported, display only. Memory used inside the sandbox: its processes, page cache in active use, and what it keeps in memory, such as files in `/dev/shm` and the kept output of its execs. Not the sandbox VM's total. Bytes, at the latest sample. `null` when not reported for this period.",
+            "type": [
+              "integer",
+              "null"
+            ]
+          },
+          "net_rx_bytes": {
+            "description": "Host-measured (trusted). Bytes received by the sandbox since the previous sample (usually about 15 s earlier; for the first, since the sandbox started). `null` when not reported.",
+            "type": [
+              "integer",
+              "null"
+            ]
+          },
+          "net_tx_bytes": {
+            "description": "Host-measured (trusted). Bytes sent from the sandbox since the previous sample (usually about 15 s earlier; for the first, since the sandbox started). `null` when not reported.",
+            "type": [
+              "integer",
+              "null"
+            ]
+          },
+          "ts": {
+            "description": "When the sample was taken.",
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "required": [
+          "ts",
+          "cpu_cores",
+          "net_rx_bytes",
+          "net_tx_bytes",
+          "mem_bytes",
+          "disk_bytes",
+          "gpus"
+        ],
+        "type": "object"
+      },
+      "MetricsSample": {
+        "description": "One minute of usage.",
+        "properties": {
+          "cpu_cores_avg": {
+            "description": "Host-measured (trusted). Average over the minute, in cores: CPU used by the whole sandbox VM, its virtualization overhead included, so a busy sandbox can read above its `cpu`, by up to 1 core. `null` when not reported for this period.",
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "cpu_cores_max": {
+            "description": "Host-measured (trusted). Peak in the minute: the busiest interval between two samples (about 15 s), in cores: CPU used by the whole sandbox VM, its virtualization overhead included, so a busy sandbox can read above its `cpu`, by up to 1 core. `null` when not reported for this period.",
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "disk_bytes": {
+            "description": "Bytes used on `/data` at the minute's last measurement. `null` when not measured in that minute.",
+            "type": [
+              "integer",
+              "null"
+            ]
+          },
+          "gpus": {
+            "description": "Per-GPU usage. Not reported yet: always `null`.",
+            "items": {
+              "$ref": "#/components/schemas/GpuSample"
+            },
+            "type": [
+              "array",
+              "null"
+            ]
+          },
+          "mem_bytes_avg": {
+            "description": "Guest-reported, display only. Memory used inside the sandbox: its processes, page cache in active use, and what it keeps in memory, such as files in `/dev/shm` and the kept output of its execs. Not the sandbox VM's total. Average of the minute's samples (about every 15 s), bytes. `null` when not reported for this period.",
+            "type": [
+              "integer",
+              "null"
+            ]
+          },
+          "mem_bytes_max": {
+            "description": "Guest-reported, display only. Memory used inside the sandbox: its processes, page cache in active use, and what it keeps in memory, such as files in `/dev/shm` and the kept output of its execs. Not the sandbox VM's total. Highest of the minute's samples, bytes. `null` when not reported for this period.",
+            "type": [
+              "integer",
+              "null"
+            ]
+          },
+          "net_rx_bytes": {
+            "description": "Host-measured (trusted). Bytes received by the sandbox in the minute. After a gap in measurement, the gap's bytes are in the first minute measured after it. `null` when not reported.",
+            "type": [
+              "integer",
+              "null"
+            ]
+          },
+          "net_tx_bytes": {
+            "description": "Host-measured (trusted). Bytes sent from the sandbox in the minute. After a gap in measurement, the gap's bytes are in the first minute measured after it. `null` when not reported.",
+            "type": [
+              "integer",
+              "null"
+            ]
+          },
+          "ts": {
+            "description": "Start of the minute.",
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "required": [
+          "ts",
+          "cpu_cores_avg",
+          "cpu_cores_max",
+          "net_rx_bytes",
+          "net_tx_bytes",
+          "mem_bytes_avg",
+          "mem_bytes_max",
+          "disk_bytes",
+          "gpus"
+        ],
+        "type": "object"
+      },
+      "SandboxMetrics": {
+        "description": "Latest values plus the per-minute series for the requested range.",
+        "properties": {
+          "from": {
+            "description": "Start of the range.",
+            "format": "date-time",
+            "type": "string"
+          },
+          "latest": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/LatestMetrics"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Most recent sample; `null` if there is none (e.g. not started)."
+          },
+          "sandbox_id": {
+            "description": "The sandbox.",
+            "type": "string"
+          },
+          "series": {
+            "description": "Per-minute samples in the range; empty when none are stored.",
+            "items": {
+              "$ref": "#/components/schemas/MetricsSample"
+            },
+            "type": "array"
+          },
+          "step_seconds": {
+            "description": "Series resolution in seconds (always 60).",
+            "type": "integer"
+          },
+          "to": {
+            "description": "End of the range.",
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "required": [
+          "sandbox_id",
+          "from",
+          "to",
+          "step_seconds",
+          "latest",
+          "series"
+        ],
+        "type": "object"
+      },
+      "SandboxMetricsRespData": {
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/SandboxMetrics"
+          }
+        },
+        "required": [
+          "data"
+        ],
+        "type": "object"
+      },
+      "TelnyxErrorMeta": {
+        "description": "Extra error information.",
+        "properties": {
+          "url": {
+            "default": null,
+            "description": "Documentation page for the error code.",
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "type": "object"
+      },
+      "TelnyxErrorSource": {
+        "description": "Where in the request the error was found.",
+        "properties": {
+          "parameter": {
+            "default": null,
+            "description": "Name of the offending parameter.",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "pointer": {
+            "default": null,
+            "description": "JSON pointer into the request body, e.g. `/timeout`.",
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "type": "object"
+      },
+      "sandboxes_TelnyxError": {
+        "description": "One error in the standard Telnyx error body.",
+        "properties": {
+          "code": {
+            "description": "Telnyx error code: a 5-digit string for general errors, e.g. `10009`. Sandboxes-specific errors are identified by their name in `title`.",
+            "type": "string"
+          },
+          "detail": {
+            "description": "Human-readable explanation.",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "meta": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/TelnyxErrorMeta"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Extra information."
+          },
+          "source": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/TelnyxErrorSource"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Where the error is."
+          },
+          "title": {
+            "description": "Short, constant summary of the error. For Sandboxes-specific errors, the error's name, e.g. `quota_exceeded`.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "title"
+        ],
+        "type": "object"
+      },
+      "sandboxes_TelnyxErrors": {
+        "description": "The standard Telnyx error body.",
+        "properties": {
+          "errors": {
+            "description": "One or more errors.",
+            "items": {
+              "$ref": "#/components/schemas/sandboxes_TelnyxError"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "errors"
+        ],
+        "type": "object"
+      }
+    },
+    "securitySchemes": {
+      "BearerAuth": {
+        "bearerFormat": "API key",
+        "description": "Telnyx API key supplied as `Authorization: Bearer \u003ctoken\u003e`. In production, auth may be validated by the API gateway and forwarded via Telnyx auth headers.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "Payment": {
+        "description": "Machine Payment Protocol credential used on paid retries, sent as `Authorization: Payment ...`. Obtained by paying a challenge returned in the `WWW-Authenticate` header of a 402 response. This is not a Telnyx API key; initial challenge requests use standard bearer authentication instead.",
+        "in": "header",
+        "name": "Authorization",
+        "type": "apiKey"
+      },
+      "agent-gateway_bearerAuth": {
+        "description": "Telnyx API key",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "agent-memory_bearerAuth": {
+        "description": "Telnyx API key",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "bearerAuth": {
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "branded-calling_bearerAuth": {
+        "description": "Telnyx API key. Generate one at https://portal.telnyx.com/#/app/api-keys.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "collections_bearerAuth": {
+        "description": "Telnyx API key. Collections and results are automatically scoped to the authenticated user's organization.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "number-reputation_bearerAuth": {
+        "description": "Telnyx API key. Generate one at https://portal.telnyx.com/#/app/api-keys.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "oauthClientAuth": {
+        "description": "OAuth 2.0 authentication for Telnyx API and MCP integrations",
+        "flows": {
+          "authorizationCode": {
+            "authorizationUrl": "https://api.telnyx.com/v2/oauth/authorize",
+            "refreshUrl": "https://api.telnyx.com/v2/oauth/token",
+            "scopes": {
+              "admin": "Administrative access to Telnyx resources"
+            },
+            "tokenUrl": "https://api.telnyx.com/v2/oauth/token"
+          },
+          "clientCredentials": {
+            "scopes": {
+              "admin": "Administrative access to Telnyx resources"
+            },
+            "tokenUrl": "https://api.telnyx.com/v2/oauth/token"
+          }
+        },
+        "type": "oauth2"
+      },
+      "outbound-voice-profiles_bearerAuth": {
+        "bearerFormat": "JWT",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "pay-connectors_bearerAuth": {
+        "description": "Telnyx API key, not the processor bearer token.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "pronunciation-dicts_bearerAuth": {
+        "description": "Telnyx API v2 key. Obtain from https://portal.telnyx.com",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "rcs-registration_bearerAuth": {
+        "bearerFormat": "API key",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "stored-payment-transactions_bearerAuth": {
+        "bearerFormat": "JWT",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "telnyxApiKey": {
+        "description": "Management-only Telnyx account credential.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "transcriptions-search_bearerAuth": {
+        "description": "Telnyx API key. Results are automatically scoped to the authenticated user's organization.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "web-search_bearerAuth": {
+        "description": "Telnyx API key",
+        "scheme": "bearer",
+        "type": "http"
+      }
+    }
+  },
+  "info": {
+    "contact": {
+      "email": "support@telnyx.com"
+    },
+    "description": "SIP trunking, SMS, MMS, Call Control and Telephony Data Services.",
+    "title": "Telnyx API",
+    "version": "2.0.0",
+    "x-endpoint-cost": "light",
+    "x-latency-category": "responsive"
+  },
+  "openapi": "3.1.0",
+  "paths": {
+    "/ai/sandboxes/{sandbox_id}/metrics": {
+      "get": {
+        "description": "The latest values plus a per-minute series for a time range: CPU, memory, disk and network. The range defaults to the last 60 minutes of the sandbox's life (up to now, or to its end) and spans at most 24 h; the series has one point per 60 s, is empty where nothing is stored, and is kept 30 days.\n\nCPU, network and disk are measured on the host, outside the sandbox; disk is the bytes used on `/data`, the sandbox's disk, refreshed every one to two minutes, and doesn't include the root filesystem. Memory is reported from inside the sandbox. Memory and disk are for display only. GPU usage isn't reported yet: `gpus` is always `null`. A sandbox's last few seconds, and a sandbox that lives less than about 15 s, may not be measured.",
+        "operationId": "GetSandboxMetrics",
+        "parameters": [
+          {
+            "description": "Sandbox ID (`sb-…`).",
+            "example": "sb-0192f1c2-7a4b-7c3e-9d1e-2f3a4b5c6d7e",
+            "in": "path",
+            "name": "sandbox_id",
+            "required": true,
+            "schema": {
+              "maxLength": 64,
+              "minLength": 1,
+              "type": "string"
+            }
+          },
+          {
+            "description": "Start of the range (RFC 3339, with a UTC offset). Default: 60 minutes before `to`, clipped to the sandbox's lifetime.",
+            "in": "query",
+            "name": "from",
+            "required": false,
+            "schema": {
+              "format": "date-time",
+              "type": "string"
+            }
+          },
+          {
+            "description": "End of the range (RFC 3339, with a UTC offset). Default: now, or the sandbox's end if it has ended.",
+            "in": "query",
+            "name": "to",
+            "required": false,
+            "schema": {
+              "format": "date-time",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "data": {
+                    "from": "2026-11-13T10:00:00Z",
+                    "latest": {
+                      "cpu_cores": 12.4,
+                      "disk_bytes": null,
+                      "gpus": null,
+                      "mem_bytes": null,
+                      "net_rx_bytes": 52428800,
+                      "net_tx_bytes": 1048576,
+                      "ts": "2026-11-13T10:01:45Z"
+                    },
+                    "sandbox_id": "sb-0192f1c2-7a4b-7c3e-9d1e-2f3a4b5c6d7e",
+                    "series": [
+                      {
+                        "cpu_cores_avg": 11.8,
+                        "cpu_cores_max": 13.1,
+                        "disk_bytes": null,
+                        "gpus": null,
+                        "mem_bytes_avg": null,
+                        "mem_bytes_max": null,
+                        "net_rx_bytes": 209715200,
+                        "net_tx_bytes": 4194304,
+                        "ts": "2026-11-13T10:01:00Z"
+                      }
+                    ],
+                    "step_seconds": 60,
+                    "to": "2026-11-13T10:02:00Z"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/SandboxMetricsRespData"
+                }
+              }
+            },
+            "description": "The sandbox's metrics."
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/sandboxes_TelnyxErrors"
+                }
+              }
+            },
+            "description": "Validation error: the standard Telnyx validation errors (codes such as 10004 missing parameter, 10015 bad request, 10025 invalid string length, 10026 invalid type)."
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "errors": [
+                    {
+                      "code": "10009",
+                      "detail": "Could not find any usable credentials in the request.",
+                      "title": "Authentication failed"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/sandboxes_TelnyxErrors"
+                }
+              }
+            },
+            "description": "Missing or invalid API key (code 10009)."
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "errors": [
+                    {
+                      "detail": "The organization isn't whitelisted.",
+                      "title": "sandboxes_not_whitelisted"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/sandboxes_TelnyxErrors"
+                }
+              }
+            },
+            "description": "- `sandboxes_require_verification`: your account isn't fully verified.\n- `sandboxes_not_whitelisted`: Sandboxes isn't enabled for your organization (invite-only preview); `GET /ai/sandbox-access` tells whether it is."
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "errors": [
+                    {
+                      "code": "10005",
+                      "detail": "Sandbox not found.",
+                      "title": "Resource not found"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/sandboxes_TelnyxErrors"
+                }
+              }
+            },
+            "description": "Not found (code 10005): the resource doesn't exist or belongs to another organization. The detail says what's missing."
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "errors": [
+                    {
+                      "code": "10037",
+                      "detail": "A dependency can't answer right now; retry later.",
+                      "title": "Service unavailable"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/sandboxes_TelnyxErrors"
+                }
+              }
+            },
+            "description": "A dependency can't answer right now (code 10037); retry later."
+          }
+        },
+        "summary": "Get a sandbox's metrics",
+        "tags": [
+          "Sandbox metrics"
+        ]
+      }
+    }
+  },
+  "security": [
+    {
+      "bearerAuth": []
+    }
+  ],
+  "servers": [
+    {
+      "description": "Version 2.0.0 of the Telnyx API",
+      "url": "https://api.telnyx.com/v2"
+    }
+  ]
+}

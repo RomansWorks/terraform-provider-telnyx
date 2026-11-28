@@ -57,6 +57,7 @@ Read-Only:
 - `rtcp_settings` (Attributes) (see [below for nested schema](#nestedatt--credential_connections--rtcp_settings))
 - `sip_uri_calling_preference` (String) This feature enables inbound SIP URI calls to your Credential Auth Connection. If enabled for all (unrestricted) then anyone who calls the SIP URI <your-username>@telnyx.com will be connected to your Connection. You can also choose to allow only calls that are originated on any Connections under your account (internal).
 - `tags` (Set of String) Tags associated with the connection.
+- `transfer_caller_id` (String) Selects the caller ID presented to the destination of a SIP REFER transfer: from-transferee uses the number of the party being transferred, from-transferor the number of the party initiating the transfer. Defaults to from-transferee and returns the saved value. Only from-transferee and from-transferor are accepted; null and other values are rejected. This API provisions the preference; dialplan behavior is implemented separately.
 - `updated_at` (String) ISO-8601 formatted date indicating when the resource was updated.
 - `user_name` (String) The user name to be used as part of the credentials. Must be 4-32 characters long and alphanumeric values only (no spaces or special characters). At least one of the first 5 characters must be a letter.
 - `webhook_api_version` (String) Determines which webhook format will be used, Telnyx API v1 or v2.

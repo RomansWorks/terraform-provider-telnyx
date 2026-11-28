@@ -29,6 +29,8 @@ data "telnyx_phone_number_voice_settings" "example" {
 
 - `call_forwarding` (Attributes) The call forwarding settings for a phone number. (see [below for nested schema](#nestedatt--call_forwarding))
 - `call_recording` (Attributes) The call recording settings for a phone number. (see [below for nested schema](#nestedatt--call_recording))
+- `caller_id_name_enabled` (Boolean) Enables inbound caller name lookup for calls to this phone number. Turning lookup off retains the saved lookup tier.
+- `caller_id_name_lookup_tier` (String) The inbound caller name lookup tier. The initial tier is `standard`. This setting applies when `caller_id_name_enabled` is true. The field may be omitted when tier selection is unavailable. One of `enhanced`, `standard`.
 - `cnam_listing` (Attributes) The CNAM listing settings for a phone number. (see [below for nested schema](#nestedatt--cnam_listing))
 - `connection_id` (String) Identifies the connection associated with this phone number.
 - `customer_reference` (String) A customer reference string for customer look ups.

@@ -118,6 +118,78 @@
         },
         "type": "object"
       },
+      "10dlc_ExternalVetting": {
+        "properties": {
+          "createDate": {
+            "description": "Vetting submission date. This is the date when the vetting request is generated in ISO 8601 format.",
+            "title": "createDate",
+            "type": "string"
+          },
+          "evpId": {
+            "description": "External vetting provider ID for the brand.",
+            "maxLength": 10,
+            "title": "Evpid",
+            "type": "string"
+          },
+          "expirationDate": {
+            "description": "Date the vet actually expired, in ISO 8601 format. Null while the record is active, and can also be null on some expired records.",
+            "format": "date-time",
+            "title": "expirationDate",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "validUntil": {
+            "description": "Expiry date assigned to the vet by the vetting provider, in ISO 8601 format. This may differ from the date the vet actually expired (see expirationDate).",
+            "format": "date-time",
+            "title": "validUntil",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "vettedDate": {
+            "description": "Vetting effective date. This is the date when vetting was completed, or the starting effective date in ISO 8601 format. If this date is missing, then the vetting was not complete or not valid.",
+            "title": "vettedDate",
+            "type": "string"
+          },
+          "vettingClass": {
+            "description": "Identifies the vetting classification.",
+            "title": "Vettingclass",
+            "type": "string"
+          },
+          "vettingId": {
+            "description": "Unique ID that identifies a vetting transaction performed by a vetting provider. This ID is provided by the vetting provider at time of vetting.",
+            "title": "vettingId",
+            "type": "string"
+          },
+          "vettingScore": {
+            "description": "Vetting score ranging from 0-100.",
+            "title": "vettingScore",
+            "type": "integer"
+          },
+          "vettingStatus": {
+            "description": "Status of the vetting record.",
+            "enum": [
+              "PENDING",
+              "UNSCORE",
+              "ACTIVE",
+              "FAILED",
+              "EXPIRED"
+            ],
+            "title": "vettingStatus",
+            "type": "string"
+          },
+          "vettingToken": {
+            "description": "Required by some providers for vetting record confirmation.",
+            "title": "vettingToken",
+            "type": "string"
+          }
+        },
+        "title": "ExternalVetting",
+        "type": "object"
+      },
       "10dlc_HTTPValidationError": {
         "properties": {
           "detail": {
@@ -1989,7 +2061,7 @@
     },
     "/10dlc/brand/{brandId}/externalVetting": {
       "get": {
-        "description": "Get list of valid external vetting record for a given brand",
+        "description": "Get list of external vetting records for a given brand. Only ACTIVE records are returned unless `vettingStatus` is set.",
         "operationId": "ListExternalVettings",
         "parameters": [
           {
@@ -2001,6 +2073,31 @@
               "title": "Brandid",
               "type": "string"
             }
+          },
+          {
+            "description": "Filter vetting records by status. Repeat the parameter to include multiple statuses, for example `?vettingStatus=ACTIVE\u0026vettingStatus=EXPIRED`.",
+            "explode": true,
+            "in": "query",
+            "name": "vettingStatus",
+            "required": false,
+            "schema": {
+              "default": [
+                "ACTIVE"
+              ],
+              "items": {
+                "enum": [
+                  "PENDING",
+                  "UNSCORE",
+                  "ACTIVE",
+                  "FAILED",
+                  "EXPIRED"
+                ],
+                "type": "string"
+              },
+              "title": "Vettingstatus",
+              "type": "array"
+            },
+            "style": "form"
           }
         ],
         "responses": {
@@ -2009,12 +2106,15 @@
               "application/json": {
                 "example": [
                   {
-                    "createDate": "createDate",
-                    "evpId": "Evpid",
-                    "vettedDate": "vettedDate",
-                    "vettingClass": "Vettingclass",
+                    "createDate": "2026-01-15T14:30:00.000Z",
+                    "evpId": "AEGIS",
+                    "expirationDate": null,
+                    "validUntil": "2027-01-15T14:30:00.000Z",
+                    "vettedDate": "2026-01-15T14:30:00.000Z",
+                    "vettingClass": "STANDARD",
                     "vettingId": "vettingId",
-                    "vettingScore": 0,
+                    "vettingScore": 80,
+                    "vettingStatus": "ACTIVE",
                     "vettingToken": "vettingToken"
                   }
                 ],
@@ -2087,7 +2187,7 @@
                   "vettingToken": "vettingToken"
                 },
                 "schema": {
-                  "$ref": "#/components/schemas/ExternalVetting"
+                  "$ref": "#/components/schemas/10dlc_ExternalVetting"
                 }
               }
             },
@@ -2156,7 +2256,7 @@
                   "vettingToken": "vettingToken"
                 },
                 "schema": {
-                  "$ref": "#/components/schemas/ExternalVetting"
+                  "$ref": "#/components/schemas/10dlc_ExternalVetting"
                 }
               }
             },

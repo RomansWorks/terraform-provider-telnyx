@@ -29,7 +29,7 @@ func AIKnowledgeCollectionDocumentsList() *engine.List {
 				{Name: "organization_id", JSON: "organization_id", Kind: engine.KindString, Computed: true, InResponse: true},
 				{Name: "record_created_at", JSON: "record_created_at", Kind: engine.KindString, Computed: true, InResponse: true},
 				{Name: "record_id", JSON: "record_id", Kind: engine.KindString, Computed: true, InResponse: true},
-				{Name: "record_type", JSON: "record_type", Kind: engine.KindString, Computed: true, InResponse: true, Description: "The source record kind this chunk came from (e.g. `voice`, `meeting_bot`, `message`)."},
+				{Name: "record_type", JSON: "record_type", Kind: engine.KindString, Computed: true, InResponse: true, Description: "The source record kind this chunk came from (e.g. `voice`, `meeting_bot`, `message`, `email`, `whatsapp`)."},
 				{Name: "region", JSON: "region", Kind: engine.KindString, Computed: true, InResponse: true},
 				{Name: "score", JSON: "score", Kind: engine.KindFloat, Computed: true, InResponse: true, Description: "Relevance score (higher = more relevant) for ranked search. `0.0` for plain catalog listings (when `query` is omitted)."},
 				{Name: "text", JSON: "text", Kind: engine.KindString, Computed: true, InResponse: true},

@@ -22,6 +22,7 @@ The external vetting records of a 10DLC brand, with each provider's vetting clas
 ### Optional
 
 - `max_items` (Number) Stop reading after this many items. By default every page is read.
+- `vetting_status` (List of String)
 
 ### Read-Only
 

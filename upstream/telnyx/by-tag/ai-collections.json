@@ -226,7 +226,7 @@
             "type": "string"
           },
           "record_type": {
-            "description": "The source record kind this chunk came from (e.g. `voice`, `meeting_bot`, `message`).",
+            "description": "The source record kind this chunk came from (e.g. `voice`, `meeting_bot`, `message`, `email`, `whatsapp`).",
             "example": "voice",
             "type": "string"
           },
@@ -612,12 +612,14 @@
         "type": "object"
       },
       "SourceType": {
-        "description": "The type of Telnyx data attached as a source. `bucket` requires an additional `bucket_id`. Only `voice` is searchable today; `meeting_bot`, `message`, and `bucket` attach but are not yet searchable (Coming soon).",
+        "description": "The type of Telnyx data attached as a source. `bucket` requires an additional `bucket_id`. `voice`, `meeting_bot`, `message`, `email`, and `whatsapp` are searchable today; `bucket` attaches but is not yet searchable (Coming soon).",
         "enum": [
           "voice",
           "meeting_bot",
           "message",
-          "bucket"
+          "bucket",
+          "email",
+          "whatsapp"
         ],
         "example": "voice",
         "type": "string"
@@ -1491,6 +1493,16 @@
             },
             "description": "The collection does not exist or is not searchable."
           },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Errors"
+                }
+              }
+            },
+            "description": "The collection's `retrieval_type` is `hybrid`, but hybrid search is not enabled yet."
+          },
           "422": {
             "content": {
               "application/json": {
@@ -1512,6 +1524,16 @@
               }
             },
             "description": "The collection has no searchable sources."
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Errors"
+                }
+              }
+            },
+            "description": "The collection configuration or the search backend is temporarily unavailable."
           }
         },
         "summary": "Search collection documents",

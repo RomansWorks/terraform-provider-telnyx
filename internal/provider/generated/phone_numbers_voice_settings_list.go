@@ -32,6 +32,8 @@ func PhoneNumbersVoiceSettingsList() *engine.List {
 						{Name: "inbound_call_recording_enabled", JSON: "inbound_call_recording_enabled", Kind: engine.KindBool, Computed: true, InResponse: true, Description: "When enabled, any inbound call to this number will be recorded."},
 						{Name: "inbound_call_recording_format", JSON: "inbound_call_recording_format", Kind: engine.KindString, Computed: true, InResponse: true, Description: "The audio file format for calls being recorded."},
 					}},
+				{Name: "caller_id_name_enabled", JSON: "caller_id_name_enabled", Kind: engine.KindBool, Computed: true, InResponse: true, Description: "Enables inbound caller name lookup for calls to this phone number. Turning lookup off retains the saved lookup tier."},
+				{Name: "caller_id_name_lookup_tier", JSON: "caller_id_name_lookup_tier", Kind: engine.KindString, Computed: true, InResponse: true, Description: "The inbound caller name lookup tier. The initial tier is `standard`. This setting applies when `caller_id_name_enabled` is true. The field may be omitted when tier selection is unavailable."},
 				{Name: "cnam_listing", JSON: "cnam_listing", Kind: engine.KindObject, Computed: true, InResponse: true, Description: "The CNAM listing settings for a phone number.",
 					Attrs: []*engine.Attr{
 						{Name: "cnam_listing_details", JSON: "cnam_listing_details", Kind: engine.KindString, Computed: true, InResponse: true, Description: "The CNAM listing details for this number. Must be alphanumeric characters or spaces with a maximum length of 15. Requires cnam_listing_enabled to also be set to true."},

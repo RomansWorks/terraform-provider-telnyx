@@ -872,6 +872,69 @@
           }
         },
         "type": "object"
+      },
+      "portout_Error": {
+        "properties": {
+          "errors": {
+            "items": {
+              "properties": {
+                "code": {
+                  "description": "Stable machine-readable error code.",
+                  "type": "string"
+                },
+                "detail": {
+                  "description": "Human-readable error detail.",
+                  "type": "string"
+                },
+                "meta": {
+                  "properties": {
+                    "retryable": {
+                      "description": "Whether retrying the identical request can succeed. Present on all porting-lifecycle error responses; see the Porting API error catalog for per-code guidance.",
+                      "type": "boolean"
+                    },
+                    "url": {
+                      "description": "Documentation URL for the error code.",
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "retryable"
+                  ],
+                  "type": "object"
+                },
+                "source": {
+                  "properties": {
+                    "parameter": {
+                      "description": "Query parameter that caused the error.",
+                      "type": "string"
+                    },
+                    "pointer": {
+                      "description": "JSON pointer (RFC 6901) to the offending request field, or '/' for request-level errors.",
+                      "type": "string"
+                    }
+                  },
+                  "type": "object"
+                },
+                "title": {
+                  "description": "Human-readable error title.",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "code",
+                "title",
+                "detail",
+                "meta"
+              ],
+              "type": "object"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "errors"
+        ],
+        "type": "object"
       }
     },
     "securitySchemes": {
@@ -1141,13 +1204,34 @@
             "description": "Portout Response"
           },
           "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/portout_Error"
+                }
+              }
+            },
             "description": "Unauthorized"
           },
           "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/portout_Error"
+                }
+              }
+            },
             "description": "Resource not found"
           },
           "422": {
-            "description": "Unprocessable entity. Check message field in response for details."
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/portout_Error"
+                }
+              }
+            },
+            "description": "Unprocessable entity. Check errors[].detail in response for details."
           }
         },
         "summary": "List portout requests",
@@ -1234,9 +1318,23 @@
             "description": "Successful response"
           },
           "422": {
-            "description": "Unprocessable entity. Check message field in response for details."
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/portout_Error"
+                }
+              }
+            },
+            "description": "Unprocessable entity. Check errors[].detail in response for details."
           },
           "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/portout_Error"
+                }
+              }
+            },
             "description": "Internal server error"
           }
         },
@@ -1279,9 +1377,23 @@
             "description": "Successful response"
           },
           "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/portout_Error"
+                }
+              }
+            },
             "description": "Not found"
           },
           "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/portout_Error"
+                }
+              }
+            },
             "description": "Internal server error"
           }
         },
@@ -1312,9 +1424,23 @@
             "description": "No content"
           },
           "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/portout_Error"
+                }
+              }
+            },
             "description": "Not found"
           },
           "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/portout_Error"
+                }
+              }
+            },
             "description": "Internal server error"
           }
         },
@@ -1392,12 +1518,33 @@
             "description": "Successful response"
           },
           "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/portout_Error"
+                }
+              }
+            },
             "description": "Resource not found"
           },
           "422": {
-            "description": "Unprocessable entity. Check message field in response for details."
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/portout_Error"
+                }
+              }
+            },
+            "description": "Unprocessable entity. Check errors[].detail in response for details."
           },
           "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/portout_Error"
+                }
+              }
+            },
             "description": "Internal server error"
           }
         },
@@ -1468,9 +1615,23 @@
             "description": "Successful response"
           },
           "422": {
-            "description": "Unprocessable entity. Check message field in response for details."
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/portout_Error"
+                }
+              }
+            },
+            "description": "Unprocessable entity. Check errors[].detail in response for details."
           },
           "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/portout_Error"
+                }
+              }
+            },
             "description": "Internal server error"
           }
         },
@@ -1502,9 +1663,23 @@
             "description": "Successful response"
           },
           "422": {
-            "description": "Unprocessable entity. Check message field in response for details."
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/portout_Error"
+                }
+              }
+            },
+            "description": "Unprocessable entity. Check errors[].detail in response for details."
           },
           "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/portout_Error"
+                }
+              }
+            },
             "description": "Internal server error"
           }
         },
@@ -1547,9 +1722,23 @@
             "description": "Successful response"
           },
           "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/portout_Error"
+                }
+              }
+            },
             "description": "Resource not found"
           },
           "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/portout_Error"
+                }
+              }
+            },
             "description": "Internal server error"
           }
         },
@@ -1592,13 +1781,34 @@
             "description": "Portout Response"
           },
           "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/portout_Error"
+                }
+              }
+            },
             "description": "Unauthorized"
           },
           "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/portout_Error"
+                }
+              }
+            },
             "description": "Resource not found"
           },
           "422": {
-            "description": "Unprocessable entity. Check message field in response for details."
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/portout_Error"
+                }
+              }
+            },
+            "description": "Unprocessable entity. Check errors[].detail in response for details."
           }
         },
         "summary": "Get a portout request",
@@ -1646,13 +1856,34 @@
             "description": "Portout Comments"
           },
           "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/portout_Error"
+                }
+              }
+            },
             "description": "Unauthorized"
           },
           "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/portout_Error"
+                }
+              }
+            },
             "description": "Resource not found"
           },
           "422": {
-            "description": "Unprocessable entity. Check message field in response for details."
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/portout_Error"
+                }
+              }
+            },
+            "description": "Unprocessable entity. Check errors[].detail in response for details."
           }
         },
         "summary": "List all comments for a portout request",
@@ -1711,13 +1942,34 @@
             "description": "Portout Comment Response"
           },
           "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/portout_Error"
+                }
+              }
+            },
             "description": "Unauthorized"
           },
           "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/portout_Error"
+                }
+              }
+            },
             "description": "Resource not found"
           },
           "422": {
-            "description": "Unprocessable entity. Check message field in response for details."
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/portout_Error"
+                }
+              }
+            },
+            "description": "Unprocessable entity. Check errors[].detail in response for details."
           }
         },
         "summary": "Create a comment on a portout request",
@@ -1762,9 +2014,23 @@
             "description": "Portout Supporting Documents"
           },
           "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/portout_Error"
+                }
+              }
+            },
             "description": "Unauthorized"
           },
           "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/portout_Error"
+                }
+              }
+            },
             "description": "Resource not found"
           }
         },
@@ -1850,13 +2116,34 @@
             "description": "Portout Supporting Documents"
           },
           "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/portout_Error"
+                }
+              }
+            },
             "description": "Unauthorized"
           },
           "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/portout_Error"
+                }
+              }
+            },
             "description": "Resource not found"
           },
           "422": {
-            "description": "Unprocessable entity. Check message field in response for details."
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/portout_Error"
+                }
+              }
+            },
+            "description": "Unprocessable entity. Check errors[].detail in response for details."
           }
         },
         "summary": "Create a list of supporting documents on a portout request",
@@ -1937,13 +2224,34 @@
             "description": "Portout Response"
           },
           "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/portout_Error"
+                }
+              }
+            },
             "description": "Unauthorized"
           },
           "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/portout_Error"
+                }
+              }
+            },
             "description": "Resource not found"
           },
           "422": {
-            "description": "Unprocessable entity. Check message field in response for details."
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/portout_Error"
+                }
+              }
+            },
+            "description": "Unprocessable entity. Check errors[].detail in response for details."
           }
         },
         "summary": "Update Status",

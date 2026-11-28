@@ -45,7 +45,7 @@ Read-Only:
 - `organization_id` (String)
 - `record_created_at` (String)
 - `record_id` (String)
-- `record_type` (String) The source record kind this chunk came from (e.g. `voice`, `meeting_bot`, `message`).
+- `record_type` (String) The source record kind this chunk came from (e.g. `voice`, `meeting_bot`, `message`, `email`, `whatsapp`).
 - `region` (String)
 - `score` (Number) Relevance score (higher = more relevant) for ranked search. `0.0` for plain catalog listings (when `query` is omitted).
 - `text` (String)

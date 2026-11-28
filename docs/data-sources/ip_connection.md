@@ -43,6 +43,7 @@ A SIP connection that authenticates by source IP address.
 - `record_type` (String) Identifies the type of the resource.
 - `rtcp_settings` (Attributes) (see [below for nested schema](#nestedatt--rtcp_settings))
 - `tags` (Set of String) Tags associated with the connection.
+- `transfer_caller_id` (String) Selects the caller ID presented to the destination of a SIP REFER transfer: from-transferee uses the number of the party being transferred, from-transferor the number of the party initiating the transfer. Defaults to from-transferee and returns the saved value. Only from-transferee and from-transferor are accepted; null and other values are rejected. This API provisions the preference; dialplan behavior is implemented separately. One of `from-transferee`, `from-transferor`.
 - `transport_protocol` (String) One of UDP, TLS, or TCP. Applies only to connections with IP authentication or FQDN authentication. One of `TCP`, `TLS`, `UDP`.
 - `updated_at` (String) ISO 8601 formatted date indicating when the resource was updated.
 - `webhook_api_version` (String) Determines which webhook format will be used, Telnyx API v1 or v2. One of `1`, `2`.

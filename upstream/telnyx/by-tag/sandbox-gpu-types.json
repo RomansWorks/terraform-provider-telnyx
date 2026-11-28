@@ -1,0 +1,543 @@
+{
+  "components": {
+    "schemas": {
+      "FloatRange": {
+        "description": "A fractional resource per GPU.",
+        "properties": {
+          "default": {
+            "description": "Per GPU: what a sandbox of this type gets, multiplied by its GPU count.",
+            "type": "number"
+          },
+          "max": {
+            "description": "Equal to `default`.",
+            "type": "number"
+          }
+        },
+        "required": [
+          "default",
+          "max"
+        ],
+        "type": "object"
+      },
+      "GpuType": {
+        "description": "A GPU type you can rent; only types you can rent now are listed. Currently a sandbox of this type gets a whole node.",
+        "properties": {
+          "allowed_counts": {
+            "description": "The GPU counts that can be requested as `gpu.count`. Currently each type lists exactly one, its node's GPU count, so a sandbox rents the whole node. Read `gpu.count` from this list rather than hard-coding it.",
+            "items": {
+              "type": "integer"
+            },
+            "type": "array"
+          },
+          "cpu": {
+            "$ref": "#/components/schemas/FloatRange",
+            "description": "CPU cores per GPU: a sandbox of this type gets `default` × its GPU count."
+          },
+          "disk_gib": {
+            "$ref": "#/components/schemas/IntRange",
+            "description": "Size in GiB of `/data`, the sandbox's own disk, per GPU: a sandbox of this type gets `default` × its GPU count."
+          },
+          "memory_mib": {
+            "$ref": "#/components/schemas/IntRange",
+            "description": "Memory in MiB per GPU: a sandbox of this type gets `default` × its GPU count."
+          },
+          "prices": {
+            "description": "Prices, billed per second while running; `null` until published.",
+            "items": {
+              "$ref": "#/components/schemas/Price"
+            },
+            "type": [
+              "array",
+              "null"
+            ]
+          },
+          "root_disk_gib": {
+            "description": "Limit in GiB of the root filesystem: the image plus everything written outside `/data`. It's for the whole sandbox, whatever its GPU count. Going past it ends the sandbox with `disk_limit_exceeded`.",
+            "type": "integer"
+          },
+          "type": {
+            "description": "GPU type, e.g. `B300`. Pass it as `gpu.type`.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "type",
+          "allowed_counts",
+          "cpu",
+          "memory_mib",
+          "disk_gib",
+          "root_disk_gib",
+          "prices"
+        ],
+        "type": "object"
+      },
+      "GpuTypeListRespData": {
+        "properties": {
+          "data": {
+            "items": {
+              "$ref": "#/components/schemas/GpuType"
+            },
+            "type": "array"
+          },
+          "meta": {
+            "$ref": "#/components/schemas/sandboxes_Meta"
+          }
+        },
+        "required": [
+          "data",
+          "meta"
+        ],
+        "type": "object"
+      },
+      "IntRange": {
+        "description": "A whole-number resource per GPU.",
+        "properties": {
+          "default": {
+            "description": "Per GPU: what a sandbox of this type gets, multiplied by its GPU count.",
+            "type": "integer"
+          },
+          "max": {
+            "description": "Equal to `default`.",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "default",
+          "max"
+        ],
+        "type": "object"
+      },
+      "Price": {
+        "description": "One billed unit.",
+        "properties": {
+          "amount": {
+            "description": "Price per unit, as a decimal string.",
+            "type": "string"
+          },
+          "currency": {
+            "description": "ISO 4217 currency code, e.g. `USD`.",
+            "type": "string"
+          },
+          "sku": {
+            "description": "Billing SKU, e.g. `sandbox.node.b300`.",
+            "type": "string"
+          },
+          "unit": {
+            "description": "Billing unit, e.g. `node-second`.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "sku",
+          "unit",
+          "amount",
+          "currency"
+        ],
+        "type": "object"
+      },
+      "TelnyxErrorMeta": {
+        "description": "Extra error information.",
+        "properties": {
+          "url": {
+            "default": null,
+            "description": "Documentation page for the error code.",
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "type": "object"
+      },
+      "TelnyxErrorSource": {
+        "description": "Where in the request the error was found.",
+        "properties": {
+          "parameter": {
+            "default": null,
+            "description": "Name of the offending parameter.",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "pointer": {
+            "default": null,
+            "description": "JSON pointer into the request body, e.g. `/timeout`.",
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "type": "object"
+      },
+      "sandboxes_Meta": {
+        "description": "Pagination metadata for page-number lists (`page[number]` / `page[size]`).",
+        "properties": {
+          "page_number": {
+            "description": "The page returned (1-based).",
+            "type": "integer"
+          },
+          "page_size": {
+            "description": "Items per page.",
+            "type": "integer"
+          },
+          "total_pages": {
+            "description": "Number of pages.",
+            "type": "integer"
+          },
+          "total_results": {
+            "description": "Number of items across all pages.",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "page_number",
+          "page_size",
+          "total_pages",
+          "total_results"
+        ],
+        "type": "object"
+      },
+      "sandboxes_TelnyxError": {
+        "description": "One error in the standard Telnyx error body.",
+        "properties": {
+          "code": {
+            "description": "Telnyx error code: a 5-digit string for general errors, e.g. `10009`. Sandboxes-specific errors are identified by their name in `title`.",
+            "type": "string"
+          },
+          "detail": {
+            "description": "Human-readable explanation.",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "meta": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/TelnyxErrorMeta"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Extra information."
+          },
+          "source": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/TelnyxErrorSource"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Where the error is."
+          },
+          "title": {
+            "description": "Short, constant summary of the error. For Sandboxes-specific errors, the error's name, e.g. `quota_exceeded`.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "title"
+        ],
+        "type": "object"
+      },
+      "sandboxes_TelnyxErrors": {
+        "description": "The standard Telnyx error body.",
+        "properties": {
+          "errors": {
+            "description": "One or more errors.",
+            "items": {
+              "$ref": "#/components/schemas/sandboxes_TelnyxError"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "errors"
+        ],
+        "type": "object"
+      }
+    },
+    "securitySchemes": {
+      "BearerAuth": {
+        "bearerFormat": "API key",
+        "description": "Telnyx API key supplied as `Authorization: Bearer \u003ctoken\u003e`. In production, auth may be validated by the API gateway and forwarded via Telnyx auth headers.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "Payment": {
+        "description": "Machine Payment Protocol credential used on paid retries, sent as `Authorization: Payment ...`. Obtained by paying a challenge returned in the `WWW-Authenticate` header of a 402 response. This is not a Telnyx API key; initial challenge requests use standard bearer authentication instead.",
+        "in": "header",
+        "name": "Authorization",
+        "type": "apiKey"
+      },
+      "agent-gateway_bearerAuth": {
+        "description": "Telnyx API key",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "agent-memory_bearerAuth": {
+        "description": "Telnyx API key",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "bearerAuth": {
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "branded-calling_bearerAuth": {
+        "description": "Telnyx API key. Generate one at https://portal.telnyx.com/#/app/api-keys.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "collections_bearerAuth": {
+        "description": "Telnyx API key. Collections and results are automatically scoped to the authenticated user's organization.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "number-reputation_bearerAuth": {
+        "description": "Telnyx API key. Generate one at https://portal.telnyx.com/#/app/api-keys.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "oauthClientAuth": {
+        "description": "OAuth 2.0 authentication for Telnyx API and MCP integrations",
+        "flows": {
+          "authorizationCode": {
+            "authorizationUrl": "https://api.telnyx.com/v2/oauth/authorize",
+            "refreshUrl": "https://api.telnyx.com/v2/oauth/token",
+            "scopes": {
+              "admin": "Administrative access to Telnyx resources"
+            },
+            "tokenUrl": "https://api.telnyx.com/v2/oauth/token"
+          },
+          "clientCredentials": {
+            "scopes": {
+              "admin": "Administrative access to Telnyx resources"
+            },
+            "tokenUrl": "https://api.telnyx.com/v2/oauth/token"
+          }
+        },
+        "type": "oauth2"
+      },
+      "outbound-voice-profiles_bearerAuth": {
+        "bearerFormat": "JWT",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "pay-connectors_bearerAuth": {
+        "description": "Telnyx API key, not the processor bearer token.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "pronunciation-dicts_bearerAuth": {
+        "description": "Telnyx API v2 key. Obtain from https://portal.telnyx.com",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "rcs-registration_bearerAuth": {
+        "bearerFormat": "API key",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "stored-payment-transactions_bearerAuth": {
+        "bearerFormat": "JWT",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "telnyxApiKey": {
+        "description": "Management-only Telnyx account credential.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "transcriptions-search_bearerAuth": {
+        "description": "Telnyx API key. Results are automatically scoped to the authenticated user's organization.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "web-search_bearerAuth": {
+        "description": "Telnyx API key",
+        "scheme": "bearer",
+        "type": "http"
+      }
+    }
+  },
+  "info": {
+    "contact": {
+      "email": "support@telnyx.com"
+    },
+    "description": "SIP trunking, SMS, MMS, Call Control and Telephony Data Services.",
+    "title": "Telnyx API",
+    "version": "2.0.0",
+    "x-endpoint-cost": "light",
+    "x-latency-category": "responsive"
+  },
+  "openapi": "3.1.0",
+  "paths": {
+    "/ai/sandbox-gpu-types": {
+      "get": {
+        "description": "Lists the GPU types you can rent: each with its GPU count per node, the CPU, memory and disk a sandbox of that type gets per GPU, and prices.\n\nA sandbox's `gpu.count` must be one of the type's `allowed_counts`. Currently each type lists exactly one, its node's GPU count, so a sandbox rents the whole node; read the count from this list rather than hard-coding it. A sandbox's CPU, memory and disk are the type's per-GPU defaults × its GPU count. Requesting a type or count that isn't listed fails with `resources_not_allowed`.",
+        "operationId": "ListSandboxGpuTypes",
+        "parameters": [
+          {
+            "description": "Page number (1-based).",
+            "in": "query",
+            "name": "page[number]",
+            "required": false,
+            "schema": {
+              "default": 1,
+              "minimum": 1,
+              "type": "integer"
+            }
+          },
+          {
+            "description": "Number of items per page (max 100).",
+            "in": "query",
+            "name": "page[size]",
+            "required": false,
+            "schema": {
+              "default": 20,
+              "maximum": 100,
+              "minimum": 1,
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "data": [
+                    {
+                      "allowed_counts": [
+                        8
+                      ],
+                      "cpu": {
+                        "default": 24,
+                        "max": 24
+                      },
+                      "disk_gib": {
+                        "default": 1024,
+                        "max": 1024
+                      },
+                      "memory_mib": {
+                        "default": 262144,
+                        "max": 262144
+                      },
+                      "prices": [
+                        {
+                          "amount": "0.0123",
+                          "currency": "USD",
+                          "sku": "sandbox.node.b300",
+                          "unit": "node-second"
+                        }
+                      ],
+                      "root_disk_gib": 200,
+                      "type": "B300"
+                    }
+                  ],
+                  "meta": {
+                    "page_number": 1,
+                    "page_size": 20,
+                    "total_pages": 1,
+                    "total_results": 1
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/GpuTypeListRespData"
+                }
+              }
+            },
+            "description": "The GPU types you can rent."
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/sandboxes_TelnyxErrors"
+                }
+              }
+            },
+            "description": "Validation error: the standard Telnyx validation errors (codes such as 10004 missing parameter, 10015 bad request, 10025 invalid string length, 10026 invalid type)."
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "errors": [
+                    {
+                      "code": "10009",
+                      "detail": "Could not find any usable credentials in the request.",
+                      "title": "Authentication failed"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/sandboxes_TelnyxErrors"
+                }
+              }
+            },
+            "description": "Missing or invalid API key (code 10009)."
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "errors": [
+                    {
+                      "detail": "The organization isn't whitelisted.",
+                      "title": "sandboxes_not_whitelisted"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/sandboxes_TelnyxErrors"
+                }
+              }
+            },
+            "description": "- `sandboxes_require_verification`: your account isn't fully verified.\n- `sandboxes_not_whitelisted`: Sandboxes isn't enabled for your organization (invite-only preview); `GET /ai/sandbox-access` tells whether it is."
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "errors": [
+                    {
+                      "code": "10037",
+                      "detail": "A dependency can't answer right now; retry later.",
+                      "title": "Service unavailable"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/sandboxes_TelnyxErrors"
+                }
+              }
+            },
+            "description": "A dependency can't answer right now (code 10037); retry later."
+          }
+        },
+        "summary": "List GPU types",
+        "tags": [
+          "Sandbox GPU types"
+        ]
+      }
+    }
+  },
+  "security": [
+    {
+      "bearerAuth": []
+    }
+  ],
+  "servers": [
+    {
+      "description": "Version 2.0.0 of the Telnyx API",
+      "url": "https://api.telnyx.com/v2"
+    }
+  ]
+}

@@ -57,6 +57,7 @@ resource "telnyx_credential_connection" "office" {
 - `rtcp_settings` (Attributes) (see [below for nested schema](#nestedatt--rtcp_settings))
 - `sip_uri_calling_preference` (String) This feature enables inbound SIP URI calls to your Credential Auth Connection. If enabled for all (unrestricted) then anyone who calls the SIP URI <your-username>@telnyx.com will be connected to your Connection. You can also choose to allow only calls that are originated on any Connections under your account (internal). One of `disabled`, `internal`, `unrestricted`.
 - `tags` (Set of String) Tags associated with the connection.
+- `transfer_caller_id` (String) Selects the caller ID presented to the destination of a SIP REFER transfer: from-transferee uses the number of the party being transferred, from-transferor the number of the party initiating the transfer. Defaults to from-transferee and returns the saved value. Only from-transferee and from-transferor are accepted; null and other values are rejected. This API provisions the preference; dialplan behavior is implemented separately. One of `from-transferee`, `from-transferor`.
 - `webhook_api_version` (String) Determines which webhook format will be used, Telnyx API v1 or v2. One of `1`, `2`, `texml`.
 - `webhook_event_failover_url` (String) The failover URL where webhooks related to this connection will be sent if sending to the primary URL fails. Must include a scheme, such as 'https'.
 - `webhook_event_url` (String) The URL where webhooks related to this connection will be sent. Must include a scheme, such as 'https'.

@@ -1,0 +1,629 @@
+{
+  "components": {
+    "schemas": {
+      "LogGap": {
+        "description": "Output that isn't available, reported in place instead of being skipped.",
+        "properties": {
+          "from_ts": {
+            "description": "Start of the missing range; `null` when unknown.",
+            "format": "date-time",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "position": {
+            "description": "Opaque position of the gap; pass it as `page[after]` (or `Last-Event-ID`) to continue right after it.",
+            "type": "string"
+          },
+          "reason": {
+            "$ref": "#/components/schemas/LogGapReason",
+            "description": "Why the output isn't there: `expired` (past its retention, removed from your bucket, or changed there), `log_bucket_unavailable` (your log bucket couldn't be written, so the output wasn't stored), or `size_cap_reached` (the sandbox's output passed the size cap)."
+          },
+          "records": {
+            "description": "How many lines are missing; `null` when unknown.",
+            "type": [
+              "integer",
+              "null"
+            ]
+          },
+          "stream": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/LogStream"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "The stream the gap touches; `null` when it touches both."
+          },
+          "to_ts": {
+            "description": "End of the missing range; `null` when unknown.",
+            "format": "date-time",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "type": {
+            "enum": [
+              "gap"
+            ],
+            "type": "string"
+          }
+        },
+        "required": [
+          "type",
+          "position",
+          "reason",
+          "stream",
+          "records",
+          "from_ts",
+          "to_ts"
+        ],
+        "type": "object"
+      },
+      "LogGapReason": {
+        "description": "Why a range of output isn't available.",
+        "enum": [
+          "expired",
+          "log_bucket_unavailable",
+          "size_cap_reached"
+        ],
+        "type": "string"
+      },
+      "LogLine": {
+        "description": "One line of the sandbox's output.",
+        "properties": {
+          "line": {
+            "description": "The text, without its newline. Lines are cut at 256 KiB, and bytes that weren't valid UTF-8 appear as U+FFFD.",
+            "type": "string"
+          },
+          "position": {
+            "description": "Opaque position of this line; pass it as `page[after]` (or `Last-Event-ID`) to continue right after it.",
+            "type": "string"
+          },
+          "stream": {
+            "$ref": "#/components/schemas/LogStream",
+            "description": "`stdout` or `stderr`."
+          },
+          "ts": {
+            "description": "When the container runtime wrote the line.",
+            "format": "date-time",
+            "type": "string"
+          },
+          "type": {
+            "enum": [
+              "line"
+            ],
+            "type": "string"
+          }
+        },
+        "required": [
+          "type",
+          "position",
+          "ts",
+          "stream",
+          "line"
+        ],
+        "type": "object"
+      },
+      "LogPageRespData": {
+        "description": "A page of stored output, in order. Paged by cursor: pass\n`meta.next_page_after` as `page[after]` for the next page.",
+        "properties": {
+          "data": {
+            "items": {
+              "discriminator": {
+                "mapping": {
+                  "gap": "#/components/schemas/LogGap",
+                  "line": "#/components/schemas/LogLine"
+                },
+                "propertyName": "type"
+              },
+              "oneOf": [
+                {
+                  "$ref": "#/components/schemas/LogLine"
+                },
+                {
+                  "$ref": "#/components/schemas/LogGap"
+                }
+              ]
+            },
+            "type": "array"
+          },
+          "meta": {
+            "$ref": "#/components/schemas/sandboxes_CursorMeta"
+          }
+        },
+        "required": [
+          "data",
+          "meta"
+        ],
+        "type": "object"
+      },
+      "LogStream": {
+        "description": "Which output stream a line came from.",
+        "enum": [
+          "stdout",
+          "stderr"
+        ],
+        "type": "string"
+      },
+      "TelnyxErrorMeta": {
+        "description": "Extra error information.",
+        "properties": {
+          "url": {
+            "default": null,
+            "description": "Documentation page for the error code.",
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "type": "object"
+      },
+      "TelnyxErrorSource": {
+        "description": "Where in the request the error was found.",
+        "properties": {
+          "parameter": {
+            "default": null,
+            "description": "Name of the offending parameter.",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "pointer": {
+            "default": null,
+            "description": "JSON pointer into the request body, e.g. `/timeout`.",
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "type": "object"
+      },
+      "sandboxes_CursorMeta": {
+        "description": "Pagination metadata for log reads, which page by cursor. A growing log can't be numbered or counted stably, so there's no `page_number`, `total_pages` or `total_results`.",
+        "properties": {
+          "next_page_after": {
+            "description": "Value to pass as `page[after]` to get the next page. `null` means you have reached the end of the output available so far.",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "page_size": {
+            "description": "Records per page.",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "page_size",
+          "next_page_after"
+        ],
+        "type": "object"
+      },
+      "sandboxes_TelnyxError": {
+        "description": "One error in the standard Telnyx error body.",
+        "properties": {
+          "code": {
+            "description": "Telnyx error code: a 5-digit string for general errors, e.g. `10009`. Sandboxes-specific errors are identified by their name in `title`.",
+            "type": "string"
+          },
+          "detail": {
+            "description": "Human-readable explanation.",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "meta": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/TelnyxErrorMeta"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Extra information."
+          },
+          "source": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/TelnyxErrorSource"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Where the error is."
+          },
+          "title": {
+            "description": "Short, constant summary of the error. For Sandboxes-specific errors, the error's name, e.g. `quota_exceeded`.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "title"
+        ],
+        "type": "object"
+      },
+      "sandboxes_TelnyxErrors": {
+        "description": "The standard Telnyx error body.",
+        "properties": {
+          "errors": {
+            "description": "One or more errors.",
+            "items": {
+              "$ref": "#/components/schemas/sandboxes_TelnyxError"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "errors"
+        ],
+        "type": "object"
+      }
+    },
+    "securitySchemes": {
+      "BearerAuth": {
+        "bearerFormat": "API key",
+        "description": "Telnyx API key supplied as `Authorization: Bearer \u003ctoken\u003e`. In production, auth may be validated by the API gateway and forwarded via Telnyx auth headers.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "Payment": {
+        "description": "Machine Payment Protocol credential used on paid retries, sent as `Authorization: Payment ...`. Obtained by paying a challenge returned in the `WWW-Authenticate` header of a 402 response. This is not a Telnyx API key; initial challenge requests use standard bearer authentication instead.",
+        "in": "header",
+        "name": "Authorization",
+        "type": "apiKey"
+      },
+      "agent-gateway_bearerAuth": {
+        "description": "Telnyx API key",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "agent-memory_bearerAuth": {
+        "description": "Telnyx API key",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "bearerAuth": {
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "branded-calling_bearerAuth": {
+        "description": "Telnyx API key. Generate one at https://portal.telnyx.com/#/app/api-keys.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "collections_bearerAuth": {
+        "description": "Telnyx API key. Collections and results are automatically scoped to the authenticated user's organization.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "number-reputation_bearerAuth": {
+        "description": "Telnyx API key. Generate one at https://portal.telnyx.com/#/app/api-keys.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "oauthClientAuth": {
+        "description": "OAuth 2.0 authentication for Telnyx API and MCP integrations",
+        "flows": {
+          "authorizationCode": {
+            "authorizationUrl": "https://api.telnyx.com/v2/oauth/authorize",
+            "refreshUrl": "https://api.telnyx.com/v2/oauth/token",
+            "scopes": {
+              "admin": "Administrative access to Telnyx resources"
+            },
+            "tokenUrl": "https://api.telnyx.com/v2/oauth/token"
+          },
+          "clientCredentials": {
+            "scopes": {
+              "admin": "Administrative access to Telnyx resources"
+            },
+            "tokenUrl": "https://api.telnyx.com/v2/oauth/token"
+          }
+        },
+        "type": "oauth2"
+      },
+      "outbound-voice-profiles_bearerAuth": {
+        "bearerFormat": "JWT",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "pay-connectors_bearerAuth": {
+        "description": "Telnyx API key, not the processor bearer token.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "pronunciation-dicts_bearerAuth": {
+        "description": "Telnyx API v2 key. Obtain from https://portal.telnyx.com",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "rcs-registration_bearerAuth": {
+        "bearerFormat": "API key",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "stored-payment-transactions_bearerAuth": {
+        "bearerFormat": "JWT",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "telnyxApiKey": {
+        "description": "Management-only Telnyx account credential.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "transcriptions-search_bearerAuth": {
+        "description": "Telnyx API key. Results are automatically scoped to the authenticated user's organization.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "web-search_bearerAuth": {
+        "description": "Telnyx API key",
+        "scheme": "bearer",
+        "type": "http"
+      }
+    }
+  },
+  "info": {
+    "contact": {
+      "email": "support@telnyx.com"
+    },
+    "description": "SIP trunking, SMS, MMS, Call Control and Telephony Data Services.",
+    "title": "Telnyx API",
+    "version": "2.0.0",
+    "x-endpoint-cost": "light",
+    "x-latency-category": "responsive"
+  },
+  "openapi": "3.1.0",
+  "paths": {
+    "/ai/sandboxes/{sandbox_id}/logs": {
+      "get": {
+        "description": "The output (stdout and stderr) of the sandbox's main process. Exec output isn't included; read it through the exec attach WebSocket.\n\n- **`follow=false` (default):** one page of stored output as JSON, in order. Paging uses a cursor, not page numbers, because the log keeps growing: pass `meta.next_page_after` as `page[after]` for the next page. `meta.next_page_after` is `null` once you've reached the end of what's stored so far; keep your last position to poll a running sandbox.\n- **`follow=true`:** a Server-Sent Events stream (`text/event-stream`): the output stored so far, then new output a few seconds after the sandbox prints it. Every `log` and `gap` event's `id` is a position: after a cut connection (e.g. the edge proxy's ~600 s connection limit), reconnect with `Last-Event-ID` (or `page[after]`) to continue without gaps or duplicates. A heartbeat comment arrives every 30 s. Once the sandbox has ended and every stored line was sent, an `end` event says how its log ended: `complete`, `incomplete` (with `reason`), or `settling` (a later read may return more); then the stream closes. A sandbox that hasn't ended, queued ones included, never gets `end`.\n\nEvery line names its stream, and `stream=stdout|stderr` keeps only that stream's lines (and the gaps that touch it), with either value of `follow`. Lines are in the order they were stored, which closely follows the order the sandbox printed them (lines a few seconds apart can interleave); each carries the time it was written, to the nanosecond. Lines are cut at 256 KiB, and bytes that weren't valid UTF-8 appear as U+FFFD.\n\nOutput that isn't available is shown in place as a `gap` entry, never skipped, with its reason: `expired` (past its retention, or removed or changed in your bucket), `log_bucket_unavailable` (your bucket couldn't be written) or `size_cap_reached`. A position that isn't one this API returned is a `422`.\n\nThe logs are stored in your own Cloud Storage bucket (the sandbox's `log_bucket`), where you can also read them with any S3 tool: under `sandboxes/{sandbox_id}/`, zstd-compressed NDJSON objects, one record per line, `{\"ts\": …, \"stream\": \"stdout\"|\"stderr\", \"line\": …}`: chunk objects (`chunks/\u003csha256\u003e.ndjson.zst`) while the sandbox runs, then the whole log as `logs-\u003cid\u003e-\u003cnnnn\u003e.ndjson.zst`.",
+        "operationId": "GetSandboxLogs",
+        "parameters": [
+          {
+            "description": "Sandbox ID (`sb-…`).",
+            "example": "sb-0192f1c2-7a4b-7c3e-9d1e-2f3a4b5c6d7e",
+            "in": "path",
+            "name": "sandbox_id",
+            "required": true,
+            "schema": {
+              "maxLength": 64,
+              "minLength": 1,
+              "type": "string"
+            }
+          },
+          {
+            "description": "`false`: one page of stored output as JSON. `true`: a Server-Sent Events stream of the stored output, then new output as it's stored, until the sandbox ends.",
+            "in": "query",
+            "name": "follow",
+            "required": false,
+            "schema": {
+              "default": false,
+              "type": "boolean"
+            }
+          },
+          {
+            "description": "Only `stdout` or only `stderr` (and the gaps that touch it), with either value of `follow`.",
+            "in": "query",
+            "name": "stream",
+            "required": false,
+            "schema": {
+              "$ref": "#/components/schemas/LogStream"
+            }
+          },
+          {
+            "description": "Continue after this position (`meta.next_page_after`, or an event `id`). Omit it to start at the beginning of the retained log.",
+            "in": "query",
+            "name": "page[after]",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Entries per page (max 100); `follow=false` only.",
+            "in": "query",
+            "name": "page[size]",
+            "required": false,
+            "schema": {
+              "default": 20,
+              "maximum": 100,
+              "minimum": 1,
+              "type": "integer"
+            }
+          },
+          {
+            "description": "SSE resume: the last event `id` received. Same as `page[after]`, which wins when both are given.",
+            "in": "header",
+            "name": "Last-Event-ID",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "data": [
+                    {
+                      "line": "epoch 1/3: loss=2.314",
+                      "position": "p1.12.0",
+                      "stream": "stdout",
+                      "ts": "2026-11-13T10:01:15.123456789Z",
+                      "type": "line"
+                    },
+                    {
+                      "from_ts": "2026-11-13T10:01:16Z",
+                      "position": "p1.12.1",
+                      "reason": "size_cap_reached",
+                      "records": null,
+                      "stream": null,
+                      "to_ts": null,
+                      "type": "gap"
+                    }
+                  ],
+                  "meta": {
+                    "next_page_after": "p1.12.1",
+                    "page_size": 20
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/LogPageRespData"
+                }
+              },
+              "text/event-stream": {
+                "example": "id: p1.12.0\nevent: log\ndata: {\"type\":\"line\",\"position\":\"p1.12.0\",\"ts\":\"2026-11-13T10:01:15.123456789Z\",\"stream\":\"stdout\",\"line\":\"epoch 1/3: loss=2.314\"}\n\n: heartbeat\n\nevent: end\ndata: {\"logs\":\"complete\",\"reason\":null}\n\n",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "description": "`follow=false`: a JSON page (`application/json`). `follow=true`: a Server-Sent Events stream (`text/event-stream`) of `log`, `gap` and `end` events, whose `data` are the JSON objects `LogLine`, `LogGap` and `LogEnd`."
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/sandboxes_TelnyxErrors"
+                }
+              }
+            },
+            "description": "Validation error: the standard Telnyx validation errors (codes such as 10004 missing parameter, 10015 bad request, 10025 invalid string length, 10026 invalid type)."
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "errors": [
+                    {
+                      "code": "10009",
+                      "detail": "Could not find any usable credentials in the request.",
+                      "title": "Authentication failed"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/sandboxes_TelnyxErrors"
+                }
+              }
+            },
+            "description": "Missing or invalid API key (code 10009)."
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "errors": [
+                    {
+                      "detail": "The organization isn't whitelisted.",
+                      "title": "sandboxes_not_whitelisted"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/sandboxes_TelnyxErrors"
+                }
+              }
+            },
+            "description": "- `sandboxes_require_verification`: your account isn't fully verified.\n- `sandboxes_not_whitelisted`: Sandboxes isn't enabled for your organization (invite-only preview); `GET /ai/sandbox-access` tells whether it is."
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "errors": [
+                    {
+                      "code": "10005",
+                      "detail": "Sandbox not found.",
+                      "title": "Resource not found"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/sandboxes_TelnyxErrors"
+                }
+              }
+            },
+            "description": "Not found (code 10005): the resource doesn't exist or belongs to another organization. The detail says what's missing."
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/sandboxes_TelnyxErrors"
+                }
+              }
+            },
+            "description": "Validation error: `page[after]` or `Last-Event-ID` isn't a position this API returned."
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "errors": [
+                    {
+                      "detail": "Too many log streams are open for this organization.",
+                      "title": "too_many_log_readers"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/sandboxes_TelnyxErrors"
+                }
+              }
+            },
+            "description": "- `too_many_log_readers`: your organization already has the maximum number of log streams open; close one, or retry later."
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "errors": [
+                    {
+                      "code": "10037",
+                      "detail": "A dependency can't answer right now; retry later.",
+                      "title": "Service unavailable"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/sandboxes_TelnyxErrors"
+                }
+              }
+            },
+            "description": "A dependency can't answer right now (code 10037); retry later."
+          }
+        },
+        "summary": "Read or follow a sandbox's logs",
+        "tags": [
+          "Sandbox logs"
+        ]
+      }
+    }
+  },
+  "security": [
+    {
+      "bearerAuth": []
+    }
+  ],
+  "servers": [
+    {
+      "description": "Version 2.0.0 of the Telnyx API",
+      "url": "https://api.telnyx.com/v2"
+    }
+  ]
+}

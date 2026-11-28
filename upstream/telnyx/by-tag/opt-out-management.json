@@ -53,47 +53,6 @@
       }
     },
     "schemas": {
-      "AutoRespConfigCreateSchema": {
-        "properties": {
-          "country_code": {
-            "example": "US",
-            "title": "Country Code",
-            "type": "string"
-          },
-          "keywords": {
-            "example": [
-              "keyword1",
-              "keyword2"
-            ],
-            "items": {
-              "type": "string"
-            },
-            "title": "Keywords",
-            "type": "array"
-          },
-          "op": {
-            "enum": [
-              "start",
-              "stop",
-              "info"
-            ],
-            "title": "Op",
-            "type": "string"
-          },
-          "resp_text": {
-            "example": "Thank you for your message",
-            "title": "Resp Text",
-            "type": "string"
-          }
-        },
-        "required": [
-          "op",
-          "keywords",
-          "country_code"
-        ],
-        "title": "AutoRespConfigCreateSchema",
-        "type": "object"
-      },
       "AutorespConfigResponseSchema": {
         "properties": {
           "data": {
@@ -219,6 +178,53 @@
         "example": "+E.164",
         "type": "string",
         "x-format": "address"
+      },
+      "messaging_AutoRespConfigCreateSchema": {
+        "properties": {
+          "country_code": {
+            "description": "ISO 3166-1 alpha-2 code of the sender's country the rule applies to, or `*` for every country. A rule for the sender's country takes precedence over a `*` rule, keyword by keyword. A `*` rule must include its `op`'s default keyword, exactly as written: `STOP` for `stop`, `START` for `start`, `HELP` for `info`.",
+            "example": "US",
+            "title": "Country Code",
+            "type": "string"
+          },
+          "keywords": {
+            "description": "Keywords that trigger this rule, 1 to 20 characters each. Matching ignores case and surrounding spaces, and a keyword can appear in only one rule per messaging profile and `country_code`. Reserved keywords can only be used with one `op`: `STOP`, `STOPALL`, `STOP ALL`, `END`, `CANCEL`, `UNSUBSCRIBE`, `QUIT`, `REVOKE`, `OPT OUT`, `OPTOUT` and `OPT-OUT` with `stop`; `START` and `UNSTOP` with `start`; `HELP` with `info`. A rule created before these limits may keep an existing keyword that breaks them when updated with the same `op`.",
+            "example": [
+              "keyword1",
+              "keyword2"
+            ],
+            "items": {
+              "minLength": 1,
+              "type": "string"
+            },
+            "minItems": 1,
+            "title": "Keywords",
+            "type": "array"
+          },
+          "op": {
+            "description": "What a matching inbound message does: `stop` opts the sender out (creates a block rule), `start` opts them back in (removes it), and `info` only sends `resp_text`.",
+            "enum": [
+              "start",
+              "stop",
+              "info"
+            ],
+            "title": "Op",
+            "type": "string"
+          },
+          "resp_text": {
+            "description": "Reply sent to the sender when the rule matches.",
+            "example": "Thank you for your message",
+            "title": "Resp Text",
+            "type": "string"
+          }
+        },
+        "required": [
+          "op",
+          "keywords",
+          "country_code"
+        ],
+        "title": "AutoRespConfigCreateSchema",
+        "type": "object"
       },
       "messaging_AutorespConfigsResponseSchema": {
         "description": "List of Auto-Response Settings",
@@ -681,7 +687,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/AutoRespConfigCreateSchema"
+                "$ref": "#/components/schemas/messaging_AutoRespConfigCreateSchema"
               }
             }
           },
@@ -861,7 +867,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/AutoRespConfigCreateSchema"
+                "$ref": "#/components/schemas/messaging_AutoRespConfigCreateSchema"
               }
             }
           },

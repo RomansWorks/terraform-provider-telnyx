@@ -35,6 +35,94 @@
       }
     },
     "responses": {
+      "AgentChargeConflict": {
+        "content": {
+          "application/json": {
+            "schema": {
+              "oneOf": [
+                {
+                  "$ref": "#/components/schemas/rcs-registration_ErrorResponse"
+                },
+                {
+                  "$ref": "#/components/schemas/BillingErrorResponse"
+                }
+              ]
+            }
+          }
+        },
+        "description": "The operation is not allowed in the current lifecycle state, or the agent charge needs reconciliation (`billing_outcome_unknown`). Contact support before retrying a `billing_outcome_unknown` error."
+      },
+      "AgentChargeUnavailable": {
+        "content": {
+          "application/json": {
+            "schema": {
+              "oneOf": [
+                {
+                  "$ref": "#/components/schemas/rcs-registration_ErrorResponse"
+                },
+                {
+                  "$ref": "#/components/schemas/BillingErrorResponse"
+                }
+              ]
+            }
+          }
+        },
+        "description": "Billing (`billing_unavailable`) or another registration dependency is temporarily unavailable. Retry later."
+      },
+      "AgentChargeValidationError": {
+        "content": {
+          "application/json": {
+            "schema": {
+              "oneOf": [
+                {
+                  "$ref": "#/components/schemas/ValidationErrorResponse"
+                },
+                {
+                  "$ref": "#/components/schemas/BillingErrorResponse"
+                }
+              ]
+            }
+          }
+        },
+        "description": "The request failed validation, or billing rejected the agent charge (`billing_request_rejected`). Contact support for a rejected charge."
+      },
+      "AgentImageValidationError": {
+        "content": {
+          "application/json": {
+            "schema": {
+              "oneOf": [
+                {
+                  "$ref": "#/components/schemas/ValidationErrorResponse"
+                },
+                {
+                  "$ref": "#/components/schemas/ImageValidationErrorResponse"
+                }
+              ]
+            }
+          }
+        },
+        "description": "The request failed validation, or a branding image does not meet its requirements. Nothing is created or changed when an image is refused."
+      },
+      "AgentSubmitValidationError": {
+        "content": {
+          "application/json": {
+            "schema": {
+              "oneOf": [
+                {
+                  "$ref": "#/components/schemas/ValidationErrorResponse"
+                },
+                {
+                  "$ref": "#/components/schemas/ImageValidationErrorResponse"
+                },
+                {
+                  "$ref": "#/components/schemas/BillingErrorResponse"
+                }
+              ]
+            }
+          }
+        },
+        "description": "The request failed validation, a branding image no longer meets its requirements, or billing rejected the agent charge (`billing_request_rejected`). Contact support for a rejected charge."
+      },
       "DependencyUnavailable": {
         "content": {
           "application/json": {
@@ -44,6 +132,26 @@
           }
         },
         "description": "A registration dependency is temporarily unavailable."
+      },
+      "ImageUnavailable": {
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/ImageUnavailableErrorResponse"
+            }
+          }
+        },
+        "description": "A branding image could not be retrieved. Nothing is created or changed. Retry once the image is reachable."
+      },
+      "InsufficientFunds": {
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/BillingErrorResponse"
+            }
+          }
+        },
+        "description": "The account has insufficient funds for the agent charge (`billing_insufficient_funds`). Add funds and submit again."
       },
       "ProviderError": {
         "content": {
@@ -1092,6 +1200,48 @@
         ],
         "type": "string"
       },
+      "BillingErrorResponse": {
+        "example": {
+          "detail": {
+            "code": "billing_insufficient_funds",
+            "message": "Insufficient funds for the agent charge. Add funds and submit again.",
+            "retryable": true
+          }
+        },
+        "properties": {
+          "detail": {
+            "properties": {
+              "code": {
+                "description": "`billing_insufficient_funds`: add funds and submit again. `billing_unavailable`: retry later. `billing_request_rejected`: contact support. `billing_outcome_unknown`: the charge needs reconciliation, contact support before retrying.",
+                "enum": [
+                  "billing_insufficient_funds",
+                  "billing_unavailable",
+                  "billing_request_rejected",
+                  "billing_outcome_unknown"
+                ],
+                "type": "string"
+              },
+              "message": {
+                "type": "string"
+              },
+              "retryable": {
+                "description": "Whether the same request can be sent again.",
+                "type": "boolean"
+              }
+            },
+            "required": [
+              "code",
+              "message",
+              "retryable"
+            ],
+            "type": "object"
+          }
+        },
+        "required": [
+          "detail"
+        ],
+        "type": "object"
+      },
       "CapabilitiesResponse": {
         "additionalProperties": false,
         "properties": {
@@ -1218,6 +1368,143 @@
         "minLength": 1,
         "pattern": "^[Hh][Tt][Tt][Pp][Ss]?://",
         "type": "string"
+      },
+      "ImageUnavailableErrorResponse": {
+        "example": {
+          "detail": {
+            "code": "image_unavailable",
+            "field": "configuration.basics.logo_url",
+            "message": "image could not be retrieved"
+          }
+        },
+        "properties": {
+          "detail": {
+            "properties": {
+              "code": {
+                "description": "Machine-readable reason the fetch failed.",
+                "type": "string"
+              },
+              "field": {
+                "description": "Request field holding the image URL that could not be fetched.",
+                "type": "string"
+              },
+              "message": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "field",
+              "code",
+              "message"
+            ],
+            "type": "object"
+          }
+        },
+        "required": [
+          "detail"
+        ],
+        "type": "object"
+      },
+      "ImageValidationErrorResponse": {
+        "example": {
+          "detail": {
+            "code": "invalid_image_dimensions",
+            "expected": {
+              "format": [
+                "JPEG",
+                "PNG"
+              ],
+              "height": 224,
+              "max_bytes": 51200,
+              "width": 224
+            },
+            "field": "configuration.basics.logo_url",
+            "message": "logo dimensions must be 224 by 224 pixels",
+            "observed": {
+              "byte_size": 43712,
+              "format": "PNG",
+              "height": 512,
+              "width": 512
+            }
+          }
+        },
+        "properties": {
+          "detail": {
+            "properties": {
+              "code": {
+                "description": "Machine-readable reason the image was refused.",
+                "type": "string"
+              },
+              "expected": {
+                "description": "What the image must be.",
+                "properties": {
+                  "format": {
+                    "items": {
+                      "type": "string"
+                    },
+                    "type": "array"
+                  },
+                  "height": {
+                    "type": "integer"
+                  },
+                  "max_bytes": {
+                    "type": "integer"
+                  },
+                  "width": {
+                    "type": "integer"
+                  }
+                },
+                "type": "object"
+              },
+              "field": {
+                "description": "Request field holding the refused image URL.",
+                "type": "string"
+              },
+              "message": {
+                "type": "string"
+              },
+              "observed": {
+                "description": "What the image was. Only the fields relevant to the failure are present.",
+                "properties": {
+                  "byte_size": {
+                    "type": "integer"
+                  },
+                  "format": {
+                    "type": "string"
+                  },
+                  "height": {
+                    "type": "integer"
+                  },
+                  "port": {
+                    "type": "integer"
+                  },
+                  "scheme": {
+                    "type": "string"
+                  },
+                  "status_code": {
+                    "type": "integer"
+                  },
+                  "width": {
+                    "type": "integer"
+                  }
+                },
+                "type": "object"
+              }
+            },
+            "required": [
+              "field",
+              "code",
+              "message",
+              "expected",
+              "observed"
+            ],
+            "type": "object"
+          }
+        },
+        "required": [
+          "detail"
+        ],
+        "type": "object"
       },
       "TestDeviceCreateRequest": {
         "additionalProperties": false,
@@ -1502,7 +1789,7 @@
         ]
       },
       "post": {
-        "description": "Creates an editable RCS agent draft under a brand. The `Idempotency-Key` is scoped to the authenticated organization. Reusing the key with the same request returns the original agent, while reusing it with a different request returns a conflict.",
+        "description": "Creates an editable RCS agent draft under a brand. The brand does not need to be submitted. When the brand status is no longer `CREATED`, Telnyx also creates the agent with the provider so test devices can be added before the agent is submitted. The `Idempotency-Key` is scoped to the authenticated organization. Reusing the key with the same request returns the original agent, while reusing it with a different request returns a conflict.",
         "operationId": "CreateRcsAgent",
         "parameters": [
           {
@@ -1551,7 +1838,10 @@
             "$ref": "#/components/responses/rcs-registration_Conflict"
           },
           "422": {
-            "$ref": "#/components/responses/ValidationError"
+            "$ref": "#/components/responses/AgentImageValidationError"
+          },
+          "502": {
+            "$ref": "#/components/responses/ImageUnavailable"
           },
           "503": {
             "$ref": "#/components/responses/DependencyUnavailable"
@@ -1596,7 +1886,7 @@
         ]
       },
       "patch": {
-        "description": "Updates one or more fields on an agent while its status is `CREATED`. Submitted agents cannot be changed through this endpoint.",
+        "description": "Updates one or more fields on an agent while its status is `CREATED`. While Telnyx is still creating the agent with the provider, or any test device invitation is `PENDING`, the update returns `409`. Submitted agents cannot be changed through this endpoint.",
         "operationId": "UpdateRcsAgent",
         "parameters": [
           {
@@ -1634,7 +1924,10 @@
             "$ref": "#/components/responses/rcs-registration_Conflict"
           },
           "422": {
-            "$ref": "#/components/responses/ValidationError"
+            "$ref": "#/components/responses/AgentImageValidationError"
+          },
+          "502": {
+            "$ref": "#/components/responses/ImageUnavailable"
           },
           "503": {
             "$ref": "#/components/responses/DependencyUnavailable"
@@ -1684,7 +1977,7 @@
     },
     "/rcs/agents/{id}/launch": {
       "post": {
-        "description": "Adds the campaign and testing configuration, then starts asynchronous carrier launch. Agent basics must already be submitted. Repeating a launch that is already in progress returns the current agent without creating new work.",
+        "description": "Adds the campaign and testing configuration, then starts asynchronous carrier launch. Agent basics must already be submitted. Submitting for launch charges the one-time launch fee and starts the monthly agent fee; a repeated launch does not charge them again. Carrier rejection or a technical failure does not refund the charges or stop the monthly fee automatically; contact support for billing adjustments. Repeating a launch that is already in progress returns the current agent without creating new work.",
         "operationId": "LaunchRcsAgent",
         "parameters": [
           {
@@ -1715,14 +2008,20 @@
           "401": {
             "$ref": "#/components/responses/rcs-registration_Unauthorized"
           },
+          "402": {
+            "$ref": "#/components/responses/InsufficientFunds"
+          },
           "404": {
             "$ref": "#/components/responses/rcs-registration_NotFound"
           },
           "409": {
-            "$ref": "#/components/responses/rcs-registration_Conflict"
+            "$ref": "#/components/responses/AgentChargeConflict"
           },
           "422": {
-            "$ref": "#/components/responses/ValidationError"
+            "$ref": "#/components/responses/AgentChargeValidationError"
+          },
+          "503": {
+            "$ref": "#/components/responses/AgentChargeUnavailable"
           }
         },
         "summary": "Submit an RCS agent for launch",
@@ -1733,7 +2032,7 @@
     },
     "/rcs/agents/{id}/submit": {
       "post": {
-        "description": "Starts asynchronous provider provisioning and submits the agent's basic configuration. The brand must be `VERIFIED`. Repeating this request for an in-progress agent returns its current state without creating new work.",
+        "description": "Starts asynchronous provider provisioning and submits the agent's basic configuration. The brand must be submitted (`SUBMITTED`, `REVIEWING`, `VETTING`, or `VERIFIED`). Submitting charges a one-time vetting fee for the agent; a repeated submission does not charge it again. The agent's branding images are fetched and checked again. While the agent is still being created with the provider, or any test device invitation is `PENDING`, the submission returns `409`. Repeating this request for an in-progress agent returns its current state without creating new work.",
         "operationId": "SubmitRcsAgent",
         "parameters": [
           {
@@ -1754,11 +2053,23 @@
           "401": {
             "$ref": "#/components/responses/rcs-registration_Unauthorized"
           },
+          "402": {
+            "$ref": "#/components/responses/InsufficientFunds"
+          },
           "404": {
             "$ref": "#/components/responses/rcs-registration_NotFound"
           },
           "409": {
-            "$ref": "#/components/responses/rcs-registration_Conflict"
+            "$ref": "#/components/responses/AgentChargeConflict"
+          },
+          "422": {
+            "$ref": "#/components/responses/AgentSubmitValidationError"
+          },
+          "502": {
+            "$ref": "#/components/responses/ImageUnavailable"
+          },
+          "503": {
+            "$ref": "#/components/responses/AgentChargeUnavailable"
           }
         },
         "summary": "Submit RCS agent basics",

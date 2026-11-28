@@ -36,7 +36,7 @@ func AICollectionBySlug() *engine.Resource {
 					{Name: "collection_id", JSON: "collection_id", Kind: engine.KindString, Computed: true, InResponse: true},
 					{Name: "id", JSON: "id", Kind: engine.KindString, Computed: true, InResponse: true},
 					{Name: "record_type", JSON: "record_type", Kind: engine.KindString, Computed: true, InResponse: true, Description: "Identifies the record type. Always `ai_collection_source`."},
-					{Name: "source_type", JSON: "source_type", Kind: engine.KindString, Computed: true, InResponse: true, Description: "The type of Telnyx data attached as a source. `bucket` requires an additional `bucket_id`. Only `voice` is searchable today; `meeting_bot`, `message`, and `bucket` attach but are not yet searchable (Coming soon)."},
+					{Name: "source_type", JSON: "source_type", Kind: engine.KindString, Computed: true, InResponse: true, Description: "The type of Telnyx data attached as a source. `bucket` requires an additional `bucket_id`. `voice`, `meeting_bot`, `message`, `email`, and `whatsapp` are searchable today; `bucket` attaches but is not yet searchable (Coming soon)."},
 					{Name: "status", JSON: "status", Kind: engine.KindString, Computed: true, InResponse: true},
 				}},
 			{Name: "status", JSON: "status", Kind: engine.KindString, Computed: true, InResponse: true},

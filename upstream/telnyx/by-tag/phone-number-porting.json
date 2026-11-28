@@ -35,6 +35,69 @@
           }
         },
         "type": "object"
+      },
+      "portability-check_Error": {
+        "properties": {
+          "errors": {
+            "items": {
+              "properties": {
+                "code": {
+                  "description": "Stable machine-readable error code.",
+                  "type": "string"
+                },
+                "detail": {
+                  "description": "Human-readable error detail.",
+                  "type": "string"
+                },
+                "meta": {
+                  "properties": {
+                    "retryable": {
+                      "description": "Whether retrying the identical request can succeed. Present on all porting-lifecycle error responses; see the Porting API error catalog for per-code guidance.",
+                      "type": "boolean"
+                    },
+                    "url": {
+                      "description": "Documentation URL for the error code.",
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "retryable"
+                  ],
+                  "type": "object"
+                },
+                "source": {
+                  "properties": {
+                    "parameter": {
+                      "description": "Query parameter that caused the error.",
+                      "type": "string"
+                    },
+                    "pointer": {
+                      "description": "JSON pointer (RFC 6901) to the offending request field, or '/' for request-level errors.",
+                      "type": "string"
+                    }
+                  },
+                  "type": "object"
+                },
+                "title": {
+                  "description": "Human-readable error title.",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "code",
+                "title",
+                "detail",
+                "meta"
+              ],
+              "type": "object"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "errors"
+        ],
+        "type": "object"
       }
     },
     "securitySchemes": {
@@ -201,10 +264,76 @@
             "description": "PortabilityCheck Response"
           },
           "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/portability-check_Error"
+                }
+              }
+            },
             "description": "Unauthorized"
           },
+          "403": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "errors": [
+                    {
+                      "code": "10039",
+                      "detail": "Trial accounts may check portability for a limited total number of phone numbers. Please consider upgrading to a paid plan in https://telnyx.com/upgrade or reach out to support.",
+                      "meta": {
+                        "retryable": false,
+                        "url": "https://developers.telnyx.com/docs/overview/errors/10039"
+                      },
+                      "source": {
+                        "pointer": "/"
+                      },
+                      "title": "Account limit reached"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/portability-check_Error"
+                }
+              }
+            },
+            "description": "Forbidden - the trial-account portability check limit has been reached. Not retryable; requires a plan upgrade."
+          },
           "422": {
-            "description": "Unprocessable entity. Check message field in response for details."
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/portability-check_Error"
+                }
+              }
+            },
+            "description": "Unprocessable entity. Check errors[].detail in response for details."
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "errors": [
+                    {
+                      "code": "10038",
+                      "detail": "Portability check is currently not available. Please retry with backoff.",
+                      "meta": {
+                        "retryable": true,
+                        "url": "https://developers.telnyx.com/docs/overview/errors/10038"
+                      },
+                      "source": {
+                        "pointer": "/"
+                      },
+                      "title": "Service temporarily unavailable"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/portability-check_Error"
+                }
+              }
+            },
+            "description": "Service Unavailable - the portability check service is temporarily unavailable. Retry with exponential backoff."
           }
         },
         "summary": "Run a portability check",

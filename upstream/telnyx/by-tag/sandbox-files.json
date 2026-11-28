@@ -1,0 +1,1032 @@
+{
+  "components": {
+    "schemas": {
+      "FileEntry": {
+        "description": "A file or directory inside the sandbox.",
+        "properties": {
+          "modified_at": {
+            "description": "Last modification time, by the sandbox's own clock, shown within years 1–9999.",
+            "format": "date-time",
+            "type": "string"
+          },
+          "name": {
+            "description": "Base name, e.g. `out.txt`.",
+            "type": "string"
+          },
+          "path": {
+            "description": "Absolute path, e.g. `/app/out.txt`.",
+            "type": "string"
+          },
+          "size_bytes": {
+            "description": "The size the sandbox's file system reports for the entry itself, in bytes: a file's length, a symlink's target string, a directory's own size (often 4096).",
+            "type": "integer"
+          },
+          "type": {
+            "$ref": "#/components/schemas/FileType"
+          }
+        },
+        "required": [
+          "name",
+          "path",
+          "type",
+          "size_bytes",
+          "modified_at"
+        ],
+        "type": "object"
+      },
+      "FileEntryRespData": {
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/FileEntry"
+          }
+        },
+        "required": [
+          "data"
+        ],
+        "type": "object"
+      },
+      "FileListRespData": {
+        "description": "A directory listing, paged.",
+        "properties": {
+          "data": {
+            "items": {
+              "$ref": "#/components/schemas/FileEntry"
+            },
+            "type": "array"
+          },
+          "meta": {
+            "$ref": "#/components/schemas/sandboxes_Meta"
+          }
+        },
+        "required": [
+          "data",
+          "meta"
+        ],
+        "type": "object"
+      },
+      "FileType": {
+        "description": "What the path is: a regular `file`, a `directory`, a `symlink`, or `other`\n(a device, FIFO or socket).",
+        "enum": [
+          "file",
+          "directory",
+          "symlink",
+          "other"
+        ],
+        "type": "string"
+      },
+      "TelnyxErrorMeta": {
+        "description": "Extra error information.",
+        "properties": {
+          "url": {
+            "default": null,
+            "description": "Documentation page for the error code.",
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "type": "object"
+      },
+      "TelnyxErrorSource": {
+        "description": "Where in the request the error was found.",
+        "properties": {
+          "parameter": {
+            "default": null,
+            "description": "Name of the offending parameter.",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "pointer": {
+            "default": null,
+            "description": "JSON pointer into the request body, e.g. `/timeout`.",
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "type": "object"
+      },
+      "sandboxes_Meta": {
+        "description": "Pagination metadata for page-number lists (`page[number]` / `page[size]`).",
+        "properties": {
+          "page_number": {
+            "description": "The page returned (1-based).",
+            "type": "integer"
+          },
+          "page_size": {
+            "description": "Items per page.",
+            "type": "integer"
+          },
+          "total_pages": {
+            "description": "Number of pages.",
+            "type": "integer"
+          },
+          "total_results": {
+            "description": "Number of items across all pages.",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "page_number",
+          "page_size",
+          "total_pages",
+          "total_results"
+        ],
+        "type": "object"
+      },
+      "sandboxes_TelnyxError": {
+        "description": "One error in the standard Telnyx error body.",
+        "properties": {
+          "code": {
+            "description": "Telnyx error code: a 5-digit string for general errors, e.g. `10009`. Sandboxes-specific errors are identified by their name in `title`.",
+            "type": "string"
+          },
+          "detail": {
+            "description": "Human-readable explanation.",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "meta": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/TelnyxErrorMeta"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Extra information."
+          },
+          "source": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/TelnyxErrorSource"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Where the error is."
+          },
+          "title": {
+            "description": "Short, constant summary of the error. For Sandboxes-specific errors, the error's name, e.g. `quota_exceeded`.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "title"
+        ],
+        "type": "object"
+      },
+      "sandboxes_TelnyxErrors": {
+        "description": "The standard Telnyx error body.",
+        "properties": {
+          "errors": {
+            "description": "One or more errors.",
+            "items": {
+              "$ref": "#/components/schemas/sandboxes_TelnyxError"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "errors"
+        ],
+        "type": "object"
+      }
+    },
+    "securitySchemes": {
+      "BearerAuth": {
+        "bearerFormat": "API key",
+        "description": "Telnyx API key supplied as `Authorization: Bearer \u003ctoken\u003e`. In production, auth may be validated by the API gateway and forwarded via Telnyx auth headers.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "Payment": {
+        "description": "Machine Payment Protocol credential used on paid retries, sent as `Authorization: Payment ...`. Obtained by paying a challenge returned in the `WWW-Authenticate` header of a 402 response. This is not a Telnyx API key; initial challenge requests use standard bearer authentication instead.",
+        "in": "header",
+        "name": "Authorization",
+        "type": "apiKey"
+      },
+      "agent-gateway_bearerAuth": {
+        "description": "Telnyx API key",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "agent-memory_bearerAuth": {
+        "description": "Telnyx API key",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "bearerAuth": {
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "branded-calling_bearerAuth": {
+        "description": "Telnyx API key. Generate one at https://portal.telnyx.com/#/app/api-keys.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "collections_bearerAuth": {
+        "description": "Telnyx API key. Collections and results are automatically scoped to the authenticated user's organization.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "number-reputation_bearerAuth": {
+        "description": "Telnyx API key. Generate one at https://portal.telnyx.com/#/app/api-keys.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "oauthClientAuth": {
+        "description": "OAuth 2.0 authentication for Telnyx API and MCP integrations",
+        "flows": {
+          "authorizationCode": {
+            "authorizationUrl": "https://api.telnyx.com/v2/oauth/authorize",
+            "refreshUrl": "https://api.telnyx.com/v2/oauth/token",
+            "scopes": {
+              "admin": "Administrative access to Telnyx resources"
+            },
+            "tokenUrl": "https://api.telnyx.com/v2/oauth/token"
+          },
+          "clientCredentials": {
+            "scopes": {
+              "admin": "Administrative access to Telnyx resources"
+            },
+            "tokenUrl": "https://api.telnyx.com/v2/oauth/token"
+          }
+        },
+        "type": "oauth2"
+      },
+      "outbound-voice-profiles_bearerAuth": {
+        "bearerFormat": "JWT",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "pay-connectors_bearerAuth": {
+        "description": "Telnyx API key, not the processor bearer token.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "pronunciation-dicts_bearerAuth": {
+        "description": "Telnyx API v2 key. Obtain from https://portal.telnyx.com",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "rcs-registration_bearerAuth": {
+        "bearerFormat": "API key",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "stored-payment-transactions_bearerAuth": {
+        "bearerFormat": "JWT",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "telnyxApiKey": {
+        "description": "Management-only Telnyx account credential.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "transcriptions-search_bearerAuth": {
+        "description": "Telnyx API key. Results are automatically scoped to the authenticated user's organization.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "web-search_bearerAuth": {
+        "description": "Telnyx API key",
+        "scheme": "bearer",
+        "type": "http"
+      }
+    }
+  },
+  "info": {
+    "contact": {
+      "email": "support@telnyx.com"
+    },
+    "description": "SIP trunking, SMS, MMS, Call Control and Telephony Data Services.",
+    "title": "Telnyx API",
+    "version": "2.0.0",
+    "x-endpoint-cost": "light",
+    "x-latency-category": "responsive"
+  },
+  "openapi": "3.1.0",
+  "paths": {
+    "/ai/sandboxes/{sandbox_id}/files": {
+      "delete": {
+        "description": "Deletes the file, symlink or empty directory at `path`, `204`. A symlink is removed itself, never what it points to. A non-empty directory needs `recursive=true` (else `directory_not_empty`, and nothing is removed), which deletes it with everything under it without following symlinks. Trailing slashes are ignored. A missing path is `404`, a parent that's a file `path_type_mismatch`, and `/`, anything under the reserved `/.telnyx` directory, or a `path` ending in `.` or `..` is `invalid_path`.\n\n**A recursive delete that runs out of time** answers `503`, with part of the tree possibly removed; it goes on in the sandbox. A retry continues it, or, if it has finished meanwhile, answers `404`, even with the same `Idempotency-Key`: a `404` there means the delete is done.\n\nWith an `Idempotency-Key`, a retry after the call completed gets the stored `204`, and nothing is deleted again. A retry that overlaps the first call may answer `404` for a path the first one deleted.\n\n`path` is absolute, at most 4096 bytes in UTF-8, and must be valid UTF-8 once percent-decoded; it's taken as the sandbox's kernel resolves it (`.`, `..` and `//` included). A path holding a NUL byte is `invalid_path`.\n\nThe sandbox must be running (else `sandbox_not_running`); file calls keep working during the stop's grace period, so you can fetch results from a sandbox that's ending. They run as the sandbox's own user, with its permissions: what that user may not do, or a read-only file system, is `permission_denied`. Another refusal by the sandbox's file system (no space, a name too long, a busy file or mount point, a symlink loop, an I/O error) is `file_operation_failed`, with a fixed text naming the reason. File calls don't count as activity for `idle_timeout`.\n\nEach call has a 64 MiB limit and a time budget of about 12 s for its whole transfer, so a full-size file needs about 5.3 MiB/s between you and the API to read, and about 6.4 MiB/s to write (a write's body must arrive 2 s before the budget ends). Move larger data through Cloud Storage from an exec.",
+        "operationId": "DeleteSandboxFile",
+        "parameters": [
+          {
+            "description": "Sandbox ID (`sb-…`).",
+            "example": "sb-0192f1c2-7a4b-7c3e-9d1e-2f3a4b5c6d7e",
+            "in": "path",
+            "name": "sandbox_id",
+            "required": true,
+            "schema": {
+              "maxLength": 64,
+              "minLength": 1,
+              "type": "string"
+            }
+          },
+          {
+            "description": "Absolute path inside the sandbox, e.g. `/app/out.txt`, at most 4096 bytes in UTF-8.",
+            "example": "/app/out/results.json",
+            "in": "query",
+            "name": "path",
+            "required": true,
+            "schema": {
+              "maxLength": 4096,
+              "minLength": 1,
+              "pattern": "^/",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Also delete a non-empty directory's contents.",
+            "in": "query",
+            "name": "recursive",
+            "required": false,
+            "schema": {
+              "default": false,
+              "type": "boolean"
+            }
+          },
+          {
+            "description": "Optional client-chosen key (e.g. a UUID, at most 255 characters) that makes the call safe to retry. Within 24 h, the same key with the same request returns the stored response instead of acting twice; the same key with a different request fails with `idempotency_key_reused`; a request with a key that's still being processed fails with `request_in_progress`.",
+            "in": "header",
+            "name": "Idempotency-Key",
+            "required": false,
+            "schema": {
+              "maxLength": 255,
+              "minLength": 1,
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Deleted."
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/sandboxes_TelnyxErrors"
+                }
+              }
+            },
+            "description": "Validation error: the standard Telnyx validation errors (codes such as 10004 missing parameter, 10015 bad request, 10025 invalid string length, 10026 invalid type)."
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "errors": [
+                    {
+                      "code": "10009",
+                      "detail": "Could not find any usable credentials in the request.",
+                      "title": "Authentication failed"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/sandboxes_TelnyxErrors"
+                }
+              }
+            },
+            "description": "Missing or invalid API key (code 10009)."
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "errors": [
+                    {
+                      "detail": "The organization isn't whitelisted.",
+                      "title": "sandboxes_not_whitelisted"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/sandboxes_TelnyxErrors"
+                }
+              }
+            },
+            "description": "- `sandboxes_require_verification`: your account isn't fully verified.\n- `sandboxes_not_whitelisted`: Sandboxes isn't enabled for your organization (invite-only preview); `GET /ai/sandbox-access` tells whether it is.\n- `permission_denied`: the sandbox's user may not do this at the path, or its file system is read-only."
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "errors": [
+                    {
+                      "code": "10005",
+                      "detail": "Sandbox not found.",
+                      "title": "Resource not found"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/sandboxes_TelnyxErrors"
+                }
+              }
+            },
+            "description": "Not found (code 10005): the resource doesn't exist or belongs to another organization. The detail says what's missing."
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "errors": [
+                    {
+                      "detail": "The directory isn't empty and `recursive` is false.",
+                      "title": "directory_not_empty"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/sandboxes_TelnyxErrors"
+                }
+              }
+            },
+            "description": "- `request_in_progress`: a request with the same `Idempotency-Key` is still being processed; retry later.\n- `sandbox_not_running`: the operation needs a running sandbox.\n- `directory_not_empty`: the directory isn't empty and `recursive` is false.\n- `path_type_mismatch`: the path is a directory where a file was expected, or the reverse (a parent that's a file included), or neither a file nor a directory."
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "errors": [
+                    {
+                      "detail": "The path is reserved.",
+                      "title": "invalid_path"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/sandboxes_TelnyxErrors"
+                }
+              }
+            },
+            "description": "- `idempotency_key_reused`: the same `Idempotency-Key` was sent with a different request.\n- `invalid_path`: the path holds a NUL byte, or a write or delete names the reserved `/.telnyx` directory, ends in a final `.` or `..`, or deletes `/`.\n- `file_operation_failed`: the sandbox's file system refused for another stated reason: no space, a name too long, a busy file or mount point, a symlink loop, or an I/O error."
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "errors": [
+                    {
+                      "code": "10037",
+                      "detail": "A dependency can't answer right now; retry later.",
+                      "title": "Service unavailable"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/sandboxes_TelnyxErrors"
+                }
+              }
+            },
+            "description": "A dependency can't answer right now (code 10037); retry later."
+          }
+        },
+        "summary": "Delete a file or directory",
+        "tags": [
+          "Sandbox files"
+        ]
+      },
+      "get": {
+        "description": "**Without `list`:** downloads the file at `path` as raw bytes (`application/octet-stream`), following a symlink. Its length is declared in `Content-Length` before the content: **a response shorter than its `Content-Length` was cut** (the sandbox stopped answering, the file shrank while it was read, or the time budget ran out); retry. A file over 64 MiB is `file_too_large`, sent before any content. A directory is `path_type_mismatch` (list it with `list=true`), and so is anything that's neither a file nor a directory (a device, FIFO or socket). Files of at most 1 MiB, pseudo-files included (`/proc`, `/sys`), are read whole inside the sandbox first, so their real length is declared; reading a pseudo-file can use up to 64 MiB of the sandbox's own memory.\n\n**With `list=true`:** lists the directory at `path` (a symlink there is followed) as JSON, sorted by name in byte order and paged with `page[number]` and `page[size]`. `.` and `..` aren't listed; hidden entries are. Symlinks inside are listed as `symlink`, with their own size and time, never followed; devices, FIFOs and sockets are `other`. A directory with more than 100000 entries is `directory_too_large`. Each page is a fresh listing, so entries can move between pages while the directory changes. Names that aren't valid UTF-8 are shown with each invalid byte replaced by U+FFFD, so they can't be addressed through these endpoints (use an exec). Listing a file is `path_type_mismatch`.\n\n`path` is absolute, at most 4096 bytes in UTF-8, and must be valid UTF-8 once percent-decoded; it's taken as the sandbox's kernel resolves it (`.`, `..` and `//` included). A path holding a NUL byte is `invalid_path`.\n\nThe sandbox must be running (else `sandbox_not_running`); file calls keep working during the stop's grace period, so you can fetch results from a sandbox that's ending. They run as the sandbox's own user, with its permissions: what that user may not do, or a read-only file system, is `permission_denied`. Another refusal by the sandbox's file system (no space, a name too long, a busy file or mount point, a symlink loop, an I/O error) is `file_operation_failed`, with a fixed text naming the reason. File calls don't count as activity for `idle_timeout`.\n\nEach call has a 64 MiB limit and a time budget of about 12 s for its whole transfer, so a full-size file needs about 5.3 MiB/s between you and the API to read, and about 6.4 MiB/s to write (a write's body must arrive 2 s before the budget ends). Move larger data through Cloud Storage from an exec.",
+        "operationId": "ReadSandboxFile",
+        "parameters": [
+          {
+            "description": "Sandbox ID (`sb-…`).",
+            "example": "sb-0192f1c2-7a4b-7c3e-9d1e-2f3a4b5c6d7e",
+            "in": "path",
+            "name": "sandbox_id",
+            "required": true,
+            "schema": {
+              "maxLength": 64,
+              "minLength": 1,
+              "type": "string"
+            }
+          },
+          {
+            "description": "Absolute path inside the sandbox, e.g. `/app/out.txt`, at most 4096 bytes in UTF-8.",
+            "example": "/app/out/results.json",
+            "in": "query",
+            "name": "path",
+            "required": true,
+            "schema": {
+              "maxLength": 4096,
+              "minLength": 1,
+              "pattern": "^/",
+              "type": "string"
+            }
+          },
+          {
+            "description": "List the directory at `path` instead.",
+            "in": "query",
+            "name": "list",
+            "required": false,
+            "schema": {
+              "default": false,
+              "type": "boolean"
+            }
+          },
+          {
+            "description": "Page number (1-based).",
+            "in": "query",
+            "name": "page[number]",
+            "required": false,
+            "schema": {
+              "default": 1,
+              "minimum": 1,
+              "type": "integer"
+            }
+          },
+          {
+            "description": "Number of items per page (max 100).",
+            "in": "query",
+            "name": "page[size]",
+            "required": false,
+            "schema": {
+              "default": 20,
+              "maximum": 100,
+              "minimum": 1,
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "data": [
+                    {
+                      "modified_at": "2026-11-13T10:42:17Z",
+                      "name": "results.json",
+                      "path": "/app/out/results.json",
+                      "size_bytes": 18234,
+                      "type": "file"
+                    },
+                    {
+                      "modified_at": "2026-11-13T10:40:02Z",
+                      "name": "checkpoints",
+                      "path": "/app/out/checkpoints",
+                      "size_bytes": 4096,
+                      "type": "directory"
+                    }
+                  ],
+                  "meta": {
+                    "page_number": 1,
+                    "page_size": 20,
+                    "total_pages": 1,
+                    "total_results": 2
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/FileListRespData"
+                }
+              },
+              "application/octet-stream": {
+                "schema": {
+                  "format": "binary",
+                  "type": "string"
+                }
+              }
+            },
+            "description": "The file's bytes (`application/octet-stream`, with `Content-Length`; a shorter body was cut), or with `list=true` the directory listing (`application/json`)."
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/sandboxes_TelnyxErrors"
+                }
+              }
+            },
+            "description": "Validation error: the standard Telnyx validation errors (codes such as 10004 missing parameter, 10015 bad request, 10025 invalid string length, 10026 invalid type)."
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "errors": [
+                    {
+                      "code": "10009",
+                      "detail": "Could not find any usable credentials in the request.",
+                      "title": "Authentication failed"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/sandboxes_TelnyxErrors"
+                }
+              }
+            },
+            "description": "Missing or invalid API key (code 10009)."
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "errors": [
+                    {
+                      "detail": "The organization isn't whitelisted.",
+                      "title": "sandboxes_not_whitelisted"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/sandboxes_TelnyxErrors"
+                }
+              }
+            },
+            "description": "- `sandboxes_require_verification`: your account isn't fully verified.\n- `sandboxes_not_whitelisted`: Sandboxes isn't enabled for your organization (invite-only preview); `GET /ai/sandbox-access` tells whether it is.\n- `permission_denied`: the sandbox's user may not do this at the path, or its file system is read-only."
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "errors": [
+                    {
+                      "code": "10005",
+                      "detail": "Sandbox not found.",
+                      "title": "Resource not found"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/sandboxes_TelnyxErrors"
+                }
+              }
+            },
+            "description": "Not found (code 10005): the resource doesn't exist or belongs to another organization. The detail says what's missing."
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "errors": [
+                    {
+                      "detail": "The path is a directory.",
+                      "title": "path_type_mismatch"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/sandboxes_TelnyxErrors"
+                }
+              }
+            },
+            "description": "- `sandbox_not_running`: the operation needs a running sandbox.\n- `path_type_mismatch`: the path is a directory where a file was expected, or the reverse (a parent that's a file included), or neither a file nor a directory."
+          },
+          "413": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "errors": [
+                    {
+                      "detail": "The file is larger than 64 MiB.",
+                      "title": "file_too_large"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/sandboxes_TelnyxErrors"
+                }
+              }
+            },
+            "description": "- `file_too_large`: the file is over the 64 MiB per-request limit; move large data through Cloud Storage.\n- `directory_too_large`: the directory has more than 100000 entries, so it can't be listed."
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "errors": [
+                    {
+                      "detail": "The path is reserved.",
+                      "title": "invalid_path"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/sandboxes_TelnyxErrors"
+                }
+              }
+            },
+            "description": "- `invalid_path`: the path holds a NUL byte, or a write or delete names the reserved `/.telnyx` directory, ends in a final `.` or `..`, or deletes `/`.\n- `file_operation_failed`: the sandbox's file system refused for another stated reason: no space, a name too long, a busy file or mount point, a symlink loop, or an I/O error."
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "errors": [
+                    {
+                      "code": "10037",
+                      "detail": "A dependency can't answer right now; retry later.",
+                      "title": "Service unavailable"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/sandboxes_TelnyxErrors"
+                }
+              }
+            },
+            "description": "A dependency can't answer right now (code 10037); retry later."
+          }
+        },
+        "summary": "Read a file or list a directory",
+        "tags": [
+          "Sandbox files"
+        ]
+      },
+      "put": {
+        "description": "Writes the raw request body to the file at `path`, whatever its `Content-Type`: `201` with the file's entry when it was created, `200` when it replaced one. **The file is replaced in one step:** readers see the whole old content or the whole new content, and a write that fails or is cut off (the client leaves, the body is too large, the time runs out) leaves the file exactly as it was. Missing parent directories are created (`0755`) once the whole body has arrived. A new file gets `0644`; a replaced one keeps its permission bits. A write through a symlink writes the file it points to and keeps the link, even when that file doesn't exist yet.\n\n**Permissions:** a write needs permission to write both the file and its directory (`permission_denied` otherwise: a file you own in a directory you can't write can still be changed with an exec), and a non-root writer becomes the replaced file's owner; root keeps the old owner. **Costs:** an overwrite needs room for both copies until the new one replaces the old; hard links to the old file keep the old content, and processes holding it open keep reading it. Files the sandbox mounts itself (`/etc/hosts`, `/etc/resolv.conf`, `/etc/hostname`) can't be replaced this way (`file_operation_failed`; use an exec).\n\nA directory at `path`, or something that's neither a file nor a directory (a device, FIFO or socket, which is kept), is `path_type_mismatch`; so is a `path` ending in `/`, or a parent that's a file. A `path` ending in `.` or `..`, or under the reserved `/.telnyx` directory, is `invalid_path`.\n\n**Size and time:** up to 64 MiB. A declared `Content-Length` over it is `file_too_large` before anything is sent to the sandbox; a body without one is refused as soon as it passes it. The body must be complete 2 s before the call's time budget ends: a body still arriving then is `408` (code 10008), and the file is unchanged. **A `503` after the whole body was sent may have written the file**; retrying writes the same content again, which is harmless.\n\n**With `directory=true`** and an empty body (else `400`): creates the directory at `path` with any missing parents, `201`, or `200` if a directory was already there; trailing slashes are ignored, and a file in the way is `path_type_mismatch`.\n\nSend an `Idempotency-Key`: a retry with the same key, path, flags and body gets the stored answer, and nothing is written again; a different request with it is `idempotency_key_reused`.\n\n`path` is absolute, at most 4096 bytes in UTF-8, and must be valid UTF-8 once percent-decoded; it's taken as the sandbox's kernel resolves it (`.`, `..` and `//` included). A path holding a NUL byte is `invalid_path`.\n\nThe sandbox must be running (else `sandbox_not_running`); file calls keep working during the stop's grace period, so you can fetch results from a sandbox that's ending. They run as the sandbox's own user, with its permissions: what that user may not do, or a read-only file system, is `permission_denied`. Another refusal by the sandbox's file system (no space, a name too long, a busy file or mount point, a symlink loop, an I/O error) is `file_operation_failed`, with a fixed text naming the reason. File calls don't count as activity for `idle_timeout`.\n\nEach call has a 64 MiB limit and a time budget of about 12 s for its whole transfer, so a full-size file needs about 5.3 MiB/s between you and the API to read, and about 6.4 MiB/s to write (a write's body must arrive 2 s before the budget ends). Move larger data through Cloud Storage from an exec.",
+        "operationId": "WriteSandboxFile",
+        "parameters": [
+          {
+            "description": "Sandbox ID (`sb-…`).",
+            "example": "sb-0192f1c2-7a4b-7c3e-9d1e-2f3a4b5c6d7e",
+            "in": "path",
+            "name": "sandbox_id",
+            "required": true,
+            "schema": {
+              "maxLength": 64,
+              "minLength": 1,
+              "type": "string"
+            }
+          },
+          {
+            "description": "Absolute path inside the sandbox, e.g. `/app/out.txt`, at most 4096 bytes in UTF-8.",
+            "example": "/app/out/results.json",
+            "in": "query",
+            "name": "path",
+            "required": true,
+            "schema": {
+              "maxLength": 4096,
+              "minLength": 1,
+              "pattern": "^/",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Create a directory at `path` (send an empty body).",
+            "in": "query",
+            "name": "directory",
+            "required": false,
+            "schema": {
+              "default": false,
+              "type": "boolean"
+            }
+          },
+          {
+            "description": "Optional client-chosen key (e.g. a UUID, at most 255 characters) that makes the call safe to retry. Within 24 h, the same key with the same request returns the stored response instead of acting twice; the same key with a different request fails with `idempotency_key_reused`; a request with a key that's still being processed fails with `request_in_progress`.",
+            "in": "header",
+            "name": "Idempotency-Key",
+            "required": false,
+            "schema": {
+              "maxLength": 255,
+              "minLength": 1,
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/octet-stream": {
+              "example": "{\"accuracy\": 0.912, \"split\": \"test\"}",
+              "schema": {
+                "format": "binary",
+                "type": "string"
+              }
+            }
+          },
+          "description": "The file's contents, as raw bytes whatever the `Content-Type`; empty when `directory=true`.",
+          "required": false
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "data": {
+                    "modified_at": "2026-11-13T10:42:17Z",
+                    "name": "results.json",
+                    "path": "/app/out/results.json",
+                    "size_bytes": 18234,
+                    "type": "file"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/FileEntryRespData"
+                }
+              }
+            },
+            "description": "The file or directory already existed and was replaced or kept."
+          },
+          "201": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "data": {
+                    "modified_at": "2026-11-13T10:42:17Z",
+                    "name": "results.json",
+                    "path": "/app/out/results.json",
+                    "size_bytes": 18234,
+                    "type": "file"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/FileEntryRespData"
+                }
+              }
+            },
+            "description": "A new file or directory was created."
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/sandboxes_TelnyxErrors"
+                }
+              }
+            },
+            "description": "Validation error: the standard Telnyx validation errors (codes such as 10004 missing parameter, 10015 bad request, 10025 invalid string length, 10026 invalid type)."
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "errors": [
+                    {
+                      "code": "10009",
+                      "detail": "Could not find any usable credentials in the request.",
+                      "title": "Authentication failed"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/sandboxes_TelnyxErrors"
+                }
+              }
+            },
+            "description": "Missing or invalid API key (code 10009)."
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "errors": [
+                    {
+                      "detail": "The organization isn't whitelisted.",
+                      "title": "sandboxes_not_whitelisted"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/sandboxes_TelnyxErrors"
+                }
+              }
+            },
+            "description": "- `sandboxes_require_verification`: your account isn't fully verified.\n- `sandboxes_not_whitelisted`: Sandboxes isn't enabled for your organization (invite-only preview); `GET /ai/sandbox-access` tells whether it is.\n- `permission_denied`: the sandbox's user may not do this at the path, or its file system is read-only."
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "errors": [
+                    {
+                      "code": "10005",
+                      "detail": "Sandbox not found.",
+                      "title": "Resource not found"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/sandboxes_TelnyxErrors"
+                }
+              }
+            },
+            "description": "Not found (code 10005): the resource doesn't exist or belongs to another organization. The detail says what's missing."
+          },
+          "408": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "errors": [
+                    {
+                      "code": "10008",
+                      "detail": "The request body didn't arrive in time.",
+                      "title": "Request timeout"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/sandboxes_TelnyxErrors"
+                }
+              }
+            },
+            "description": "Request timeout (code 10008): the request body didn't arrive within the call's time budget."
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "errors": [
+                    {
+                      "detail": "The path is a directory.",
+                      "title": "path_type_mismatch"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/sandboxes_TelnyxErrors"
+                }
+              }
+            },
+            "description": "- `request_in_progress`: a request with the same `Idempotency-Key` is still being processed; retry later.\n- `sandbox_not_running`: the operation needs a running sandbox.\n- `path_type_mismatch`: the path is a directory where a file was expected, or the reverse (a parent that's a file included), or neither a file nor a directory."
+          },
+          "413": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "errors": [
+                    {
+                      "detail": "The file is larger than 64 MiB.",
+                      "title": "file_too_large"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/sandboxes_TelnyxErrors"
+                }
+              }
+            },
+            "description": "- `file_too_large`: the file is over the 64 MiB per-request limit; move large data through Cloud Storage."
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "errors": [
+                    {
+                      "detail": "The path is reserved.",
+                      "title": "invalid_path"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/sandboxes_TelnyxErrors"
+                }
+              }
+            },
+            "description": "- `idempotency_key_reused`: the same `Idempotency-Key` was sent with a different request.\n- `invalid_path`: the path holds a NUL byte, or a write or delete names the reserved `/.telnyx` directory, ends in a final `.` or `..`, or deletes `/`.\n- `file_operation_failed`: the sandbox's file system refused for another stated reason: no space, a name too long, a busy file or mount point, a symlink loop, or an I/O error."
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "errors": [
+                    {
+                      "code": "10037",
+                      "detail": "A dependency can't answer right now; retry later.",
+                      "title": "Service unavailable"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/sandboxes_TelnyxErrors"
+                }
+              }
+            },
+            "description": "A dependency can't answer right now (code 10037); retry later."
+          }
+        },
+        "summary": "Write a file or create a directory",
+        "tags": [
+          "Sandbox files"
+        ]
+      }
+    }
+  },
+  "security": [
+    {
+      "bearerAuth": []
+    }
+  ],
+  "servers": [
+    {
+      "description": "Version 2.0.0 of the Telnyx API",
+      "url": "https://api.telnyx.com/v2"
+    }
+  ]
+}
